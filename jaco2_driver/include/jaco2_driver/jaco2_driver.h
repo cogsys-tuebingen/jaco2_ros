@@ -17,13 +17,15 @@ public:
     Jaco2Driver();
     ~Jaco2Driver();
 
+    AngularPosition getAngularPosition() const;
     AngularPosition getAngularVelocity() const;
+    AngularPosition getAngularForce() const;
     void setAngularVelocity(const TrajectoryPoint &velocity);
-
     void stop();
 
-private:
-    void tick();
+    unsigned char getRobotType(){return quickStatus_.RobotType;}
+
+    static const int U_SlEEP_TIME = 5000;
 
 private:
     Jaco2API jaco_api_;
@@ -32,7 +34,10 @@ private:
     std::vector<double> jointVelocities_;
     std::vector<double> jointEffort_;
 
+    QuickStatus quickStatus_;
+
     void getJointValues();
+    void tick();
 
 private:
     std::thread spinner_;
@@ -41,7 +46,10 @@ private:
 
     mutable std::recursive_mutex data_mutex_;
     TrajectoryPoint target_velocity_;
+    AngularPosition current_position_;
     AngularPosition current_velocity_;
+    AngularPosition current_torque_;
+    std::time_t last_command_;
 };
 
 #endif // JACO2DRIVER_H

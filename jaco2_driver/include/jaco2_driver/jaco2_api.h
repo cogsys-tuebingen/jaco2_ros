@@ -18,7 +18,11 @@ public:
 
     int init();
 
+    QuickStatus getQuickStatus() const;
+    AngularPosition getAngularPosition() const;
     AngularPosition getAngularVelocity() const;
+    AngularPosition getAngularForce() const;
+    AngularPosition getAngularForceGravityFree() const;
     void setAngularVelocity(const TrajectoryPoint &velocity);
 
 private:
@@ -32,7 +36,12 @@ private:
     int (*MoveHome)();
     int (*InitFingers)();
     int (*GetAngularCommand)(AngularPosition &);
+    int (*GetAngularPosition)(AngularPosition &);
     int (*GetAngularVelocity)(AngularPosition &);
+    int (*GetAngularForce)(AngularPosition &Response);
+    int (*GetAngularForceGravityFree)(AngularPosition &Response);
+    int (*GetQuickStatus)(QuickStatus &Response);
+
 
 
 private:

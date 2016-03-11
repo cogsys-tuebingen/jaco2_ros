@@ -13,7 +13,12 @@ Jaco2API::Jaco2API(void)
     SetActiveDevice = (int (*)(KinovaDevice devices)) dlsym(commandLayer_handle,"SetActiveDevice");
     SendBasicTrajectory = (int (*)(TrajectoryPoint)) dlsym(commandLayer_handle,"SendBasicTrajectory");
     GetAngularCommand = (int (*)(AngularPosition &)) dlsym(commandLayer_handle,"GetAngularCommand");
+    GetAngularPosition = (int (*)(AngularPosition &)) dlsym(commandLayer_handle,"GetAngularPosition");
     GetAngularVelocity = (int (*)(AngularPosition &)) dlsym(commandLayer_handle,"GetAngularVelocity");
+    GetAngularForce = (int (*)(AngularPosition &Response)) dlsym(commandLayer_handle,"GetAngularForce");
+    GetAngularForceGravityFree = (int (*)(AngularPosition &Response)) dlsym(commandLayer_handle,"GetAngularForceGravityFree");
+    GetQuickStatus = (int (*)(QuickStatus &)) dlsym(commandLayer_handle,"GetQuickStatus");
+
 }
 
 Jaco2API::~Jaco2API()
@@ -60,6 +65,24 @@ int Jaco2API::init()
     return result;
 }
 
+QuickStatus Jaco2API::getQuickStatus() const
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+
+    QuickStatus status;
+    GetQuickStatus(status);
+    return status;
+}
+
+AngularPosition Jaco2API::getAngularPosition() const
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+
+    AngularPosition position;
+    GetAngularPosition(position);
+    return position;
+}
+
 AngularPosition Jaco2API::getAngularVelocity() const
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
@@ -69,9 +92,29 @@ AngularPosition Jaco2API::getAngularVelocity() const
     return velocity;
 }
 
+AngularPosition Jaco2API::getAngularForce() const
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+
+    AngularPosition torque;
+    GetAngularForce(torque);
+    return torque;
+}
+
+AngularPosition Jaco2API::getAngularForceGravityFree() const
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+
+    AngularPosition torque;
+    GetAngularForceGravityFree(torque);
+    return torque;
+}
+
 void Jaco2API::setAngularVelocity(const TrajectoryPoint &target_velocity)
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
 
     SendBasicTrajectory(target_velocity);
 }
+
+
