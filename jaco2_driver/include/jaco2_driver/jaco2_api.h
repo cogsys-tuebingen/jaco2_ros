@@ -13,7 +13,7 @@
 class Jaco2API
 {
 public:
-    Jaco2API(void);
+    Jaco2API();
     ~Jaco2API();
 
     int init();
@@ -24,6 +24,7 @@ public:
     AngularPosition getAngularForce() const;
     AngularPosition getAngularForceGravityFree() const;
     void setAngularVelocity(const TrajectoryPoint &velocity);
+    void setAngularPosition(const TrajectoryPoint &position);
 
 private:
     void * commandLayer_handle;

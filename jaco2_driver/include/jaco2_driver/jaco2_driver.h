@@ -10,6 +10,7 @@
 //Jaco2
 #include <jaco2_driver/jaco2_api.h>
 #include <jaco2_msgs/JointVelocity.h>
+#include <jaco2_driver/jaco2_driver_command.h>
 
 class Jaco2Driver
 {
@@ -17,11 +18,14 @@ public:
     Jaco2Driver();
     ~Jaco2Driver();
 
+    bool reachedAngularGoal() const;
     AngularPosition getAngularPosition() const;
     AngularPosition getAngularVelocity() const;
     AngularPosition getAngularForce() const;
-    void setAngularVelocity(const TrajectoryPoint &velocity);
+    void setAngularPosition(const AngularPosition &position);
+    void setAngularVelocity(const AngularPosition &velocity);
     void stop();
+    void stopMovement();
 
     unsigned char getRobotType(){return quickStatus_.RobotType;}
 
@@ -38,6 +42,7 @@ private:
 
     void getJointValues();
     void tick();
+    bool reachedAngularGoal(const TrajectoryPoint &goal);
 
 private:
     std::thread spinner_;
@@ -45,11 +50,20 @@ private:
     bool running_;
 
     mutable std::recursive_mutex data_mutex_;
-    TrajectoryPoint target_velocity_;
     AngularPosition current_position_;
     AngularPosition current_velocity_;
     AngularPosition current_torque_;
     std::time_t last_command_;
+
+    int readCmd_;
+    std::function<void()> write_;
+    std::function<void()> read_;
+
+    bool moveToAngularPos_;
+    bool reachedAngularPos_;
+    std::vector<TrajectoryPoint> trajQueue_;
+
+
 };
 
 #endif // JACO2DRIVER_H

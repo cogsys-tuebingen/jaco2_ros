@@ -1,7 +1,7 @@
 #include <jaco2_driver/jaco2_api.h>
 #include <ros/console.h>
 
-Jaco2API::Jaco2API(void)
+Jaco2API::Jaco2API()
 {
     commandLayer_handle = dlopen("Kinova.API.USBCommandLayerUbuntu.so",RTLD_NOW|RTLD_GLOBAL);
 
@@ -117,4 +117,9 @@ void Jaco2API::setAngularVelocity(const TrajectoryPoint &target_velocity)
     SendBasicTrajectory(target_velocity);
 }
 
+void Jaco2API::setAngularPosition(const TrajectoryPoint &position)
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    SendBasicTrajectory(position);
+}
 

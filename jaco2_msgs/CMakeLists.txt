@@ -45,7 +45,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
    FILES
    JointVelocity.msg
-#   Message2.msg
+   JointAngles.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -56,11 +56,11 @@ add_message_files(
 # )
 
 ## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
+ add_action_files(
+   FILES
+   ArmJointAngles.action
 #   Action2.action
-# )
+)
 
 generate_messages(
   DEPENDENCIES

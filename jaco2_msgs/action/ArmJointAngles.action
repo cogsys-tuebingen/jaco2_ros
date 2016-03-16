@@ -1,0 +1,11 @@
+# Goal
+JointAngles angles
+---
+# Result
+int16 val
+int16 SUCCESSFUL=1
+int16 FAILURE=-1
+int16 PREEMPT=-2
+---
+# Feedback
+JointAngles angles

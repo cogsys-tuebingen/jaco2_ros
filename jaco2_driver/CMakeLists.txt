@@ -97,7 +97,6 @@ include_directories(
    src/jaco2_driver.cpp
    src/jaco2_api.cpp
    src/jaco2_driver_command.cpp
-   src/angle_velocity_command.cpp
  )
 
 ## Add cmake target dependencies of the library
