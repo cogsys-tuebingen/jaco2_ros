@@ -8,9 +8,14 @@
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 //Jaco2
-#include <jaco2_driver/jaco2_api.h>
 #include <jaco2_msgs/JointVelocity.h>
-#include <jaco2_driver/jaco2_driver_command.h>
+#include <jaco2_driver/jaco2_api.h>
+#include <jaco2_driver/jaco2_controller.h>
+#include <jaco2_driver/angular_position_controller.h>
+//Jaco2 Controller
+#include <jaco2_driver/jaco2_controller.h>
+#include <jaco2_driver/angular_position_controller.h>
+#include <jaco2_driver/velocity_controller.h>
 
 class Jaco2Driver
 {
@@ -18,7 +23,8 @@ public:
     Jaco2Driver();
     ~Jaco2Driver();
 
-    bool reachedAngularGoal() const;
+    bool reachedGoal() const;
+
     AngularPosition getAngularPosition() const;
     AngularPosition getAngularVelocity() const;
     AngularPosition getAngularForce() const;
@@ -27,12 +33,19 @@ public:
     void stop();
     void stopMovement();
 
+    void finish();
+
     unsigned char getRobotType(){return quickStatus_.RobotType;}
 
     static const int U_SlEEP_TIME = 5000;
 
 private:
     Jaco2API jaco_api_;
+
+    Jaco2Controller* active_controller_;
+
+    VelocityController velocity_controller_;
+    AngularPositionController position_controller_;
 
     std::vector<double> jointAngles_;
     std::vector<double> jointVelocities_;
@@ -42,25 +55,15 @@ private:
 
     void getJointValues();
     void tick();
-    bool reachedAngularGoal(const TrajectoryPoint &goal);
 
 private:
     std::thread spinner_;
     mutable std::recursive_mutex running_mutex_;
     bool running_;
 
-    mutable std::recursive_mutex data_mutex_;
-    AngularPosition current_position_;
-    AngularPosition current_velocity_;
-    AngularPosition current_torque_;
-    std::time_t last_command_;
 
-    int readCmd_;
-    std::function<void()> write_;
-    std::function<void()> read_;
+    Jaco2State state_;
 
-    bool moveToAngularPos_;
-    bool reachedAngularPos_;
     std::vector<TrajectoryPoint> trajQueue_;
 
 

@@ -1,6 +1,7 @@
 #include <jaco2_driver/jaco2_driver_node.h>
 #include <angles/angles.h>
 #include <control_msgs/FollowJointTrajectoryAction.h>
+#include <jaco2_driver/data_conversion.h>
 
 namespace {
 bool g_running_ = true;
@@ -15,15 +16,16 @@ void siginthandler(int)
 Jaco2DriverNode::Jaco2DriverNode()
     : private_nh_("~"),
       actionAngleServer_(private_nh_, "arm_joint_angles",false),
-      actionAngleServerRunning_(false)
+      trajServer_(private_nh_,"follow_joint_trajectory/manipulator",false),
+      actionAngleServerRunning_(false),
+      trajServerRunning_(false)
 {
     pubJointState_ = private_nh_.advertise<sensor_msgs::JointState>("out/joint_states", 2);
     boost::function<void(const jaco2_msgs::JointVelocityConstPtr&)> cb = boost::bind(&Jaco2DriverNode::jointVelocityCb, this, _1);
     subJointVelocity_ = private_nh_.subscribe("in/joint_velocity", 10, cb);
 
     actionAngleServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::actionAngleGoalCb, this));
-
-
+    trajServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::trajGoalCb, this));
 
      private_nh_.param<std::string>("tf_prefix", tf_prefix_, "jaco_");
 
@@ -43,6 +45,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     jointStateMsg_.name[8] = tf_prefix_ + "joint_finger_3";
 
     actionAngleServer_.start();
+    trajServer_.start();
 
 //     j6o_ = controller_.getRobotType() == 2 ? 270.0 : 260.0;
 }
@@ -52,14 +55,19 @@ void Jaco2DriverNode::actionAngleGoalCb()
 {
     jaco2_msgs::ArmJointAnglesGoalConstPtr goal = actionAngleServer_.acceptNewGoal();
     AngularPosition position;
-    convert(goal->angles,position);
+    DataConversion::convert(goal->angles,position);
     AngularPosition currentPos = controller_.getAngularPosition();
 
     position.Fingers = currentPos.Fingers;
-    actionAngleServerRunning_ = true;
-    actionAngleCmdSent_ = false;
-    angleCmd_ = position;
-    controller_.setAngularPosition(position);
+    actionAngleServerRunning_ = true;    controller_.setAngularPosition(position);
+
+}
+
+void Jaco2DriverNode::trajGoalCb()
+{
+    control_msgs::FollowJointTrajectoryGoalConstPtr goal = trajServer_.acceptNewGoal();
+
+
 
 }
 
@@ -70,28 +78,27 @@ void Jaco2DriverNode::tick()
     }
     if(actionAngleServerRunning_)
     {
-//        if(actionAngleCmdSent_)
-//        {
-//            controller_.setAngularPosition(angleCmd_);
-//            actionAngleCmdSent_ = true;
-//        }
         jaco2_msgs::ArmJointAnglesFeedback feedback;
         AngularPosition angles = controller_.getAngularPosition();
-        convert(angles,feedback.angles);
+        DataConversion::convert(angles,feedback.angles);
         actionAngleServer_.publishFeedback(feedback);
-        if(controller_.reachedAngularGoal())
+        if(controller_.reachedGoal())
         {
             actionAngleServerRunning_ = false;
             jaco2_msgs::ArmJointAnglesResult result;
             result.val = jaco2_msgs::ArmJointAnglesResult::SUCCESSFUL;
             actionAngleServer_.setSucceeded(result);
-        }
-        if(actionAngleServer_.isPreemptRequested() )
+
+            controller_.finish();
+
+        } else if(actionAngleServer_.isPreemptRequested() )
         {
             jaco2_msgs::ArmJointAnglesResult result;
             result.val = jaco2_msgs::ArmJointAnglesResult::PREEMPT;
             actionAngleServerRunning_ = false;
             actionAngleServer_.setPreempted();
+
+            controller_.finish();
         }
     }
     publishJointState();
@@ -126,9 +133,9 @@ void Jaco2DriverNode::stop()
 
 void Jaco2DriverNode::publishJointState()
 {
-    convert(controller_.getAngularVelocity(),jointStateMsg_.velocity);
-    convert(controller_.getAngularPosition(),jointStateMsg_.position);
-    convert(controller_.getAngularForce(), jointStateMsg_.effort);
+    DataConversion::convert(controller_.getAngularVelocity(),jointStateMsg_.velocity);
+    DataConversion::convert(controller_.getAngularPosition(),jointStateMsg_.position);
+    DataConversion::convert(controller_.getAngularForce(), jointStateMsg_.effort);
 //    for(std::size_t i = 0; i < jointStateMsg_.position.size(); ++i)
 //    {
 //        jointStateMsg_.position[i] = angles::to_degrees(angles::normalize_angle(angles::from_degrees(jointStateMsg_.position[i])));
@@ -140,41 +147,7 @@ void Jaco2DriverNode::publishJointState()
     pubJointState_.publish(jointStateMsg_);
 }
 
-void Jaco2DriverNode::convert(const AngularPosition &in, std::vector<double> &out)
-{
-    out.resize(Jaco2DriverNode::JACO_JOINTS_COUNT);
-    out[0] = in.Actuators.Actuator1;
-    out[1] = in.Actuators.Actuator2;
-    out[2] = in.Actuators.Actuator3;
-    out[3] = in.Actuators.Actuator4;
-    out[4] = in.Actuators.Actuator5;
-    out[5] = in.Actuators.Actuator6;
 
-    out[6] = in.Fingers.Finger1;
-    out[7] = in.Fingers.Finger2;
-    out[8] = in.Fingers.Finger3;
-}
-
-void Jaco2DriverNode::convert(const AngularPosition &in, jaco2_msgs::JointAngles &out)
-{
-    out.joint1 = in.Actuators.Actuator1;
-    out.joint2 = in.Actuators.Actuator2;
-    out.joint3 = in.Actuators.Actuator3;
-    out.joint4 = in.Actuators.Actuator4;
-    out.joint5 = in.Actuators.Actuator5;
-    out.joint6 = in.Actuators.Actuator6;
-}
-
-void Jaco2DriverNode::convert(const jaco2_msgs::JointAngles &in, AngularPosition &out)
-{
-    out.InitStruct();
-    out.Actuators.Actuator1 = in.joint1;
-    out.Actuators.Actuator2 = in.joint2;
-    out.Actuators.Actuator3 = in.joint3;
-    out.Actuators.Actuator4 = in.joint4;
-    out.Actuators.Actuator5 = in.joint5;
-    out.Actuators.Actuator6 = in.joint6;
-}
 
 int main(int argc, char *argv[])
 {

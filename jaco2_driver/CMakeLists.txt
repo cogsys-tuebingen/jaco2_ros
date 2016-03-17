@@ -96,7 +96,13 @@ include_directories(
  add_library(jaco2_driver
    src/jaco2_driver.cpp
    src/jaco2_api.cpp
-   src/jaco2_driver_command.cpp
+   src/point_2_point_velocity_controller.cpp
+   include/jaco2_driver/data_conversion.h
+   include/jaco2_driver/joint_trajectory.h
+   include/jaco2_driver/angular_position_controller.h
+   include/jaco2_driver/jaco2_state.h
+   include/jaco2_driver/velocity_controller.h
+   include/jaco2_driver/point_2_point_velocity_controller.h
  )
 
 ## Add cmake target dependencies of the library

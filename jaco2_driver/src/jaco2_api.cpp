@@ -117,6 +117,7 @@ void Jaco2API::setAngularVelocity(const TrajectoryPoint &target_velocity)
     SendBasicTrajectory(target_velocity);
 }
 
+
 void Jaco2API::setAngularPosition(const TrajectoryPoint &position)
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
