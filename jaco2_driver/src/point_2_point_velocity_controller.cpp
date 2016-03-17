@@ -62,18 +62,12 @@ void Point2PointVelocityController::write()
     }
     else if(timeDiff <= trajectory_.getTimeFromStart(current_point_))
     {
-        ManipulatorInfo cmdVel;
-        for(std::size_t i = 0; i < cmdVel.length_; ++ i)
-        {
-            cmdVel[i] = paramsConst_[current_point_][i] + paramsLinear_[current_point_][i] * dt + 0.5 * paramsCube_[current_point_][i] * dt * dt +
-                    paramsCube_[current_point_][i]/3.0 * dt * dt * dt + paramsQuad_[current_point_][i]/4.0 * dt * dt * dt  * dt;
-        }
-        tp_.Position.Actuators.Actuator1 = cmdVel[0];
-        tp_.Position.Actuators.Actuator2 = cmdVel[1];
-        tp_.Position.Actuators.Actuator3 = cmdVel[2];
-        tp_.Position.Actuators.Actuator4 = cmdVel[3];
-        tp_.Position.Actuators.Actuator5 = cmdVel[4];
-        tp_.Position.Actuators.Actuator6 = cmdVel[5];
+        tp_.Position.Actuators.Actuator1 = jointCmdVelocity(dt,0);
+        tp_.Position.Actuators.Actuator2 = jointCmdVelocity(dt,1);
+        tp_.Position.Actuators.Actuator3 = jointCmdVelocity(dt,2);
+        tp_.Position.Actuators.Actuator4 = jointCmdVelocity(dt,3);
+        tp_.Position.Actuators.Actuator5 = jointCmdVelocity(dt,4);
+        tp_.Position.Actuators.Actuator6 = jointCmdVelocity(dt,5);
         api_.setAngularVelocity(tp_);
     }
     else
@@ -92,6 +86,16 @@ void Point2PointVelocityController::write()
         {
             done_ = true;
         }
+        else
+        {
+            tp_.Position.Actuators.Actuator1 = jointCmdVelocity(dt,0);
+            tp_.Position.Actuators.Actuator2 = jointCmdVelocity(dt,1);
+            tp_.Position.Actuators.Actuator3 = jointCmdVelocity(dt,2);
+            tp_.Position.Actuators.Actuator4 = jointCmdVelocity(dt,3);
+            tp_.Position.Actuators.Actuator5 = jointCmdVelocity(dt,4);
+            tp_.Position.Actuators.Actuator6 = jointCmdVelocity(dt,5);
+            api_.setAngularVelocity(tp_);
+        }
     }
 
 }
@@ -99,4 +103,13 @@ void Point2PointVelocityController::write()
 bool Point2PointVelocityController::isDone() const
 {
     return done_;
+}
+
+double Point2PointVelocityController::jointCmdVelocity(const double dt, const std::size_t joint)
+{
+    double dt2 = dt*dt;
+    double dt3 = dt*dt2;
+    double dt4 = dt*dt3;
+    return paramsConst_[current_point_][joint] + paramsLinear_[current_point_][joint] * dt + 0.5 * paramsCube_[current_point_][joint] * dt2 +
+            paramsCube_[current_point_][joint]/3.0 * dt3 + 0.25*paramsQuad_[current_point_][joint] * dt4;
 }

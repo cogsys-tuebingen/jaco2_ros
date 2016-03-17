@@ -59,16 +59,18 @@ void Jaco2DriverNode::actionAngleGoalCb()
     AngularPosition currentPos = controller_.getAngularPosition();
 
     position.Fingers = currentPos.Fingers;
-    actionAngleServerRunning_ = true;    controller_.setAngularPosition(position);
-
+    actionAngleServerRunning_ = true;
+    controller_.setAngularPosition(position);
 }
 
 void Jaco2DriverNode::trajGoalCb()
 {
     control_msgs::FollowJointTrajectoryGoalConstPtr goal = trajServer_.acceptNewGoal();
+    JointTrajectory driver_trajectory;
+    DataConversion::convert(goal->trajectory,driver_trajectory);
 
-
-
+    trajServerRunning_ = true;
+    controller_.setTrajectory(driver_trajectory);
 }
 
 void Jaco2DriverNode::tick()
@@ -76,6 +78,7 @@ void Jaco2DriverNode::tick()
     if(!g_running_) {
         stop();
     }
+    publishJointState();
     if(actionAngleServerRunning_)
     {
         jaco2_msgs::ArmJointAnglesFeedback feedback;
@@ -101,7 +104,31 @@ void Jaco2DriverNode::tick()
             controller_.finish();
         }
     }
-    publishJointState();
+    if(trajServerRunning_)
+    {
+        control_msgs::FollowJointTrajectoryFeedback feedback;
+        AngularPosition angles = controller_.getAngularPosition();
+        DataConversion::convert(angles,feedback.actual.positions);
+        trajServer_.publishFeedback(feedback);
+        if(controller_.reachedGoal())
+        {
+            control_msgs::FollowJointTrajectoryResult result;
+            result.error_code = control_msgs::FollowJointTrajectoryResult::SUCCESSFUL;
+            trajServerRunning_ = false;
+            trajServer_.setSucceeded(result);
+
+            controller_.finish();
+
+        } else if(actionAngleServer_.isPreemptRequested() )
+        {
+            control_msgs::FollowJointTrajectoryResult result;
+            result.error_code = control_msgs::FollowJointTrajectoryResult::INVALID_GOAL;
+            trajServerRunning_ = false;
+            trajServer_.setPreempted();
+
+            controller_.finish();
+        }
+    }
 }
 
 void Jaco2DriverNode::jointVelocityCb(const jaco2_msgs::JointVelocityConstPtr& msg)

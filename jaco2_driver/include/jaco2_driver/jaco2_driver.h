@@ -12,10 +12,12 @@
 #include <jaco2_driver/jaco2_api.h>
 #include <jaco2_driver/jaco2_controller.h>
 #include <jaco2_driver/angular_position_controller.h>
+#include <jaco2_driver/joint_trajectory.h>
 //Jaco2 Controller
 #include <jaco2_driver/jaco2_controller.h>
 #include <jaco2_driver/angular_position_controller.h>
 #include <jaco2_driver/velocity_controller.h>
+#include <jaco2_driver/point_2_point_velocity_controller.h>
 
 class Jaco2Driver
 {
@@ -30,6 +32,7 @@ public:
     AngularPosition getAngularForce() const;
     void setAngularPosition(const AngularPosition &position);
     void setAngularVelocity(const AngularPosition &velocity);
+    void setTrajectory(const JointTrajectory & trajectory);
     void stop();
     void stopMovement();
 
@@ -46,6 +49,7 @@ private:
 
     VelocityController velocity_controller_;
     AngularPositionController position_controller_;
+    Point2PointVelocityController p2p_velocity_controller_;
 
     std::vector<double> jointAngles_;
     std::vector<double> jointVelocities_;
@@ -61,10 +65,8 @@ private:
     mutable std::recursive_mutex running_mutex_;
     bool running_;
 
-
     Jaco2State state_;
 
-    std::vector<TrajectoryPoint> trajQueue_;
 
 
 };

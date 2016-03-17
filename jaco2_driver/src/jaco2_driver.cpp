@@ -6,7 +6,8 @@ Jaco2Driver::Jaco2Driver():
     active_controller_(nullptr),
 
     position_controller_(state_, jaco_api_),
-    velocity_controller_(state_, jaco_api_)
+    velocity_controller_(state_, jaco_api_),
+    p2p_velocity_controller_(state_,jaco_api_)
 {
     ROS_INFO_STREAM("create jaco 2 driver");
     int result = jaco_api_.init();
@@ -76,6 +77,12 @@ void Jaco2Driver::setAngularPosition(const AngularPosition &position)
 
     position_controller_.setPosition(tp);
     active_controller_ = &position_controller_;
+}
+
+void Jaco2Driver::setTrajectory(const JointTrajectory &trajectory)
+{
+    p2p_velocity_controller_.setTrajectory(trajectory);
+    active_controller_ = &p2p_velocity_controller_;
 }
 
 void Jaco2Driver::stop()

@@ -33,6 +33,7 @@ private:
 
     bool done_;
 
+    double jointCmdVelocity(const double dt, const std::size_t joint);
 
 };
 #endif // POINT_2_POINT_VELOCITY_CONTROLLER_H
