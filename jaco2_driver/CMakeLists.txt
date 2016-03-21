@@ -32,10 +32,12 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   trajectory_msgs
   jaco2_msgs
+  dynamic_reconfigure
 )
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
+
 
 link_directories(${PROJECT_SOURCE_DIR}/lib)
 
@@ -60,10 +62,10 @@ link_directories(${PROJECT_SOURCE_DIR}/lib)
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+
+generate_dynamic_reconfigure_options(
+ cfg/jaco2_driver_configure.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -77,7 +79,7 @@ link_directories(${PROJECT_SOURCE_DIR}/lib)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES jaco2_driver
-  CATKIN_DEPENDS actionlib actionlib_msgs control_msgs geometry_msgs roscpp sensor_msgs std_msgs tf trajectory_msgs jaco2_msgs
+  CATKIN_DEPENDS actionlib actionlib_msgs control_msgs geometry_msgs roscpp sensor_msgs std_msgs tf trajectory_msgs jaco2_msgs dynamic_reconfigure
   DEPENDS system_lib
 )
 
@@ -119,7 +121,7 @@ add_executable(jaco2_driver_node src/nodes/jaco2_driver_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(jaco2_driver_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(jaco2_driver_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_driver_gencfg)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(jaco2_driver_node

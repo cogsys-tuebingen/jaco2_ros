@@ -125,3 +125,15 @@ bool Jaco2Driver::reachedGoal() const
         return false;
     }
 }
+
+AngularPosition Jaco2Driver::getCurrentTrajError() const
+{
+    AngularPosition res;
+    res.Actuators = p2p_velocity_controller_.getJointError();
+    return res;
+}
+
+void Jaco2Driver::setTrajectoryPGains(const ManipulatorInfo &gains)
+{
+    p2p_velocity_controller_.setGainP(gains);
+}

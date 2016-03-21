@@ -30,11 +30,13 @@ public:
     AngularPosition getAngularPosition() const;
     AngularPosition getAngularVelocity() const;
     AngularPosition getAngularForce() const;
+    AngularPosition getCurrentTrajError() const;
     void setAngularPosition(const AngularPosition &position);
     void setAngularVelocity(const AngularPosition &velocity);
     void setTrajectory(const JointTrajectory & trajectory);
     void stop();
     void stopMovement();
+    void setTrajectoryPGains(const ManipulatorInfo& gains);
 
     void finish();
 

@@ -21,13 +21,17 @@ Jaco2DriverNode::Jaco2DriverNode()
       trajServerRunning_(false)
 {
     pubJointState_ = private_nh_.advertise<sensor_msgs::JointState>("out/joint_states", 2);
+    pubJointAngles_ = private_nh_.advertise<jaco2_msgs::JointAngles>("out/joint_angles",2);
     boost::function<void(const jaco2_msgs::JointVelocityConstPtr&)> cb = boost::bind(&Jaco2DriverNode::jointVelocityCb, this, _1);
     subJointVelocity_ = private_nh_.subscribe("in/joint_velocity", 10, cb);
 
     actionAngleServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::actionAngleGoalCb, this));
     trajServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::trajGoalCb, this));
 
-     private_nh_.param<std::string>("tf_prefix", tf_prefix_, "jaco_");
+    f_ = boost::bind(&Jaco2DriverNode::dynamicReconfigureCb, this, _1, _2);
+    paramServer_.setCallback(f_);
+
+    private_nh_.param<std::string>("tf_prefix", tf_prefix_, "jaco_");
 
     jointStateMsg_.name.resize(JACO_JOINTS_COUNT);
     jointStateMsg_.position.resize(JACO_JOINTS_COUNT);
@@ -47,7 +51,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     actionAngleServer_.start();
     trajServer_.start();
 
-//     j6o_ = controller_.getRobotType() == 2 ? 270.0 : 260.0;
+    //     j6o_ = controller_.getRobotType() == 2 ? 270.0 : 260.0;
 }
 
 
@@ -59,6 +63,7 @@ void Jaco2DriverNode::actionAngleGoalCb()
     AngularPosition currentPos = controller_.getAngularPosition();
 
     position.Fingers = currentPos.Fingers;
+    DataConversion::shiftAngleDriver(position);
     actionAngleServerRunning_ = true;
     controller_.setAngularPosition(position);
 }
@@ -66,8 +71,17 @@ void Jaco2DriverNode::actionAngleGoalCb()
 void Jaco2DriverNode::trajGoalCb()
 {
     control_msgs::FollowJointTrajectoryGoalConstPtr goal = trajServer_.acceptNewGoal();
+    trajectory_msgs::JointTrajectory traj_msgs = goal->trajectory;
+
+    for(std::size_t i = 0; i < traj_msgs.points.size(); ++ i)
+    {
+        DataConversion::shiftAngleDriverToDegrees(traj_msgs.points[i].positions);
+        DataConversion::transformVelAndAccToDegrees(traj_msgs.points[i].velocities);
+        DataConversion::transformVelAndAccToDegrees(traj_msgs.points[i].accelerations);
+    }
+
     JointTrajectory driver_trajectory;
-    DataConversion::convert(goal->trajectory,driver_trajectory);
+    DataConversion::convert(traj_msgs,driver_trajectory);
 
     trajServerRunning_ = true;
     controller_.setTrajectory(driver_trajectory);
@@ -79,6 +93,7 @@ void Jaco2DriverNode::tick()
         stop();
     }
     publishJointState();
+    publishJointAngles();
     if(actionAngleServerRunning_)
     {
         jaco2_msgs::ArmJointAnglesFeedback feedback;
@@ -109,6 +124,8 @@ void Jaco2DriverNode::tick()
         control_msgs::FollowJointTrajectoryFeedback feedback;
         AngularPosition angles = controller_.getAngularPosition();
         DataConversion::convert(angles,feedback.actual.positions);
+        angles = controller_.getCurrentTrajError();
+        DataConversion::convert(angles,feedback.error.positions);
         trajServer_.publishFeedback(feedback);
         if(controller_.reachedGoal())
         {
@@ -131,23 +148,37 @@ void Jaco2DriverNode::tick()
     }
 }
 
+void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureConfig &config, uint32_t level)
+{
+    ManipulatorInfo trajectoryGainsP;
+    trajectoryGainsP[0] = config.trajectory_p_gain_joint_0;
+    trajectoryGainsP[1] = config.trajectory_p_gain_joint_1;
+    trajectoryGainsP[2] = config.trajectory_p_gain_joint_2;
+    trajectoryGainsP[3] = config.trajectory_p_gain_joint_3;
+    trajectoryGainsP[4] = config.trajectory_p_gain_joint_4;
+    trajectoryGainsP[5] = config.trajectory_p_gain_joint_5;
+    controller_.setTrajectoryPGains(trajectoryGainsP);
+}
+
 void Jaco2DriverNode::jointVelocityCb(const jaco2_msgs::JointVelocityConstPtr& msg)
 {
-    AngularPosition pointToSend;
-    pointToSend.InitStruct();
+    AngularPosition velocity;
+    velocity.InitStruct();
 
-    pointToSend.Actuators.Actuator1 = msg->joint1;
-    pointToSend.Actuators.Actuator2 = msg->joint2;
-    pointToSend.Actuators.Actuator3 = msg->joint3;
-    pointToSend.Actuators.Actuator4 = msg->joint4;
-    pointToSend.Actuators.Actuator5 = msg->joint5;
-    pointToSend.Actuators.Actuator6 = msg->joint6;
+    velocity.Actuators.Actuator1 = msg->joint1;
+    velocity.Actuators.Actuator2 = msg->joint2;
+    velocity.Actuators.Actuator3 = msg->joint3;
+    velocity.Actuators.Actuator4 = msg->joint4;
+    velocity.Actuators.Actuator5 = msg->joint5;
+    velocity.Actuators.Actuator6 = msg->joint6;
 
-    pointToSend.Fingers.Finger1 = 0;
-    pointToSend.Fingers.Finger2 = 0;
-    pointToSend.Fingers.Finger3 = 0;
+    velocity.Fingers.Finger1 = 0;
+    velocity.Fingers.Finger2 = 0;
+    velocity.Fingers.Finger3 = 0;
 
-    controller_.setAngularVelocity(pointToSend);
+    DataConversion::transformVelAndAcc(velocity);
+
+    controller_.setAngularVelocity(velocity);
 
     last_command_ = ros::Time::now();
 }
@@ -163,18 +194,30 @@ void Jaco2DriverNode::publishJointState()
     DataConversion::convert(controller_.getAngularVelocity(),jointStateMsg_.velocity);
     DataConversion::convert(controller_.getAngularPosition(),jointStateMsg_.position);
     DataConversion::convert(controller_.getAngularForce(), jointStateMsg_.effort);
-//    for(std::size_t i = 0; i < jointStateMsg_.position.size(); ++i)
-//    {
-//        jointStateMsg_.position[i] = angles::to_degrees(angles::normalize_angle(angles::from_degrees(jointStateMsg_.position[i])));
-//        jointStateMsg_.velocity[i] = jointStateMsg_.velocity[i];
 
-//    }
+    DataConversion::shiftAngleToROSRadians(jointStateMsg_.position);
+    DataConversion::transformVelAndAccToRadian(jointStateMsg_.velocity);
 
     jointStateMsg_.header.stamp = ros::Time::now();
     pubJointState_.publish(jointStateMsg_);
 }
 
+void Jaco2DriverNode::publishJointAngles()
+{
 
+    AngularPosition pos = controller_.getAngularPosition();
+
+    DataConversion::shiftAngleToROS(pos);
+
+    jointAngleMsg_.joint1 = pos.Actuators.Actuator1;
+    jointAngleMsg_.joint2 = pos.Actuators.Actuator2;
+    jointAngleMsg_.joint3 = pos.Actuators.Actuator3;
+    jointAngleMsg_.joint4 = pos.Actuators.Actuator4;
+    jointAngleMsg_.joint5 = pos.Actuators.Actuator5;
+    jointAngleMsg_.joint6 = pos.Actuators.Actuator6;
+
+    pubJointAngles_.publish(jointAngleMsg_);
+}
 
 int main(int argc, char *argv[])
 {
