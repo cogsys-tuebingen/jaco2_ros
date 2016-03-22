@@ -17,6 +17,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     : private_nh_("~"),
       actionAngleServer_(private_nh_, "arm_joint_angles",false),
       trajServer_(private_nh_,"follow_joint_trajectory/manipulator",false),
+      gripperServer_(private_nh_, "gripper_command", false),
       actionAngleServerRunning_(false),
       trajServerRunning_(false)
 {
@@ -27,6 +28,7 @@ Jaco2DriverNode::Jaco2DriverNode()
 
     actionAngleServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::actionAngleGoalCb, this));
     trajServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::trajGoalCb, this));
+    gripperServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::gripperGoalCb, this));
 
     f_ = boost::bind(&Jaco2DriverNode::dynamicReconfigureCb, this, _1, _2);
     paramServer_.setCallback(f_);
@@ -85,6 +87,18 @@ void Jaco2DriverNode::trajGoalCb()
 
     trajServerRunning_ = true;
     controller_.setTrajectory(driver_trajectory);
+}
+
+void Jaco2DriverNode::gripperGoalCb()
+{
+    control_msgs::GripperCommandGoalConstPtr goal = gripperServer_.acceptNewGoal();
+//    if(goal->command.position.size() == 3)
+//    {
+//        AngularPosition.Fingers.Finger1 = goal->command.position[0];
+//        AngularPosition.Fingers.Finger2 = goal->command.position[1];
+//        AngularPosition.Fingers.Finger3 = goal->command.position[2];
+
+//    }
 }
 
 void Jaco2DriverNode::tick()

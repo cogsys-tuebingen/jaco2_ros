@@ -23,6 +23,7 @@ public:
     AngularPosition getAngularVelocity() const;
     AngularPosition getAngularForce() const;
     AngularPosition getAngularForceGravityFree() const;
+    AngularPosition getAngularCurrent() const;
     void setAngularVelocity(const TrajectoryPoint &velocity);
     void setAngularPosition(const TrajectoryPoint &position);
 
@@ -42,6 +43,7 @@ private:
     int (*GetAngularForce)(AngularPosition &Response);
     int (*GetAngularForceGravityFree)(AngularPosition &Response);
     int (*GetQuickStatus)(QuickStatus &Response);
+    int (*GetAngularCurrent)(AngularPosition &);
 
 
 

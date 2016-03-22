@@ -20,6 +20,14 @@ public:
     {
         tp_ = tp;
         tp_.Position.Type = ANGULAR_POSITION;
+        tp_.Position.HandMode = HAND_NOMOVEMENT;
+    }
+
+    void setFingerPosition(const TrajectoryPoint& tp)
+    {
+        tp_.Position.Actuators = state_.getAngularPosition().Actuators;
+        tp_.Position.Fingers = tp.Position.Fingers;
+        tp_.Position.HandMode = POSITION_MODE;
     }
 
     virtual void write() override

@@ -18,6 +18,11 @@ public:
         write();
     }
 
+    virtual void read()
+    {
+        state_.read();
+    }
+
 protected:
     virtual void write() = 0;
 

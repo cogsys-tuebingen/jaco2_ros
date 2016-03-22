@@ -24,7 +24,7 @@ void Point2PointVelocityController::setTrajectory(const JointTrajectory& traject
     paramsLinear_.resize(trajectory_.size());
     paramsSquare_.resize(trajectory_.size());
     paramsCube_.resize(trajectory_.size());
-    paramsQuad_.resize(trajectory_.size());
+//    paramsQuad_.resize(trajectory_.size());
     timeDiff_.resize(trajectory_.size());
     posDiff_.resize(trajectory_.size());
     timeDiff_[0] = 0;

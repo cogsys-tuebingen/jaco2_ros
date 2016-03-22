@@ -18,6 +18,7 @@ Jaco2API::Jaco2API()
     GetAngularForce = (int (*)(AngularPosition &Response)) dlsym(commandLayer_handle,"GetAngularForce");
     GetAngularForceGravityFree = (int (*)(AngularPosition &Response)) dlsym(commandLayer_handle,"GetAngularForceGravityFree");
     GetQuickStatus = (int (*)(QuickStatus &)) dlsym(commandLayer_handle,"GetQuickStatus");
+    GetAngularCurrent = (int (*)(AngularPosition &)) dlsym(commandLayer_handle,"GetAngularCurrent");
 
 }
 
@@ -60,6 +61,7 @@ int Jaco2API::init()
 
             std::cout << "Initializing the fingers" << std::endl;
             result = InitFingers();
+            std::cout << "Initializing done." << std::endl;
         }
     }
     return result;
@@ -124,3 +126,10 @@ void Jaco2API::setAngularPosition(const TrajectoryPoint &position)
     SendBasicTrajectory(position);
 }
 
+AngularPosition Jaco2API::getAngularCurrent() const
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    AngularPosition current;
+    GetAngularCurrent(current);
+    return current;
+}

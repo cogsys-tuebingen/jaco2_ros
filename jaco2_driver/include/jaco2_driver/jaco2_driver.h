@@ -15,6 +15,7 @@
 #include <jaco2_driver/joint_trajectory.h>
 //Jaco2 Controller
 #include <jaco2_driver/jaco2_controller.h>
+#include <jaco2_driver/empty_controller.h>
 #include <jaco2_driver/angular_position_controller.h>
 #include <jaco2_driver/velocity_controller.h>
 #include <jaco2_driver/point_2_point_velocity_controller.h>
@@ -33,6 +34,7 @@ public:
     AngularPosition getCurrentTrajError() const;
     void setAngularPosition(const AngularPosition &position);
     void setAngularVelocity(const AngularPosition &velocity);
+    void setFingerPosition(const AngularPosition & position);
     void setTrajectory(const JointTrajectory & trajectory);
     void stop();
     void stopMovement();
@@ -52,6 +54,7 @@ private:
     VelocityController velocity_controller_;
     AngularPositionController position_controller_;
     Point2PointVelocityController p2p_velocity_controller_;
+    EmptyController empty_controller_;
 
     std::vector<double> jointAngles_;
     std::vector<double> jointVelocities_;

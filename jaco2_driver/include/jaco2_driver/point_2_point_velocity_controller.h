@@ -24,11 +24,13 @@ private:
     JointTrajectory trajectory_;
     std::size_t  current_point_;
     ManipulatorInfo gainP_;
+    ManipulatorInfo gainI_; // TODO Implement
+    ManipulatorInfo gainD_; // TODO Implement
     std::vector<ManipulatorInfo> paramsConst_;
     std::vector<ManipulatorInfo> paramsLinear_;
     std::vector<ManipulatorInfo> paramsSquare_;
     std::vector<ManipulatorInfo> paramsCube_;
-    std::vector<ManipulatorInfo> paramsQuad_;
+//    std::vector<ManipulatorInfo> paramsQuad_;
     std::vector<double> timeDiff_;
     std::vector<ManipulatorInfo> posDiff_;
 

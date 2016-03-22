@@ -7,16 +7,17 @@ Jaco2Driver::Jaco2Driver():
 
     position_controller_(state_, jaco_api_),
     velocity_controller_(state_, jaco_api_),
-    p2p_velocity_controller_(state_,jaco_api_)
+    p2p_velocity_controller_(state_,jaco_api_),
+    empty_controller_(state_,jaco_api_)
 {
     ROS_INFO_STREAM("create jaco 2 driver");
     int result = jaco_api_.init();
     ROS_INFO_STREAM("Jaco API result: "<< result);
 
-
-    quickStatus_ = jaco_api_.getQuickStatus();
+    state_.readQuickStatus();
     usleep(U_SlEEP_TIME);
     usleep(U_SlEEP_TIME);
+    quickStatus_ =  state_.getQuickStatus();
 
 
     running_ = true;
@@ -108,12 +109,22 @@ void Jaco2Driver::stopMovement()
 
 void Jaco2Driver::tick()
 {
-    state_.read();
-    usleep(3000);
+    //    state_.read();
+    //    usleep(3000);
 
     if(active_controller_) {
-        active_controller_->execute();
-        usleep(5000);
+        active_controller_->read();
+        usleep(3000);
+        if(active_controller_)
+        {
+            active_controller_->execute();
+            usleep(5000);
+        }
+    }
+    else
+    {
+        empty_controller_.read();
+        usleep(3000);
     }
 }
 
@@ -136,4 +147,14 @@ AngularPosition Jaco2Driver::getCurrentTrajError() const
 void Jaco2Driver::setTrajectoryPGains(const ManipulatorInfo &gains)
 {
     p2p_velocity_controller_.setGainP(gains);
+}
+
+void Jaco2Driver::setFingerPosition(const AngularPosition &position)
+{
+    TrajectoryPoint tp;
+    tp.InitStruct();
+    tp.Position.Fingers = position.Fingers;
+
+    position_controller_.setFingerPosition(tp);
+    active_controller_ = &position_controller_;
 }

@@ -6,6 +6,7 @@
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
 #include <control_msgs/FollowJointTrajectoryAction.h>
+#include <control_msgs/GripperCommandAction.h>
 #include <dynamic_reconfigure/server.h>
 // JACO2 DRIVER
 #include <jaco2_driver/jaco2_driver.h>
@@ -31,6 +32,7 @@ private:
     void publishJointAngles();
     void actionAngleGoalCb();
     void trajGoalCb();
+    void gripperGoalCb();
 
     void dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureConfig &config, uint32_t level);
 private:
@@ -46,6 +48,7 @@ private:
 
     actionlib::SimpleActionServer<jaco2_msgs::ArmJointAnglesAction> actionAngleServer_;
     actionlib::SimpleActionServer<control_msgs::FollowJointTrajectoryAction> trajServer_;
+    actionlib::SimpleActionServer<control_msgs::GripperCommandAction> gripperServer_;
 
 
     ros::Time last_command_;
