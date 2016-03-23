@@ -1,0 +1,11 @@
+# Goal
+FingerPosition fingers
+---
+# Result
+int16 error_code
+int16 SUCCESS = 1
+int16 PREMPTED = -1
+int16 FAILURE = -2
+---
+# Feedback message
+FingerPosition fingers

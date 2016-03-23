@@ -19,6 +19,7 @@
 #include <jaco2_driver/angular_position_controller.h>
 #include <jaco2_driver/velocity_controller.h>
 #include <jaco2_driver/point_2_point_velocity_controller.h>
+#include <jaco2_driver/gripper_pid_controller.h>
 
 class Jaco2Driver
 {
@@ -39,6 +40,12 @@ public:
     void stop();
     void stopMovement();
     void setTrajectoryPGains(const ManipulatorInfo& gains);
+    void setTrajectoryIGains(const ManipulatorInfo& gains);
+    void setTrajectoryDGains(const ManipulatorInfo& gains);
+    void setGripperEffort(const double effort);
+    void setGripperPGain(const double finger1, const double finger2, const double finger3);
+    void setGripperIGain(const double finger1, const double finger2, const double finger3);
+    void setGripperDGain(const double finger1, const double finger2, const double finger3);
 
     void finish();
 
@@ -55,6 +62,7 @@ private:
     AngularPositionController position_controller_;
     Point2PointVelocityController p2p_velocity_controller_;
     EmptyController empty_controller_;
+    GripperPIDController gripper_controller_;
 
     std::vector<double> jointAngles_;
     std::vector<double> jointVelocities_;

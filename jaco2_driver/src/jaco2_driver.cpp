@@ -8,7 +8,8 @@ Jaco2Driver::Jaco2Driver():
     position_controller_(state_, jaco_api_),
     velocity_controller_(state_, jaco_api_),
     p2p_velocity_controller_(state_,jaco_api_),
-    empty_controller_(state_,jaco_api_)
+    empty_controller_(state_,jaco_api_),
+    gripper_controller_(state_,jaco_api_)
 {
     ROS_INFO_STREAM("create jaco 2 driver");
     int result = jaco_api_.init();
@@ -149,6 +150,31 @@ void Jaco2Driver::setTrajectoryPGains(const ManipulatorInfo &gains)
     p2p_velocity_controller_.setGainP(gains);
 }
 
+void Jaco2Driver::setTrajectoryIGains(const ManipulatorInfo &gains)
+{
+    p2p_velocity_controller_.setGainI(gains);
+}
+
+void Jaco2Driver::setTrajectoryDGains(const ManipulatorInfo &gains)
+{
+    p2p_velocity_controller_.setGainD(gains);
+}
+
+void Jaco2Driver::setGripperPGain(const double finger1, const double finger2, const double finger3)
+{
+    gripper_controller_.setGainP(finger1,finger2,finger3);
+}
+
+void Jaco2Driver::setGripperIGain(const double finger1, const double finger2, const double finger3)
+{
+    gripper_controller_.setGainI(finger1,finger2,finger3);
+}
+
+void Jaco2Driver::setGripperDGain(const double finger1, const double finger2, const double finger3)
+{
+    gripper_controller_.setGainD(finger1,finger2,finger3);
+}
+
 void Jaco2Driver::setFingerPosition(const AngularPosition &position)
 {
     TrajectoryPoint tp;
@@ -157,4 +183,10 @@ void Jaco2Driver::setFingerPosition(const AngularPosition &position)
 
     position_controller_.setFingerPosition(tp);
     active_controller_ = &position_controller_;
+}
+
+void Jaco2Driver::setGripperEffort(const double effort)
+{
+    gripper_controller_.setEffort(effort,effort,0.5*effort);
+    active_controller_ = &gripper_controller_;
 }

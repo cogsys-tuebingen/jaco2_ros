@@ -9,11 +9,13 @@
 #include <control_msgs/GripperCommandAction.h>
 #include <dynamic_reconfigure/server.h>
 // JACO2 DRIVER
-#include <jaco2_driver/jaco2_driver.h>
 #include <kinova/KinovaTypes.h>
-#include <jaco2_msgs/ArmJointAnglesAction.h>
+#include <jaco2_driver/jaco2_driver.h>
 #include <jaco2_driver/jaco2_driver_configureConfig.h>
 #include <jaco2_driver/manipulator_info.h>
+//JACO2 MSGS
+#include <jaco2_msgs/ArmJointAnglesAction.h>
+#include <jaco2_msgs/SetFingersPositionAction.h>
 
 
 class Jaco2DriverNode
@@ -33,6 +35,7 @@ private:
     void actionAngleGoalCb();
     void trajGoalCb();
     void gripperGoalCb();
+    void fingerGoalCb();
 
     void dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureConfig &config, uint32_t level);
 private:
@@ -45,10 +48,12 @@ private:
     ros::Subscriber subJointVelocity_;
     ros::Publisher pubJointState_;
     ros::Publisher pubJointAngles_;
+    ros::Publisher pubFingerPositions_;
 
     actionlib::SimpleActionServer<jaco2_msgs::ArmJointAnglesAction> actionAngleServer_;
     actionlib::SimpleActionServer<control_msgs::FollowJointTrajectoryAction> trajServer_;
-    actionlib::SimpleActionServer<control_msgs::GripperCommandAction> gripperServer_;
+    actionlib::SimpleActionServer<control_msgs::GripperCommandAction> gripperEffortServer_;
+    actionlib::SimpleActionServer<jaco2_msgs::SetFingersPositionAction> fingerServer_;
 
 
     ros::Time last_command_;
@@ -59,6 +64,8 @@ private:
 
     bool actionAngleServerRunning_;
     bool trajServerRunning_;
+    bool gripperServerRunning_;
+    bool fingerServerRunning_;
 
     dynamic_reconfigure::Server<jaco2_driver::jaco2_driver_configureConfig> paramServer_;
     dynamic_reconfigure::Server<jaco2_driver::jaco2_driver_configureConfig>::CallbackType f_;

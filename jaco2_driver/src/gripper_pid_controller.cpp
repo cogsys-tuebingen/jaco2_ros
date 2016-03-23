@@ -65,5 +65,26 @@ void GripperPIDController::write()
 }
 
 
+void GripperPIDController::setGainP(const double finger1, const double finger2, const double finger3)
+{
+    gainP_[0] = finger1;
+    gainP_[1] = finger2;
+    gainP_[2] = finger3;
+}
+
+void GripperPIDController::setGainI(const double finger1, const double finger2, const double finger3)
+{
+    gainI_[0] = finger1;
+    gainI_[1] = finger2;
+    gainI_[2] = finger3;
+}
+
+void GripperPIDController::setGainD(const double finger1, const double finger2, const double finger3)
+{
+    gainD_[0] = finger1;
+    gainD_[1] = finger2;
+    gainD_[2] = finger3;
+}
+
 
 

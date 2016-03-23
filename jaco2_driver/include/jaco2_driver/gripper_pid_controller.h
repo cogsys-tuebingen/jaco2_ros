@@ -17,6 +17,9 @@ public:
     virtual void read() override;
 
     void setEffort(const double finger1,const double finger2,const double finger3);
+    void setGainP(const double finger1,const double finger2,const double finger3);
+    void setGainI(const double finger1,const double finger2,const double finger3);
+    void setGainD(const double finger1,const double finger2,const double finger3);
 
 private:
     static const double max_current_;

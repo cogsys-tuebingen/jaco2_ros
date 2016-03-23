@@ -46,20 +46,24 @@ add_message_files(
    FILES
    JointVelocity.msg
    JointAngles.msg
+   FingerPosition.msg
+
 )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+   FILES
+   HomeArm.srv
+   SetForceControlParams.srv
+   Start.srv
+   Stop.srv
+)
 
 ## Generate actions in the 'action' folder
  add_action_files(
    FILES
    ArmJointAngles.action
-#   Action2.action
+   SetFingersPosition.action
 )
 
 generate_messages(
