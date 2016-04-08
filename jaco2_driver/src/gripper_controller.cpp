@@ -69,7 +69,7 @@ void GripperController::write()
           tp_.Position.Fingers.Finger2 = 0;
           tp_.Position.Fingers.Finger3 = 0;
           api_.setAngularVelocity(tp_);
-          std::cout << "done" << std::endl;
+//          std::cout << "done" << std::endl;
           return;
     }
     else{
@@ -115,17 +115,17 @@ bool GripperController::notMoving()
    if(useFingers_[0])
    {
        result &= fabs(currentPosition_.Fingers.Finger1 - lastPosition_.Fingers.Finger1) < threshold_;
-       std::cout << "finger 1 diff: " << fabs(currentPosition_.Fingers.Finger1 - lastPosition_.Fingers.Finger1) << std::endl;
+//       std::cout << "finger 1 diff: " << fabs(currentPosition_.Fingers.Finger1 - lastPosition_.Fingers.Finger1) << std::endl;
    }
    if(useFingers_[1])
    {
        result &= fabs(currentPosition_.Fingers.Finger2 - lastPosition_.Fingers.Finger2) < threshold_;
-       std::cout << "finger 2 diff: " << fabs(currentPosition_.Fingers.Finger2 - lastPosition_.Fingers.Finger2) << std::endl;
+//       std::cout << "finger 2 diff: " << fabs(currentPosition_.Fingers.Finger2 - lastPosition_.Fingers.Finger2) << std::endl;
    }
    if(useFingers_[2])
    {
        result &= fabs(currentPosition_.Fingers.Finger3 - lastPosition_.Fingers.Finger3) < threshold_;
-       std::cout << "finger 3 diff: " << fabs(currentPosition_.Fingers.Finger3 - lastPosition_.Fingers.Finger3) << std::endl;
+//       std::cout << "finger 3 diff: " << fabs(currentPosition_.Fingers.Finger3 - lastPosition_.Fingers.Finger3) << std::endl;
    }
    if(counter_ % 100 == 0)
    {

@@ -18,6 +18,7 @@ public:
 
     int init();
 
+    bool  isStopped() const;
     QuickStatus getQuickStatus() const;
     AngularPosition getAngularPosition() const;
     AngularPosition getAngularVelocity() const;
@@ -26,12 +27,16 @@ public:
     AngularPosition getAngularCurrent() const;
     void setAngularVelocity(const TrajectoryPoint &velocity);
     void setAngularPosition(const TrajectoryPoint &position);
+    void startAPI();
+    void stopAPI();
+    void moveHome();
 
 private:
     void * commandLayer_handle;
 
     int (*InitAPI)();
     int (*CloseAPI)();
+    int (*StopControlAPI)();
     int (*StartControlAPI)();
     int (*SendBasicTrajectory)(TrajectoryPoint command);
     int (*GetDevices)(KinovaDevice devices[MAX_KINOVA_DEVICE], int &result);
@@ -45,6 +50,7 @@ private:
     int (*GetAngularForceGravityFree)(AngularPosition &Response);
     int (*GetQuickStatus)(QuickStatus &Response);
     int (*GetAngularCurrent)(AngularPosition &);
+    int (*EraseAllTrajectories)();
 
 
 

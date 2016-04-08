@@ -2,12 +2,13 @@
 #include <ros/console.h>
 
 Jaco2API::Jaco2API():
-    stopedAPI_(false)
+    stopedAPI_(true)
 {
     commandLayer_handle = dlopen("Kinova.API.USBCommandLayerUbuntu.so",RTLD_NOW|RTLD_GLOBAL);
 
     InitAPI = (int (*)()) dlsym(commandLayer_handle,"InitAPI");
     CloseAPI = (int (*)()) dlsym(commandLayer_handle,"CloseAPI");
+    StopControlAPI = (int (*)()) dlsym(commandLayer_handle,"StopControlAPI");
     StartControlAPI = (int (*)()) dlsym(commandLayer_handle,"StartControlAPI");
     MoveHome = (int (*)()) dlsym(commandLayer_handle,"MoveHome");
     InitFingers = (int (*)()) dlsym(commandLayer_handle,"InitFingers");
@@ -21,11 +22,15 @@ Jaco2API::Jaco2API():
     GetAngularForceGravityFree = (int (*)(AngularPosition &Response)) dlsym(commandLayer_handle,"GetAngularForceGravityFree");
     GetQuickStatus = (int (*)(QuickStatus &)) dlsym(commandLayer_handle,"GetQuickStatus");
     GetAngularCurrent = (int (*)(AngularPosition &)) dlsym(commandLayer_handle,"GetAngularCurrent");
+    EraseAllTrajectories = (int (*)()) dlsym(commandLayer_handle,"EraseAllTrajectories");
 
 }
 
 Jaco2API::~Jaco2API()
 {
+    EraseAllTrajectories();
+    StopControlAPI();
+    CloseAPI();
     dlclose(commandLayer_handle);
 }
 
@@ -50,6 +55,7 @@ int Jaco2API::init()
         {
             return ERROR_NOT_INITIALIZED;
         }
+        stopedAPI_ = false;
 
 //        result = 1015;
 //        int count = 1;
@@ -85,6 +91,32 @@ int Jaco2API::init()
         }
     }
     return result;
+}
+
+void Jaco2API::startAPI()
+{
+    if(stopedAPI_)
+    {
+        std::unique_lock<std::recursive_mutex> lock(mutex_);
+        int result = StartControlAPI();
+        if(result ==1)
+        {
+            stopedAPI_ = false;
+        }
+        else
+        {
+            std::cerr << "Could not start API." << std::endl;
+        }
+    }
+}
+
+void Jaco2API::stopAPI()
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    stopedAPI_ = true;
+    EraseAllTrajectories();
+    StopControlAPI();
+
 }
 
 QuickStatus Jaco2API::getQuickStatus() const
@@ -135,15 +167,18 @@ AngularPosition Jaco2API::getAngularForceGravityFree() const
 void Jaco2API::setAngularVelocity(const TrajectoryPoint &target_velocity)
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
-
-    SendBasicTrajectory(target_velocity);
+    if(!stopedAPI_){
+        SendBasicTrajectory(target_velocity);
+    }
 }
 
 
 void Jaco2API::setAngularPosition(const TrajectoryPoint &position)
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
-    SendBasicTrajectory(position);
+    if(!stopedAPI_){
+        SendBasicTrajectory(position);
+    }
 }
 
 AngularPosition Jaco2API::getAngularCurrent() const
@@ -152,4 +187,10 @@ AngularPosition Jaco2API::getAngularCurrent() const
     AngularPosition current;
     GetAngularCurrent(current);
     return current;
+}
+
+bool Jaco2API::isStopped() const
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    return stopedAPI_;
 }

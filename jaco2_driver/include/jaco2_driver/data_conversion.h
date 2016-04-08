@@ -23,10 +23,10 @@ void convert(const AngularPosition &in, std::vector<double> &out)
     out[3] = in.Actuators.Actuator4;
     out[4] = in.Actuators.Actuator5;
     out[5] = in.Actuators.Actuator6;
-
-    out[6] = in.Fingers.Finger1;
-    out[7] = in.Fingers.Finger2;
-    out[8] = in.Fingers.Finger3;
+    //conversion encoder 2 degrees experimentaly determined
+    out[6] = 9.2028e-3*in.Fingers.Finger1;
+    out[7] = 9.2028e-3*in.Fingers.Finger2;
+    out[8] = 9.2028e-3*in.Fingers.Finger3;
 }
 
 void convert(const std::vector<double> &in, AngularPosition &out)
