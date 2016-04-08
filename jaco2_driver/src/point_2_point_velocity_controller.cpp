@@ -27,7 +27,6 @@ void Point2PointVelocityController::setTrajectory(const JointTrajectory& traject
     timeDiff_.resize(trajectory_.size());
     posDiff_.resize(trajectory_.size());
     timeDiff_[0] = 0;
-
     for(std::size_t i = 1; i < trajectory_.size() ; ++i) // All trajectory points except first (start)
     {
         double tDiff = trajectory_.getTimeFromStart(i) - trajectory_.getTimeFromStart(i-1);
@@ -42,16 +41,22 @@ void Point2PointVelocityController::setTrajectory(const JointTrajectory& traject
             double vn = trajectory_.getVelocity(i,j);
             paramsConst_[i][j]  = th0;
             paramsLinear_[i][j] = v0;
-            paramsSquare_[i][j] = 2.0/tDiff2*( 3.0*(thn-th0) - tDiff*(vn+2*v0));
+            paramsSquare_[i][j] = 2.0/tDiff2*( 3.0*(thn-th0) - tDiff*(vn+2.0*v0));
             paramsCube_[i][j] = 3.0/tDiff3*(-2.0*(thn-th0) + tDiff*(vn+v0));
         }
     }
     paramsConst_.push_back(paramsConst_.back());
     paramsLinear_.push_back(paramsLinear_.back());
     paramsSquare_.push_back(paramsSquare_.back());
+    for (std::size_t i = 0; i < eLast_.length_; ++i)
+    {
+        eLast_[i] = 0;
+        eSum_[i] = 0;
+    }
     done_ = false;
     current_point_ = 0;
     start_command_ = std::chrono::high_resolution_clock::now();
+
 }
 
 void Point2PointVelocityController::write()
@@ -206,11 +211,11 @@ ManipulatorInfo Point2PointVelocityController::diffTrajectoryPoint()
 void Point2PointVelocityController::setGainP(const ManipulatorInfo& gains)
 {
     gainP_ = gains;
-    for(std::size_t i = 0; i < gains.length_; ++i)
-    {
-        std::cout << gains[i] << " | ";
-    }
-    std::cout << std::endl;
+//    for(std::size_t i = 0; i < gains.length_; ++i)
+//    {
+//        std::cout << gains[i] << " | ";
+//    }
+//    std::cout << std::endl;
 }
 
 void Point2PointVelocityController::setGainI(const ManipulatorInfo &gains)

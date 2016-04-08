@@ -119,6 +119,30 @@ public:
         readCmd_ = (readCmd_ + 1) % 3;
     }
 
+    ///
+    /// \brief readPosVel reads position, velocity alternately
+    ///              Use this command carefully, otherwise blocking is possible.
+    ///
+
+    void readPosVel()
+    {
+
+        switch (readCmd_) {
+        case 0:
+        {
+            current_velocity_ = api_.getAngularVelocity();
+            break;
+        }
+        case 1:
+        {
+            current_position_ = api_.getAngularPosition();
+            break;
+        }
+        }
+
+        readCmd_ = (readCmd_ + 1) % 2;
+    }
+
 private:
     mutable std::recursive_mutex data_mutex_;
 

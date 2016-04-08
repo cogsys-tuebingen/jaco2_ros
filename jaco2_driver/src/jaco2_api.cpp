@@ -1,12 +1,14 @@
 #include <jaco2_driver/jaco2_api.h>
 #include <ros/console.h>
 
-Jaco2API::Jaco2API()
+Jaco2API::Jaco2API():
+    stopedAPI_(false)
 {
     commandLayer_handle = dlopen("Kinova.API.USBCommandLayerUbuntu.so",RTLD_NOW|RTLD_GLOBAL);
 
     InitAPI = (int (*)()) dlsym(commandLayer_handle,"InitAPI");
     CloseAPI = (int (*)()) dlsym(commandLayer_handle,"CloseAPI");
+    StartControlAPI = (int (*)()) dlsym(commandLayer_handle,"StartControlAPI");
     MoveHome = (int (*)()) dlsym(commandLayer_handle,"MoveHome");
     InitFingers = (int (*)()) dlsym(commandLayer_handle,"InitFingers");
     GetDevices = (int (*)(KinovaDevice devices[MAX_KINOVA_DEVICE], int &result)) dlsym(commandLayer_handle,"GetDevices");
@@ -43,7 +45,25 @@ int Jaco2API::init()
 
         result = (*InitAPI)();
 
-        std::cout << "Initialization's result :" << result << std::endl;
+        std::cout << "Initialization's result : " << result << std::endl;
+        if(result == 1015)
+        {
+            return ERROR_NOT_INITIALIZED;
+        }
+
+//        result = 1015;
+//        int count = 1;
+//        while(result != 1 && count < 4 && result == 1015)
+//        {
+//            result = (*InitAPI)();
+//            std::cout << "Initialization's result : " << result << " attempt : " << count << std::endl;
+//            if(result != 1){
+//                sleep(10);
+//            }
+//            ++count;
+//        }
+
+
 
         KinovaDevice list[MAX_KINOVA_DEVICE];
 
@@ -61,7 +81,7 @@ int Jaco2API::init()
 
             std::cout << "Initializing the fingers" << std::endl;
             result = InitFingers();
-            std::cout << "Initializing done." << std::endl;
+            std::cout << std::endl << "D R I V E R   R E A D Y" << std::endl << std::endl;
         }
     }
     return result;

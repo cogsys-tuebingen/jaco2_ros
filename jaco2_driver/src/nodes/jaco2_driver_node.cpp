@@ -18,7 +18,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     : private_nh_("~"),
       actionAngleServer_(private_nh_, "arm_joint_angles",false),
       trajServer_(private_nh_,"follow_joint_trajectory/manipulator",false),
-      gripperEffortServer_(private_nh_, "gripper_command", false),
+      graspServer_(private_nh_, "gripper_command", false),
       fingerServer_(private_nh_,"finger_joint_angles",false),
       actionAngleServerRunning_(false),
       trajServerRunning_(false),
@@ -29,11 +29,13 @@ Jaco2DriverNode::Jaco2DriverNode()
     pubJointAngles_ = private_nh_.advertise<jaco2_msgs::JointAngles>("out/joint_angles",2);
     pubFingerPositions_ = private_nh_.advertise<jaco2_msgs::FingerPosition>("out/finger_positions",2);
     boost::function<void(const jaco2_msgs::JointVelocityConstPtr&)> cb = boost::bind(&Jaco2DriverNode::jointVelocityCb, this, _1);
+    boost::function<void(const jaco2_msgs::FingerPositionConstPtr&)> cb_finger = boost::bind(&Jaco2DriverNode::fingerVelocityCb, this, _1);
     subJointVelocity_ = private_nh_.subscribe("in/joint_velocity", 10, cb);
+    subFingerVelocity_ = private_nh_.subscribe("in/finger_velocity", 10, cb_finger);
 
     actionAngleServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::actionAngleGoalCb, this));
     trajServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::trajGoalCb, this));
-    gripperEffortServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::gripperGoalCb, this));
+    graspServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::gripperGoalCb, this));
     fingerServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::fingerGoalCb,this));
 
     f_ = boost::bind(&Jaco2DriverNode::dynamicReconfigureCb, this, _1, _2);
@@ -58,7 +60,7 @@ Jaco2DriverNode::Jaco2DriverNode()
 
     actionAngleServer_.start();
     trajServer_.start();
-    gripperEffortServer_.start();
+    graspServer_.start();
     fingerServer_.start();
 
     //     j6o_ = controller_.getRobotType() == 2 ? 270.0 : 260.0;
@@ -99,9 +101,17 @@ void Jaco2DriverNode::trajGoalCb()
 
 void Jaco2DriverNode::gripperGoalCb()
 {
-    control_msgs::GripperCommandGoalConstPtr goal = gripperEffortServer_.acceptNewGoal();
+    jaco2_msgs::GripperControlGoalConstPtr goal = graspServer_.acceptNewGoal();
     gripperServerRunning_ = true;
-    controller_.setGripperEffort(goal->command.max_effort);
+    if(goal->useFinger1 && goal->useFinger2 && goal->useFinger3 || !goal->usePos)
+    {
+        controller_.grabObj(goal->useFinger1, goal->useFinger2, goal->useFinger3);
+    }
+    else
+    {
+        controller_.grabObjSetUnusedFingerPos(goal->useFinger1, goal->useFinger2, goal->useFinger3,
+                                              goal->posFinger1, goal->posFinger2, goal->posFinger3);
+    }
 }
 
 void Jaco2DriverNode::fingerGoalCb()
@@ -175,18 +185,20 @@ void Jaco2DriverNode::tick()
     }
     if(gripperServerRunning_)
     {
-//        control_msgs::GripperCommandFeedback feedback; // TODO
-        control_msgs::GripperCommandResult result;
+//        jaco2_msgs::GripperControlFeedback feedback; // TODO
+        jaco2_msgs::GripperControlResult result;
         if(controller_.reachedGoal())
         {
-            result.reached_goal = true;
-            gripperEffortServer_.setSucceeded(result);
+            result.val = jaco2_msgs::GripperControlResult::SUCCESSFUL;
+            gripperServerRunning_ = false;
+            graspServer_.setSucceeded(result);
             controller_.finish();
         }
-        else if(gripperEffortServer_.isPreemptRequested())
+        else if(graspServer_.isPreemptRequested())
         {
-            result.reached_goal = false;
-            gripperEffortServer_.setPreempted(result);
+            result.val = jaco2_msgs::GripperControlResult::PREEMPT;
+            gripperServerRunning_ = false;
+            graspServer_.setPreempted(result);
             controller_.finish();
         }
     }
@@ -202,12 +214,14 @@ void Jaco2DriverNode::tick()
         if(controller_.reachedGoal())
         {
             result.error_code = jaco2_msgs::SetFingersPositionResult::SUCCESS;
+            fingerServerRunning_ = false;
             fingerServer_.setSucceeded(result);
             controller_.finish();
         }
         else if(fingerServer_.isPreemptRequested())
         {
             result.error_code = jaco2_msgs::SetFingersPositionResult::PREMPTED;
+            fingerServerRunning_ = false;
             fingerServer_.setSucceeded(result);
             controller_.finish();
         }
@@ -241,9 +255,12 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
     controller_.setTrajectoryPGains(trajectoryGainsP);
     controller_.setTrajectoryIGains(trajectoryGainsI);
     controller_.setTrajectoryDGains(trajectoryGainsD);
-    controller_.setGripperPGain(config.gripper_p_gain_finger_1,config.gripper_p_gain_finger_2,config.gripper_p_gain_finger_3);
-    controller_.setGripperIGain(config.gripper_i_gain_finger_1,config.gripper_i_gain_finger_2,config.gripper_i_gain_finger_3);
-    controller_.setGripperDGain(config.gripper_d_gain_finger_1,config.gripper_d_gain_finger_2,config.gripper_d_gain_finger_3);
+    controller_.setGripperPGain(config.gripper_p_gain_finger_1,
+                                config.gripper_p_gain_finger_2,
+                                config.gripper_p_gain_finger_3);
+    controller_.setGripperFingerVelocity(config.gipper_controller_finger_vel_1,
+                                         config.gipper_controller_finger_vel_2,
+                                         config.gipper_controller_finger_vel_3);
 }
 
 void Jaco2DriverNode::jointVelocityCb(const jaco2_msgs::JointVelocityConstPtr& msg)
@@ -265,6 +282,27 @@ void Jaco2DriverNode::jointVelocityCb(const jaco2_msgs::JointVelocityConstPtr& m
     DataConversion::transformVelAndAcc(velocity);
 
     controller_.setAngularVelocity(velocity);
+
+    last_command_ = ros::Time::now();
+}
+
+void Jaco2DriverNode::fingerVelocityCb(const jaco2_msgs::FingerPositionConstPtr &msg)
+{
+    AngularPosition velocity;
+    velocity.InitStruct();
+
+    velocity.Actuators.Actuator1 = 0;
+    velocity.Actuators.Actuator2 = 0;
+    velocity.Actuators.Actuator3 = 0;
+    velocity.Actuators.Actuator4 = 0;
+    velocity.Actuators.Actuator5 = 0;
+    velocity.Actuators.Actuator6 = 0;
+
+    velocity.Fingers.Finger1 = msg->finger1;
+    velocity.Fingers.Finger2 = msg->finger2;
+    velocity.Fingers.Finger3 = msg->finger3;
+
+    controller_.setFingerVelocity(velocity);
 
     last_command_ = ros::Time::now();
 }

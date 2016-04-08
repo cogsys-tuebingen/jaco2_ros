@@ -64,6 +64,7 @@ add_service_files(
    FILES
    ArmJointAngles.action
    SetFingersPosition.action
+   GripperControl.action
 )
 
 generate_messages(

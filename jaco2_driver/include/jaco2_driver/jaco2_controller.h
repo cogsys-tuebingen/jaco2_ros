@@ -34,8 +34,8 @@ protected:
     }
 
 protected:
-    Jaco2API &api_;
     Jaco2State &state_;
+    Jaco2API &api_;
 };
 #endif // JACO2_CONTROLLER_H
 

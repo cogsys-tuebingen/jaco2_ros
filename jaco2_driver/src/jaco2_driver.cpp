@@ -115,7 +115,7 @@ void Jaco2Driver::tick()
 
     if(active_controller_) {
         active_controller_->read();
-        usleep(3000);
+        usleep(5000);
         if(active_controller_)
         {
             active_controller_->execute();
@@ -125,7 +125,7 @@ void Jaco2Driver::tick()
     else
     {
         empty_controller_.read();
-        usleep(3000);
+        usleep(5000);
     }
 }
 
@@ -185,8 +185,28 @@ void Jaco2Driver::setFingerPosition(const AngularPosition &position)
     active_controller_ = &position_controller_;
 }
 
-void Jaco2Driver::setGripperEffort(const double effort)
+void Jaco2Driver::setFingerVelocity(const AngularPosition &finger_velocity)
 {
-    gripper_controller_.setEffort(effort,effort,0.5*effort);
+    TrajectoryPoint tp;
+    tp.InitStruct();
+    tp.Position.Fingers = finger_velocity.Fingers;
+    velocity_controller_.setFingerPosition(tp);
+    active_controller_ = &velocity_controller_;
+}
+
+void Jaco2Driver::setGripperFingerVelocity(const int finger1, const int finger2, const int finger3)
+{
+    gripper_controller_.setFingerVelocity(finger1, finger2, finger3);
+}
+
+void Jaco2Driver::grabObj(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3)
+{
+    gripper_controller_.grabObj(useFinger1, useFinger2, useFinger3);
+    active_controller_ = &gripper_controller_;
+}
+
+void Jaco2Driver::grabObjSetUnusedFingerPos(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3, const int posFinger1, const int posFinger2, const int posFinger3)
+{
+    gripper_controller_.grabObjSetUnusedFingerPos(useFinger1, useFinger2, useFinger3, posFinger1, posFinger2, posFinger3);
     active_controller_ = &gripper_controller_;
 }

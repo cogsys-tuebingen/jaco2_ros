@@ -5,22 +5,47 @@ import rospy
 
 import actionlib
 
-import control_msgs.msg
+import jaco2_msgs.msg
 
 import sys
 
 
 def pose_client():
-    client = actionlib.SimpleActionClient('/jaco_arm_driver/gripper_command', control_msgs.msg.GripperCommandAction)
+    client = actionlib.SimpleActionClient('/jaco_arm_driver/gripper_command', jaco2_msgs.msg.GripperControlAction)
 
-    goal = control_msgs.msg.GripperCommandGoal()
+    goal = jaco2_msgs.msg.GripperControlGoal()
 
-    if len(sys.argv) < 2:
-        goal.command.max_effort = 0.5;
+    if len(sys.argv) < 4:
+        goal.useFinger1 = True
+        goal.useFinger2 = True
+        goal.useFinger3 = True
 
         rospy.logwarn("Using test goal: \n%s", goal)
     else:
-        goal.command.max_effort = float(sys.argv[1])
+        if int(sys.argv[1]) == 1:
+            goal.useFinger1 = True
+        else:
+            goal.useFinger1 = False
+
+        if int(sys.argv[2]) == 1:
+            goal.useFinger2 = True
+        else:
+            goal.useFinger2 = False
+
+        if int(sys.argv[3]) == 1:
+            goal.useFinger3 = True
+        else:
+            goal.useFinger3 = False
+
+        if int(sys.argv[4]) == 1:
+            goal.usePos = True
+        else:
+            goal.usePos = False
+
+        goal.posFinger1 = int(sys.argv[5])
+        goal.posFinger2 = int(sys.argv[6])
+        goal.posFinger3 = int(sys.argv[7])
+        rospy.loginfo("Using goal: \n%s", goal)
 
     client.wait_for_server()
     rospy.loginfo("Connected to Finger server")

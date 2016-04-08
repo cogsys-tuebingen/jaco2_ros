@@ -32,6 +32,7 @@ private:
 
     int (*InitAPI)();
     int (*CloseAPI)();
+    int (*StartControlAPI)();
     int (*SendBasicTrajectory)(TrajectoryPoint command);
     int (*GetDevices)(KinovaDevice devices[MAX_KINOVA_DEVICE], int &result);
     int (*SetActiveDevice)(KinovaDevice device);
@@ -49,6 +50,7 @@ private:
 
 private:
     mutable std::recursive_mutex mutex_;
+    bool stopedAPI_;
 };
 
 #endif // JACO2API_H

@@ -19,7 +19,26 @@ public:
     {
         tp_ = tp;
         tp_.Position.Type = ANGULAR_VELOCITY;
+        tp_.Position.HandMode = HAND_NOMOVEMENT;
 
+        last_command_ = std::time(nullptr);
+        done_ = false;
+    }
+
+    void setFingerPosition(const TrajectoryPoint& tp)
+    {
+
+        tp_.Position.Actuators.Actuator1 = 0;
+        tp_.Position.Actuators.Actuator2 = 0;
+        tp_.Position.Actuators.Actuator3 = 0;
+        tp_.Position.Actuators.Actuator4 = 0;
+        tp_.Position.Actuators.Actuator5 = 0;
+        tp_.Position.Actuators.Actuator6 = 0;
+
+        tp_.Position.Fingers = tp.Position.Fingers;
+        tp_.Position.Type = ANGULAR_VELOCITY;
+        tp_.Position.HandMode = VELOCITY_MODE;
+//        std::cout << tp_.Position .Fingers.Finger1 << ", " << tp_.Position.Fingers.Finger2 << ", " << tp_.Position.Fingers.Finger3 << std::endl;
         last_command_ = std::time(nullptr);
         done_ = false;
     }

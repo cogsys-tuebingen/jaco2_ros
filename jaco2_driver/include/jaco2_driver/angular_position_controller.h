@@ -62,7 +62,7 @@ private:
     bool reachedAngularGoal(const TrajectoryPoint &goal)
     {
         double thres = 1;
-        double Fthres = 10;
+        double Fthres = 15;
 
         auto current_position =  state_.getAngularPosition();
         if(!handMode_)

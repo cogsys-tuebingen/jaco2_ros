@@ -19,7 +19,7 @@
 #include <jaco2_driver/angular_position_controller.h>
 #include <jaco2_driver/velocity_controller.h>
 #include <jaco2_driver/point_2_point_velocity_controller.h>
-#include <jaco2_driver/gripper_pid_controller.h>
+#include <jaco2_driver/gripper_controller.h>
 
 class Jaco2Driver
 {
@@ -35,6 +35,7 @@ public:
     AngularPosition getCurrentTrajError() const;
     void setAngularPosition(const AngularPosition &position);
     void setAngularVelocity(const AngularPosition &velocity);
+    void setFingerVelocity(const AngularPosition &finger_velocity);
     void setFingerPosition(const AngularPosition & position);
     void setTrajectory(const JointTrajectory & trajectory);
     void stop();
@@ -42,10 +43,15 @@ public:
     void setTrajectoryPGains(const ManipulatorInfo& gains);
     void setTrajectoryIGains(const ManipulatorInfo& gains);
     void setTrajectoryDGains(const ManipulatorInfo& gains);
-    void setGripperEffort(const double effort);
+
     void setGripperPGain(const double finger1, const double finger2, const double finger3);
     void setGripperIGain(const double finger1, const double finger2, const double finger3);
     void setGripperDGain(const double finger1, const double finger2, const double finger3);
+    void setGripperFingerVelocity(const int finger1, const int finger2, const int finger3);
+
+    void grabObj(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3);
+    void grabObjSetUnusedFingerPos(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3, const int posFinger1, const int posFinger2, const int posFinger3);
+
 
     void finish();
 
@@ -62,7 +68,7 @@ private:
     AngularPositionController position_controller_;
     Point2PointVelocityController p2p_velocity_controller_;
     EmptyController empty_controller_;
-    GripperPIDController gripper_controller_;
+    GripperController gripper_controller_;
 
     std::vector<double> jointAngles_;
     std::vector<double> jointVelocities_;

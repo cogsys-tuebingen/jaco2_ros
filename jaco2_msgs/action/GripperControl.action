@@ -1,0 +1,24 @@
+# Goal
+# decide which finger you want to use for grasping
+bool useFinger1
+bool useFinger2
+bool useFinger3
+bool usePos
+#if a finger is not use for grasping you can choose a position instead
+int32 posFinger1
+int32 posFinger2
+int32 posFinger3
+---
+# Result
+int16 val
+int16 SUCCESSFUL=1
+int16 FAILURE=-1
+int16 PREEMPT=-2
+---
+# Feedback
+int32 posFinger1
+int32 posFinger2
+int32 posFinger3
+int32 velFinger1
+int32 velFinger2
+int32 velFinger3

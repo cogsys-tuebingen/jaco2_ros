@@ -16,6 +16,7 @@
 //JACO2 MSGS
 #include <jaco2_msgs/ArmJointAnglesAction.h>
 #include <jaco2_msgs/SetFingersPositionAction.h>
+#include <jaco2_msgs/GripperControlAction.h>
 
 
 class Jaco2DriverNode
@@ -30,6 +31,7 @@ public:
 
 private:
     void jointVelocityCb(const jaco2_msgs::JointVelocityConstPtr& msg);
+    void fingerVelocityCb(const jaco2_msgs::FingerPositionConstPtr &msg);
     void publishJointState();
     void publishJointAngles();
     void actionAngleGoalCb();
@@ -46,13 +48,14 @@ private:
     Jaco2Driver controller_;
 
     ros::Subscriber subJointVelocity_;
+    ros::Subscriber subFingerVelocity_;
     ros::Publisher pubJointState_;
     ros::Publisher pubJointAngles_;
     ros::Publisher pubFingerPositions_;
 
     actionlib::SimpleActionServer<jaco2_msgs::ArmJointAnglesAction> actionAngleServer_;
     actionlib::SimpleActionServer<control_msgs::FollowJointTrajectoryAction> trajServer_;
-    actionlib::SimpleActionServer<control_msgs::GripperCommandAction> gripperEffortServer_;
+    actionlib::SimpleActionServer<jaco2_msgs::GripperControlAction> graspServer_;
     actionlib::SimpleActionServer<jaco2_msgs::SetFingersPositionAction> fingerServer_;
 
 
