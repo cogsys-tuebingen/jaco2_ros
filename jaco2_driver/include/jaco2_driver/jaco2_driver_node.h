@@ -17,6 +17,9 @@
 #include <jaco2_msgs/ArmJointAnglesAction.h>
 #include <jaco2_msgs/SetFingersPositionAction.h>
 #include <jaco2_msgs/GripperControlAction.h>
+#include <jaco2_msgs/Start.h>
+#include <jaco2_msgs/Stop.h>
+#include <jaco2_msgs/HomeArm.h>
 
 
 class Jaco2DriverNode
@@ -39,6 +42,10 @@ private:
     void gripperGoalCb();
     void fingerGoalCb();
 
+    bool stopServiceCallback(jaco2_msgs::Stop::Request &req, jaco2_msgs::Stop::Response &res);
+    bool startServiceCallback(jaco2_msgs::Start::Request &req, jaco2_msgs::Start::Response &res);
+    bool homeArmServiceCallback(jaco2_msgs::HomeArm::Request &req, jaco2_msgs::HomeArm::Response &res);
+
     void dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureConfig &config, uint32_t level);
 private:
     ros::NodeHandle nh_;
@@ -49,9 +56,14 @@ private:
 
     ros::Subscriber subJointVelocity_;
     ros::Subscriber subFingerVelocity_;
+
     ros::Publisher pubJointState_;
     ros::Publisher pubJointAngles_;
     ros::Publisher pubFingerPositions_;
+
+    ros::ServiceServer stopService_;
+    ros::ServiceServer startService_;
+    ros::ServiceServer homingService_;
 
     actionlib::SimpleActionServer<jaco2_msgs::ArmJointAnglesAction> actionAngleServer_;
     actionlib::SimpleActionServer<control_msgs::FollowJointTrajectoryAction> trajServer_;

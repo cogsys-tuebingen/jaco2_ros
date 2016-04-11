@@ -52,6 +52,9 @@ public:
     void grabObj(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3);
     void grabObjSetUnusedFingerPos(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3, const int posFinger1, const int posFinger2, const int posFinger3);
 
+    void startArm();
+    void stopArm();
+    void homeArm();
 
     void finish();
 
@@ -78,6 +81,7 @@ private:
 
     void getJointValues();
     void tick();
+    void executeLater(std::function<void()> fn);
 
 private:
     std::thread spinner_;
@@ -86,7 +90,9 @@ private:
 
     Jaco2State state_;
 
-
+    std::vector<std::function<void()>> commands_;
+    mutable std::recursive_mutex commands_mutex_;
+    bool paused_;
 
 };
 

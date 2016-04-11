@@ -23,6 +23,10 @@ Jaco2API::Jaco2API():
     GetQuickStatus = (int (*)(QuickStatus &)) dlsym(commandLayer_handle,"GetQuickStatus");
     GetAngularCurrent = (int (*)(AngularPosition &)) dlsym(commandLayer_handle,"GetAngularCurrent");
     EraseAllTrajectories = (int (*)()) dlsym(commandLayer_handle,"EraseAllTrajectories");
+    GetActuatorAcceleration = (int (*)(AngularAcceleration &)) dlsym(commandLayer_handle,"GetActuatorAcceleration");
+    GetAngularForceGravityFree = (int (*)(AngularPosition &)) dlsym(commandLayer_handle,"GetAngularForceGravityFree");
+    SetAngularControl = (int (*)()) dlsym(commandLayer_handle,"SetAngularControl");
+    SetCartesianControl = (int (*)()) dlsym(commandLayer_handle,"SetCartesianControl");
 
 }
 
@@ -193,4 +197,16 @@ bool Jaco2API::isStopped() const
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     return stopedAPI_;
+}
+
+void Jaco2API::moveHome()
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    MoveHome();
+}
+
+void Jaco2API::initFingers()
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    InitFingers();
 }

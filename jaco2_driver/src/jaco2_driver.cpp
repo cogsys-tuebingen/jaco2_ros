@@ -9,7 +9,8 @@ Jaco2Driver::Jaco2Driver():
     velocity_controller_(state_, jaco_api_),
     p2p_velocity_controller_(state_,jaco_api_),
     empty_controller_(state_,jaco_api_),
-    gripper_controller_(state_,jaco_api_)
+    gripper_controller_(state_,jaco_api_),
+    paused_(false)
 {
     ROS_INFO_STREAM("create jaco 2 driver");
     int result = jaco_api_.init();
@@ -107,15 +108,47 @@ void Jaco2Driver::stopMovement()
     velocity_controller_.setVelocity(tp);
     active_controller_ = &velocity_controller_;
 }
+void Jaco2Driver::stopArm()
+{
+    executeLater([this](){
+        jaco_api_.stopAPI();
+        paused_ = true;
+        usleep(5000);
+    });
+}
+
+void Jaco2Driver::startArm()
+{
+    executeLater([this](){
+        jaco_api_.startAPI();
+        paused_ = false;
+        usleep(5000);
+    });
+}
+
+void Jaco2Driver::homeArm()
+{
+    executeLater([this](){
+        paused_ = true;
+        jaco_api_.moveHome();
+        usleep(5000);
+        jaco_api_.initFingers();
+        usleep(10000);
+        paused_ = false;
+    });
+}
+
+void Jaco2Driver::executeLater(std::function<void ()> fn)
+{
+    std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
+    commands_.emplace_back(fn);
+}
 
 void Jaco2Driver::tick()
 {
-    //    state_.read();
-    //    usleep(3000);
-
-    if(active_controller_) {
+    if(active_controller_ && !paused_) {
         active_controller_->read();
-        usleep(5000);
+        usleep(4000);
         if(active_controller_)
         {
             active_controller_->execute();
@@ -126,6 +159,14 @@ void Jaco2Driver::tick()
     {
         empty_controller_.read();
         usleep(5000);
+    }
+
+    std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
+    auto commands = commands_;
+    commands_.clear();
+    lock.unlock();
+    for(auto fn : commands) {
+        fn();
     }
 }
 

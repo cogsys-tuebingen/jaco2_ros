@@ -4,6 +4,7 @@
 #include <jaco2_driver/data_conversion.h>
 #include <jaco2_msgs/FingerPosition.h>
 
+
 namespace {
 bool g_running_ = true;
 /// \brief Proper shutdown using control c.
@@ -32,6 +33,10 @@ Jaco2DriverNode::Jaco2DriverNode()
     boost::function<void(const jaco2_msgs::FingerPositionConstPtr&)> cb_finger = boost::bind(&Jaco2DriverNode::fingerVelocityCb, this, _1);
     subJointVelocity_ = private_nh_.subscribe("in/joint_velocity", 10, cb);
     subFingerVelocity_ = private_nh_.subscribe("in/finger_velocity", 10, cb_finger);
+
+    stopService_ = private_nh_.advertiseService("in/stop", &Jaco2DriverNode::stopServiceCallback, this);
+    startService_ = private_nh_.advertiseService("in/start", &Jaco2DriverNode::startServiceCallback, this);
+    homingService_ = private_nh_.advertiseService("in/home_arm", &Jaco2DriverNode::homeArmServiceCallback, this);
 
     actionAngleServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::actionAngleGoalCb, this));
     trajServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::trajGoalCb, this));
@@ -349,6 +354,30 @@ void Jaco2DriverNode::publishJointAngles()
     jointAngleMsg_.joint6 = pos.Actuators.Actuator6;
 
     pubJointAngles_.publish(jointAngleMsg_);
+}
+
+bool Jaco2DriverNode::startServiceCallback(jaco2_msgs::Start::Request &req, jaco2_msgs::Start::Response &res)
+{
+    controller_.startArm();
+    res.start_result = "Arm started";
+    ROS_DEBUG("Arm stop requested");
+    return true;
+}
+
+bool Jaco2DriverNode::stopServiceCallback(jaco2_msgs::Stop::Request &req, jaco2_msgs::Stop::Response &res)
+{
+    controller_.stopArm();
+    res.stop_result = "Arm stopped";
+    ROS_DEBUG("Arm stop requested");
+    return true;
+}
+
+bool Jaco2DriverNode::homeArmServiceCallback(jaco2_msgs::HomeArm::Request &req, jaco2_msgs::HomeArm::Response &res)
+{
+
+        controller_.homeArm();
+        res.homearm_result = "JACO ARM HAS BEEN RETURNED HOME";
+        return true;
 }
 
 int main(int argc, char *argv[])

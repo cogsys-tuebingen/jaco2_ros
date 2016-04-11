@@ -30,6 +30,7 @@ public:
     void startAPI();
     void stopAPI();
     void moveHome();
+    void initFingers();
 
 private:
     void * commandLayer_handle;
@@ -51,6 +52,10 @@ private:
     int (*GetQuickStatus)(QuickStatus &Response);
     int (*GetAngularCurrent)(AngularPosition &);
     int (*EraseAllTrajectories)();
+    int (*GetActuatorAcceleration)(AngularAcceleration &);
+    int (*GetAngularForceGravityFree)(AngularPosition &);
+    int (*SetAngularControl)();
+    int (*SetCartesianControl)();
 
 
 
