@@ -67,19 +67,20 @@ private:
         auto current_position =  state_.getAngularPosition();
         if(!handMode_)
         {
-        double diff1 = fabs(current_position.Actuators.Actuator1 - goal.Position.Actuators.Actuator1);
-        double diff2 = fabs(current_position.Actuators.Actuator2 - goal.Position.Actuators.Actuator2);
-        double diff3 = fabs(current_position.Actuators.Actuator3 - goal.Position.Actuators.Actuator3);
-        double diff4 = fabs(current_position.Actuators.Actuator4 - goal.Position.Actuators.Actuator4);
-        double diff5 = fabs(current_position.Actuators.Actuator5 - goal.Position.Actuators.Actuator5);
-        double diff6 = fabs(current_position.Actuators.Actuator6 - goal.Position.Actuators.Actuator6);
-        double diffF1 = fabs(current_position.Fingers.Finger1 -goal.Position.Fingers.Finger1);
-        double diffF2 = fabs(current_position.Fingers.Finger2 -goal.Position.Fingers.Finger2);
-        double diffF3 = fabs(current_position.Fingers.Finger3 -goal.Position.Fingers.Finger3);
+            double diff1 = fabs(current_position.Actuators.Actuator1 - goal.Position.Actuators.Actuator1);
+            double diff2 = fabs(current_position.Actuators.Actuator2 - goal.Position.Actuators.Actuator2);
+            double diff3 = fabs(current_position.Actuators.Actuator3 - goal.Position.Actuators.Actuator3);
+            double diff4 = fabs(current_position.Actuators.Actuator4 - goal.Position.Actuators.Actuator4);
+            double diff5 = fabs(current_position.Actuators.Actuator5 - goal.Position.Actuators.Actuator5);
+            double diff6 = fabs(current_position.Actuators.Actuator6 - goal.Position.Actuators.Actuator6);
 
-        return (diff1 < thres) && (diff2 < thres) && (diff3 < thres) && (diff4 < thres) &&
-                (diff5 < thres) && (diff6 < thres) && (diffF1 < thres) && (diffF2 < thres) &&
-                (diffF3 < thres);
+//            double diffF1 = fabs(current_position.Fingers.Finger1 -goal.Position.Fingers.Finger1);
+//            double diffF2 = fabs(current_position.Fingers.Finger2 -goal.Position.Fingers.Finger2);
+//            double diffF3 = fabs(current_position.Fingers.Finger3 -goal.Position.Fingers.Finger3);
+
+            return (diff1 < thres) && (diff2 < thres) && (diff3 < thres) && (diff4 < thres) &&
+                    (diff5 < thres) && (diff6 < thres); //&& (diffF1 < thres) && (diffF2 < thres) &&
+//                    (diffF3 < thres);
         }
         else
         {

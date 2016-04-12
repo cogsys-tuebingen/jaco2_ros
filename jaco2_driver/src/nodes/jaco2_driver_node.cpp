@@ -80,7 +80,8 @@ void Jaco2DriverNode::actionAngleGoalCb()
     AngularPosition currentPos = controller_.getAngularPosition();
 
     position.Fingers = currentPos.Fingers;
-    DataConversion::shiftAngleDriver(position);
+//    DataConversion::shiftAngleDriver(position);
+    DataConversion::to_degrees(position);
     actionAngleServerRunning_ = true;
     controller_.setAngularPosition(position);
 }
@@ -92,9 +93,9 @@ void Jaco2DriverNode::trajGoalCb()
 
     for(std::size_t i = 0; i < traj_msgs.points.size(); ++ i)
     {
-        DataConversion::shiftAngleDriverToDegrees(traj_msgs.points[i].positions);
-        DataConversion::transformVelAndAccToDegrees(traj_msgs.points[i].velocities);
-        DataConversion::transformVelAndAccToDegrees(traj_msgs.points[i].accelerations);
+        DataConversion::to_degrees(traj_msgs.points[i].positions);
+        DataConversion::to_degrees(traj_msgs.points[i].velocities);
+        DataConversion::to_degrees(traj_msgs.points[i].accelerations);
     }
 
     JointTrajectory driver_trajectory;
@@ -284,7 +285,7 @@ void Jaco2DriverNode::jointVelocityCb(const jaco2_msgs::JointVelocityConstPtr& m
     velocity.Fingers.Finger2 = 0;
     velocity.Fingers.Finger3 = 0;
 
-    DataConversion::transformVelAndAcc(velocity);
+    DataConversion::to_degrees(velocity);
 
     controller_.setAngularVelocity(velocity);
 
@@ -324,8 +325,8 @@ void Jaco2DriverNode::publishJointState()
     DataConversion::convert(controller_.getAngularPosition(),jointStateMsg_.position);
     DataConversion::convert(controller_.getAngularForce(), jointStateMsg_.effort);
 
-    DataConversion::shiftAngleToROSRadians(jointStateMsg_.position);
-    DataConversion::transformVelAndAccToRadian(jointStateMsg_.velocity);
+    DataConversion::from_degrees(jointStateMsg_.position);
+    DataConversion::from_degrees(jointStateMsg_.velocity);
 
     jointStateMsg_.header.stamp = ros::Time::now();
     pubJointState_.publish(jointStateMsg_);
@@ -344,7 +345,8 @@ void Jaco2DriverNode::publishJointAngles()
 
     AngularPosition pos = controller_.getAngularPosition();
 
-    DataConversion::shiftAngleToROS(pos);
+
+//    DataConversion::from_degrees(pos);
 
     jointAngleMsg_.joint1 = pos.Actuators.Actuator1;
     jointAngleMsg_.joint2 = pos.Actuators.Actuator2;

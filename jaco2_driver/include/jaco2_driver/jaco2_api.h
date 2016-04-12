@@ -52,8 +52,7 @@ private:
     int (*GetQuickStatus)(QuickStatus &Response);
     int (*GetAngularCurrent)(AngularPosition &);
     int (*EraseAllTrajectories)();
-    int (*GetActuatorAcceleration)(AngularAcceleration &);
-    int (*GetAngularForceGravityFree)(AngularPosition &);
+    int (*GetActuatorAcceleration)(AngularAcceleration & Response);
     int (*SetAngularControl)();
     int (*SetCartesianControl)();
 
