@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<launch>
+  <remap from="/joint_states" to="/jaco_arm_driver/out/joint_states"/>
+ <!--# The planning and execution components of MoveIt! configured to 
+ # publish the current configuration of the robot (simulated or real)
+ # and the current state of the world as seen by the planner-->
+ <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
+  <include file="$(find jaco2_moveit_config)/launch/planning_context.launch">
+    <arg name="load_robot_description" value="true"/>
+  </include>
+
+<!-- Given the published joint states, publish tf for the robot links -->
+<node name="jaco_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen">
+   </node>
+ <include file="$(find jaco2_moveit_config)/launch/move_group.launch">
+  <arg name="publish_monitored_planning_scene" value="true" />
+    <arg name="allow_trajectory_execution" value="true"/>
+    <arg name="fake_execution" value="false"/>
+    <arg name="info" value="true"/>
+    <arg name="debug" value="false" />
+ </include>
+ <!--# The visualization component of MoveIt!-->
+ <!--<include file="$(find jaco_scitos_moveit_config)/launch/moveit_rviz.launch"/>-->
+</launch>
