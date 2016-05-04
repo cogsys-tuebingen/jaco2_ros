@@ -3,14 +3,16 @@
 //System
 #include <vector>
 #include <stdexcept>
+#include <chrono>
 //ROS
 #include <trajectory_msgs/JointTrajectory.h>
 #include <angles/angles.h>
-
+#include <geometry_msgs/Vector3Stamped.h>
 //Kinova
 #include <kinova/KinovaTypes.h>
 #include <jaco2_msgs/JointAngles.h>
 #include "joint_trajectory.h"
+
 
 namespace DataConversion {
 
@@ -140,6 +142,58 @@ void to_degrees(AngularPosition &values)
     values.Fingers.Finger1 = angles::to_degrees(values.Fingers.Finger1);
     values.Fingers.Finger2 = angles::to_degrees(values.Fingers.Finger2);
     values.Fingers.Finger3 = angles::to_degrees(values.Fingers.Finger3);
+}
+
+void convert(const AngularAcceleration & in, const std::chrono::time_point<std::chrono::high_resolution_clock>& stamp,  std::vector<geometry_msgs::Vector3Stamped>& out )
+{
+    geometry_msgs::Vector3Stamped accMsg;
+    accMsg.header.stamp.fromNSec(std::chrono::duration_cast<std::chrono::nanoseconds>(stamp.time_since_epoch()).count());
+    accMsg.vector.x = in.Actuator1_X;
+    accMsg.vector.y = in.Actuator1_Y;
+    accMsg.vector.z = in.Actuator1_Z;
+    accMsg.header.frame_id = "accelerometer_1";
+    out[0] = accMsg;
+    accMsg.vector.x = in.Actuator2_X;
+    accMsg.vector.y = in.Actuator2_Y;
+    accMsg.vector.z = in.Actuator2_Z;
+    accMsg.header.frame_id = "accelerometer_2";
+    out[1] = accMsg;
+    accMsg.vector.x = in.Actuator3_X;
+    accMsg.vector.y = in.Actuator3_Y;
+    accMsg.vector.z = in.Actuator3_Z;
+    accMsg.header.frame_id = "accelerometer_3";
+    out[2] = accMsg;
+    accMsg.vector.x = in.Actuator4_X;
+    accMsg.vector.y = in.Actuator4_Y;
+    accMsg.vector.z = in.Actuator4_Z;
+    accMsg.header.frame_id = "accelerometer_4";
+    out[3] = accMsg;
+    accMsg.vector.x = in.Actuator5_X;
+    accMsg.vector.y = in.Actuator5_Y;
+    accMsg.vector.z = in.Actuator5_Z;
+    accMsg.header.frame_id = "accelerometer_5";
+    out[4] = accMsg;
+    accMsg.vector.x = in.Actuator6_X;
+    accMsg.vector.y = in.Actuator6_Y;
+    accMsg.vector.z = in.Actuator6_Z;
+    accMsg.header.frame_id = "accelerometer_6";
+    out[5] = accMsg;
+}
+
+void convert(const AngularInfo& in, std::vector<double>& out)
+{
+    out.resize(6);
+    out[0] = in.Actuator1;
+    out[1] = in.Actuator2;
+    out[2] = in.Actuator3;
+    out[3] = in.Actuator4;
+    out[4] = in.Actuator5;
+    out[5] = in.Actuator6;
+}
+
+void convert(const std::chrono::time_point<std::chrono::high_resolution_clock>& stamp_in, ros::Time& stamp_out)
+{
+   stamp_out.fromNSec(std::chrono::duration_cast<std::chrono::nanoseconds>(stamp_in.time_since_epoch()).count());
 }
 
 }

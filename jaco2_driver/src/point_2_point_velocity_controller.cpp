@@ -101,6 +101,14 @@ void Point2PointVelocityController::write()
                 std::cout << diff[i] << " | ";
             }
             std::cout << std::endl;
+            ManipulatorInfo vmax;
+            ManipulatorInfo::max(paramsLinear_,vmax);
+            std::cout << "max velocity : " ;
+            for(std::size_t i = 0; i < vmax.length_; ++i)
+            {
+                std::cout << vmax[i] << " | ";
+            }
+            std::cout << std::endl;
             return;
         }
     }

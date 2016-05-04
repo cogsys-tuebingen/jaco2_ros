@@ -100,6 +100,7 @@ include_directories(
    src/jaco2_api.cpp
    src/point_2_point_velocity_controller.cpp
    src/gripper_controller.cpp
+   src/jaco2_state.cpp
    include/jaco2_driver/data_conversion.h
    include/jaco2_driver/joint_trajectory.h
    include/jaco2_driver/angular_position_controller.h

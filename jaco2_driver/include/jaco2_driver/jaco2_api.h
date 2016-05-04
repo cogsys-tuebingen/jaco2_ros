@@ -25,6 +25,8 @@ public:
     AngularPosition getAngularForce() const;
     AngularPosition getAngularForceGravityFree() const;
     AngularPosition getAngularCurrent() const;
+    AngularAcceleration getActuatorAcceleration() const;
+    SensorsInfo getSensorInfo() const;
     void setAngularVelocity(const TrajectoryPoint &velocity);
     void setAngularPosition(const TrajectoryPoint &position);
     void startAPI();
@@ -55,6 +57,7 @@ private:
     int (*GetActuatorAcceleration)(AngularAcceleration & Response);
     int (*SetAngularControl)();
     int (*SetCartesianControl)();
+    int (*GetSensorsInfo)(SensorsInfo &);
 
 
 

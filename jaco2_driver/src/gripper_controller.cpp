@@ -15,6 +15,7 @@ GripperController::GripperController(Jaco2State &state, Jaco2API& api)
     for(std::size_t i = 0; i < 3; ++i){
         fingerVelocity_[i] = 2000;
     }
+
 }
 
 bool GripperController::isDone() const

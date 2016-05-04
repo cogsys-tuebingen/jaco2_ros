@@ -3,6 +3,7 @@
 #include <control_msgs/FollowJointTrajectoryAction.h>
 #include <jaco2_driver/data_conversion.h>
 #include <jaco2_msgs/FingerPosition.h>
+#include <jaco2_msgs/Jaco2Sensor.h>
 
 
 namespace {
@@ -29,6 +30,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     pubJointState_ = private_nh_.advertise<sensor_msgs::JointState>("out/joint_states", 2);
     pubJointAngles_ = private_nh_.advertise<jaco2_msgs::JointAngles>("out/joint_angles",2);
     pubFingerPositions_ = private_nh_.advertise<jaco2_msgs::FingerPosition>("out/finger_positions",2);
+    pubSensorInfo_ = private_nh_.advertise<jaco2_msgs::Jaco2Sensor>("out/sensor_info",2);
     boost::function<void(const jaco2_msgs::JointVelocityConstPtr&)> cb = boost::bind(&Jaco2DriverNode::jointVelocityCb, this, _1);
     boost::function<void(const jaco2_msgs::FingerPositionConstPtr&)> cb_finger = boost::bind(&Jaco2DriverNode::fingerVelocityCb, this, _1);
     subJointVelocity_ = private_nh_.subscribe("in/joint_velocity", 10, cb);
@@ -52,7 +54,6 @@ Jaco2DriverNode::Jaco2DriverNode()
     jointStateMsg_.position.resize(JACO_JOINTS_COUNT);
     jointStateMsg_.velocity.resize(JACO_JOINTS_COUNT);
     jointStateMsg_.effort.resize(JACO_JOINTS_COUNT);
-
     jointStateMsg_.name[0] = tf_prefix_ + "joint_1";
     jointStateMsg_.name[1] = tf_prefix_ + "joint_2";
     jointStateMsg_.name[2] = tf_prefix_ + "joint_3";
@@ -63,12 +64,22 @@ Jaco2DriverNode::Jaco2DriverNode()
     jointStateMsg_.name[7] = tf_prefix_ + "joint_finger_2";
     jointStateMsg_.name[8] = tf_prefix_ + "joint_finger_3";
 
+    sensorMsg_.name.resize(6);
+    sensorMsg_.acceleration.resize(6);
+    sensorMsg_.temperature.resize(6);
+    sensorMsg_.torque.resize(6);
+    sensorMsg_.current.resize(6);
+    sensorMsg_.name[0] = tf_prefix_ + "joint_1";
+    sensorMsg_.name[1] = tf_prefix_ + "joint_2";
+    sensorMsg_.name[2] = tf_prefix_ + "joint_3";
+    sensorMsg_.name[3] = tf_prefix_ + "joint_4";
+    sensorMsg_.name[4] = tf_prefix_ + "joint_5";
+    sensorMsg_.name[5] = tf_prefix_ + "joint_6";
+
     actionAngleServer_.start();
     trajServer_.start();
     graspServer_.start();
     fingerServer_.start();
-
-    //     j6o_ = controller_.getRobotType() == 2 ? 270.0 : 260.0;
 }
 
 
@@ -139,6 +150,7 @@ void Jaco2DriverNode::tick()
     }
     publishJointState();
     publishJointAngles();
+    publishSensorInfo();
     if(actionAngleServerRunning_)
     {
         jaco2_msgs::ArmJointAnglesFeedback feedback;
@@ -345,7 +357,6 @@ void Jaco2DriverNode::publishJointAngles()
 
     AngularPosition pos = controller_.getAngularPosition();
 
-
 //    DataConversion::from_degrees(pos);
 
     jointAngleMsg_.joint1 = pos.Actuators.Actuator1;
@@ -356,6 +367,32 @@ void Jaco2DriverNode::publishJointAngles()
     jointAngleMsg_.joint6 = pos.Actuators.Actuator6;
 
     pubJointAngles_.publish(jointAngleMsg_);
+}
+
+void Jaco2DriverNode::publishSensorInfo()
+{
+    AngularAcceleration acc = controller_.getActuatorAcceleration();
+    std::chrono::time_point<std::chrono::high_resolution_clock>  stamp = controller_.getLastReadUpdate(READ_ACCELRATION);
+    DataConversion::convert(acc,stamp,sensorMsg_.acceleration);
+    stamp = controller_.getLastReadUpdate(READ_TORQUE_GRAVITY_FREE);
+    AngularPosition torque = controller_.getAngularForceGravityFree();
+    DataConversion::convert(torque.Actuators,sensorMsg_.torque);
+    DataConversion::convert(stamp,sensorMsg_.torque_time);
+    SensorsInfo info = controller_.getSensorInfo();
+    stamp = controller_.getLastReadUpdate(READ_SENSOR_INFO);
+    DataConversion::convert(stamp,sensorMsg_.temperature_time);
+    sensorMsg_.temperature[0] = info.ActuatorTemp1;
+    sensorMsg_.temperature[1] = info.ActuatorTemp2;
+    sensorMsg_.temperature[2] = info.ActuatorTemp3;
+    sensorMsg_.temperature[3] = info.ActuatorTemp4;
+    sensorMsg_.temperature[4] = info.ActuatorTemp5;
+    sensorMsg_.temperature[5] = info.ActuatorTemp6;
+    AngularPosition current = controller_.getCurrent();
+    stamp = controller_.getLastReadUpdate(READ_CURRENT);
+    DataConversion::convert(stamp,sensorMsg_.current_time);
+    DataConversion::convert(current.Actuators,sensorMsg_.current);
+
+    pubSensorInfo_.publish(sensorMsg_);
 }
 
 bool Jaco2DriverNode::startServiceCallback(jaco2_msgs::Start::Request &req, jaco2_msgs::Start::Response &res)

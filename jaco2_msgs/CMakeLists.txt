@@ -47,7 +47,7 @@ add_message_files(
    JointVelocity.msg
    JointAngles.msg
    FingerPosition.msg
-
+   Jaco2Sensor.msg
 )
 
 ## Generate services in the 'srv' folder

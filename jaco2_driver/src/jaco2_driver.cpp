@@ -251,3 +251,38 @@ void Jaco2Driver::grabObjSetUnusedFingerPos(const bool &useFinger1, const bool &
     gripper_controller_.grabObjSetUnusedFingerPos(useFinger1, useFinger2, useFinger3, posFinger1, posFinger2, posFinger3);
     active_controller_ = &gripper_controller_;
 }
+
+void Jaco2Driver::setStatePriorityRatio(const int r)
+{
+    state_.setPriorityRate(r);
+}
+
+std::chrono::time_point<std::chrono::high_resolution_clock> Jaco2Driver::getLastReadUpdate(int read_data) const
+{
+    return state_.getLastUpdate(read_data);
+}
+
+AngularPosition Jaco2Driver::getCurrent() const
+{
+    return state_.getAngularCurrent();
+}
+
+AngularPosition Jaco2Driver::getAngularForceGravityFree() const
+{
+    return state_.getTorqueGFree();
+}
+
+AngularAcceleration Jaco2Driver::getActuatorAcceleration() const
+{
+    return state_.getAngularAcceleration();
+}
+
+QuickStatus Jaco2Driver::getQuickStatus() const
+{
+    return state_.getQuickStatus();
+}
+
+SensorsInfo Jaco2Driver::getSensorInfo() const
+{
+    return state_.getSensorInfo();
+}

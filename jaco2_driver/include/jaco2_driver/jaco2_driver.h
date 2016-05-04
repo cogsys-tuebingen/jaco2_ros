@@ -8,6 +8,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 //Jaco2
+#include <kinova/KinovaTypes.h>
 #include <jaco2_msgs/JointVelocity.h>
 #include <jaco2_driver/jaco2_api.h>
 #include <jaco2_driver/jaco2_controller.h>
@@ -28,11 +29,18 @@ public:
     ~Jaco2Driver();
 
     bool reachedGoal() const;
-
+    // GET
     AngularPosition getAngularPosition() const;
     AngularPosition getAngularVelocity() const;
     AngularPosition getAngularForce() const;
     AngularPosition getCurrentTrajError() const;
+    AngularPosition getAngularForceGravityFree() const;
+    AngularPosition getCurrent() const;
+    AngularAcceleration getActuatorAcceleration() const;
+    QuickStatus getQuickStatus() const;
+    SensorsInfo getSensorInfo() const;
+    std::chrono::time_point<std::chrono::high_resolution_clock> getLastReadUpdate(int read_data) const;
+    //SET
     void setAngularPosition(const AngularPosition &position);
     void setAngularVelocity(const AngularPosition &velocity);
     void setFingerVelocity(const AngularPosition &finger_velocity);
@@ -43,6 +51,7 @@ public:
     void setTrajectoryPGains(const ManipulatorInfo& gains);
     void setTrajectoryIGains(const ManipulatorInfo& gains);
     void setTrajectoryDGains(const ManipulatorInfo& gains);
+    void setStatePriorityRatio(const int r);
 
     void setGripperPGain(const double finger1, const double finger2, const double finger3);
     void setGripperIGain(const double finger1, const double finger2, const double finger3);

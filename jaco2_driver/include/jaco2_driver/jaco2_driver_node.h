@@ -20,6 +20,7 @@
 #include <jaco2_msgs/Start.h>
 #include <jaco2_msgs/Stop.h>
 #include <jaco2_msgs/HomeArm.h>
+#include <jaco2_msgs/Jaco2Sensor.h>
 
 
 class Jaco2DriverNode
@@ -37,6 +38,7 @@ private:
     void fingerVelocityCb(const jaco2_msgs::FingerPositionConstPtr &msg);
     void publishJointState();
     void publishJointAngles();
+    void publishSensorInfo();
     void actionAngleGoalCb();
     void trajGoalCb();
     void gripperGoalCb();
@@ -47,6 +49,7 @@ private:
     bool homeArmServiceCallback(jaco2_msgs::HomeArm::Request &req, jaco2_msgs::HomeArm::Response &res);
 
     void dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureConfig &config, uint32_t level);
+
 private:
     ros::NodeHandle nh_;
 
@@ -60,6 +63,7 @@ private:
     ros::Publisher pubJointState_;
     ros::Publisher pubJointAngles_;
     ros::Publisher pubFingerPositions_;
+    ros::Publisher pubSensorInfo_;
 
     ros::ServiceServer stopService_;
     ros::ServiceServer startService_;
@@ -76,6 +80,7 @@ private:
     std::string tf_prefix_;
     sensor_msgs::JointState jointStateMsg_;
     jaco2_msgs::JointAngles jointAngleMsg_;
+    jaco2_msgs::Jaco2Sensor sensorMsg_;
 
     bool actionAngleServerRunning_;
     bool trajServerRunning_;

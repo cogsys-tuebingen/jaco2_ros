@@ -3,145 +3,83 @@
 
 #include "jaco2_api.h"
 #include <kinova/KinovaTypes.h>
+
+enum ReadData
+{
+    READ_POSITION = 0,
+    READ_VELOCITY = 1,
+    READ_ACCELRATION = 2,
+    READ_TORQUE = 3,
+    READ_TORQUE_GRAVITY_FREE = 4,
+    READ_CURRENT = 5,
+    READ_QUICK_STATUS = 6,
+    READ_SENSOR_INFO = 7
+
+};
+
 class Jaco2State
 {
 public:
-    Jaco2State(Jaco2API &api)
-        : api_(api), readCmd_(0)
-    {
-        current_position_.InitStruct();
-        current_velocity_.InitStruct();
-        current_torque_.InitStruct();
-        current_current_.InitStruct();
-    }
-
-    AngularPosition getAngularPosition() const
-    {
-        std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-        return current_position_;
-    }
-
-    AngularPosition getAngularVelocity() const
-    {
-        std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-        return current_velocity_;
-    }
-
-    AngularPosition getAngularForce() const
-    {
-        std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-        return current_torque_;
-    }
-
-    AngularPosition getAngularCurrent() const
-    {
-        std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-        return current_current_;
-    }
-
-    QuickStatus getQuickStatus() const
-    {
-        std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-        return quick_status_;
-    }
-
     ///
-    /// \brief readCurrent reads the joints currents over command layer
-    ///                    Use this command carefully, otherwise blocking is possible.
+    /// \brief Jaco2State
+    /// \param api jaco2 api
     ///
-    void readCurrent()
-    {
-        current_current_ = api_.getAngularCurrent();
-    }
+    /// Default read: reads position, velocity and torque alternately at high priority
+    ///               read acceleration, quick_status, sensor_info, current and torque_gravity_free alternately at low prioriy
+    ///
+    Jaco2State(Jaco2API &api);
+
+    AngularPosition getAngularPosition() const;
+
+    AngularPosition getAngularVelocity() const;
+
+    AngularPosition getAngularForce() const;
+
+    AngularPosition getAngularCurrent() const;
+
+    AngularPosition getTorqueGFree() const;
+
+    AngularAcceleration getAngularAcceleration() const;
+
+    QuickStatus getQuickStatus() const;
+
+    SensorsInfo getSensorInfo() const;
+
+    std::chrono::time_point<std::chrono::high_resolution_clock> getLastUpdate(int read_data) const;
+
+    std::vector<int> getHighPriQue() const;
+    std::vector<int> getLowPriQue() const;
+
+    void setHighPriQue(std::vector<int> que);
+    void setLowPriQue(std::vector<int> que);
+    void setPriorityRate(int rate);
+
     ///
     /// \brief readQuickStatus reads the arms status over command layer
     ///                        Use this command carefully, otherwise blocking is possible.
     ///
-    void readQuickStatus()
-    {
-        quick_status_ = api_.getQuickStatus();
-    }
+    void readQuickStatus();
 
     ///
     /// \brief readPosVelCur reads position, velocity and current alternately.
     ///                      Use this command carefully, otherwise blocking is possible.
     ///
-    void readPosVelCur()
-    {
-        switch (readCmd_) {
-        case 0:
-        {
-
-            current_position_ = api_.getAngularPosition();
-            break;
-        }
-        case 1:
-        {
-            current_velocity_ = api_.getAngularVelocity();
-            break;
-        }
-        case 2:
-        {
-            current_current_ = api_.getAngularCurrent();
-            break;
-        }
-        }
-
-        readCmd_ = (readCmd_ + 1) % 3;
-    }
+    void readPosVelCur();
 
     ///
-    /// \brief read  default read command reads position, velocity and torque alternately
+    /// \brief read  default read command reads alternatly high and low priority read que
     ///              Use this command carefully, otherwise blocking is possible.
     ///
 
-    void read()
-    {
-
-        switch (readCmd_) {
-        case 0:
-        {
-            current_velocity_ = api_.getAngularVelocity();
-            break;
-        }
-        case 1:
-        {
-            current_position_ = api_.getAngularPosition();
-            break;
-        }
-        case 2:
-        {
-            current_torque_ = api_.getAngularForce();
-            break;
-        }
-        }
-
-        readCmd_ = (readCmd_ + 1) % 3;
-    }
+    void read();
 
     ///
     /// \brief readPosVel reads position, velocity alternately
     ///              Use this command carefully, otherwise blocking is possible.
     ///
+    void readPosVel();
 
-    void readPosVel()
-    {
 
-        switch (readCmd_) {
-        case 0:
-        {
-            current_velocity_ = api_.getAngularVelocity();
-            break;
-        }
-        case 1:
-        {
-            current_position_ = api_.getAngularPosition();
-            break;
-        }
-        }
-
-        readCmd_ = (readCmd_ + 1) % 2;
-    }
 
 private:
     mutable std::recursive_mutex data_mutex_;
@@ -149,12 +87,41 @@ private:
     Jaco2API &api_;
 
     int readCmd_;
+    int readCmdLowPri_;
+    int readCmdHighPri_;
+    int priortyThreshold_;
+    int priortyRate_;
+
+    std::vector<int> highPriority_;
+    std::vector<int> lowPriority_;
 
     AngularPosition current_position_;
     AngularPosition current_velocity_;
     AngularPosition current_torque_;
     AngularPosition current_current_;
+    AngularPosition current_torque_gravity_free_;
+    AngularAcceleration current_acceleration_;
     QuickStatus quick_status_;
+    SensorsInfo sensor_info_;
+    std::chrono::time_point<std::chrono::high_resolution_clock> time_position_;
+    std::chrono::time_point<std::chrono::high_resolution_clock> time_velocity_;
+    std::chrono::time_point<std::chrono::high_resolution_clock> time_torque_;
+    std::chrono::time_point<std::chrono::high_resolution_clock> time_current_;
+    std::chrono::time_point<std::chrono::high_resolution_clock> time_torque_gravity_free_;
+    std::chrono::time_point<std::chrono::high_resolution_clock> time_acceleration_;
+    std::chrono::time_point<std::chrono::high_resolution_clock> time_quick_status_;
+    std::chrono::time_point<std::chrono::high_resolution_clock> time_sensor_info_;
+
+   private:
+    void readPosition();
+    void readVelocity();
+    void readTorque();
+    void readCurrent();
+    void readTorqueGravityFree();
+    void readAcceleration();
+    void readSensorInfo();
+    void read(int dataID);
+
 };
 
 #endif // JACO2_STATE_H

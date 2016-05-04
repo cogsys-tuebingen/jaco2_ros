@@ -27,6 +27,7 @@ Jaco2API::Jaco2API():
     GetAngularForceGravityFree = (int (*)(AngularPosition &)) dlsym(commandLayer_handle,"GetAngularForceGravityFree");
     SetAngularControl = (int (*)()) dlsym(commandLayer_handle,"SetAngularControl");
     SetCartesianControl = (int (*)()) dlsym(commandLayer_handle,"SetCartesianControl");
+    GetSensorsInfo = (int (*)(SensorsInfo &)) dlsym(commandLayer_handle,"GetSensorsInfo");
 
 }
 
@@ -166,6 +167,23 @@ AngularPosition Jaco2API::getAngularForceGravityFree() const
     AngularPosition torque;
     GetAngularForceGravityFree(torque);
     return torque;
+}
+
+AngularAcceleration Jaco2API::getActuatorAcceleration() const
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+
+    AngularAcceleration acc;
+    GetActuatorAcceleration(acc);
+    return acc;
+}
+
+SensorsInfo Jaco2API::getSensorInfo() const
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    SensorsInfo info;
+    GetSensorsInfo(info);
+    return info;
 }
 
 void Jaco2API::setAngularVelocity(const TrajectoryPoint &target_velocity)
