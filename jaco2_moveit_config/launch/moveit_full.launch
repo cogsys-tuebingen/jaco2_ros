@@ -19,6 +19,4 @@
     <arg name="info" value="true"/>
     <arg name="debug" value="false" />
  </include>
- <!--# The visualization component of MoveIt!-->
- <!--<include file="$(find jaco_scitos_moveit_config)/launch/moveit_rviz.launch"/>-->
 </launch>
