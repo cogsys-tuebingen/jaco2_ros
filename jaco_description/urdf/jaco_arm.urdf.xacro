@@ -51,12 +51,12 @@
   <xacro:property name="joint_5" value="jaco_joint_5" />
   <xacro:property name="joint_5_axis_xyz" value="0 0 1" />
   <xacro:property name="joint_5_origin_xyz" value="0.0343 0 -0.06588" />
-  <xacro:property name="joint_5_origin_rpy" value="0 ${M_PI/180*60} ${M_PI}" />
+  <xacro:property name="joint_5_origin_rpy" value="0 ${M_PI/180*60} ${M_PI}" /> <!-- maybe 55 degrees, Advanded user guide specifys 60 ...-->
 
   <xacro:property name="joint_6" value="jaco_joint_6" />
   <xacro:property name="joint_6_axis_xyz" value="0 0 1" />
   <xacro:property name="joint_6_origin_xyz" value="0.0343 0 -0.06588" />
-  <xacro:property name="joint_6_origin_rpy" value="0 ${M_PI/180*60} ${M_PI}" />
+  <xacro:property name="joint_6_origin_rpy" value="0 ${M_PI/180*60} ${M_PI}" /> <!-- maybe 55 degrees, Advanded user guide specifys 60 ...-->
 
   <xacro:property name="joint_finger_1" value="jaco_joint_finger_1" />
   <xacro:property name="joint_finger_1_axis_xyz" value="0 0 1" />
