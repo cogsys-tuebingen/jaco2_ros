@@ -5,7 +5,6 @@
 #include <jaco2_msgs/FingerPosition.h>
 #include <jaco2_msgs/Jaco2Sensor.h>
 
-
 namespace {
 bool g_running_ = true;
 /// \brief Proper shutdown using control c.
