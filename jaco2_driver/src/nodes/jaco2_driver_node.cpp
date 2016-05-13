@@ -278,6 +278,60 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
     controller_.setGripperFingerVelocity(config.gipper_controller_finger_vel_1,
                                          config.gipper_controller_finger_vel_2,
                                          config.gipper_controller_finger_vel_3);
+    std::vector<int> highPriQue;
+    std::vector<int> lowPriQue;
+    if(config.state_high_pri_pos){
+        highPriQue.push_back(READ_POSITION);
+    }
+    if(config.state_high_pri_vel){
+        highPriQue.push_back(READ_VELOCITY);
+    }
+    if(config.state_high_pri_acc){
+        highPriQue.push_back(READ_ACCELRATION);
+    }
+    if(config.state_high_pri_torque){
+        highPriQue.push_back(READ_TORQUE);
+    }
+    if(config.state_high_pri_torque_g_free){
+        highPriQue.push_back(READ_TORQUE_GRAVITY_FREE);
+    }
+    if(config.state_high_pri_info){
+        highPriQue.push_back(READ_SENSOR_INFO);
+    }
+    if(config.state_high_pri_current){
+        highPriQue.push_back(READ_CURRENT);
+    }
+    if(config.state_high_pri_status){
+        highPriQue.push_back(READ_QUICK_STATUS);
+    }
+
+    if(config.state_low_pri_pos){
+        lowPriQue.push_back(READ_POSITION);
+    }
+    if(config.state_low_pri_vel){
+        lowPriQue.push_back(READ_VELOCITY);
+    }
+    if(config.state_low_pri_acc){
+        lowPriQue.push_back(READ_ACCELRATION);
+    }
+    if(config.state_low_pri_torque){
+        lowPriQue.push_back(READ_TORQUE);
+    }
+    if(config.state_low_pri_torque_g_free){
+        lowPriQue.push_back(READ_TORQUE_GRAVITY_FREE);
+    }
+    if(config.state_low_pri_info){
+        lowPriQue.push_back(READ_SENSOR_INFO);
+    }
+    if(config.state_low_pri_current){
+        lowPriQue.push_back(READ_CURRENT);
+    }
+    if(config.state_low_pri_status){
+        lowPriQue.push_back(READ_QUICK_STATUS);
+    }
+    controller_.setStateHighPriorityQue(highPriQue);
+    controller_.setStateLowPriorityQue(lowPriQue);
+
 }
 
 void Jaco2DriverNode::jointVelocityCb(const jaco2_msgs::JointVelocityConstPtr& msg)
