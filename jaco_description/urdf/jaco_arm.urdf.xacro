@@ -28,7 +28,7 @@
 	<xacro:property name="joint_base" value="jaco_joint_base" />
 	<xacro:property name="joint_base_axis_xyz" value="0 0 0" />
 
-	<xacro:property name="joint_1" value="jaco_joint_1" />
+  <xacro:property name="joint_1" value="jaco_joint_1" />
   <xacro:property name="joint_1_axis_xyz" value="0 0 1" />
   <xacro:property name="joint_1_origin_xyz" value="0 0 0.1535" />
   <xacro:property name="joint_1_origin_rpy" value="${M_PI} 0 0" />

@@ -1,9 +1,16 @@
 <?xml version="1.0" ?>
 <launch>
-    <node pkg="tf" type="static_transform_publisher" name="tf_acc_1_bc" args="0.00714 0.00071 -0.0271 3.141592654 0 0 /jaco_link_1 /jaco_accelerometer_1 100" />
-    <node pkg="tf" type="static_transform_publisher" name="tf_acc_2_bc" args="0.00714 0.00071 -0.0271 3.141592654 0 0  /jaco_link_2 /jaco_accelerometer_2 100" />
-    <node pkg="tf" type="static_transform_publisher" name="tf_acc_3_bc" args="0.00714 0.00071 -0.0271 3.141592654 0 0  /jaco_link_3 /jaco_accelerometer_3 100" />
-    <node pkg="tf" type="static_transform_publisher" name="tf_acc_4_bc" args="0.00714 0.00071 -0.0271 3.141592654 0 0  /jaco_link_4 /jaco_accelerometer_4 100" />
-    <node pkg="tf" type="static_transform_publisher" name="tf_acc_5_bc" args="0.00714 0.00071 -0.0271 3.141592654 0 0  /jaco_link_5 /jaco_accelerometer_5 100" />
-    <node pkg="tf" type="static_transform_publisher" name="tf_acc_6_bc" args="0.00714 0.00071 -0.0271 3.141592654 0 0  /jaco_link_hand /jaco_accelerometer_6 100" />
+    <node pkg="tf" type="static_transform_publisher" name="tf_acc_1_bc" args="0.00071, 0.00714, 0.1371 -1.5707963267948966 0 3.141592653589793 /jaco_link_base /jaco_accelerometer_1 100" />
+
+    <node pkg="tf" type="static_transform_publisher" name="tf_acc_2_bc" args="0.00071 0.0271 -0.12524 0 -1.5707963267948966 -1.5707963267948966  /jaco_link_1 /jaco_accelerometer_2 100" />
+
+    <node pkg="tf" type="static_transform_publisher" name="tf_acc_3_bc" args="0.41714 -0.00071 -0.0271 3.141592654 0 3.141592653589793  /jaco_link_2 /jaco_accelerometer_3 100" />
+
+    <node pkg="tf" type="static_transform_publisher" name="tf_acc_4_bc" args="0.1799 0.00071 -0.00411 0 1.5707963267948966 3.141592653589793  /jaco_link_3 /jaco_accelerometer_4 100" />
+
+
+    <node pkg="tf" type="static_transform_publisher" name="tf_acc_5_bc" args="0.014 -0.00071 -0.046 0 -1.0471975511965979 0  /jaco_link_4 /jaco_accelerometer_5 100" />
+
+    <node pkg="tf" type="static_transform_publisher" name="tf_acc_6_bc" args="0.014 -0.00071 -0.046 0 -1.0471975511965979 0  /jaco_link_5 /jaco_accelerometer_6 100" />
+
 </launch>

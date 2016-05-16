@@ -257,6 +257,16 @@ void Jaco2Driver::setStatePriorityRatio(const int r)
     state_.setPriorityRate(r);
 }
 
+void Jaco2Driver::setStateHighPriorityQue(const std::vector<int> &que)
+{
+    state_.setHighPriQue(que);
+}
+
+void Jaco2Driver::setStateLowPriorityQue(const std::vector<int> &que)
+{
+    state_.setLowPriQue(que);
+}
+
 std::chrono::time_point<std::chrono::high_resolution_clock> Jaco2Driver::getLastReadUpdate(int read_data) const
 {
     return state_.getLastUpdate(read_data);

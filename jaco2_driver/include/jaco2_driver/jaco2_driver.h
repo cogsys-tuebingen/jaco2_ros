@@ -52,6 +52,8 @@ public:
     void setTrajectoryIGains(const ManipulatorInfo& gains);
     void setTrajectoryDGains(const ManipulatorInfo& gains);
     void setStatePriorityRatio(const int r);
+    void setStateHighPriorityQue(const std::vector<int> &que);
+    void setStateLowPriorityQue(const std::vector<int> &que);
 
     void setGripperPGain(const double finger1, const double finger2, const double finger3);
     void setGripperIGain(const double finger1, const double finger2, const double finger3);

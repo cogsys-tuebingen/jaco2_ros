@@ -11,6 +11,7 @@
 
 <!-- Given the published joint states, publish tf for the robot links -->
 <node name="jaco_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen">
+    <param name="publish_frequency" type="double" value="100" />
    </node>
  <include file="$(find jaco2_moveit_config)/launch/move_group.launch">
   <arg name="publish_monitored_planning_scene" value="true" />
