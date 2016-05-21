@@ -1,58 +1,97 @@
 #include <jaco2_kin_dyn/jaco2_kinematics_dynamics.h>
+#include <random>
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/chainidsolver.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <tf_conversions/tf_kdl.h>
 
 
+
+
+
 Jaco2KinematicsDynamics::Jaco2KinematicsDynamics():
-    gravity_(0,0,9.81), solverID_(chain_,gravity_)
+    gravity_(0,0,9.81)//, solverID_(chain_,gravity_)
 {
 }
 
 Jaco2KinematicsDynamics::Jaco2KinematicsDynamics(const std::string &robot_model, const std::string& chain_root, const std::string& chain_tip):
-    root_(chain_root), tip_(chain_tip), gravity_(0,0,9.81), solverID_(chain_,gravity_)
+    urdf_param_(robot_model), root_(chain_root), tip_(chain_tip), gravity_(0,0,9.81)//, solverID_(chain_,gravity_)
 {
-    setTree(robot_model);
-//    KDL::Segment seg2 = chain_.getSegment(2);
-//    KDL::RigidBodyInertia I2 = seg2.getInertia();
-//    std::cout <<"Mass " << I2.getMass() << std::endl;
-//    std::cout <<I2.getRotationalInertia().data[0] << std::endl;
-//    KDL::Vector com = seg2.getInertia().getCOG();
-//    std::cout << com(0) << ", " << com(1) << ", " << com(2) << std::endl;
-//    std::cout << "Number of Joints: " << chain_.getNrOfJoints() << " | Number of Segments: " << chain_.getNrOfSegments() << std::endl;
+    robot_model_.initString(robot_model);
+    initialize();
+
+    //    KDL::Segment seg2 = chain_.getSegment(2);
+    //    KDL::RigidBodyInertia I2 = seg2.getInertia();
+    //    std::cout <<"Mass " << I2.getMass() << std::endl;
+    //    std::cout <<I2.getRotationalInertia().data[0] << std::endl;
+    //    KDL::Vector com = seg2.getInertia().getCOG();
+    //    std::cout << com(0) << ", " << com(1) << ", " << com(2) << std::endl;
+    //    std::cout << "Number of Joints: " << chain_.getNrOfJoints() << " | Number of Segments: " << chain_.getNrOfSegments() << std::endl;
 }
 
-Jaco2KinematicsDynamics::Jaco2KinematicsDynamics(const urdf::Model &robot_model, const std::string &chain_root, const std::string &chain_tip):
-    root_(chain_root), tip_(chain_tip), gravity_(0,0,9.81), solverID_(chain_,gravity_)
-{
-    setTree(robot_model);
-}
+//Jaco2KinematicsDynamics::Jaco2KinematicsDynamics(const urdf::Model &robot_model, const std::string &chain_root, const std::string &chain_tip):
+//    root_(chain_root), tip_(chain_tip), robot_model_(robot_model), gravity_(0,0,9.81), solverID_(chain_,gravity_)
+//{
+//    initialize();
+//}
 
 void Jaco2KinematicsDynamics::setTree(const std::string &robot_model)
 {
-    if (!kdl_parser::treeFromString(robot_model, tree_)){
-        ROS_ERROR("Failed to construct kdl tree");
-        return;
-    }
-    if(tree_.getChain(root_,tip_,chain_)){
 
-        solverID_ =  KDL::ChainIdSolver_RNE(chain_,gravity_);
-        KDL::ChainFkSolverPos_recursive fksolver = KDL::ChainFkSolverPos_recursive(chain_);
-    }
-    else{
-        ROS_ERROR("Chain extraction is not possible. Solver is not probably initalized");
-    }
+    robot_model_.initString(robot_model);
+    urdf_param_ = robot_model;
+    initialize();
+    //    if (!kdl_parser::treeFromString(robot_model, tree_)){
+    //        ROS_ERROR("Failed to construct kdl tree");
+    //        return;
+    //    }
+    //    if(tree_.getChain(root_,tip_,chain_)){
+
+    //        solverID_ =  KDL::ChainIdSolver_RNE(chain_,gravity_);
+    //        //        KDL::ChainFkSolverPos_recursive fksolver = KDL::ChainFkSolverPos_recursive(chain_);
+    //        //        chain_.getSegment()
+    //        KDL::Segment seg;
+    //        //        seg.getJoint()
+    //        KDL::Joint joint;
+    //        //        joint.
+    //        //        solverIK_ = std::shared_ptr<TRAC_IK::TRAC_IK>(new TRAC_IK::TRAC_IK(chain_,))
+    //    }
+    //    else{
+    //        ROS_ERROR("Chain extraction is not possible. Solver is not probably initalized");
+    //    }
 }
 
-void Jaco2KinematicsDynamics::setTree(const urdf::Model &robot_model)
+//void Jaco2KinematicsDynamics::setTree(const urdf::Model &robot_model)
+//{
+//    robot_model_ = robot_model;
+//    initialize();
+////    if (!kdl_parser::treeFromUrdfModel(robot_model, tree_)){
+////        ROS_ERROR("Failed to construct kdl tree");
+////    }
+////    if(tree_.getChain(root_,tip_,chain_)){
+
+////        solverID_ = KDL::ChainIdSolver_RNE(chain_,gravity_);
+
+////    }
+////    else{
+////        ROS_ERROR("Chain extraction is not possible. Solver is not probably initalized");
+////    }
+//}
+
+void Jaco2KinematicsDynamics::initialize()
 {
-    if (!kdl_parser::treeFromUrdfModel(robot_model, tree_)){
+    if (!kdl_parser::treeFromUrdfModel(robot_model_, tree_)){
         ROS_ERROR("Failed to construct kdl tree");
     }
     if(tree_.getChain(root_,tip_,chain_)){
+        // inverse dynamics solver
+        solverID_ = std::shared_ptr<KDL::ChainIdSolver_RNE>(new KDL::ChainIdSolver_RNE(chain_,gravity_));
 
-        solverID_ = KDL::ChainIdSolver_RNE(chain_,gravity_);
+        // forward kinematic
+        solverFK_ = std::shared_ptr<KDL::ChainFkSolverPos_recursive>(new KDL::ChainFkSolverPos_recursive(chain_));
+
+        //initialize TRAC_IK solver: inverse kinematics
+        solverIK_ = std::shared_ptr<TRAC_IK::TRAC_IK>(new TRAC_IK::TRAC_IK(root_, tip_, urdf_param_));
 
     }
     else{
@@ -102,7 +141,7 @@ int Jaco2KinematicsDynamics::getTorques(const std::vector<double> &q, const std:
         }
     }
 
-    int e_code = solverID_.CartToJnt(qkdl,qkdl_Dot,qkdl_DotDot,wrenches,torques_kdl);
+    int e_code = solverID_->CartToJnt(qkdl,qkdl_Dot,qkdl_DotDot,wrenches,torques_kdl);
 
     convert(torques_kdl,torques);
 
@@ -114,18 +153,17 @@ int Jaco2KinematicsDynamics::getFKPose(const std::vector<double> &q_in, tf::Pose
 {
     KDL::JntArray q;
     KDL::Frame pose;
-    KDL::ChainFkSolverPos_recursive fksolver(chain_);
+
     convert(q_in,q);
     int segId = getKDLSegmentIndexFK(link);
-//    KDL::Segment s6 = chain_.getSegment(segId);
-//    std::cout << s6.getName() << std::endl;
+
     if(segId > -2){
-        int error_code = fksolver.JntToCart(q, pose, segId);
+        int error_code = solverFK_->JntToCart(q, pose, segId);
         double qx, qy, qz, qw;
         pose.M.GetQuaternion(qx,qy,qz,qw);
         out.setRotation(tf::Quaternion(qx, qy, qz, qw));
         out.setOrigin(tf::Vector3(pose.p(0), pose.p(1), pose.p(2)));
-//        tf::PoseKDLToTF(pose,out);
+        //        tf::PoseKDLToTF(pose,out);
         return error_code;
     }
     else{
@@ -134,6 +172,29 @@ int Jaco2KinematicsDynamics::getFKPose(const std::vector<double> &q_in, tf::Pose
     }
 }
 
+int Jaco2KinematicsDynamics::getIKSolution(const tf::Pose& pose, std::vector<double> result, const std::vector<double> &seed)
+{
+    KDL::JntArray q, solution;
+    KDL::Frame frame;
+    if(seed.size() == 0)
+    {
+        KDL::JntArray ub, lb;
+        solverIK_->getKDLLimits(lb, ub);
+        q.resize(chain_.getNrOfJoints());
+        for(std::size_t i = 0; i < seed.size(); ++i){
+            std::uniform_real_distribution<double> unif(lb(i),ub(i));
+            std::default_random_engine re;
+            q(i) = unif(re);
+
+        }
+    }
+    convert(seed,q);
+    //convert tf pose to kdl frame
+    PoseTFToKDL(pose,frame);
+    int error_code = solverIK_->CartToJnt(q,frame,solution);
+    convert(solution,result);
+    return error_code;
+}
 
 int Jaco2KinematicsDynamics::getKDLSegmentIndexFK(const std::string &name) const
 {
@@ -153,14 +214,14 @@ int Jaco2KinematicsDynamics::getKDLSegmentIndexFK(const std::string &name) const
         }
     }
     return -1;
-//    int i=0;
-//    while (i < (int)chain_.getNrOfSegments()) {
-//        if (chain_.getSegment(i).getName() == name) {
-//            return i+1;
-//        }
-//        i++;
-//    }
-//    return -1;
+    //    int i=0;
+    //    while (i < (int)chain_.getNrOfSegments()) {
+    //        if (chain_.getSegment(i).getName() == name) {
+    //            return i+1;
+    //        }
+    //        i++;
+    //    }
+    //    return -1;
 }
 
 void Jaco2KinematicsDynamics::convert(const KDL::JntArray &in, std::vector<double> &out)
@@ -178,6 +239,16 @@ void Jaco2KinematicsDynamics::convert(const std::vector<double> &in, KDL::JntArr
     for(std::size_t i = 0; i < out.rows(); ++i)
     {
         out(i) = in[i];
+    }
+}
+
+void Jaco2KinematicsDynamics::PoseTFToKDL(const tf::Pose& t, KDL::Frame& k)
+{
+    for (unsigned int i = 0; i < 3; ++i){
+        k.p[i] = t.getOrigin()[i];
+    }
+    for (unsigned int i = 0; i < 9; ++i){
+        k.M.data[i] = t.getBasis()[i/3][i%3];
     }
 }
 

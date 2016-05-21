@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
   <include file="$(find jaco_description)/launch/jaco_description.launch">
      <arg name="gui" value="true" />

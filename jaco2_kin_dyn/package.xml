@@ -45,11 +45,13 @@
   <build_depend>tf</build_depend>
   <build_depend>rostest</build_depend>
   <build_depend>tf_conversions</build_depend>
+  <build_depend>trac_ik_lib</build_depend>
   <run_depend>kdl_parser</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>rostest</run_depend>
   <run_depend>tf_conversions</run_depend>
+  <run_depend>trac_ik_lib</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

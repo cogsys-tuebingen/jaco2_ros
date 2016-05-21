@@ -24,6 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
   rostest
   tf
   tf_conversions
+  trac_ik_lib
 )
 
 ## System dependencies are found with CMake's conventions

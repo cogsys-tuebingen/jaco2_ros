@@ -3,11 +3,14 @@
 //System
 #include <string>
 #include <vector>
+#include <memory>
 //ROS
 #include <ros/ros.h>
 #include <kdl_parser/kdl_parser.hpp>
 #include <urdf/model.h>
 #include <tf/tf.h>
+// trac_ik
+#include <trac_ik/trac_ik.hpp>
 //Orocos KDL
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
@@ -54,16 +57,18 @@ class Jaco2KinematicsDynamics
 public:
     Jaco2KinematicsDynamics();
     Jaco2KinematicsDynamics(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
-    Jaco2KinematicsDynamics(const urdf::Model& robot_model, const std::string& chain_root, const std::string& chain_tip);
+//    Jaco2KinematicsDynamics(const urdf::Model& robot_model, const std::string& chain_root, const std::string& chain_tip);
 
     void setTree(const std::string& robot_model);
-    void setTree(const urdf::Model& robot_model);
+//    void setTree(const urdf::Model& robot_model);
     void setRootAndTip(const std::string& chain_root, const std::string& chain_tip);
 
     int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
                    std::vector<double>& torques, const std::vector<Wrench>& wrenches_ext = std::vector<Wrench>());
 
     int getFKPose(const std::vector<double>& q_in, tf::Pose& out, std::string link);
+
+    int getIKSolution(const tf::Pose &pose, std::vector<double> result, const std::vector<double>& seed = std::vector<double>());
 
     int getKDLSegmentIndexFK(const std::string &name) const;
 
@@ -74,15 +79,23 @@ public:
 
     static void convert(const KDL::JntArray& in, std::vector<double>& out);
     static void convert(const std::vector<double>& in, KDL::JntArray& out);
+    static void PoseTFToKDL(const tf::Pose& t, KDL::Frame& k);
 
 
 private:
+    std::string urdf_param_;
     std::string root_;
     std::string tip_;
+    urdf::Model robot_model_;
     KDL::Tree tree_;
     KDL::Chain chain_;
     KDL::Vector gravity_;
-    KDL::ChainIdSolver_RNE solverID_;
+    std::shared_ptr<KDL::ChainIdSolver_RNE> solverID_;
+    std::shared_ptr<KDL::ChainFkSolverPos_recursive> solverFK_;
+    std::shared_ptr<TRAC_IK::TRAC_IK> solverIK_;
+
+    void initialize();
+
 };
 
 #endif // JACO2KINEMATICSDYNAMICS_H
