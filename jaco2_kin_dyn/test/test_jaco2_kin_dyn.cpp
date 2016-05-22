@@ -82,6 +82,37 @@ TEST(Jaco2KinematicsDynamicsTest, fk)
 
 }
 
+TEST(Jaco2KinematicsDynamicsTest, IK)
+{
+    std::vector<double> zero;
+    std::vector<double> jointAngles;
+    zero.resize(6,0);
+    int nrTests = 10;
+    for(int i = 0; i < nrTests; ++i){
+        tf::Pose fk_pose;
+        jaco2KDL.getRandomConfig(jointAngles);
+        int ec = jaco2KDL.getFKPose(jointAngles,fk_pose,"jaco_link_hand");
+        EXPECT_TRUE(ec>=0);
+        if(ec>=0)
+        {
+            std::vector<double> ik_solution;
+            int ecIK = jaco2KDL.getIKSolution(fk_pose,ik_solution,zero);
+            EXPECT_TRUE(ecIK >= 0);
+            if(ecIK >= 0){
+                tf::Pose ik_pose;
+                ecIK = jaco2KDL.getFKPose(ik_solution,ik_pose,"jaco_link_hand");
+                EXPECT_NEAR(ik_pose.getOrigin().getX(), fk_pose.getOrigin().getX(), 1e-3);
+                EXPECT_NEAR(ik_pose.getOrigin().getY(), fk_pose.getOrigin().getY(), 1e-3);
+                EXPECT_NEAR(ik_pose.getOrigin().getZ(), fk_pose.getOrigin().getZ(), 1e-3);
+                EXPECT_NEAR(ik_pose.getRotation().getX(), fk_pose.getRotation().getX(), 1e-3);
+                EXPECT_NEAR(ik_pose.getRotation().getY(), fk_pose.getRotation().getY(), 1e-3);
+                EXPECT_NEAR(ik_pose.getRotation().getZ(), fk_pose.getRotation().getZ(), 1e-3);
+                EXPECT_NEAR(ik_pose.getRotation().getW(), fk_pose.getRotation().getW(), 1e-3);
+            }
+        }
+    }
+}
+
 int main(int argc, char *argv[])
 {
     testing::InitGoogleTest(&argc, argv);
@@ -89,9 +120,9 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "test_jaco2_dynamics");
     ros::NodeHandle node("~");
     std::string robot_desc_string;
-    node.getParam("/robot_description", robot_desc_string);//, std::string(""));
-    jaco2KDL = Jaco2KinematicsDynamics(robot_desc_string,"jaco_link_base","jaco_link_hand");
-
+//    node.getParam("/robot_description", robot_desc_string);//, std::string(""));
+    std::string urdf_param("robot_description");
+    jaco2KDL = Jaco2KinematicsDynamics(urdf_param,"jaco_link_base","jaco_link_hand");
 
     return RUN_ALL_TESTS();
 }

@@ -68,9 +68,11 @@ public:
 
     int getFKPose(const std::vector<double>& q_in, tf::Pose& out, std::string link);
 
-    int getIKSolution(const tf::Pose &pose, std::vector<double> result, const std::vector<double>& seed = std::vector<double>());
+    int getIKSolution(const tf::Pose &pose, std::vector<double> &result, const std::vector<double>& seed = std::vector<double>());
 
     int getKDLSegmentIndexFK(const std::string &name) const;
+
+    void getRandomConfig(std::vector<double>& config);
 
     int getNrOfJoints() const {return chain_.getNrOfJoints();}
     int getNrOfSegments() const {return chain_.getNrOfJoints();}
@@ -93,6 +95,8 @@ private:
     std::shared_ptr<KDL::ChainIdSolver_RNE> solverID_;
     std::shared_ptr<KDL::ChainFkSolverPos_recursive> solverFK_;
     std::shared_ptr<TRAC_IK::TRAC_IK> solverIK_;
+    std::vector<std::uniform_real_distribution<double> > jointDist_;
+    std::default_random_engine randEng_;
 
     void initialize();
 

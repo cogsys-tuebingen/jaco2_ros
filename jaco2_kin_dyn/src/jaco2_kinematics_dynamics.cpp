@@ -4,6 +4,7 @@
 #include <kdl/chainidsolver.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <tf_conversions/tf_kdl.h>
+#include <ros/ros.h>
 
 
 
@@ -17,7 +18,24 @@ Jaco2KinematicsDynamics::Jaco2KinematicsDynamics():
 Jaco2KinematicsDynamics::Jaco2KinematicsDynamics(const std::string &robot_model, const std::string& chain_root, const std::string& chain_tip):
     urdf_param_(robot_model), root_(chain_root), tip_(chain_tip), gravity_(0,0,9.81)//, solverID_(chain_,gravity_)
 {
-    robot_model_.initString(robot_model);
+
+    ros::NodeHandle node_handle("~");
+
+    std::string xml_string;
+
+    std::string urdf_xml,full_urdf_xml;
+    node_handle.param("urdf_xml",urdf_xml,urdf_param_);
+    node_handle.searchParam(urdf_xml,full_urdf_xml);
+
+    ROS_DEBUG_NAMED("Jaco2KinematicsDynamics","Reading xml file from parameter server");
+    if (!node_handle.getParam(full_urdf_xml, xml_string))
+    {
+        ROS_FATAL_NAMED("Jaco2KinematicsDynamics","Could not load the xml from parameter server: %s", urdf_xml.c_str());
+        return;
+    }
+
+    node_handle.param(full_urdf_xml,xml_string,std::string());
+    robot_model_.initString(xml_string);
     initialize();
 
     //    KDL::Segment seg2 = chain_.getSegment(2);
@@ -82,6 +100,7 @@ void Jaco2KinematicsDynamics::initialize()
 {
     if (!kdl_parser::treeFromUrdfModel(robot_model_, tree_)){
         ROS_ERROR("Failed to construct kdl tree");
+        return;
     }
     if(tree_.getChain(root_,tip_,chain_)){
         // inverse dynamics solver
@@ -92,6 +111,13 @@ void Jaco2KinematicsDynamics::initialize()
 
         //initialize TRAC_IK solver: inverse kinematics
         solverIK_ = std::shared_ptr<TRAC_IK::TRAC_IK>(new TRAC_IK::TRAC_IK(root_, tip_, urdf_param_));
+        KDL::JntArray ub, lb;
+        solverIK_->getKDLLimits(lb, ub);
+        jointDist_.resize(chain_.getNrOfJoints());
+        for(std::size_t i = 0; i < chain_.getNrOfJoints(); ++i){
+            jointDist_[i] = std::uniform_real_distribution<double>(lb(i),ub(i));
+        }
+
 
     }
     else{
@@ -172,7 +198,7 @@ int Jaco2KinematicsDynamics::getFKPose(const std::vector<double> &q_in, tf::Pose
     }
 }
 
-int Jaco2KinematicsDynamics::getIKSolution(const tf::Pose& pose, std::vector<double> result, const std::vector<double> &seed)
+int Jaco2KinematicsDynamics::getIKSolution(const tf::Pose& pose, std::vector<double>& result, const std::vector<double> &seed)
 {
     KDL::JntArray q, solution;
     KDL::Frame frame;
@@ -182,9 +208,9 @@ int Jaco2KinematicsDynamics::getIKSolution(const tf::Pose& pose, std::vector<dou
         solverIK_->getKDLLimits(lb, ub);
         q.resize(chain_.getNrOfJoints());
         for(std::size_t i = 0; i < seed.size(); ++i){
-            std::uniform_real_distribution<double> unif(lb(i),ub(i));
-            std::default_random_engine re;
-            q(i) = unif(re);
+            //            std::uniform_real_distribution<double> unif(lb(i),ub(i));
+            //            std::default_random_engine re;
+            q(i) = jointDist_[i](randEng_);
 
         }
     }
@@ -214,15 +240,21 @@ int Jaco2KinematicsDynamics::getKDLSegmentIndexFK(const std::string &name) const
         }
     }
     return -1;
-    //    int i=0;
-    //    while (i < (int)chain_.getNrOfSegments()) {
-    //        if (chain_.getSegment(i).getName() == name) {
-    //            return i+1;
-    //        }
-    //        i++;
-    //    }
-    //    return -1;
 }
+
+void Jaco2KinematicsDynamics::getRandomConfig(std::vector<double>& config)
+{
+    KDL::JntArray ub, lb;
+    solverIK_->getKDLLimits(lb, ub);
+    config.resize(chain_.getNrOfJoints());
+    for(std::size_t i = 0; i < config.size(); ++i){
+        //        std::uniform_real_distribution<double> unif(lb(i),ub(i));
+        //        std::default_random_engine re;
+        //        config[i] = unif(re);
+        config[i] = jointDist_[i](randEng_);
+    }
+}
+
 
 void Jaco2KinematicsDynamics::convert(const KDL::JntArray &in, std::vector<double> &out)
 {
