@@ -35,6 +35,36 @@ TEST(Jaco2KinematicsDynamicsTest,chaintest)
     EXPECT_EQ(jaco2KDL.getNrOfSegments(),6);
 }
 
+TEST(Jaco2KinematicsDynamicsTest, DynParam)
+{
+    tf::Vector3 comLink1 = jaco2KDL.getLinkCoM("jaco_link_1");
+    EXPECT_NEAR(comLink1.getX(), 0, 1e-4);
+    EXPECT_NEAR(comLink1.getY(),  0.0086, 1e-4);
+    EXPECT_NEAR(comLink1.getZ(), -0.1064, 1e-4);
+    EXPECT_NEAR(jaco2KDL.getLinkMass("jaco_link_1"),0.7417, 1e-4);
+    tf::Matrix3x3 inertia = jaco2KDL.getLinkInertia("jaco_link_1");
+    EXPECT_NEAR(inertia.getColumn(0).getX(), 0.0094, 1e-4);
+    EXPECT_NEAR(inertia.getColumn(0).getY(), 0.0000, 1e-4);
+    EXPECT_NEAR(inertia.getColumn(0).getZ(), 0.0000, 1e-4);
+    EXPECT_NEAR(inertia.getColumn(1).getY(), 0.0522, 1e-4);
+    EXPECT_NEAR(inertia.getColumn(1).getZ(), 0.0006, 1e-4);
+    EXPECT_NEAR(inertia.getColumn(2).getZ(), 0.0004, 1e-4);
+
+    tf::Vector3 comLink3 = jaco2KDL.getLinkCoM("jaco_link_3");
+    EXPECT_NEAR(comLink3.getX(),  0.1624, 1e-4);
+    EXPECT_NEAR(comLink3.getY(),  0.0000, 1e-4);
+    EXPECT_NEAR(comLink3.getZ(), -0.0135, 1e-4);
+    EXPECT_NEAR(jaco2KDL.getLinkMass("jaco_link_3"), 0.7847, 1e-4);
+    inertia = jaco2KDL.getLinkInertia("jaco_link_3");
+    EXPECT_NEAR(inertia.getColumn(0).getX(),  0.0004, 1e-4);
+    EXPECT_NEAR(inertia.getColumn(0).getY(),  0.0000, 1e-4);
+    EXPECT_NEAR(inertia.getColumn(0).getZ(),  0.0015, 1e-4);
+    EXPECT_NEAR(inertia.getColumn(1).getY(),  0.0243, 1e-4);
+    EXPECT_NEAR(inertia.getColumn(1).getZ(),  0.0000, 1e-4);
+    EXPECT_NEAR(inertia.getColumn(2).getZ(),  0.0243, 1e-4);
+
+}
+
 TEST(Jaco2KinematicsDynamicsTest,inverseDynamics)
 {
     std::vector<double> q = {0, M_PI, M_PI, 0, 0, M_PI};
@@ -46,8 +76,20 @@ TEST(Jaco2KinematicsDynamicsTest,inverseDynamics)
     EXPECT_TRUE(ec>=0);
     for(int i = 0; i <6; ++i)
     {
+        EXPECT_NEAR(torques[i], 0, 1e-4);
         std::cout << "torques(" << i <<") = " << torques[i] <<  std::endl;
     }
+     std::vector<double> q2 = {4.776098185246001, 2.9779051856135985, 1.0370221453036228, -2.089493953881068, 1.3567380962770526, 1.3811624792663872};
+     std::vector<double> qDot2;
+     qDot2.resize(6,0.1);
+     ec = jaco2KDL.getTorques(q2,qDot,qDot,torques);
+     for(int i = 0; i <6; ++i)
+     {
+         if(i>0){
+             EXPECT_TRUE(fabs(torques[i]) > 1e-4);
+         }
+         std::cout << "torques(" << i <<") = " << torques[i] <<  std::endl;
+     }
 }
 
 TEST(Jaco2KinematicsDynamicsTest, fk)
@@ -99,16 +141,16 @@ TEST(Jaco2KinematicsDynamicsTest, IK)
             std::vector<double> ik_solution;
             int ecIK = jaco2KDL.getIKSolution(fk_pose,ik_solution,zero);
             if(ecIK < 0){
-                geometry_msgs::Pose msg;
-                tf::poseTFToMsg(fk_pose,msg);
-                std::cout << "number of test" << i<< std::endl << "Pose: " << msg << std::endl;
+//                geometry_msgs::Pose msg;
+//                tf::poseTFToMsg(fk_pose,msg);
+//                std::cout << "number of test" << i<< std::endl << "Pose: " << msg << std::endl;
 
-                for(auto phi : jointAngles) {
-                    std::cout << phi << std::endl;
-                }
+//                for(auto phi : jointAngles) {
+//                    std::cout << phi << std::endl;
+//                }
                 ++fails;
             }
-//            EXPECT_TRUE(ecIK >= 0);
+            //            EXPECT_TRUE(ecIK >= 0);
             if(ecIK >= 0){
                 tf::Pose ik_pose;
                 ecIK = jaco2KDL.getFKPose(ik_solution,ik_pose,"jaco_link_hand");
@@ -134,7 +176,7 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "test_jaco2_dynamics");
     ros::NodeHandle node("~");
     std::string robot_desc_string;
-//    node.getParam("/robot_description", robot_desc_string);//, std::string(""));
+    //    node.getParam("/robot_description", robot_desc_string);//, std::string(""));
     std::string urdf_param("robot_description");
     jaco2KDL = Jaco2KinematicsDynamics(urdf_param,"jaco_link_base","jaco_link_hand");
 

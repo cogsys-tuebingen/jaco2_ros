@@ -79,7 +79,17 @@ public:
     double getLinkMass(const std::string &link) const;
     std::string getRootLink() const {return root_;}
     std::string getTipLink() const {return tip_;}
+    /**
+     * @brief getLinkCoM returns the displacemant from link center of mass to origin
+     * @param link the name of the link
+     * @return displacement vector form link origin(rotation axis) to the center of mass.
+     */
     tf::Vector3 getLinkCoM(const std::string &link) const;
+    /**
+     * @brief getLinkInertia gets the inertia moment matrix of a link
+     * @param link the name of the link
+     * @return the inertia moment matrix at link origin = rotation axis
+     */
     tf::Matrix3x3 getLinkInertia(const std::string &link) const;
 
     static void convert(const KDL::JntArray& in, std::vector<double>& out);
@@ -95,6 +105,7 @@ private:
     KDL::Tree tree_;
     KDL::Chain chain_;
     KDL::Vector gravity_;
+//    KDL::ChainIdSolver_RNE solverID_;
     std::shared_ptr<KDL::ChainIdSolver_RNE> solverID_;
     std::shared_ptr<KDL::ChainFkSolverPos_recursive> solverFK_;
     std::shared_ptr<TRAC_IK::TRAC_IK> solverIK_;

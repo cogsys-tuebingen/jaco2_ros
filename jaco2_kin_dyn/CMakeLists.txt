@@ -148,10 +148,11 @@ add_dependencies(jaco2_kin_dyn ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPO
 
 ## Declare a C++ executable
 add_executable(jaco2_kin_dyn_test test/test_jaco2_kin_dyn.cpp)
-
+add_executable(jaco2_model_torques_publisher src/jaco2_model_torques_publisher.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(jaco2_kin_dyn_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${GTEST_LIBRARIES} jaco2_kin_dyn)
+add_dependencies(jaco2_model_torques_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${GTEST_LIBRARIES} jaco2_kin_dyn)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(jaco2_kin_dyn
@@ -163,6 +164,12 @@ target_link_libraries(jaco2_kin_dyn_test
    ${catkin_LIBRARIES}
    ${orocos_kdl_LIBRARIES}
    ${GTEST_LIBRARIES}
+   jaco2_kin_dyn
+)
+
+target_link_libraries(jaco2_model_torques_publisher
+   ${catkin_LIBRARIES}
+   ${orocos_kdl_LIBRARIES}
    jaco2_kin_dyn
 )
 

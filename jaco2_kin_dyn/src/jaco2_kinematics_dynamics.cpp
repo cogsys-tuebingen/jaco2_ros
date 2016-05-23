@@ -11,12 +11,12 @@
 
 
 Jaco2KinematicsDynamics::Jaco2KinematicsDynamics():
-    gravity_(0,0,9.81)//, solverID_(chain_,gravity_)
+    gravity_(0,0,-9.81)//, solverID_(chain_,gravity_)
 {
 }
 
 Jaco2KinematicsDynamics::Jaco2KinematicsDynamics(const std::string &robot_model, const std::string& chain_root, const std::string& chain_tip):
-    urdf_param_(robot_model), root_(chain_root), tip_(chain_tip), gravity_(0,0,9.81)//, solverID_(chain_,gravity_)
+    urdf_param_(robot_model), root_(chain_root), tip_(chain_tip), gravity_(0,0,-9.81)//, solverID_(chain_,gravity_)
 {
 
     ros::NodeHandle node_handle("~");
@@ -38,15 +38,15 @@ Jaco2KinematicsDynamics::Jaco2KinematicsDynamics(const std::string &robot_model,
     robot_model_.initString(xml_string);
     initialize();
 
-        KDL::Segment seg2 = chain_.getSegment(0);
-        KDL::RigidBodyInertia I2 = seg2.getInertia();
-        std::cout << seg2.getName() << std::endl;
-        std::cout <<"Mass " << I2.getMass() << std::endl;
-        std::cout <<I2.getRotationalInertia().data[0]  << " " << I2.getRotationalInertia().data[1] << " " << I2.getRotationalInertia().data[2] << std::endl;
-        std::cout <<I2.getRotationalInertia().data[3]  << " " << I2.getRotationalInertia().data[4] << " " << I2.getRotationalInertia().data[5] << std::endl;
-        std::cout <<I2.getRotationalInertia().data[6]  << " " << I2.getRotationalInertia().data[7] << " " << I2.getRotationalInertia().data[8] << std::endl;
-        KDL::Vector com = seg2.getInertia().getCOG();
-        std::cout << com(0) << ", " << com(1) << ", " << com(2) << std::endl;
+//        KDL::Segment seg2 = chain_.getSegment(0);
+//        KDL::RigidBodyInertia I2 = seg2.getInertia();
+//        std::cout << seg2.getName() << std::endl;
+//        std::cout <<"Mass " << I2.getMass() << std::endl;
+//        std::cout <<I2.getRotationalInertia().data[0]  << " " << I2.getRotationalInertia().data[1] << " " << I2.getRotationalInertia().data[2] << std::endl;
+//        std::cout <<I2.getRotationalInertia().data[3]  << " " << I2.getRotationalInertia().data[4] << " " << I2.getRotationalInertia().data[5] << std::endl;
+//        std::cout <<I2.getRotationalInertia().data[6]  << " " << I2.getRotationalInertia().data[7] << " " << I2.getRotationalInertia().data[8] << std::endl;
+//        KDL::Vector com = seg2.getInertia().getCOG();
+//        std::cout << com(0) << ", " << com(1) << ", " << com(2) << std::endl;
         std::cout << "Number of Joints: " << chain_.getNrOfJoints() << " | Number of Segments: " << chain_.getNrOfSegments() << std::endl;
 }
 
@@ -67,6 +67,7 @@ void Jaco2KinematicsDynamics::initialize()
     if(tree_.getChain(root_,tip_,chain_)){
         // inverse dynamics solver
         solverID_ = std::shared_ptr<KDL::ChainIdSolver_RNE>(new KDL::ChainIdSolver_RNE(chain_,gravity_));
+//        solverID_ = KDL::ChainIdSolver_RNE(chain_,gravity_);
 
         // forward kinematic
         solverFK_ = std::shared_ptr<KDL::ChainFkSolverPos_recursive>(new KDL::ChainFkSolverPos_recursive(chain_));
@@ -128,8 +129,9 @@ int Jaco2KinematicsDynamics::getTorques(const std::vector<double> &q, const std:
             wrenches[i] = wrenches_ext[i].toKDL();
         }
     }
-
-    int e_code = solverID_->CartToJnt(qkdl,qkdl_Dot,qkdl_DotDot,wrenches,torques_kdl);
+    int e_code = -1;
+    e_code = solverID_->CartToJnt(qkdl,qkdl_Dot,qkdl_DotDot,wrenches,torques_kdl);
+//     e_code = solverID_.CartToJnt(qkdl,qkdl_Dot,qkdl_DotDot,wrenches,torques_kdl);
 
     convert(torques_kdl,torques);
 
