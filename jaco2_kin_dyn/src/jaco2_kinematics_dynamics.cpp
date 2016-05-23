@@ -38,20 +38,17 @@ Jaco2KinematicsDynamics::Jaco2KinematicsDynamics(const std::string &robot_model,
     robot_model_.initString(xml_string);
     initialize();
 
-    //    KDL::Segment seg2 = chain_.getSegment(2);
-    //    KDL::RigidBodyInertia I2 = seg2.getInertia();
-    //    std::cout <<"Mass " << I2.getMass() << std::endl;
-    //    std::cout <<I2.getRotationalInertia().data[0] << std::endl;
-    //    KDL::Vector com = seg2.getInertia().getCOG();
-    //    std::cout << com(0) << ", " << com(1) << ", " << com(2) << std::endl;
-    //    std::cout << "Number of Joints: " << chain_.getNrOfJoints() << " | Number of Segments: " << chain_.getNrOfSegments() << std::endl;
+        KDL::Segment seg2 = chain_.getSegment(0);
+        KDL::RigidBodyInertia I2 = seg2.getInertia();
+        std::cout << seg2.getName() << std::endl;
+        std::cout <<"Mass " << I2.getMass() << std::endl;
+        std::cout <<I2.getRotationalInertia().data[0]  << " " << I2.getRotationalInertia().data[1] << " " << I2.getRotationalInertia().data[2] << std::endl;
+        std::cout <<I2.getRotationalInertia().data[3]  << " " << I2.getRotationalInertia().data[4] << " " << I2.getRotationalInertia().data[5] << std::endl;
+        std::cout <<I2.getRotationalInertia().data[6]  << " " << I2.getRotationalInertia().data[7] << " " << I2.getRotationalInertia().data[8] << std::endl;
+        KDL::Vector com = seg2.getInertia().getCOG();
+        std::cout << com(0) << ", " << com(1) << ", " << com(2) << std::endl;
+        std::cout << "Number of Joints: " << chain_.getNrOfJoints() << " | Number of Segments: " << chain_.getNrOfSegments() << std::endl;
 }
-
-//Jaco2KinematicsDynamics::Jaco2KinematicsDynamics(const urdf::Model &robot_model, const std::string &chain_root, const std::string &chain_tip):
-//    root_(chain_root), tip_(chain_tip), robot_model_(robot_model), gravity_(0,0,9.81), solverID_(chain_,gravity_)
-//{
-//    initialize();
-//}
 
 void Jaco2KinematicsDynamics::setTree(const std::string &robot_model)
 {
@@ -59,42 +56,7 @@ void Jaco2KinematicsDynamics::setTree(const std::string &robot_model)
     robot_model_.initString(robot_model);
     urdf_param_ = robot_model;
     initialize();
-    //    if (!kdl_parser::treeFromString(robot_model, tree_)){
-    //        ROS_ERROR("Failed to construct kdl tree");
-    //        return;
-    //    }
-    //    if(tree_.getChain(root_,tip_,chain_)){
-
-    //        solverID_ =  KDL::ChainIdSolver_RNE(chain_,gravity_);
-    //        //        KDL::ChainFkSolverPos_recursive fksolver = KDL::ChainFkSolverPos_recursive(chain_);
-    //        //        chain_.getSegment()
-    //        KDL::Segment seg;
-    //        //        seg.getJoint()
-    //        KDL::Joint joint;
-    //        //        joint.
-    //        //        solverIK_ = std::shared_ptr<TRAC_IK::TRAC_IK>(new TRAC_IK::TRAC_IK(chain_,))
-    //    }
-    //    else{
-    //        ROS_ERROR("Chain extraction is not possible. Solver is not probably initalized");
-    //    }
 }
-
-//void Jaco2KinematicsDynamics::setTree(const urdf::Model &robot_model)
-//{
-//    robot_model_ = robot_model;
-//    initialize();
-////    if (!kdl_parser::treeFromUrdfModel(robot_model, tree_)){
-////        ROS_ERROR("Failed to construct kdl tree");
-////    }
-////    if(tree_.getChain(root_,tip_,chain_)){
-
-////        solverID_ = KDL::ChainIdSolver_RNE(chain_,gravity_);
-
-////    }
-////    else{
-////        ROS_ERROR("Chain extraction is not possible. Solver is not probably initalized");
-////    }
-//}
 
 void Jaco2KinematicsDynamics::initialize()
 {
@@ -239,6 +201,19 @@ int Jaco2KinematicsDynamics::getKDLSegmentIndexFK(const std::string &name) const
             }
         }
     }
+    return -2;
+}
+
+int Jaco2KinematicsDynamics::getKDLSegmentIndex(const std::string &name) const
+{
+    for(int i=0; i < chain_.getNrOfSegments(); ++i)
+    {
+        KDL::Segment seg = chain_.getSegment(i);
+        if(seg.getName() == name)
+        {
+            return i;
+        }
+    }
     return -1;
 }
 
@@ -254,7 +229,47 @@ void Jaco2KinematicsDynamics::getRandomConfig(std::vector<double>& config)
         config[i] = jointDist_[i](randEng_);
     }
 }
+double Jaco2KinematicsDynamics::getLinkMass(const std::string &link) const
+{
+    int segmentID = getKDLSegmentIndex(link);
+    if(segmentID > -1){
+        return chain_.getSegment(segmentID).getInertia().getMass();
+    }
+    else{
+        ROS_ERROR_STREAM("Link " << link << " not found! Wrong name?");
+        return 0;
+    }
+}
+tf::Vector3 Jaco2KinematicsDynamics::getLinkCoM(const std::string &link) const
+{
+    int segmentID = getKDLSegmentIndex(link);
+    if(segmentID > -1){
+        KDL::Vector vec = chain_.getSegment(segmentID).getInertia().getCOG();
+        tf::Vector3 result(vec(0), vec(1), vec(2));
+        return result;
+    }
+    else{
+        ROS_ERROR_STREAM("Link " << link << " not found! Wrong name?");
+        return tf::Vector3();
+    }
+}
 
+tf::Matrix3x3 Jaco2KinematicsDynamics::getLinkInertia(const std::string &link) const
+{
+    int segmentID = getKDLSegmentIndex(link);
+    if(segmentID > -1){
+        KDL::RotationalInertia mat = chain_.getSegment(segmentID).getInertia().getRotationalInertia();
+        tf::Matrix3x3 result;
+        result.setValue(mat.data[0], mat.data[1], mat.data[2],
+                        mat.data[3], mat.data[4], mat.data[5],
+                        mat.data[6], mat.data[7], mat.data[8]);
+        return result;
+    }
+    else{
+        ROS_ERROR_STREAM("Link " << link << " not found! Wrong name?");
+        return tf::Matrix3x3();
+    }
+}
 
 void Jaco2KinematicsDynamics::convert(const KDL::JntArray &in, std::vector<double> &out)
 {

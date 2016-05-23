@@ -85,9 +85,10 @@ TEST(Jaco2KinematicsDynamicsTest, fk)
 TEST(Jaco2KinematicsDynamicsTest, IK)
 {
     std::vector<double> zero;
-    std::vector<double> jointAngles;
+    std::vector<double> jointAngles  = {0, M_PI, M_PI, 0, 0, M_PI};
     zero.resize(6,0);
-    int nrTests = 10;
+    int nrTests = 1000;
+    int fails = 0;
     for(int i = 0; i < nrTests; ++i){
         tf::Pose fk_pose;
         jaco2KDL.getRandomConfig(jointAngles);
@@ -97,7 +98,17 @@ TEST(Jaco2KinematicsDynamicsTest, IK)
         {
             std::vector<double> ik_solution;
             int ecIK = jaco2KDL.getIKSolution(fk_pose,ik_solution,zero);
-            EXPECT_TRUE(ecIK >= 0);
+            if(ecIK < 0){
+                geometry_msgs::Pose msg;
+                tf::poseTFToMsg(fk_pose,msg);
+                std::cout << "number of test" << i<< std::endl << "Pose: " << msg << std::endl;
+
+                for(auto phi : jointAngles) {
+                    std::cout << phi << std::endl;
+                }
+                ++fails;
+            }
+//            EXPECT_TRUE(ecIK >= 0);
             if(ecIK >= 0){
                 tf::Pose ik_pose;
                 ecIK = jaco2KDL.getFKPose(ik_solution,ik_pose,"jaco_link_hand");
@@ -111,6 +122,9 @@ TEST(Jaco2KinematicsDynamicsTest, IK)
             }
         }
     }
+    double successRate = 1.0 - ((double)fails)/((double)nrTests);
+    EXPECT_NEAR(successRate,0.99, 1e-2);
+    std::cout << "success rate: " <<  successRate << std::endl;
 }
 
 int main(int argc, char *argv[])

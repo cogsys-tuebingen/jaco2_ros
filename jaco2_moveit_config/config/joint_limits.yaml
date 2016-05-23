@@ -4,22 +4,22 @@
 joint_limits:
   jaco_joint_1:
     has_velocity_limits: true
-    max_velocity: 5
+    max_velocity: 0.6283185307179586
     has_acceleration_limits: false
     max_acceleration: 0
   jaco_joint_2:
     has_velocity_limits: true
-    max_velocity: 5
+    max_velocity: 0.6283185307179586
     has_acceleration_limits: false
     max_acceleration: 0
   jaco_joint_3:
     has_velocity_limits: true
-    max_velocity: 5
+    max_velocity: 0.6283185307179586
     has_acceleration_limits: false
     max_acceleration: 0
   jaco_joint_4:
     has_velocity_limits: true
-    max_velocity: 5
+    max_velocity: 0.8377580409572781
     has_acceleration_limits: false
     max_acceleration: 0
   jaco_joint_5:
@@ -29,12 +29,12 @@ joint_limits:
     max_acceleration: 0
   jaco_joint_6:
     has_velocity_limits: true
-    max_velocity: 5
+    max_velocity: 0.8377580409572781
     has_acceleration_limits: false
     max_acceleration: 0
   jaco_joint_finger_1:
     has_velocity_limits: true
-    max_velocity: 5
+    max_velocity: 0.8377580409572781
     has_acceleration_limits: false
     max_acceleration: 0
   jaco_joint_finger_2:

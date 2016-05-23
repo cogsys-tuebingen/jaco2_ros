@@ -103,73 +103,73 @@
 
   <xacro:property name="link_base_com_xyz" value="0 0 0" />
   <xacro:property name="link_base_com_rpy" value="0 0 0" />
-  <xacro:property name="link_base_mass" value="0.1" />
+  <xacro:property name="link_base_mass" value="0.0" />
   <xacro:property name="link_base_Ixx" value="0.1" />
-  <xacro:property name="link_base_Ixy" value="0.0" />
-  <xacro:property name="link_base_Ixz" value="0.0" />
-  <xacro:property name="link_base_Iyy" value="0.1" />
-  <xacro:property name="link_base_Iyz" value="0.0" />
-  <xacro:property name="link_base_Izz" value="0.1" />
+  <xacro:property name="link_base_Ixy" value="0.2" />
+  <xacro:property name="link_base_Ixz" value="0.3" />
+  <xacro:property name="link_base_Iyy" value="0.4" />
+  <xacro:property name="link_base_Iyz" value="0.5" />
+  <xacro:property name="link_base_Izz" value="0.6" />
 
-  <xacro:property name="link_1_com_xyz" value="0 0 0" />
+  <xacro:property name="link_1_com_xyz" value="0 0.0086 -0.1064" />
   <xacro:property name="link_1_com_rpy" value="0 0 0" />
-  <xacro:property name="link_1_mass" value="0.1" />
-  <xacro:property name="link_1_Ixx" value="0.1" />
-  <xacro:property name="link_1_Ixy" value="0.0" />
-  <xacro:property name="link_1_Ixz" value="0.0" />
-  <xacro:property name="link_1_Iyy" value="0.1" />
-  <xacro:property name="link_1_Iyz" value="0.0" />
-  <xacro:property name="link_1_Izz" value="0.1" />
+  <xacro:property name="link_1_mass" value="0.7417" />
+  <xacro:property name="link_1_Ixx" value="0.0002" />
+  <xacro:property name="link_1_Ixy" value="-0.0003" />
+  <xacro:property name="link_1_Ixz" value="-0.0003" />
+  <xacro:property name="link_1_Iyy" value="0.0431" />
+  <xacro:property name="link_1_Iyz" value="0.0003" />
+  <xacro:property name="link_1_Izz" value="0.0004" />
 
-  <xacro:property name="link_2_com_xyz" value="0 0 0" />
+  <xacro:property name="link_2_com_xyz" value="0.2452 0 -0.0921" />
   <xacro:property name="link_2_com_rpy" value="0 0 0" />
-  <xacro:property name="link_2_mass" value="0.1" />
-  <xacro:property name="link_2_Ixx" value="0.1" />
-  <xacro:property name="link_2_Ixy" value="0.0" />
-  <xacro:property name="link_2_Ixz" value="0.0" />
-  <xacro:property name="link_2_Iyy" value="0.1" />
-  <xacro:property name="link_2_Iyz" value="0.0" />
-  <xacro:property name="link_2_Izz" value="0.1" />
+  <xacro:property name="link_2_mass" value="0.9977" />
+  <xacro:property name="link_2_Ixx" value="-0.0091" />
+  <xacro:property name="link_2_Ixy" value="-0.0461" />
+  <xacro:property name="link_2_Ixz" value="-0.0275" />
+  <xacro:property name="link_2_Iyy" value="-0.0421" />
+  <xacro:property name="link_2_Iyz" value="-0.0461" />
+  <xacro:property name="link_2_Izz" value="-0.0326" />
 
-  <xacro:property name="link_3_com_xyz" value="0 0 0" />
+  <xacro:property name="link_3_com_xyz" value="0.1624 0.0 -0.0135" />
   <xacro:property name="link_3_com_rpy" value="0 0 0" />
-  <xacro:property name="link_3_mass" value="0.1" />
-  <xacro:property name="link_3_Ixx" value="0.1" />
-  <xacro:property name="link_3_Ixy" value="0.0" />
-  <xacro:property name="link_3_Ixz" value="0.0" />
-  <xacro:property name="link_3_Iyy" value="0.1" />
-  <xacro:property name="link_3_Iyz" value="0.0" />
-  <xacro:property name="link_3_Izz" value="0.1" />
+  <xacro:property name="link_3_mass" value="0.7847" />
+  <xacro:property name="link_3_Ixx" value=" 0.0003" />
+  <xacro:property name="link_3_Ixy" value="-0.0028" />
+  <xacro:property name="link_3_Ixz" value="-0.0026" />
+  <xacro:property name="link_3_Iyy" value="-0.0021" />
+  <xacro:property name="link_3_Iyz" value="-0.0028" />
+  <xacro:property name="link_3_Izz" value="-0.0020" />
 
-  <xacro:property name="link_4_com_xyz" value="0 0 0" />
+  <xacro:property name="link_4_com_xyz" value="0.0253 0.0000 -0.0585" />
   <xacro:property name="link_4_com_rpy" value="0 0 0" />
-  <xacro:property name="link_4_mass" value="0.1" />
-  <xacro:property name="link_4_Ixx" value="0.1" />
-  <xacro:property name="link_4_Ixy" value="0.0" />
-  <xacro:property name="link_4_Ixz" value="0.0" />
-  <xacro:property name="link_4_Iyy" value="0.1" />
-  <xacro:property name="link_4_Iyz" value="0.0" />
-  <xacro:property name="link_4_Izz" value="0.1" />
+  <xacro:property name="link_4_mass" value="0.6426" />
+  <xacro:property name="link_4_Ixx" value=" 0.0002" />
+  <xacro:property name="link_4_Ixy" value="-0.0001" />
+  <xacro:property name="link_4_Ixz" value="-0.0001" />
+  <xacro:property name="link_4_Iyy" value=" 0.0002" />
+  <xacro:property name="link_4_Iyz" value="-0.0001" />
+  <xacro:property name="link_4_Izz" value=" 0.0003" />
 
-  <xacro:property name="link_5_com_xyz" value="0 0 0" />
+  <xacro:property name="link_5_com_xyz" value="0.0253 0.0000 -0.0585" />
   <xacro:property name="link_5_com_rpy" value="0 0 0" />
-  <xacro:property name="link_5_mass" value="0.1" />
-  <xacro:property name="link_5_Ixx" value="0.1" />
-  <xacro:property name="link_5_Ixy" value="0.0" />
-  <xacro:property name="link_5_Ixz" value="0.0" />
-  <xacro:property name="link_5_Iyy" value="0.1" />
-  <xacro:property name="link_5_Iyz" value="0.0" />
-  <xacro:property name="link_5_Izz" value="0.1" />
+  <xacro:property name="link_5_mass" value="0.6426" />
+  <xacro:property name="link_5_Ixx" value=" 0.0002" />
+  <xacro:property name="link_5_Ixy" value="-0.0001" />
+  <xacro:property name="link_5_Ixz" value="-0.0001" />
+  <xacro:property name="link_5_Iyy" value=" 0.0002" />
+  <xacro:property name="link_5_Iyz" value="-0.0001" />
+  <xacro:property name="link_5_Izz" value=" 0.0003" />
 
-  <xacro:property name="link_hand_com_xyz" value="0 0 0" />
+  <xacro:property name="link_hand_com_xyz" value="0.0068 0 -0.0822" />
   <xacro:property name="link_hand_com_rpy" value="0 0 0" />
-  <xacro:property name="link_hand_mass" value="0.1" />
-  <xacro:property name="link_hand_Ixx" value="0.1" />
-  <xacro:property name="link_hand_Ixy" value="0.0" />
-  <xacro:property name="link_hand_Ixz" value="0.0" />
-  <xacro:property name="link_hand_Iyy" value="0.1" />
-  <xacro:property name="link_hand_Iyz" value="0.0" />
-  <xacro:property name="link_hand_Izz" value="0.1" />
+  <xacro:property name="link_hand_mass" value="0.7270" />
+  <xacro:property name="link_hand_Ixx" value="-0.0049 " />
+  <xacro:property name="link_hand_Ixy" value="-0.0049" />
+  <xacro:property name="link_hand_Ixz" value="-0.0054" />
+  <xacro:property name="link_hand_Iyy" value="-0.0049" />
+  <xacro:property name="link_hand_Iyz" value="-0.0050" />
+  <xacro:property name="link_hand_Izz" value="-0.000008" />
 
 
 	<xacro:macro name="jaco_link" params="link_name link_mass Ixx Ixy Ixz Iyy Iyz Izz link_com_origin link_com_rpy">

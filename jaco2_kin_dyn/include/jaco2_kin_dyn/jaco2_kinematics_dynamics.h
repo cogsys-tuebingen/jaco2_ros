@@ -57,12 +57,12 @@ class Jaco2KinematicsDynamics
 public:
     Jaco2KinematicsDynamics();
     Jaco2KinematicsDynamics(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
-//    Jaco2KinematicsDynamics(const urdf::Model& robot_model, const std::string& chain_root, const std::string& chain_tip);
+
 
     void setTree(const std::string& robot_model);
-//    void setTree(const urdf::Model& robot_model);
     void setRootAndTip(const std::string& chain_root, const std::string& chain_tip);
 
+    //Solver Calls
     int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
                    std::vector<double>& torques, const std::vector<Wrench>& wrenches_ext = std::vector<Wrench>());
 
@@ -70,14 +70,17 @@ public:
 
     int getIKSolution(const tf::Pose &pose, std::vector<double> &result, const std::vector<double>& seed = std::vector<double>());
 
-    int getKDLSegmentIndexFK(const std::string &name) const;
 
     void getRandomConfig(std::vector<double>& config);
-
+    int getKDLSegmentIndex(const std::string &name ) const;
+    int getKDLSegmentIndexFK(const std::string &name) const;
     int getNrOfJoints() const {return chain_.getNrOfJoints();}
     int getNrOfSegments() const {return chain_.getNrOfJoints();}
+    double getLinkMass(const std::string &link) const;
     std::string getRootLink() const {return root_;}
     std::string getTipLink() const {return tip_;}
+    tf::Vector3 getLinkCoM(const std::string &link) const;
+    tf::Matrix3x3 getLinkInertia(const std::string &link) const;
 
     static void convert(const KDL::JntArray& in, std::vector<double>& out);
     static void convert(const std::vector<double>& in, KDL::JntArray& out);
