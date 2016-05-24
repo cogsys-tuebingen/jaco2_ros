@@ -7,27 +7,27 @@
 #include <jaco2_kin_dyn/jaco2_kinematics_dynamics.h>
 
 
-Jaco2KinematicsDynamics jaco2KDL;
+Jaco2KinematicsDynamicsModel jaco2KDL;
 
-TEST(Jaco2KinematicsDynamicsTest,converttest)
+TEST(Jaco2KinematicsDynamicsModelTest,converttest)
 {
     KDL::JntArray q(6);
     std::vector<double> qvec;
     for(int i = 0; i< 6; ++i){
         q(i) = i;
     }
-    Jaco2KinematicsDynamics::convert(q,qvec);
+    Jaco2KinematicsDynamicsModel::convert(q,qvec);
     for(int i =0; i<6; ++i){
         EXPECT_EQ(q(i),qvec[i]);
     }
     KDL::JntArray q2;
-    Jaco2KinematicsDynamics::convert(qvec,q2);
+    Jaco2KinematicsDynamicsModel::convert(qvec,q2);
     for(int i =0; i<6; ++i){
         EXPECT_EQ(q2(i),qvec[i]);
     }
 }
 
-TEST(Jaco2KinematicsDynamicsTest,chaintest)
+TEST(Jaco2KinematicsDynamicsModelTest,chaintest)
 {
     EXPECT_TRUE(jaco2KDL.getRootLink().find("jaco_link_base")!=std::string::npos);
     EXPECT_TRUE(jaco2KDL.getTipLink().find("jaco_link_hand")!=std::string::npos);
@@ -35,7 +35,7 @@ TEST(Jaco2KinematicsDynamicsTest,chaintest)
     EXPECT_EQ(jaco2KDL.getNrOfSegments(),6);
 }
 
-TEST(Jaco2KinematicsDynamicsTest, DynParam)
+TEST(Jaco2KinematicsDynamicsModelTest, DynParam)
 {
     tf::Vector3 comLink1 = jaco2KDL.getLinkCoM("jaco_link_1");
     EXPECT_NEAR(comLink1.getX(), 0, 1e-4);
@@ -64,8 +64,25 @@ TEST(Jaco2KinematicsDynamicsTest, DynParam)
     EXPECT_NEAR(inertia.getColumn(2).getZ(),  0.0243, 1e-4);
 
 }
+TEST(Jaco2KinematicsDynamicsModelTEST, KinParam)
+{
+    tf::Vector3 trans = jaco2KDL.getLinkFixedTranslation("jaco_link_1");
+    tf::Matrix3x3 rot = jaco2KDL.getLinkFixedRotation("jaco_link_1");
+    EXPECT_NEAR(trans.getX(), 0, 1e-4);
+    EXPECT_NEAR(trans.getY(), 0, 1e-4);
+    EXPECT_NEAR(trans.getZ(), 0.1535, 1e-4);
+    EXPECT_NEAR(rot.getRow(0).getX(),  1, 1e-4);
+    EXPECT_NEAR(rot.getRow(0).getY(),  0, 1e-4);
+    EXPECT_NEAR(rot.getRow(0).getZ(),  0, 1e-4);
+    EXPECT_NEAR(rot.getRow(1).getX(),  0, 1e-4);
+    EXPECT_NEAR(rot.getRow(1).getY(), -1, 1e-4);
+    EXPECT_NEAR(rot.getRow(1).getZ(),  0, 1e-4);
+    EXPECT_NEAR(rot.getRow(2).getX(),  0, 1e-4);
+    EXPECT_NEAR(rot.getRow(2).getY(),  0, 1e-4);
+    EXPECT_NEAR(rot.getRow(2).getZ(), -1, 1e-4);
+}
 
-TEST(Jaco2KinematicsDynamicsTest,inverseDynamics)
+TEST(Jaco2KinematicsDynamicsModelTest,inverseDynamics)
 {
     std::vector<double> q = {0, M_PI, M_PI, 0, 0, M_PI};
     std::vector<double> qDot;
@@ -92,7 +109,7 @@ TEST(Jaco2KinematicsDynamicsTest,inverseDynamics)
      }
 }
 
-TEST(Jaco2KinematicsDynamicsTest, fk)
+TEST(Jaco2KinematicsDynamicsModelTest, fk)
 {
     std::vector<double> q = {0, M_PI, M_PI, 0, 0, M_PI};
     tf::Vector3 posH(-0.000, 0.063, 1.018);
@@ -124,7 +141,29 @@ TEST(Jaco2KinematicsDynamicsTest, fk)
 
 }
 
-TEST(Jaco2KinematicsDynamicsTest, IK)
+TEST(Jaco2KinematicsDynamicsModelTest, changeDynParam)
+{
+    tf::Vector3 com(0, 0, 0);
+    tf::Matrix3x3 mat(1, 2, 3,
+                      4, 5, 6,
+                      7, 8, 9);
+    jaco2KDL.changeDynamicParams("jaco_link_1",com,mat);
+    tf::Vector3 v = jaco2KDL.getLinkCoM("jaco_link_1");
+    tf::Matrix3x3 mat2 = jaco2KDL.getLinkInertia("jaco_link_1");
+    EXPECT_EQ(v.getX(),com.getX());
+    EXPECT_EQ(v.getY(),com.getY());
+    EXPECT_EQ(v.getZ(),com.getZ());
+    EXPECT_EQ(mat2.getRow(0).getX(), mat.getRow(0).getX());
+    EXPECT_EQ(mat2.getRow(0).getY(), mat.getRow(0).getY());
+    EXPECT_EQ(mat2.getRow(0).getZ(), mat.getRow(0).getZ());
+    EXPECT_EQ(mat2.getRow(1).getY(), mat.getRow(1).getY());
+    EXPECT_EQ(mat2.getRow(1).getZ(), mat.getRow(1).getZ());
+    EXPECT_EQ(mat2.getRow(2).getZ(), mat.getRow(2).getZ());
+    jaco2KDL.useUrdfDynamicParams();
+
+}
+
+TEST(Jaco2KinematicsDynamicsModelTest, IK)
 {
     std::vector<double> zero;
     std::vector<double> jointAngles  = {0, M_PI, M_PI, 0, 0, M_PI};
@@ -169,6 +208,8 @@ TEST(Jaco2KinematicsDynamicsTest, IK)
     std::cout << "success rate: " <<  successRate << std::endl;
 }
 
+
+
 int main(int argc, char *argv[])
 {
     testing::InitGoogleTest(&argc, argv);
@@ -178,7 +219,7 @@ int main(int argc, char *argv[])
     std::string robot_desc_string;
     //    node.getParam("/robot_description", robot_desc_string);//, std::string(""));
     std::string urdf_param("robot_description");
-    jaco2KDL = Jaco2KinematicsDynamics(urdf_param,"jaco_link_base","jaco_link_hand");
+    jaco2KDL = Jaco2KinematicsDynamicsModel(urdf_param,"jaco_link_base","jaco_link_hand");
 
     return RUN_ALL_TESTS();
 }

@@ -10,12 +10,12 @@
 
 
 
-Jaco2KinematicsDynamics::Jaco2KinematicsDynamics():
+Jaco2KinematicsDynamicsModel::Jaco2KinematicsDynamicsModel():
     gravity_(0,0,-9.81)//, solverID_(chain_,gravity_)
 {
 }
 
-Jaco2KinematicsDynamics::Jaco2KinematicsDynamics(const std::string &robot_model, const std::string& chain_root, const std::string& chain_tip):
+Jaco2KinematicsDynamicsModel::Jaco2KinematicsDynamicsModel(const std::string &robot_model, const std::string& chain_root, const std::string& chain_tip):
     urdf_param_(robot_model), root_(chain_root), tip_(chain_tip), gravity_(0,0,-9.81)//, solverID_(chain_,gravity_)
 {
 
@@ -50,7 +50,7 @@ Jaco2KinematicsDynamics::Jaco2KinematicsDynamics(const std::string &robot_model,
         std::cout << "Number of Joints: " << chain_.getNrOfJoints() << " | Number of Segments: " << chain_.getNrOfSegments() << std::endl;
 }
 
-void Jaco2KinematicsDynamics::setTree(const std::string &robot_model)
+void Jaco2KinematicsDynamicsModel::setTree(const std::string &robot_model)
 {
 
     robot_model_.initString(robot_model);
@@ -58,13 +58,14 @@ void Jaco2KinematicsDynamics::setTree(const std::string &robot_model)
     initialize();
 }
 
-void Jaco2KinematicsDynamics::initialize()
+void Jaco2KinematicsDynamicsModel::initialize()
 {
     if (!kdl_parser::treeFromUrdfModel(robot_model_, tree_)){
         ROS_ERROR("Failed to construct kdl tree");
         return;
     }
     if(tree_.getChain(root_,tip_,chain_)){
+        chainFile_ = chain_;
         // inverse dynamics solver
         solverID_ = std::shared_ptr<KDL::ChainIdSolver_RNE>(new KDL::ChainIdSolver_RNE(chain_,gravity_));
 //        solverID_ = KDL::ChainIdSolver_RNE(chain_,gravity_);
@@ -88,13 +89,13 @@ void Jaco2KinematicsDynamics::initialize()
     }
 }
 
-void::Jaco2KinematicsDynamics::setRootAndTip(const std::string &chain_root, const std::string &chain_tip)
+void::Jaco2KinematicsDynamicsModel::setRootAndTip(const std::string &chain_root, const std::string &chain_tip)
 {
     root_ = chain_root;
     tip_ = chain_tip;
 }
 
-int Jaco2KinematicsDynamics::getTorques(const std::vector<double> &q, const std::vector<double> &q_Dot, const std::vector<double> &q_DotDot,
+int Jaco2KinematicsDynamicsModel::getTorques(const std::vector<double> &q, const std::vector<double> &q_Dot, const std::vector<double> &q_DotDot,
                                         std::vector<double> &torques, const std::vector<Wrench> &wrenches_ext)
 {
     if(q.size() != q_Dot.size() && q.size() != q_DotDot.size() && q.size() != chain_.getNrOfJoints()){
@@ -139,7 +140,7 @@ int Jaco2KinematicsDynamics::getTorques(const std::vector<double> &q, const std:
     return e_code;
 }
 
-int Jaco2KinematicsDynamics::getFKPose(const std::vector<double> &q_in, tf::Pose &out, std::string link)
+int Jaco2KinematicsDynamicsModel::getFKPose(const std::vector<double> &q_in, tf::Pose &out, std::string link)
 {
     KDL::JntArray q;
     KDL::Frame pose;
@@ -162,7 +163,7 @@ int Jaco2KinematicsDynamics::getFKPose(const std::vector<double> &q_in, tf::Pose
     }
 }
 
-int Jaco2KinematicsDynamics::getIKSolution(const tf::Pose& pose, std::vector<double>& result, const std::vector<double> &seed)
+int Jaco2KinematicsDynamicsModel::getIKSolution(const tf::Pose& pose, std::vector<double>& result, const std::vector<double> &seed)
 {
     KDL::JntArray q, solution;
     KDL::Frame frame;
@@ -186,7 +187,65 @@ int Jaco2KinematicsDynamics::getIKSolution(const tf::Pose& pose, std::vector<dou
     return error_code;
 }
 
-int Jaco2KinematicsDynamics::getKDLSegmentIndexFK(const std::string &name) const
+
+void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, const tf::Vector3 &com, const tf::Matrix3x3 inertia)
+{
+    int segId = getKDLSegmentIndex(link);
+    if(segId > -1)
+    {
+        KDL::Vector cog(com.getX(), com.getY(), com.getZ());
+        KDL::RotationalInertia inertiaKDL(inertia.getRow(0).getX(), inertia.getRow(1).getY(), inertia.getRow(2).getZ(),
+                                          inertia.getRow(0).getY(), inertia.getRow(0).getZ(), inertia.getRow(1).getZ());
+
+        KDL::Chain newChain;
+        for(int i = 0; i < segId; ++i)
+        {
+            newChain.addSegment(chain_.getSegment(i));
+        }
+        KDL::Segment oldSeg = chain_.getSegment(segId);
+        KDL::RigidBodyInertia oldInertia = oldSeg.getInertia();
+        KDL::RigidBodyInertia newInertia(oldInertia.getMass(), cog, inertiaKDL);
+        KDL::Segment newSeg(oldSeg.getName(),oldSeg.getJoint(), oldSeg.getFrameToTip(), newInertia);
+        newChain.addSegment(newSeg);
+        for(int i = segId +1; i < chain_.getNrOfSegments(); ++i)
+        {
+            newChain.addSegment(chain_.getSegment(i));
+        }
+        chain_ = newChain;
+    }
+}
+
+void Jaco2KinematicsDynamicsModel::changeKineticParams(const std::string &link, const tf::Vector3 &trans, const tf::Matrix3x3 rotation)
+{
+    {
+        int segId = getKDLSegmentIndex(link);
+        if(segId > -1)
+        {
+            KDL::Vector p(trans.getX(), trans.getY(), trans.getZ());
+//            KDL::Rotation rot(xx,yx,zx,xy,yy,zy,xz,yz,zz);
+            KDL::Rotation rot(rotation.getColumn(0).getX(), rotation.getColumn(0).getY(), rotation.getColumn(0).getZ(),
+                              rotation.getColumn(1).getX(), rotation.getColumn(1).getY(), rotation.getColumn(1).getZ(),
+                              rotation.getColumn(2).getX(), rotation.getColumn(2).getY(), rotation.getColumn(2).getZ());
+
+            KDL::Chain newChain;
+            for(int i = 0; i < segId; ++i)
+            {
+                newChain.addSegment(chain_.getSegment(i));
+            }
+            KDL::Segment oldSeg = chain_.getSegment(segId);
+            KDL::Frame matT(rot,p);
+            KDL::Segment newSeg(oldSeg.getName(),oldSeg.getJoint(), matT, oldSeg.getInertia());
+            newChain.addSegment(newSeg);
+            for(int i = segId +1; i < chain_.getNrOfSegments(); ++i)
+            {
+                newChain.addSegment(chain_.getSegment(i));
+            }
+            chain_ = newChain;
+        }
+    }
+}
+
+int Jaco2KinematicsDynamicsModel::getKDLSegmentIndexFK(const std::string &name) const
 {
     for(int i=0; i < chain_.getNrOfSegments(); ++i)
     {
@@ -206,7 +265,7 @@ int Jaco2KinematicsDynamics::getKDLSegmentIndexFK(const std::string &name) const
     return -2;
 }
 
-int Jaco2KinematicsDynamics::getKDLSegmentIndex(const std::string &name) const
+int Jaco2KinematicsDynamicsModel::getKDLSegmentIndex(const std::string &name) const
 {
     for(int i=0; i < chain_.getNrOfSegments(); ++i)
     {
@@ -219,7 +278,7 @@ int Jaco2KinematicsDynamics::getKDLSegmentIndex(const std::string &name) const
     return -1;
 }
 
-void Jaco2KinematicsDynamics::getRandomConfig(std::vector<double>& config)
+void Jaco2KinematicsDynamicsModel::getRandomConfig(std::vector<double>& config)
 {
     KDL::JntArray ub, lb;
     solverIK_->getKDLLimits(lb, ub);
@@ -231,7 +290,7 @@ void Jaco2KinematicsDynamics::getRandomConfig(std::vector<double>& config)
         config[i] = jointDist_[i](randEng_);
     }
 }
-double Jaco2KinematicsDynamics::getLinkMass(const std::string &link) const
+double Jaco2KinematicsDynamicsModel::getLinkMass(const std::string &link) const
 {
     int segmentID = getKDLSegmentIndex(link);
     if(segmentID > -1){
@@ -242,7 +301,7 @@ double Jaco2KinematicsDynamics::getLinkMass(const std::string &link) const
         return 0;
     }
 }
-tf::Vector3 Jaco2KinematicsDynamics::getLinkCoM(const std::string &link) const
+tf::Vector3 Jaco2KinematicsDynamicsModel::getLinkCoM(const std::string &link) const
 {
     int segmentID = getKDLSegmentIndex(link);
     if(segmentID > -1){
@@ -256,7 +315,7 @@ tf::Vector3 Jaco2KinematicsDynamics::getLinkCoM(const std::string &link) const
     }
 }
 
-tf::Matrix3x3 Jaco2KinematicsDynamics::getLinkInertia(const std::string &link) const
+tf::Matrix3x3 Jaco2KinematicsDynamicsModel::getLinkInertia(const std::string &link) const
 {
     int segmentID = getKDLSegmentIndex(link);
     if(segmentID > -1){
@@ -273,7 +332,39 @@ tf::Matrix3x3 Jaco2KinematicsDynamics::getLinkInertia(const std::string &link) c
     }
 }
 
-void Jaco2KinematicsDynamics::convert(const KDL::JntArray &in, std::vector<double> &out)
+tf::Vector3 Jaco2KinematicsDynamicsModel::getLinkFixedTranslation(const std::string &link) const
+{
+    int segmentID = getKDLSegmentIndex(link);
+    if(segmentID > -1){
+        KDL::Vector vec = chain_.getSegment(segmentID).getFrameToTip().p;
+        tf::Vector3 result(vec(0), vec(1), vec(2));
+        return result;
+    }
+    else{
+        ROS_ERROR_STREAM("Link " << link << " not found! Wrong name?");
+        return tf::Vector3();
+    }
+}
+
+tf::Matrix3x3 Jaco2KinematicsDynamicsModel::getLinkFixedRotation(const std::string &link) const
+{
+    int segmentID = getKDLSegmentIndex(link);
+    if(segmentID > -1){
+        KDL::Rotation mat = chain_.getSegment(segmentID).getFrameToTip().M;
+        tf::Matrix3x3 result;
+        result.setValue(mat.data[0], mat.data[3], mat.data[6],
+                        mat.data[1], mat.data[4], mat.data[7],
+                        mat.data[2], mat.data[5], mat.data[8]);
+        return result;
+    }
+    else{
+        ROS_ERROR_STREAM("Link " << link << " not found! Wrong name?");
+        return tf::Matrix3x3();
+    }
+}
+
+
+void Jaco2KinematicsDynamicsModel::convert(const KDL::JntArray &in, std::vector<double> &out)
 {
     out.resize(in.rows());
     for(std::size_t i = 0; i < out.size(); ++i)
@@ -282,7 +373,7 @@ void Jaco2KinematicsDynamics::convert(const KDL::JntArray &in, std::vector<doubl
     }
 }
 
-void Jaco2KinematicsDynamics::convert(const std::vector<double> &in, KDL::JntArray &out)
+void Jaco2KinematicsDynamicsModel::convert(const std::vector<double> &in, KDL::JntArray &out)
 {
     out.resize(in.size());
     for(std::size_t i = 0; i < out.rows(); ++i)
@@ -291,7 +382,7 @@ void Jaco2KinematicsDynamics::convert(const std::vector<double> &in, KDL::JntArr
     }
 }
 
-void Jaco2KinematicsDynamics::PoseTFToKDL(const tf::Pose& t, KDL::Frame& k)
+void Jaco2KinematicsDynamicsModel::PoseTFToKDL(const tf::Pose& t, KDL::Frame& k)
 {
     for (unsigned int i = 0; i < 3; ++i){
         k.p[i] = t.getOrigin()[i];

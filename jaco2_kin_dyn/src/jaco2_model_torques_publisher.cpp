@@ -16,6 +16,7 @@ public:
         boost::function<void(const sensor_msgs::JointStateConstPtr&)> cb = boost::bind(&Jaco2TorquePublisher::jointStateCb, this, _1);
         subJointState_ = private_nh_.subscribe("/jaco_arm_driver/out/joint_states", 1, cb);
         publisher_ = private_nh_.advertise<jaco2_msgs::JointAngles>("model_torques",2);
+        diffPublisher_ = private_nh_.advertise<jaco2_msgs::JointAngles>("torque_diffs",2);
         lastTime_ = ros::Time::now();
     }
 
@@ -26,6 +27,7 @@ public:
             jointVel_.resize(6);
             jointVelLast_.resize(6);
             jointAcc_.resize(6);
+            jointTorques_.resize(6);
             modelTorques_.resize(6);
             for(std::size_t i = 0; i < 6; ++i){
 
@@ -41,6 +43,7 @@ public:
         for(std::size_t i = 0; i < 6; ++i){
             jointPos_[i] = msg->position[i];
             jointVel_[i] = msg->velocity[i];
+            jointTorques_[i] = msg->effort[i];
 
         }
         for(std::size_t i = 0; i < 6; ++i){
@@ -67,6 +70,16 @@ public:
             pubMsg.joint5 = modelTorques_[4];
             pubMsg.joint6 = modelTorques_[5];
             publisher_.publish(pubMsg);
+
+            jaco2_msgs::JointAngles diffMsg;
+
+            diffMsg.joint1 = modelTorques_[0] / jointTorques_[0];
+            diffMsg.joint2 = modelTorques_[1] / jointTorques_[1];
+            diffMsg.joint3 = modelTorques_[2] / jointTorques_[2];
+            diffMsg.joint4 = modelTorques_[3] / jointTorques_[3];
+            diffMsg.joint5 = modelTorques_[4] / jointTorques_[4];
+            diffMsg.joint6 = modelTorques_[5] / jointTorques_[5];
+            diffPublisher_.publish(diffMsg);
         }
     }
 
@@ -74,13 +87,15 @@ public:
 private:
     bool inital_;
     ros::NodeHandle private_nh_;
-    Jaco2KinematicsDynamics solver_;
+    Jaco2KinematicsDynamicsModel solver_;
     ros::Subscriber subJointState_;
     ros::Publisher publisher_;
+    ros::Publisher diffPublisher_;
     std::vector<double> jointPos_;
     std::vector<double> jointVel_;
     std::vector<double> jointVelLast_;
     std::vector<double> jointAcc_;
+    std::vector<double> jointTorques_;
     std::vector<double> modelTorques_;
     ros::Time lastTime_;
     double dt_;
@@ -93,7 +108,7 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "pub_jaco2_model_torques");
 //    ros::NodeHandle node("~");
     Jaco2TorquePublisher jacomodel("robot_description","jaco_link_base","jaco_link_hand");
-    ros::Rate r(10);
+    ros::Rate r(80);
     while(ros::ok()){
         ros::spinOnce();
         jacomodel.tick();
