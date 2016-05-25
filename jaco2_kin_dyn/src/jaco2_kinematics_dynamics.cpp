@@ -188,7 +188,7 @@ int Jaco2KinematicsDynamicsModel::getIKSolution(const tf::Pose& pose, std::vecto
 }
 
 
-void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, const tf::Vector3 &com, const tf::Matrix3x3 inertia)
+void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, const double mass, const tf::Vector3 &com, const tf::Matrix3x3 inertia)
 {
     int segId = getKDLSegmentIndex(link);
     if(segId > -1)
@@ -203,8 +203,8 @@ void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, 
             newChain.addSegment(chain_.getSegment(i));
         }
         KDL::Segment oldSeg = chain_.getSegment(segId);
-        KDL::RigidBodyInertia oldInertia = oldSeg.getInertia();
-        KDL::RigidBodyInertia newInertia(oldInertia.getMass(), cog, inertiaKDL);
+//        KDL::RigidBodyInertia oldInertia = oldSeg.getInertia();
+        KDL::RigidBodyInertia newInertia(mass, cog, inertiaKDL);
         KDL::Segment newSeg(oldSeg.getName(),oldSeg.getJoint(), oldSeg.getFrameToTip(), newInertia);
         newChain.addSegment(newSeg);
         for(int i = segId +1; i < chain_.getNrOfSegments(); ++i)

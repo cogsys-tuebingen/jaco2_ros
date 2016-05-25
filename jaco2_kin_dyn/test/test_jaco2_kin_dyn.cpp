@@ -147,7 +147,7 @@ TEST(Jaco2KinematicsDynamicsModelTest, changeDynParam)
     tf::Matrix3x3 mat(1, 2, 3,
                       4, 5, 6,
                       7, 8, 9);
-    jaco2KDL.changeDynamicParams("jaco_link_1",com,mat);
+    jaco2KDL.changeDynamicParams("jaco_link_1",jaco2KDL.getLinkMass("jaco_link_1"), com,mat);
     tf::Vector3 v = jaco2KDL.getLinkCoM("jaco_link_1");
     tf::Matrix3x3 mat2 = jaco2KDL.getLinkInertia("jaco_link_1");
     EXPECT_EQ(v.getX(),com.getX());
