@@ -233,43 +233,16 @@ void Point2PointVelocityController::evaluationOutput()
     }
     ManipulatorInfo totalError = ManipulatorInfo::sum(rootSquaredDiff);
     ManipulatorInfo standardDev = ManipulatorInfo::elment_sqrt(ManipulatorInfo::variance(posDiff_,meanError));
-    std::cout << "sum of the root of the squared differences (total error) : " ;
-    for(std::size_t i = 0; i < totalError.length_; ++i)
-    {
-        std::cout << totalError[i] << " | ";
-    }
-    std::cout << std::endl;
-    std::cout << "meanErrors : " ;
-    for(std::size_t i = 0; i < meanError.length_; ++i)
-    {
-        std::cout << meanError[i] << " | ";
-    }
-    std::cout << std::endl;
-    std::cout << "Standard deviation : " ;
-    for(std::size_t i = 0; i < meanError.length_; ++i)
-    {
-        std::cout << standardDev[i] << " | ";
-    }
-    std::cout << std::endl;
-    std::cout << "maxErrors : " ;
-    for(std::size_t i = 0; i < meanError.length_; ++i)
-    {
-        std::cout << maxError[i] << " | ";
-    }
-    std::cout << std::endl;
-    ManipulatorInfo diff = posDiff_.back();
-    std::cout << "endPointError : " ;
-    for(std::size_t i = 0; i < diff.length_; ++i)
-    {
-        std::cout << diff[i] << " | ";
-    }
-    std::cout << std::endl;
+    std::cout << "sum of the root of the squared differences (SRS) /total error : " << totalError.toString() << std::endl;
+    ManipulatorInfo meanSRS = ManipulatorInfo::mean(rootSquaredDiff);
+    std::cout << "mean SRS : " <<  meanSRS.toString() << std::endl;
+    std::cout << "std SRS : " <<  ManipulatorInfo::elment_sqrt(ManipulatorInfo::variance(rootSquaredDiff,meanSRS)).toString() << std::endl;
+    std::cout << "meanErrors : " << meanError.toString() << std::endl;
+    std::cout << "Standard deviation : " << standardDev.toString() << std::endl;
+    std::cout << "maxErrors : " << maxError.toString() << std::endl;
+    std::cout << "endPointDifference : " << posDiff_.back().toString() << std::endl;
     ManipulatorInfo vmax;
     ManipulatorInfo::max(paramsLinear_,vmax);
-    std::cout << "max velocity : " ;
-    for(std::size_t i = 0; i < vmax.length_; ++i)
-    {
-        std::cout << vmax[i] << " | ";
-    }
+    std::cout << "max velocity : " << vmax.toString() << std::endl;
     std::cout << std::endl;
 }

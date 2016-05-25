@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <stdexcept>
 #include <vector>
+#include <string>
 #include <math.h>
 
 #include <kinova/KinovaTypes.h>
@@ -175,6 +176,15 @@ public:
         return res;
     }
 
+    std::string toString() const
+    {
+        std::string res;
+        for(std::size_t j = 0; j < length_; ++ j)
+        {
+            res += std::to_string(values_[j]) + std::string(" | ");
+        }
+
+    }
 
     AngularInfo toAngularInfo() const
     {
