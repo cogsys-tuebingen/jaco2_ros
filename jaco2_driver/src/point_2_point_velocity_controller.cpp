@@ -78,37 +78,7 @@ void Point2PointVelocityController::write()
             tp_.InitStruct();
             tp_.Position.Type = ANGULAR_VELOCITY;
             api_.setAngularVelocity(tp_);
-            std::cout << "posDiff_.size(): " <<  posDiff_.size() << " | trajectory_.size(): " << trajectory_.size() << std::endl;
-            ManipulatorInfo meanError = ManipulatorInfo::mean(posDiff_);
-            ManipulatorInfo maxError;
-            ManipulatorInfo::max(posDiff_,maxError);
-            std::cout << "meanErrors : " ;
-            for(std::size_t i = 0; i < meanError.length_; ++i)
-            {
-                std::cout << meanError[i] << " | ";
-            }
-            std::cout << std::endl;
-            std::cout << "maxErrors : " ;
-            for(std::size_t i = 0; i < meanError.length_; ++i)
-            {
-                std::cout << maxError[i] << " | ";
-            }
-            std::cout << std::endl;
-            ManipulatorInfo diff = posDiff_.back();
-            std::cout << "endPointError : " ;
-            for(std::size_t i = 0; i < diff.length_; ++i)
-            {
-                std::cout << diff[i] << " | ";
-            }
-            std::cout << std::endl;
-            ManipulatorInfo vmax;
-            ManipulatorInfo::max(paramsLinear_,vmax);
-            std::cout << "max velocity : " ;
-            for(std::size_t i = 0; i < vmax.length_; ++i)
-            {
-                std::cout << vmax[i] << " | ";
-            }
-            std::cout << std::endl;
+            evaluationOutput();
             return;
         }
     }
@@ -245,4 +215,61 @@ AngularInfo Point2PointVelocityController::getJointError() const
         error = posDiff_[current_point_].toAngularInfo();
     }
     return error;
+}
+
+
+void Point2PointVelocityController::evaluationOutput()
+{
+    std::cout << "posDiff_.size(): " <<  posDiff_.size() << " | trajectory_.size(): " << trajectory_.size() << std::endl;
+    ManipulatorInfo meanError = ManipulatorInfo::mean(posDiff_);
+    ManipulatorInfo maxError;
+    ManipulatorInfo::max(posDiff_,maxError);
+    std::vector<ManipulatorInfo> rootSquaredDiff;
+    for(auto diff : posDiff_)
+    {
+        ManipulatorInfo tmp = ManipulatorInfo::elment_sqrt(diff * diff);
+        rootSquaredDiff.push_back(tmp);
+
+    }
+    ManipulatorInfo totalError = ManipulatorInfo::sum(rootSquaredDiff);
+    ManipulatorInfo standardDev = ManipulatorInfo::elment_sqrt(ManipulatorInfo::variance(posDiff_,meanError));
+    std::cout << "sum of the root of the squared differences (total error) : " ;
+    for(std::size_t i = 0; i < totalError.length_; ++i)
+    {
+        std::cout << totalError[i] << " | ";
+    }
+    std::cout << std::endl;
+    std::cout << "meanErrors : " ;
+    for(std::size_t i = 0; i < meanError.length_; ++i)
+    {
+        std::cout << meanError[i] << " | ";
+    }
+    std::cout << std::endl;
+    std::cout << "Standard deviation : " ;
+    for(std::size_t i = 0; i < meanError.length_; ++i)
+    {
+        std::cout << standardDev[i] << " | ";
+    }
+    std::cout << std::endl;
+    std::cout << "maxErrors : " ;
+    for(std::size_t i = 0; i < meanError.length_; ++i)
+    {
+        std::cout << maxError[i] << " | ";
+    }
+    std::cout << std::endl;
+    ManipulatorInfo diff = posDiff_.back();
+    std::cout << "endPointError : " ;
+    for(std::size_t i = 0; i < diff.length_; ++i)
+    {
+        std::cout << diff[i] << " | ";
+    }
+    std::cout << std::endl;
+    ManipulatorInfo vmax;
+    ManipulatorInfo::max(paramsLinear_,vmax);
+    std::cout << "max velocity : " ;
+    for(std::size_t i = 0; i < vmax.length_; ++i)
+    {
+        std::cout << vmax[i] << " | ";
+    }
+    std::cout << std::endl;
 }

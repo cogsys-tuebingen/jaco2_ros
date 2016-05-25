@@ -76,7 +76,20 @@ public:
         {
             res.values_[i] = values_[i] *  b;
         }
+        return res;
     }
+
+    ManipulatorInfo operator*(const ManipulatorInfo &other)
+    {
+        ManipulatorInfo res;
+        for(std::size_t i = 0; i < length_; ++ i)
+        {
+            res.values_[i] = values_[i] *  other.values_[i];
+        }
+        return res;
+    }
+
+
 
     ManipulatorInfo& operator*=(const double &b)
     {
@@ -84,6 +97,37 @@ public:
         {
             values_[i] *= b;
         }
+    }
+
+    ManipulatorInfo operator+(const ManipulatorInfo &other)
+    {
+        ManipulatorInfo res;
+        for(std::size_t i = 0; i < length_; ++ i)
+        {
+            res.values_[i] = values_[i] +  other[i];
+        }
+        return res;
+    }
+
+    ManipulatorInfo operator-(const ManipulatorInfo &other)
+    {
+        ManipulatorInfo res;
+        for(std::size_t i = 0; i < length_; ++ i)
+        {
+            res.values_[i] = values_[i] -  other[i];
+        }
+        return res;
+    }
+
+
+    double getSum()
+    {
+        double res = 0;
+        for(std::size_t i = 0; i < length_; ++ i)
+        {
+            res += values_[i];
+        }
+        return res;
     }
 
     void normalizeAngleDegrees()
@@ -131,6 +175,7 @@ public:
         return res;
     }
 
+
     AngularInfo toAngularInfo() const
     {
         AngularInfo res;
@@ -168,6 +213,34 @@ public:
         return res;
     }
 
+    static ManipulatorInfo variance(const std::vector<ManipulatorInfo>& vec, const ManipulatorInfo& mean)
+    {
+        std::vector<ManipulatorInfo> tmp;
+        tmp.resize(tmp.size());
+        for(std::size_t i = 0; i <vec.size(); ++i)
+        {
+            for(std::size_t j = 0; j < vec[i].length_; ++ j)
+            {
+                tmp[i][j] = mean[j] - vec[i][j];
+                tmp[i][j] *= tmp[i][j];
+            }
+        }
+        return ManipulatorInfo::sum(tmp);
+    }
+
+    static ManipulatorInfo sum(const std::vector<ManipulatorInfo>& vec)
+    {
+        ManipulatorInfo res;
+        for(std::size_t i = 0; i <vec.size(); ++i)
+        {
+            for(std::size_t j = 0; j < vec[i].length_; ++ j)
+            {
+                res[j] += vec[i][j];
+            }
+        }
+        return res;
+    }
+
     static void max(const std::vector<ManipulatorInfo>& vec, ManipulatorInfo& max, std::vector<std::size_t>& id )
     {
         id.resize(max.length_);
@@ -196,6 +269,17 @@ public:
                 }
             }
         }
+    }
+
+    static ManipulatorInfo elment_sqrt(const ManipulatorInfo& x)
+    {
+        ManipulatorInfo res;
+        for(std::size_t i = 0; i < res.length_; ++ i)
+        {
+            double val = x[i];
+            res[i] = sqrt(val);
+        }
+        return res;
     }
 
 

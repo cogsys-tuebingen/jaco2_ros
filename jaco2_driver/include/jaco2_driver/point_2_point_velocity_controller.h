@@ -52,6 +52,8 @@ private:
     void pidController(const double dt);
     void simpleVelController(const double dt);
 
+    void evaluationOutput();
+
 
 };
 #endif // POINT_2_POINT_VELOCITY_CONTROLLER_H
