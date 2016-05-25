@@ -1,6 +1,20 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jaco2_calibration)
 
+#############
+## C++ 11  ##
+#############
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+if(COMPILER_SUPPORTS_CXX11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+elseif(COMPILER_SUPPORTS_CXX0X)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+else()
+        message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+endif()
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -117,20 +131,24 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
   ${EIGEN_INCLUDE_DIR}
   ${CERES_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(jaco2_calibration
-#   src/${PROJECT_NAME}/jaco2_calibration.cpp
-# )
+add_library(jaco2_calibration
+    include/jaco2_calibration/com_inertia_residuals.hpp
+    include/jaco2_calibration/dynamic_calibration_sample.hpp
+    include/jaco2_calibration/jaco2_calibration.h
+    src/jaco2_calibration.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(jaco2_calibration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(jaco2_calibration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 # add_executable(jaco2_calibration_node src/jaco2_calibration_node.cpp)
@@ -140,10 +158,10 @@ include_directories(
 # add_dependencies(jaco2_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(jaco2_calibration_node
-#   ${catkin_LIBRARIES}
-#   ${CERES_LIBRARIES}
-# )
+ target_link_libraries(jaco2_calibration
+   ${catkin_LIBRARIES}
+   ${CERES_LIBRARIES}
+)
 
 #############
 ## Install ##

@@ -119,7 +119,7 @@ find_package(orocos_kdl REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES jaco2_kin_dyn
-  CATKIN_DEPENDS kdl_parser roscpp tf
+  CATKIN_DEPENDS kdl_parser roscpp tf trac_ik_lib
   DEPENDS system_lib orocos_kdl
 )
 

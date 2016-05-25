@@ -363,6 +363,18 @@ tf::Matrix3x3 Jaco2KinematicsDynamicsModel::getLinkFixedRotation(const std::stri
     }
 }
 
+std::vector<std::string> Jaco2KinematicsDynamicsModel::getLinkNames() const
+{
+    std::vector<std::string> result;
+    result.resize(chain_.getNrOfSegments());
+    for(unsigned int i = 0; i < chain_.getNrOfSegments(); ++i){
+       std::string name = chain_.getSegment(i).getName();
+       result[i] = name;
+
+    }
+    return result;
+}
+
 
 void Jaco2KinematicsDynamicsModel::convert(const KDL::JntArray &in, std::vector<double> &out)
 {
