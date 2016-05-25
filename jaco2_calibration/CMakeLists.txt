@@ -25,11 +25,16 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   tf
+  moveit_core
+  moveit_msgs
+  moveit_ros_planning
+  moveit_ros_planning_interface
 )
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
+find_package(Boost REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -129,12 +134,12 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${EIGEN_INCLUDE_DIR}
   ${CERES_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -151,16 +156,24 @@ add_library(jaco2_calibration
 add_dependencies(jaco2_calibration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(jaco2_calibration_node src/jaco2_calibration_node.cpp)
+add_executable(jaco2_calibration_node src/jaco2_calibration_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(jaco2_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(jaco2_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(jaco2_calibration
    ${catkin_LIBRARIES}
    ${CERES_LIBRARIES}
+   ${Boost_LIBRARIES}
+)
+
+ target_link_libraries(jaco2_calibration_node
+   ${catkin_LIBRARIES}
+   ${CERES_LIBRARIES}
+   ${Boost_LIBRARIES}
+   jaco2_calibration
 )
 
 #############

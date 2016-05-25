@@ -61,6 +61,7 @@ struct DynamicCalibrationSample
         }
     }
 
+    double time;
     std::vector<double> jointPos;
     std::vector<double> jointVel;
     std::vector<double> jointAcc;

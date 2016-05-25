@@ -93,6 +93,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 ## Declare a C++ library
  add_library(jaco2_driver
@@ -117,6 +118,7 @@ include_directories(
 
  target_link_libraries(jaco2_driver
    ${catkin_LIBRARIES}
+   ${Boost_LIBRARIES}
 )
 
 ## Declare a C++ executable
@@ -129,6 +131,7 @@ add_dependencies(jaco2_driver_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_
 ## Specify libraries to link a library or executable target against
 target_link_libraries(jaco2_driver_node
    ${catkin_LIBRARIES}
+   ${Boost_LIBRARIES}
    jaco2_driver
 )
 

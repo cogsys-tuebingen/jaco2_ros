@@ -19,6 +19,8 @@ public:
 
     int calibrateCoMandInertia(const std::vector<DynamicCalibrationSample> &samples);
 
+    std::vector<DynamicCalibratedParameters> getDynamicCalibration() const { return dynParams_;}
+
 private:
     Jaco2KinematicsDynamicsModel model_;
     std::vector<DynamicCalibratedParameters> dynParams_;
