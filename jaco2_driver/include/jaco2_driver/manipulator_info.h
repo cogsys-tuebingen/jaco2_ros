@@ -176,14 +176,14 @@ public:
         return res;
     }
 
-    std::string toString() const
+    std::string toString(std::string delimiter = std::string(";")) const
     {
         std::string res;
         for(std::size_t j = 0; j < length_; ++ j)
         {
-            res += std::to_string(values_[j]) + std::string(" | ");
+            res += std::to_string(values_[j]) + delimiter;
         }
-
+        return res;
     }
 
     AngularInfo toAngularInfo() const

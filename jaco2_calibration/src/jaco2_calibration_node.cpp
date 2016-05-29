@@ -6,6 +6,7 @@
 
 #include <jaco2_calibration/jaco2_calibration.h>
 #include <jaco2_calibration/dynamic_calibration_sample.hpp>
+#include <jaco2_calibration/jaco2_calibration_io.hpp>
 
 class CalibNode
 {
@@ -61,11 +62,16 @@ public:
         }
         if(currentSamples_ == numberOfSamples_)
         {
+            std::cout << "calibrating ... " << std::endl;
             int ec = calibration_.calibrateCoMandInertia(samples_);
-            if(ec){
+            if(ec > -1){
                 std::vector<DynamicCalibratedParameters> dynparams = calibration_.getDynamicCalibration();
+                Jaco2CalibIO::save("/tmp/test_params.txt", dynparams);
+                Jaco2CalibIO::save("/tmp/data.txt",samples_);
+
             }
         }
+        std::cout << "recording data ... samples: " << currentSamples_  << std::endl;
 
     }
 
@@ -85,9 +91,9 @@ private:
 
 int main(int argc, char *argv[])
 {
-    ros::init(argc, argv, "jaco2_calibration node");
+    ros::init(argc, argv, "jaco2_calibration_node");
+    CalibNode node(false,"/robot_description","jaco_link_base","jaco_link_hand",7000);
     ros::Rate r(40);
-    CalibNode node(false,"robot_description","jaco_link_base","jaco_link_hand",10000);
     while (ros::ok()) {
         node.tick();
         r.sleep();

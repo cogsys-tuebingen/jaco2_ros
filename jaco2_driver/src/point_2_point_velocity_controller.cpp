@@ -231,18 +231,19 @@ void Point2PointVelocityController::evaluationOutput()
         rootSquaredDiff.push_back(tmp);
 
     }
+    std::string delimiter(" | ");
     ManipulatorInfo totalError = ManipulatorInfo::sum(rootSquaredDiff);
     ManipulatorInfo standardDev = ManipulatorInfo::elment_sqrt(ManipulatorInfo::variance(posDiff_,meanError));
-    std::cout << "sum of the root of the squared differences (SRS) /total error : " << totalError.toString() << std::endl;
+    std::cout << "sum of the root of the squared differences (SRS) /total error : " << totalError.toString(delimiter) << std::endl;
     ManipulatorInfo meanSRS = ManipulatorInfo::mean(rootSquaredDiff);
-    std::cout << "mean SRS : " <<  meanSRS.toString() << std::endl;
-    std::cout << "std SRS : " <<  ManipulatorInfo::elment_sqrt(ManipulatorInfo::variance(rootSquaredDiff,meanSRS)).toString() << std::endl;
-    std::cout << "meanErrors : " << meanError.toString() << std::endl;
-    std::cout << "Standard deviation : " << standardDev.toString() << std::endl;
-    std::cout << "maxErrors : " << maxError.toString() << std::endl;
-    std::cout << "endPointDifference : " << posDiff_.back().toString() << std::endl;
+    std::cout << "mean SRS : " <<  meanSRS.toString(delimiter) << std::endl;
+    std::cout << "std SRS : " <<  ManipulatorInfo::elment_sqrt(ManipulatorInfo::variance(rootSquaredDiff,meanSRS)).toString(delimiter) << std::endl;
+    std::cout << "meanErrors : " << meanError.toString(delimiter) << std::endl;
+    std::cout << "Standard deviation : " << standardDev.toString(delimiter) << std::endl;
+    std::cout << "maxErrors : " << maxError.toString(delimiter) << std::endl;
+    std::cout << "endPointDifference : " << posDiff_.back().toString(delimiter) << std::endl;
     ManipulatorInfo vmax;
     ManipulatorInfo::max(paramsLinear_,vmax);
-    std::cout << "max velocity : " << vmax.toString() << std::endl;
+    std::cout << "max velocity : " << vmax.toString(delimiter) << std::endl;
     std::cout << std::endl;
 }

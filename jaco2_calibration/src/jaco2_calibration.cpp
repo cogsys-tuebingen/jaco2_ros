@@ -56,7 +56,7 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
                                            dyn_calib_params[5], dyn_calib_params[7], dyn_calib_params[8]);
         dynParams_.push_back(linkparams);
 
-        return 0; // due to lack of better idea: TODO error handling
 
     }
+    return 0; // due to lack of better idea: TODO error handling
 }

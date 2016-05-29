@@ -6,11 +6,12 @@ struct DynamicCalibrationSample
 {
     DynamicCalibrationSample()
     {
-        jointPos.resize(6);
-        jointVel.resize(6);
-        jointAcc.resize(6);
-        jointTorque.resize(6);
+        jointPos.resize(length);
+        jointVel.resize(length);
+        jointAcc.resize(length);
+        jointTorque.resize(length);
     }
+
 
     DynamicCalibrationSample(const DynamicCalibrationSample& sample):
         jointPos(sample.jointPos),
@@ -22,7 +23,7 @@ struct DynamicCalibrationSample
 
     void set(std::size_t index, double pos, double vel, double acc, double torque)
     {
-        if(index > -1 && index < 6){
+        if(index > -1 && index < length){
             jointPos[index] = pos;
             jointVel[index] = vel;
             jointAcc[index] = acc;
@@ -35,8 +36,8 @@ struct DynamicCalibrationSample
 
     void set(const std::vector<double>& pos, const std::vector<double>& vel, const std::vector<double>& acc, const std::vector<double>& torque)
     {
-        if(pos.size() >= 6 && vel.size() >= 6 && acc.size() >=6 &&  torque.size() >=6) {
-            for(std::size_t i = 0; i < 6; ++i)
+        if(pos.size() >= length && vel.size() >= length && acc.size() >=length &&  torque.size() >=length) {
+            for(std::size_t i = 0; i < length; ++i)
             {
                 jointPos[i] = pos[i];
                 jointVel[i] = vel[i];
@@ -51,7 +52,7 @@ struct DynamicCalibrationSample
 
     std::vector<double> getValues(std::size_t index)
     {
-        if(index > -1 && index < 6){
+        if(index > -1 && index < length){
             std::vector<double> result = {jointPos[index], jointVel[index], jointAcc[index], jointTorque[index]};
             return result;
         }
@@ -61,6 +62,30 @@ struct DynamicCalibrationSample
         }
     }
 
+    std::string toString(std::string delimiter = std::string(";")) const
+    {
+        std::string res;
+        res += std::to_string(time) + delimiter;
+        for(std::size_t j = 0; j < length; ++ j)
+        {
+            res += std::to_string(jointPos[j]) + delimiter;
+        }
+        for(std::size_t j = 0; j < length; ++ j)
+        {
+            res += std::to_string(jointVel[j]) + delimiter;
+        }
+        for(std::size_t j = 0; j < length; ++ j)
+        {
+            res += std::to_string(jointAcc[j]) + delimiter;
+        }
+        for(std::size_t j = 0; j < length; ++ j)
+        {
+            res += std::to_string(jointTorque[j]) + delimiter;
+        }
+        return res;
+    }
+
+    const std::size_t length = 6;
     double time;
     std::vector<double> jointPos;
     std::vector<double> jointVel;
