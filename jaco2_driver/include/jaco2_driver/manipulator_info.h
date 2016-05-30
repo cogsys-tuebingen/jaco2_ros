@@ -226,7 +226,7 @@ public:
     static ManipulatorInfo variance(const std::vector<ManipulatorInfo>& vec, const ManipulatorInfo& mean)
     {
         std::vector<ManipulatorInfo> tmp;
-        tmp.resize(tmp.size());
+        tmp.resize(vec.size());
         for(std::size_t i = 0; i <vec.size(); ++i)
         {
             for(std::size_t j = 0; j < vec[i].length_; ++ j)
@@ -235,7 +235,7 @@ public:
                 tmp[i][j] *= tmp[i][j];
             }
         }
-        return ManipulatorInfo::sum(tmp);
+        return ManipulatorInfo::sum(tmp)/(double(tmp.size()));
     }
 
     static ManipulatorInfo sum(const std::vector<ManipulatorInfo>& vec)
