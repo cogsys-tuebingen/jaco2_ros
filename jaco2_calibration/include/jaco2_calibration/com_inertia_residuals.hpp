@@ -7,6 +7,7 @@
 
 //namespace jaco2_calib {
 typedef ceres::Jet<double,9> Vector9d;
+typedef ceres::Jet<double,6> Vector6d;
 class ComInetriaResiduals
 {
 public:
@@ -30,9 +31,11 @@ public:
         int ec = solver_->getTorques(sample_.jointPos, sample_.jointVel, sample_.jointAcc, modelTorques);
         if(ec >= 0)
         {
+            double sum = 0;
             for(std::size_t i = 0; i < 6; ++i){
-                residuals[i] = modelTorques[i] - sample_.jointTorque[i];
+                sum += fabs(modelTorques[i] - sample_.jointTorque[i]);
             }
+            residuals[0] = sum;
             return true;
 
         }
@@ -44,37 +47,41 @@ public:
 
     }
 
-     bool operator() ( const Vector9d* const params, Vector9d* residuals ) const
-     {
-         double mass = solver_->getLinkMass(link_);
-         tf::Vector3  vect(params->v(0), params->v(1), params->v(2));
+//     bool operator() ( const Vector9d* const params, Vector9d* residuals ) const
+//     {
+//         double mass = solver_->getLinkMass(link_);
+//         tf::Vector3  vect(params[0].a, params[1].a, params[2].a);
 
-         tf::Matrix3x3 mat(params->v(3), params->v(4), params->v(5),
-                           params->v(4), params->v(6), params->v(7),
-                           params->v(5), params->v(7), params->v(8));
+//         tf::Matrix3x3 mat(params[3].a, params[4].a, params[5].a,
+//                           params[4].a, params[6].a, params[6].a,
+//                           params[5].a, params[7].a, params[8].a);
 
-         solver_->changeDynamicParams(link_ ,mass, vect, mat);
-         std::vector<double> modelTorques;
-         int ec = solver_->getTorques(sample_.jointPos, sample_.jointVel, sample_.jointAcc, modelTorques);
-         if(ec >= 0)
-         {
-             for(std::size_t i = 0; i < 6; ++i){
-                 residuals->v(i) = modelTorques[i] - sample_.jointTorque[i];
-             }
-             return true;
+//         solver_->changeDynamicParams(link_ ,mass, vect, mat);
+//         std::vector<double> modelTorques;
+//         int ec = solver_->getTorques(sample_.jointPos, sample_.jointVel, sample_.jointAcc, modelTorques);
+//         if(ec >= 0)
+//         {
+//             double sum = 0;
+//             for(std::size_t i = 0; i < 6; ++i){
+////                 residuals[i].v(0) = modelTorques[i] - sample_.jointTorque[i];
+////                 residuals[i] = Vector9d(modelTorques[i] - sample_.jointTorque[i]);
+//                 sum += fabs(modelTorques[i] - sample_.jointTorque[i]);
+//             }
+//             residuals[0] = Vector9d(sum);
+//             return true;
 
-         }
-         else
-         {
-             std::cerr <<"Chaned Parameters results in the solver not converging." << std::endl;
-             return false;
-         }
-     }
+//         }
+//         else
+//         {
+//             std::cerr <<"Chaned Parameters results in the solver not converging." << std::endl;
+//             return false;
+//         }
+//     }
 
     static ceres::CostFunction* Create (Jaco2KinematicsDynamicsModel* solver, DynamicCalibrationSample sample, std::string& link )
     {
-        return ( new ceres::AutoDiffCostFunction< ComInetriaResiduals, 6, 9 > (
-                     new ComInetriaResiduals( solver, sample, link ) ) );
+        return ( new ceres::NumericDiffCostFunction< ComInetriaResiduals, ceres::CENTRAL, 1, 9 > (
+                     new ComInetriaResiduals( solver, sample, link ), ceres::TAKE_OWNERSHIP ) );
     }
 
 private:

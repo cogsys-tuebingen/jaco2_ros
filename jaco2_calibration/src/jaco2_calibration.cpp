@@ -35,17 +35,22 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
         dyn_calib_params[8] = inertia.getRow(2).getZ();
 
         ceres::Problem problem;
+        problem.AddParameterBlock(dyn_calib_params.data(), 9);
         for(auto sample : samples)
         {
             ceres::CostFunction* cost_function = ComInetriaResiduals::Create(&model_, sample, link);
             problem.AddResidualBlock(cost_function, NULL /* squared loss */, dyn_calib_params.data());
+
         }
 
         ceres::Solver::Options options;
-        options.linear_solver_type = ceres::DENSE_QR;
+//        options.linear_solver_type = ceres::DENSE_QR;
+//        options.minimizer_progress_to_stdout = true;
+        options.max_num_iterations = 1000;
 
         ceres::Solver::Summary summary;
         ceres::Solve(options, &problem, &summary);
+
         std::cout << summary.BriefReport() << std::endl;
         DynamicCalibratedParameters linkparams;
         linkparams.linkName = link;

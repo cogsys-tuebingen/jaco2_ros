@@ -97,7 +97,7 @@ public:
 
     void changeKineticParams(const std::string& link, const tf::Vector3& trans, const tf::Matrix3x3 rotation);
 
-    void useUrdfDynamicParams(){chain_ = chainFile_;}
+    void useUrdfDynamicParams();
     void getRandomConfig(std::vector<double>& config);
     int getKDLSegmentIndex(const std::string &name ) const;
     int getKDLSegmentIndexFK(const std::string &name) const;

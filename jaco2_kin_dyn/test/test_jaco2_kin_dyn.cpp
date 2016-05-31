@@ -159,7 +159,26 @@ TEST(Jaco2KinematicsDynamicsModelTest, changeDynParam)
     EXPECT_EQ(mat2.getRow(1).getY(), mat.getRow(1).getY());
     EXPECT_EQ(mat2.getRow(1).getZ(), mat.getRow(1).getZ());
     EXPECT_EQ(mat2.getRow(2).getZ(), mat.getRow(2).getZ());
+    com = tf::Vector3(1,2,3);
+    jaco2KDL.changeDynamicParams("jaco_link_1",10, com,mat);
+    std::vector<double> torques,t2;
+    std::vector<double> qDot(6);
+    torques.resize(6,0);
+    qDot.resize(6, 0.1);
+    std::vector<double> q2 = {4.776098185246001, 2.9779051856135985, 1.0370221453036228, -2.089493953881068, 1.3567380962770526, 1.3811624792663872};
+    int  ec = jaco2KDL.getTorques(q2,qDot,qDot,torques);
+    for(int i = 0; i <6; ++i)
+    {
+        std::cout << "torques(" << i <<") = " << torques[i] <<  std::endl;
+    }
     jaco2KDL.useUrdfDynamicParams();
+    ec = jaco2KDL.getTorques(q2,qDot,qDot,t2);
+    for(int i = 0; i <6; ++i)
+    {
+        std::cout << "t2(" << i <<") = " << t2[i] <<  std::endl;
+//        EXPECT_TRUE(t2[i] != torques[i]);
+    }
+
 
 }
 

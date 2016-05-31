@@ -1,9 +1,14 @@
 #ifndef JACO2_CALIBRATION_IO_HPP
 #define JACO2_CALIBRATION_IO_HPP
-#include <string>
-#include <stdio.h>
-#include <vector>
+//#include <string>
+//#include <stdio.h>
+//#include <vector>
+//#include <fstream>
+#include <iostream>
 #include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
 #include <jaco2_calibration/dynamic_calibrated_parameters.hpp>
 #include <jaco2_calibration/dynamic_calibration_sample.hpp>
 
@@ -33,7 +38,7 @@ void save(std::string name, std::vector<DynamicCalibratedParameters>& params)
 void save(std::string name, std::vector<DynamicCalibrationSample> samples, std::string delimiter = std::string(";"))
 {
     std::ofstream file(name);
-//    std::string delimiter(";");
+    //    std::string delimiter(";");
     file << "time " << delimiter;
     for(int i = 0; i <samples[0].jointPos.size(); ++i)
     {
@@ -58,7 +63,7 @@ void save(std::string name, std::vector<DynamicCalibrationSample> samples, std::
     }
 }
 
-void importAsciiData(std::string filename, std::vector<DynamicCalibrationSample>& samples, std::string delimiter = std::string(";"))
+void importAsciiData(std::string filename, std::vector<DynamicCalibrationSample>& samples, const char delimiter = ';')
 {
     samples.clear();
 
@@ -70,53 +75,47 @@ void importAsciiData(std::string filename, std::vector<DynamicCalibrationSample>
     infile.open ( filename );
     if ( infile.is_open() )
     {
-      char format[266];
-//      switch ( type )
-//      {
-//      case DATASET_COMMA_SEPARATED:
-////          sprintf_s ( format,"%%lf, %%lf, %%lf, %%lf" );
-//          sprintf ( format,"%%lf, %%lf, %%lf, %%lf" );
-//        break;
-//      case DATASET_SPACE_SEPARATED:
-//      default:
-////          sprintf_s ( format,"%%lf %%lf %%lf %%lf" );
-//          sprintf ( format,"%%lf %%lf %%lf %%lf" );
-//        break;
-//      }
 
-      int l = 0;
-      while ( std::getline ( infile,line ) )
-      {
-//          int res = sscanf_s ( line.data(), format, &ts, &d[0], &d[1], &d[2] );
-          int res = sscanf ( line.data(), format, &ts, &d[0], &d[1], &d[2], &d[3], &d[4], &d[5],        // pos
-                                                       &d[6], &d[7], &d[8], &d[9], &d[10], &d[11],      // vel
-                                                       &d[12], &d[13], &d[14], &d[15], &d[16], &d[17],  // acc
-                                                       &d[18], &d[19], &d[20], &d[21], &d[22], &d[23]);
-        if ( res != 4 )
+
+        int l = 0;
+        char value[256];
+
+        std::getline ( infile,line );
+        while ( std::getline ( infile,line ) )
         {
-          std::cout<<"importAsciiData(): error importing data in line "<<l<<", exit"<< std::endl;
-        }
-        else
-        {
-            if(start == 0.0) {
-                start = ts;
+
+            std::stringstream ss;
+            ss<< line ;
+
+            DynamicCalibrationSample sample;
+            int i = 0;
+            while( ss.getline( value, 256, delimiter ))
+            {
+                double val = std::atof(value);
+                if(i==0){
+                    sample.time = val;
+                }
+                if( i > 0 && i < 7){
+                    sample.jointPos[i-1] = val;
+                }
+                if(i >= 7 && i<13){
+                    sample.jointVel[i-7] = val;
+                }
+                if(i >= 13 && i<19){
+                    sample.jointAcc[i-13] = val;
+                }
+                if(i >= 19 && i<25){
+                    sample.jointTorque[i-19] = val;
+                }
+                ++i;
             }
 
-            ts -= start;
-//          ts /= unit;
-          DynamicCalibrationSample sample;
-          sample.time = ts;
-          sample.jointPos = {d[0], d[1], d[2], d[3], d[4], d[5]};
-          sample.jointVel = {d[6], d[7], d[8], d[9], d[10], d[11]};
-          sample.jointAcc = {d[12], d[13], d[14], d[15], d[16], d[17]};
-          sample.jointTorque = {d[18], d[19], d[20], d[21], d[22], d[23]};
-          samples.push_back(sample);
-//            std::cout <<  d[0]<<", "<< d[1]<<", " <<d[2]<<std::endl;
+            samples.push_back(sample);
+
         }
         l++;
-      }
-      infile.close();
     }
+    infile.close();
 }
 
 }

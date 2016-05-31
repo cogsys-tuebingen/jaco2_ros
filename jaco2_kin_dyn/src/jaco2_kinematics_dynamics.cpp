@@ -68,7 +68,6 @@ void Jaco2KinematicsDynamicsModel::initialize()
         chainFile_ = chain_;
         // inverse dynamics solver
         solverID_ = std::shared_ptr<KDL::ChainIdSolver_RNE>(new KDL::ChainIdSolver_RNE(chain_,gravity_));
-//        solverID_ = KDL::ChainIdSolver_RNE(chain_,gravity_);
 
         // forward kinematic
         solverFK_ = std::shared_ptr<KDL::ChainFkSolverPos_recursive>(new KDL::ChainFkSolverPos_recursive(chain_));
@@ -212,6 +211,15 @@ void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, 
             newChain.addSegment(chain_.getSegment(i));
         }
         chain_ = newChain;
+        // inverse dynamics solver
+        solverID_.reset(new KDL::ChainIdSolver_RNE(newChain,gravity_));
+//        solverID_ = std::shared_ptr<KDL::ChainIdSolver_RNE>(new KDL::ChainIdSolver_RNE(newChain,gravity_));
+
+        // forward kinematic
+        solverFK_ = std::shared_ptr<KDL::ChainFkSolverPos_recursive>(new KDL::ChainFkSolverPos_recursive(newChain));
+
+        //initialize TRAC_IK solver: inverse kinematics
+//        solverIK_ = std::shared_ptr<TRAC_IK::TRAC_IK>(new TRAC_IK::TRAC_IK(root_, tip_, urdf_param_)) // TODO use chain
     }
 }
 
@@ -241,8 +249,29 @@ void Jaco2KinematicsDynamicsModel::changeKineticParams(const std::string &link, 
                 newChain.addSegment(chain_.getSegment(i));
             }
             chain_ = newChain;
+            // inverse dynamics solver
+            solverID_ = std::shared_ptr<KDL::ChainIdSolver_RNE>(new KDL::ChainIdSolver_RNE(chain_,gravity_));
+
+            // forward kinematic
+            solverFK_ = std::shared_ptr<KDL::ChainFkSolverPos_recursive>(new KDL::ChainFkSolverPos_recursive(chain_));
+
+            //initialize TRAC_IK solver: inverse kinematics
+    //        solverIK_ = std::shared_ptr<TRAC_IK::TRAC_IK>(new TRAC_IK::TRAC_IK(root_, tip_, urdf_param_)) // TODO use chain
         }
     }
+}
+
+void Jaco2KinematicsDynamicsModel::useUrdfDynamicParams()
+{
+    chain_ = chainFile_;
+    // inverse dynamics solver
+    solverID_ = std::shared_ptr<KDL::ChainIdSolver_RNE>(new KDL::ChainIdSolver_RNE(chain_,gravity_));
+
+    // forward kinematic
+    solverFK_ = std::shared_ptr<KDL::ChainFkSolverPos_recursive>(new KDL::ChainFkSolverPos_recursive(chain_));
+
+    //initialize TRAC_IK solver: inverse kinematics
+//        solverIK_ = std::shared_ptr<TRAC_IK::TRAC_IK>(new TRAC_IK::TRAC_IK(root_, tip_, urdf_param_)) // TODO use chain
 }
 
 int Jaco2KinematicsDynamicsModel::getKDLSegmentIndexFK(const std::string &name) const
