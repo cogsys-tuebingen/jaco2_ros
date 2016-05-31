@@ -172,8 +172,6 @@ int Jaco2KinematicsDynamicsModel::getIKSolution(const tf::Pose& pose, std::vecto
         solverIK_->getKDLLimits(lb, ub);
         q.resize(chain_.getNrOfJoints());
         for(std::size_t i = 0; i < seed.size(); ++i){
-            //            std::uniform_real_distribution<double> unif(lb(i),ub(i));
-            //            std::default_random_engine re;
             q(i) = jointDist_[i](randEng_);
 
         }
@@ -212,11 +210,10 @@ void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, 
         }
         chain_ = newChain;
         // inverse dynamics solver
-        solverID_.reset(new KDL::ChainIdSolver_RNE(newChain,gravity_));
-//        solverID_ = std::shared_ptr<KDL::ChainIdSolver_RNE>(new KDL::ChainIdSolver_RNE(newChain,gravity_));
+        solverID_.reset(new KDL::ChainIdSolver_RNE(chain_,gravity_));
 
         // forward kinematic
-        solverFK_ = std::shared_ptr<KDL::ChainFkSolverPos_recursive>(new KDL::ChainFkSolverPos_recursive(newChain));
+        solverFK_.reset();new KDL::ChainFkSolverPos_recursive(newChain);
 
         //initialize TRAC_IK solver: inverse kinematics
 //        solverIK_ = std::shared_ptr<TRAC_IK::TRAC_IK>(new TRAC_IK::TRAC_IK(root_, tip_, urdf_param_)) // TODO use chain
@@ -250,10 +247,10 @@ void Jaco2KinematicsDynamicsModel::changeKineticParams(const std::string &link, 
             }
             chain_ = newChain;
             // inverse dynamics solver
-            solverID_ = std::shared_ptr<KDL::ChainIdSolver_RNE>(new KDL::ChainIdSolver_RNE(chain_,gravity_));
+            solverID_.reset(new KDL::ChainIdSolver_RNE(chain_,gravity_));
 
             // forward kinematic
-            solverFK_ = std::shared_ptr<KDL::ChainFkSolverPos_recursive>(new KDL::ChainFkSolverPos_recursive(chain_));
+            solverFK_.reset();new KDL::ChainFkSolverPos_recursive(newChain);
 
             //initialize TRAC_IK solver: inverse kinematics
     //        solverIK_ = std::shared_ptr<TRAC_IK::TRAC_IK>(new TRAC_IK::TRAC_IK(root_, tip_, urdf_param_)) // TODO use chain
@@ -353,6 +350,33 @@ tf::Matrix3x3 Jaco2KinematicsDynamicsModel::getLinkInertia(const std::string &li
         result.setValue(mat.data[0], mat.data[1], mat.data[2],
                         mat.data[3], mat.data[4], mat.data[5],
                         mat.data[6], mat.data[7], mat.data[8]);
+        return result;
+    }
+    else{
+        ROS_ERROR_STREAM("Link " << link << " not found! Wrong name?");
+        return tf::Matrix3x3();
+    }
+}
+
+tf::Matrix3x3 Jaco2KinematicsDynamicsModel::getLinkInertiaCoM(const std::string &link) const
+{
+    int segmentID = getKDLSegmentIndex(link);
+    if(segmentID > -1){
+        KDL::RotationalInertia mat = chain_.getSegment(segmentID).getInertia().getRotationalInertia();
+        double mass = chain_.getSegment(segmentID).getInertia().getMass();
+        KDL::Vector com = chain_.getSegment(segmentID).getInertia().getCOG();
+        tf::Matrix3x3 result;
+
+        double xx = mat.data[0] - mass *(com(1)*com(1) + com(2)*com(2));
+        double yy = mat.data[4] - mass *(com(0)*com(0) + com(2)*com(2));
+        double zz = mat.data[8] - mass *(com(0)*com(0) + com(1)*com(1));
+        double xy = mat.data[1] + mass * com(0)*com(1);
+        double xz = mat.data[2] + mass * com(0)*com(2);
+        double yz = mat.data[5] + mass * com(1)*com(2);
+
+        result.setValue(xx, xy, xz,
+                        xy, yy, yz,
+                        xz, yz, zz);
         return result;
     }
     else{

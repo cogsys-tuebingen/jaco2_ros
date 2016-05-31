@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <jaco2_calibration/jaco2_calibration.h>
 #include <jaco2_calibration/jaco2_calibration_io.hpp>
+#include <jaco2_calibration/acceleration_samples.hpp>
 
 int main(int argc, char *argv[])
 {
@@ -14,6 +15,7 @@ int main(int argc, char *argv[])
     calib.calibrateCoMandInertia(samples);
     std::vector<DynamicCalibratedParameters> param = calib.getDynamicCalibration();
     Jaco2CalibIO::save("/tmp/param.txt",param);
+
     return 0;
 }
 

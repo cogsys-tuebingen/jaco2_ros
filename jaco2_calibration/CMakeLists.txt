@@ -146,6 +146,7 @@ include_directories(
 add_library(jaco2_calibration
     include/jaco2_calibration/com_inertia_residuals.hpp
     include/jaco2_calibration/dynamic_calibration_sample.hpp
+    include/jaco2_calibration/acceleration_samples.hpp
     include/jaco2_calibration/jaco2_calibration.h
     include/jaco2_calibration/jaco2_calibration_io.hpp
     src/jaco2_calibration.cpp

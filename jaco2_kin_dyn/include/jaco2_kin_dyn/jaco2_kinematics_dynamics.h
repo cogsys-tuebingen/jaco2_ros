@@ -121,6 +121,13 @@ public:
      */
     tf::Matrix3x3 getLinkInertia(const std::string &link) const;
 
+    /**
+     * @brief getLinkInertiaCoM gets the inertia moment matrix of a link with respect to the center of mass;
+     * @param link the name of the link
+     * @return the inertia moment matrix at link origin = center of mass (CoM)
+     */
+    tf::Matrix3x3 getLinkInertiaCoM(const std::string &link) const;
+
     tf::Vector3 getLinkFixedTranslation(const std::string &link) const;
     tf::Matrix3x3 getLinkFixedRotation(const std::string &link) const;
 

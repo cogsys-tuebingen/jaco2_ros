@@ -143,40 +143,45 @@ TEST(Jaco2KinematicsDynamicsModelTest, fk)
 
 TEST(Jaco2KinematicsDynamicsModelTest, changeDynParam)
 {
-    tf::Vector3 com(0, 0, 0);
+    std::string linkName("jaco_link_hand");
+    tf::Vector3 com(1.1, 0.1, 0.1);
     tf::Matrix3x3 mat(1, 2, 3,
                       4, 5, 6,
                       7, 8, 9);
-    jaco2KDL.changeDynamicParams("jaco_link_1",jaco2KDL.getLinkMass("jaco_link_1"), com,mat);
-    tf::Vector3 v = jaco2KDL.getLinkCoM("jaco_link_1");
-    tf::Matrix3x3 mat2 = jaco2KDL.getLinkInertia("jaco_link_1");
-    EXPECT_EQ(v.getX(),com.getX());
-    EXPECT_EQ(v.getY(),com.getY());
-    EXPECT_EQ(v.getZ(),com.getZ());
-    EXPECT_EQ(mat2.getRow(0).getX(), mat.getRow(0).getX());
-    EXPECT_EQ(mat2.getRow(0).getY(), mat.getRow(0).getY());
-    EXPECT_EQ(mat2.getRow(0).getZ(), mat.getRow(0).getZ());
-    EXPECT_EQ(mat2.getRow(1).getY(), mat.getRow(1).getY());
-    EXPECT_EQ(mat2.getRow(1).getZ(), mat.getRow(1).getZ());
-    EXPECT_EQ(mat2.getRow(2).getZ(), mat.getRow(2).getZ());
+    jaco2KDL.changeDynamicParams(linkName,jaco2KDL.getLinkMass(linkName), com, mat);
+    double mass = jaco2KDL.getLinkMass(linkName);
+    tf::Vector3 v = jaco2KDL.getLinkCoM(linkName);
+    tf::Matrix3x3 mat2 = jaco2KDL.getLinkInertia(linkName);
+    EXPECT_NEAR(v.getX(),com.getX(), 1e-6);
+    EXPECT_NEAR(v.getY(),com.getY(), 1e-6);
+    EXPECT_NEAR(v.getZ(),com.getZ(), 1e-6);
+    EXPECT_EQ(mat2.getRow(0).getX(), mat.getRow(0).getX() + mass*(com.getY()*com.getY() + com.getZ() * com.getZ()));
+    EXPECT_EQ(mat2.getRow(0).getY(), mat.getRow(0).getY() - mass*com.getX()*com.getY());
+    EXPECT_EQ(mat2.getRow(0).getZ(), mat.getRow(0).getZ() - mass*com.getX()*com.getZ());
+    EXPECT_EQ(mat2.getRow(1).getY(), mat.getRow(1).getY() + mass*(com.getX()*com.getX() + com.getZ() * com.getZ()));
+    EXPECT_EQ(mat2.getRow(1).getZ(), mat.getRow(1).getZ() - mass*com.getY()*com.getZ());
+    EXPECT_EQ(mat2.getRow(2).getZ(), mat.getRow(2).getZ() + mass*(com.getX()*com.getX() + com.getY() * com.getY()));
+
+    tf::Matrix3x3 mat3 = jaco2KDL.getLinkInertiaCoM(linkName);
+    EXPECT_EQ(mat3.getRow(0).getX(), mat.getRow(0).getX());
+    EXPECT_EQ(mat3.getRow(0).getY(), mat.getRow(0).getY());
+    EXPECT_EQ(mat3.getRow(0).getZ(), mat.getRow(0).getZ());
+    EXPECT_EQ(mat3.getRow(1).getY(), mat.getRow(1).getY());
+    EXPECT_EQ(mat3.getRow(1).getZ(), mat.getRow(1).getZ());
+    EXPECT_EQ(mat3.getRow(2).getZ(), mat.getRow(2).getZ());
+
     com = tf::Vector3(1,2,3);
-    jaco2KDL.changeDynamicParams("jaco_link_1",10, com,mat);
     std::vector<double> torques,t2;
-    std::vector<double> qDot(6);
+    std::vector<double> qDot = {0.8, 0.1, 0.1, 0.1, 0.2, 0.1};
     torques.resize(6,0);
-    qDot.resize(6, 0.1);
     std::vector<double> q2 = {4.776098185246001, 2.9779051856135985, 1.0370221453036228, -2.089493953881068, 1.3567380962770526, 1.3811624792663872};
     int  ec = jaco2KDL.getTorques(q2,qDot,qDot,torques);
-    for(int i = 0; i <6; ++i)
-    {
-        std::cout << "torques(" << i <<") = " << torques[i] <<  std::endl;
-    }
     jaco2KDL.useUrdfDynamicParams();
     ec = jaco2KDL.getTorques(q2,qDot,qDot,t2);
     for(int i = 0; i <6; ++i)
     {
-        std::cout << "t2(" << i <<") = " << t2[i] <<  std::endl;
-//        EXPECT_TRUE(t2[i] != torques[i]);
+        std::cout << "t2(" << i <<") = " << t2[i] << " | torques(" << i <<") = " << torques[i] <<  std::endl;
+        EXPECT_TRUE(t2[i] != torques[i]);
     }
 
 

@@ -1,5 +1,6 @@
 #include <jaco2_calibration/jaco2_calibration.h>
 #include <jaco2_calibration/com_inertia_residuals.hpp>
+#include <ceres/loss_function.h>
 
 Jaco2Calibration::Jaco2Calibration(std::string& urdf_param, std::string& root, std::string& tip)
     : model_(urdf_param, root, tip)
@@ -18,10 +19,13 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
 
     //TODO ignore long sequences of not changing data
 
-    for(auto link : links)
+    auto link = links.rbegin();
+//    for(std::vector<std::string>::reverse_iterator link = links.rbegin();
+//        link != links.rend(); ++link )
     {
-        tf::Vector3 com = model_.getLinkCoM(link);
-        tf::Matrix3x3 inertia = model_.getLinkInertia(link);
+        std::cout << *link << std::endl;
+        tf::Vector3 com = model_.getLinkCoM(*link);
+        tf::Matrix3x3 inertia = model_.getLinkInertiaCoM(*link);
 
         std::vector<double> dyn_calib_params(9);
         dyn_calib_params[0] = com.getX();
@@ -38,23 +42,23 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
         problem.AddParameterBlock(dyn_calib_params.data(), 9);
         for(auto sample : samples)
         {
-            ceres::CostFunction* cost_function = ComInetriaResiduals::Create(&model_, sample, link);
-            problem.AddResidualBlock(cost_function, NULL /* squared loss */, dyn_calib_params.data());
+            ceres::CostFunction* cost_function = ComInetriaResiduals::Create(&model_, sample, *link);
+            problem.AddResidualBlock(cost_function, new ceres::CauchyLoss(0.5), dyn_calib_params.data());
 
-        }
+        }/*NULL */
 
         ceres::Solver::Options options;
-//        options.linear_solver_type = ceres::DENSE_QR;
-//        options.minimizer_progress_to_stdout = true;
-        options.max_num_iterations = 1000;
+        options.linear_solver_type = ceres::DENSE_QR;
+        options.minimizer_progress_to_stdout = true;
+//        options.max_num_iterations = 300;
 
         ceres::Solver::Summary summary;
         ceres::Solve(options, &problem, &summary);
 
         std::cout << summary.BriefReport() << std::endl;
         DynamicCalibratedParameters linkparams;
-        linkparams.linkName = link;
-        linkparams.mass = model_.getLinkMass(link);
+        linkparams.linkName = *link;
+        linkparams.mass = model_.getLinkMass(*link);
         linkparams.coM = tf::Vector3(dyn_calib_params[0], dyn_calib_params[1], dyn_calib_params[2]);
         linkparams.inertia = tf::Matrix3x3(dyn_calib_params[3], dyn_calib_params[4], dyn_calib_params[5],
                                            dyn_calib_params[4], dyn_calib_params[6], dyn_calib_params[7],
