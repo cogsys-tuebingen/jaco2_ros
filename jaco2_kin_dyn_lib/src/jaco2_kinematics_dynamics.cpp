@@ -1,4 +1,4 @@
-#include <jaco2_kin_dyn/jaco2_kinematics_dynamics.h>
+#include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
 #include <random>
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/chainidsolver.hpp>
@@ -38,16 +38,7 @@ Jaco2KinematicsDynamicsModel::Jaco2KinematicsDynamicsModel(const std::string &ro
     robot_model_.initString(xml_string);
     initialize();
 
-//        KDL::Segment seg2 = chain_.getSegment(0);
-//        KDL::RigidBodyInertia I2 = seg2.getInertia();
-//        std::cout << seg2.getName() << std::endl;
-//        std::cout <<"Mass " << I2.getMass() << std::endl;
-//        std::cout <<I2.getRotationalInertia().data[0]  << " " << I2.getRotationalInertia().data[1] << " " << I2.getRotationalInertia().data[2] << std::endl;
-//        std::cout <<I2.getRotationalInertia().data[3]  << " " << I2.getRotationalInertia().data[4] << " " << I2.getRotationalInertia().data[5] << std::endl;
-//        std::cout <<I2.getRotationalInertia().data[6]  << " " << I2.getRotationalInertia().data[7] << " " << I2.getRotationalInertia().data[8] << std::endl;
-//        KDL::Vector com = seg2.getInertia().getCOG();
-//        std::cout << com(0) << ", " << com(1) << ", " << com(2) << std::endl;
-        std::cout << "Number of Joints: " << chain_.getNrOfJoints() << " | Number of Segments: " << chain_.getNrOfSegments() << std::endl;
+    std::cout << "Number of Joints: " << chain_.getNrOfJoints() << " | Number of Segments: " << chain_.getNrOfSegments() << std::endl;
 }
 
 void Jaco2KinematicsDynamicsModel::setTree(const std::string &robot_model)
@@ -67,18 +58,18 @@ void Jaco2KinematicsDynamicsModel::initialize()
     if(tree_.getChain(root_,tip_,chain_)){
         chainFile_ = chain_;
         // inverse dynamics solver
-        solverID_ = std::shared_ptr<KDL::ChainIdSolver_RNE>(new KDL::ChainIdSolver_RNE(chain_,gravity_));
+        solverID_.reset(new KDL::ChainIdSolver_RNE(chain_,gravity_));
 
         // forward kinematic
-        solverFK_ = std::shared_ptr<KDL::ChainFkSolverPos_recursive>(new KDL::ChainFkSolverPos_recursive(chain_));
+        solverFK_.reset(new KDL::ChainFkSolverPos_recursive(chain_));
 
         //initialize TRAC_IK solver: inverse kinematics
-        solverIK_ = std::shared_ptr<TRAC_IK::TRAC_IK>(new TRAC_IK::TRAC_IK(root_, tip_, urdf_param_));
-        KDL::JntArray ub, lb;
-        solverIK_->getKDLLimits(lb, ub);
+        solverIK_.reset(new TRAC_IK::TRAC_IK(root_, tip_, urdf_param_));
+
+        solverIK_->getKDLLimits(lowerLimits_, upperLimits_);
         jointDist_.resize(chain_.getNrOfJoints());
         for(std::size_t i = 0; i < chain_.getNrOfJoints(); ++i){
-            jointDist_[i] = std::uniform_real_distribution<double>(lb(i),ub(i));
+            jointDist_[i] = std::uniform_real_distribution<double>(lowerLimits_(i),upperLimits_(i));
         }
 
 
@@ -95,7 +86,7 @@ void::Jaco2KinematicsDynamicsModel::setRootAndTip(const std::string &chain_root,
 }
 
 int Jaco2KinematicsDynamicsModel::getTorques(const std::vector<double> &q, const std::vector<double> &q_Dot, const std::vector<double> &q_DotDot,
-                                        std::vector<double> &torques, const std::vector<Wrench> &wrenches_ext)
+                                             std::vector<double> &torques, const std::vector<Wrench> &wrenches_ext)
 {
     if(q.size() != q_Dot.size() && q.size() != q_DotDot.size() && q.size() != chain_.getNrOfJoints()){
         ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is" << q.size() << ". While q_Dot has dimension " << q_Dot.size() << " and q_DotDot "
@@ -131,7 +122,6 @@ int Jaco2KinematicsDynamicsModel::getTorques(const std::vector<double> &q, const
     }
     int e_code = -1;
     e_code = solverID_->CartToJnt(qkdl,qkdl_Dot,qkdl_DotDot,wrenches,torques_kdl);
-//     e_code = solverID_.CartToJnt(qkdl,qkdl_Dot,qkdl_DotDot,wrenches,torques_kdl);
 
     convert(torques_kdl,torques);
 
@@ -200,7 +190,7 @@ void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, 
             newChain.addSegment(chain_.getSegment(i));
         }
         KDL::Segment oldSeg = chain_.getSegment(segId);
-//        KDL::RigidBodyInertia oldInertia = oldSeg.getInertia();
+        //        KDL::RigidBodyInertia oldInertia = oldSeg.getInertia();
         KDL::RigidBodyInertia newInertia(mass, cog, inertiaKDL);
         KDL::Segment newSeg(oldSeg.getName(),oldSeg.getJoint(), oldSeg.getFrameToTip(), newInertia);
         newChain.addSegment(newSeg);
@@ -213,10 +203,10 @@ void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, 
         solverID_.reset(new KDL::ChainIdSolver_RNE(chain_,gravity_));
 
         // forward kinematic
-        solverFK_.reset();new KDL::ChainFkSolverPos_recursive(newChain);
+//        solverFK_.reset(new KDL::ChainFkSolverPos_recursive(newChain));
 
         //initialize TRAC_IK solver: inverse kinematics
-//        solverIK_ = std::shared_ptr<TRAC_IK::TRAC_IK>(new TRAC_IK::TRAC_IK(root_, tip_, urdf_param_)) // TODO use chain
+//        solverIK_.reset(new TRAC_IK::TRAC_IK(chain_, lowerLimits_, upperLimits_));
     }
 }
 
@@ -227,7 +217,7 @@ void Jaco2KinematicsDynamicsModel::changeKineticParams(const std::string &link, 
         if(segId > -1)
         {
             KDL::Vector p(trans.getX(), trans.getY(), trans.getZ());
-//            KDL::Rotation rot(xx,yx,zx,xy,yy,zy,xz,yz,zz);
+            //            KDL::Rotation rot(xx,yx,zx,xy,yy,zy,xz,yz,zz);
             KDL::Rotation rot(rotation.getColumn(0).getX(), rotation.getColumn(0).getY(), rotation.getColumn(0).getZ(),
                               rotation.getColumn(1).getX(), rotation.getColumn(1).getY(), rotation.getColumn(1).getZ(),
                               rotation.getColumn(2).getX(), rotation.getColumn(2).getY(), rotation.getColumn(2).getZ());
@@ -250,10 +240,10 @@ void Jaco2KinematicsDynamicsModel::changeKineticParams(const std::string &link, 
             solverID_.reset(new KDL::ChainIdSolver_RNE(chain_,gravity_));
 
             // forward kinematic
-            solverFK_.reset();new KDL::ChainFkSolverPos_recursive(newChain);
+            solverFK_.reset(new KDL::ChainFkSolverPos_recursive(chain_));
 
             //initialize TRAC_IK solver: inverse kinematics
-    //        solverIK_ = std::shared_ptr<TRAC_IK::TRAC_IK>(new TRAC_IK::TRAC_IK(root_, tip_, urdf_param_)) // TODO use chain
+            solverIK_.reset(new TRAC_IK::TRAC_IK(chain_, lowerLimits_, upperLimits_));
         }
     }
 }
@@ -262,13 +252,13 @@ void Jaco2KinematicsDynamicsModel::useUrdfDynamicParams()
 {
     chain_ = chainFile_;
     // inverse dynamics solver
-    solverID_ = std::shared_ptr<KDL::ChainIdSolver_RNE>(new KDL::ChainIdSolver_RNE(chain_,gravity_));
+    solverID_.reset(new KDL::ChainIdSolver_RNE(chain_,gravity_));
 
     // forward kinematic
-    solverFK_ = std::shared_ptr<KDL::ChainFkSolverPos_recursive>(new KDL::ChainFkSolverPos_recursive(chain_));
+    solverFK_.reset(new KDL::ChainFkSolverPos_recursive(chain_));
 
     //initialize TRAC_IK solver: inverse kinematics
-//        solverIK_ = std::shared_ptr<TRAC_IK::TRAC_IK>(new TRAC_IK::TRAC_IK(root_, tip_, urdf_param_)) // TODO use chain
+    solverIK_.reset(new TRAC_IK::TRAC_IK(chain_, lowerLimits_, upperLimits_));
 }
 
 int Jaco2KinematicsDynamicsModel::getKDLSegmentIndexFK(const std::string &name) const
@@ -348,8 +338,8 @@ tf::Matrix3x3 Jaco2KinematicsDynamicsModel::getLinkInertia(const std::string &li
         KDL::RotationalInertia mat = chain_.getSegment(segmentID).getInertia().getRotationalInertia();
         tf::Matrix3x3 result;
         result.setValue(mat.data[0], mat.data[1], mat.data[2],
-                        mat.data[3], mat.data[4], mat.data[5],
-                        mat.data[6], mat.data[7], mat.data[8]);
+                mat.data[3], mat.data[4], mat.data[5],
+                mat.data[6], mat.data[7], mat.data[8]);
         return result;
     }
     else{
@@ -406,8 +396,8 @@ tf::Matrix3x3 Jaco2KinematicsDynamicsModel::getLinkFixedRotation(const std::stri
         KDL::Rotation mat = chain_.getSegment(segmentID).getFrameToTip().M;
         tf::Matrix3x3 result;
         result.setValue(mat.data[0], mat.data[3], mat.data[6],
-                        mat.data[1], mat.data[4], mat.data[7],
-                        mat.data[2], mat.data[5], mat.data[8]);
+                mat.data[1], mat.data[4], mat.data[7],
+                mat.data[2], mat.data[5], mat.data[8]);
         return result;
     }
     else{
@@ -421,8 +411,8 @@ std::vector<std::string> Jaco2KinematicsDynamicsModel::getLinkNames() const
     std::vector<std::string> result;
     result.resize(chain_.getNrOfSegments());
     for(unsigned int i = 0; i < chain_.getNrOfSegments(); ++i){
-       std::string name = chain_.getSegment(i).getName();
-       result[i] = name;
+        std::string name = chain_.getSegment(i).getName();
+        result[i] = name;
 
     }
     return result;

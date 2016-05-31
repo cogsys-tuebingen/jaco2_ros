@@ -19,10 +19,8 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
 
     //TODO ignore long sequences of not changing data
 
-    auto link = links.rbegin();
-//    for(std::vector<std::string>::reverse_iterator link = links.rbegin();
-//        link != links.rend(); ++link )
-    {
+//    auto link = links.rbegin();
+    for(std::vector<std::string>::reverse_iterator link = links.rbegin(); link != links.rend(); ++link ){
         std::cout << *link << std::endl;
         tf::Vector3 com = model_.getLinkCoM(*link);
         tf::Matrix3x3 inertia = model_.getLinkInertiaCoM(*link);

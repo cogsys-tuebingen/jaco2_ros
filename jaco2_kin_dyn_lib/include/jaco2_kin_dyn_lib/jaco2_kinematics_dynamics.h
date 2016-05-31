@@ -150,6 +150,8 @@ private:
     std::shared_ptr<TRAC_IK::TRAC_IK> solverIK_;
     std::vector<std::uniform_real_distribution<double> > jointDist_;
     std::default_random_engine randEng_;
+    KDL::JntArray lowerLimits_;
+    KDL::JntArray upperLimits_;
 
     void initialize();
 

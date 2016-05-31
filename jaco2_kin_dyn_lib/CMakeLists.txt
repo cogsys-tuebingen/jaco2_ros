@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(jaco2_calibration)
+project(jaco2_kin_dyn_lib)
 
 #############
 ## C++ 11  ##
@@ -19,22 +19,17 @@ endif()
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  jaco2_driver
-  jaco2_kin_dyn_lib
-  jaco2_msgs
+  kdl_parser
   roscpp
-  sensor_msgs
+  rostest
   tf
-  moveit_core
-  moveit_msgs
-  moveit_ros_planning
-  moveit_ros_planning_interface
+  tf_conversions
+  trac_ik_lib
 )
 
 ## System dependencies are found with CMake's conventions
-find_package(Eigen3 REQUIRED)
-find_package(Ceres REQUIRED)
-find_package(Boost REQUIRED)
+# find_package(Boost REQUIRED COMPONENTS system)
+find_package(orocos_kdl REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -89,7 +84,7 @@ find_package(Boost REQUIRED)
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   jaco2_msgs#   sensor_msgs
+#   std_msgs  # Or other packages containing msgs
 # )
 
 ################################################
@@ -123,9 +118,9 @@ find_package(Boost REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES jaco2_calibration
-  CATKIN_DEPENDS jaco2_driver jaco2_kin_dyn_lib jaco2_msgs roscpp sensor_msgs tf
-  DEPENDS system_lib
+  LIBRARIES jaco2_kin_dyn_lib
+  CATKIN_DEPENDS kdl_parser roscpp tf trac_ik_lib
+  DEPENDS system_lib orocos_kdl
 )
 
 ###########
@@ -134,60 +129,44 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
+# include_directories(include)
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${EIGEN_INCLUDE_DIR}
-  ${CERES_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
+  ${orocos_kdl_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-add_library(jaco2_calibration
-    include/jaco2_calibration/com_inertia_residuals.hpp
-    include/jaco2_calibration/dynamic_calibration_sample.hpp
-    include/jaco2_calibration/acceleration_samples.hpp
-    include/jaco2_calibration/jaco2_calibration.h
-    include/jaco2_calibration/jaco2_calibration_io.hpp
-    src/jaco2_calibration.cpp
+ add_library(jaco2_kin_dyn_lib
+   src/jaco2_kinematics_dynamics.cpp
 )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-add_dependencies(jaco2_calibration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(jaco2_kin_dyn_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(jaco2_calibration_node src/jaco2_calibration_node.cpp)
-add_executable(jaco2_file_calibration_node src/calibrate_from_file.cpp)
+add_executable(jaco2_kin_dyn_lib_test test/test_jaco2_kin_dyn.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(jaco2_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
-
-add_dependencies(jaco2_file_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
+add_dependencies(jaco2_kin_dyn_lib_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${GTEST_LIBRARIES} jaco2_kin_dyn_lib)
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(jaco2_calibration
+target_link_libraries(jaco2_kin_dyn_lib
    ${catkin_LIBRARIES}
-   ${CERES_LIBRARIES}
-   ${Boost_LIBRARIES}
-   yaml-cpp
+   ${orocos_kdl_LIBRARIES}
 )
 
- target_link_libraries(jaco2_calibration_node
+target_link_libraries(jaco2_kin_dyn_lib_test
    ${catkin_LIBRARIES}
-   ${CERES_LIBRARIES}
-   ${Boost_LIBRARIES}
-   jaco2_calibration
+   ${orocos_kdl_LIBRARIES}
+   ${GTEST_LIBRARIES}
+   jaco2_kin_dyn_lib
 )
 
- target_link_libraries(jaco2_file_calibration_node
-   ${catkin_LIBRARIES}
-   ${CERES_LIBRARIES}
-   ${Boost_LIBRARIES}
-   jaco2_calibration
-)
+
 
 #############
 ## Install ##
@@ -204,7 +183,7 @@ add_dependencies(jaco2_file_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS}
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS jaco2_calibration jaco2_calibration_node
+# install(TARGETS jaco2_kin_dyn jaco2_kin_dyn_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -229,7 +208,7 @@ add_dependencies(jaco2_file_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS}
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_jaco2_calibration.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_jaco2_kin_dyn.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

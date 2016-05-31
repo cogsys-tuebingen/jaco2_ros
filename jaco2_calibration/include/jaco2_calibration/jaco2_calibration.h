@@ -6,7 +6,7 @@
 //ROS
 
 //Jaco2 ROS
-#include <jaco2_kin_dyn/jaco2_kinematics_dynamics.h>
+#include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
 #include <jaco2_calibration/dynamic_calibration_sample.hpp>
 #include <jaco2_calibration/dynamic_calibration_sample.hpp>
 #include <jaco2_calibration/dynamic_calibrated_parameters.hpp>

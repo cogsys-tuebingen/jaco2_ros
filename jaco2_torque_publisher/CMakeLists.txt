@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(jaco2_kin_dyn)
+project(jaco2_torque_publisher)
 
 #############
 ## C++ 11  ##
@@ -15,21 +15,21 @@ else()
         message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  kdl_parser
+  jaco2_calibration
+  jaco2_kin_dyn_lib
+  jaco2_msgs
   roscpp
-  rostest
   tf
-  tf_conversions
-  trac_ik_lib
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-find_package(orocos_kdl REQUIRED)
+
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -84,7 +84,7 @@ find_package(orocos_kdl REQUIRED)
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
+#   jaco2_msgs
 # )
 
 ################################################
@@ -117,10 +117,10 @@ find_package(orocos_kdl REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES jaco2_kin_dyn
-  CATKIN_DEPENDS kdl_parser roscpp tf trac_ik_lib
-  DEPENDS system_lib orocos_kdl
+#  INCLUDE_DIRS include
+#  LIBRARIES jaco2_torque_publisher
+  CATKIN_DEPENDS jaco2_calibration jaco2_kin_dyn jaco2_msgs roscpp tf
+#  DEPENDS system_lib
 )
 
 ###########
@@ -131,46 +131,29 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  include
   ${catkin_INCLUDE_DIRS}
-  ${orocos_kdl_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
- add_library(jaco2_kin_dyn
-   src/jaco2_kinematics_dynamics.cpp
-)
+# add_library(jaco2_torque_publisher
+#   src/${PROJECT_NAME}/jaco2_torque_publisher.cpp
+# )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-add_dependencies(jaco2_kin_dyn ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(jaco2_torque_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(jaco2_kin_dyn_test test/test_jaco2_kin_dyn.cpp)
-add_executable(jaco2_model_torques_publisher src/jaco2_model_torques_publisher.cpp)
+ add_executable(jaco2_model_torques_publisher src/jaco2_model_torques_publisher.cpp)
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(jaco2_kin_dyn_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${GTEST_LIBRARIES} jaco2_kin_dyn)
-add_dependencies(jaco2_model_torques_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${GTEST_LIBRARIES} jaco2_kin_dyn)
+add_dependencies(jaco2_model_torques_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(jaco2_kin_dyn
-   ${catkin_LIBRARIES}
-   ${orocos_kdl_LIBRARIES}
-)
-
-target_link_libraries(jaco2_kin_dyn_test
-   ${catkin_LIBRARIES}
-   ${orocos_kdl_LIBRARIES}
-   ${GTEST_LIBRARIES}
-   jaco2_kin_dyn
-)
-
 target_link_libraries(jaco2_model_torques_publisher
    ${catkin_LIBRARIES}
-   ${orocos_kdl_LIBRARIES}
-   jaco2_kin_dyn
 )
 
 #############
@@ -188,7 +171,7 @@ target_link_libraries(jaco2_model_torques_publisher
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS jaco2_kin_dyn jaco2_kin_dyn_node
+# install(TARGETS jaco2_torque_publisher jaco2_torque_publisher_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -213,7 +196,7 @@ target_link_libraries(jaco2_model_torques_publisher
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_jaco2_kin_dyn.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_jaco2_torque_publisher.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

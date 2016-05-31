@@ -11,27 +11,69 @@
 #include <vector>
 #include <jaco2_calibration/dynamic_calibrated_parameters.hpp>
 #include <jaco2_calibration/dynamic_calibration_sample.hpp>
+#include <yaml-cpp/yaml.h>
 
 namespace Jaco2CalibIO {
 
-void save(std::string name, std::vector<DynamicCalibratedParameters>& params)
+void save(std::string name, const std::vector<DynamicCalibratedParameters>& params)
 {
     std::ofstream file(name);
+    YAML::Emitter yamlEmit(file);
+    YAML::Node doc;
     for(DynamicCalibratedParameters param : params)
     {
-        file << param.linkName << std::endl;
-        file << "mass: \n" << std::to_string(param.mass) << std::endl;
+        YAML::Node pNode;
+        pNode["link_name"] = param.linkName;
+        pNode["mass"] = param.mass;
+//        file << param.linkName << std::endl;
+//        file << "mass: \n" << std::to_string(param.mass) << std::endl;
         tf::Vector3 com = param.coM;
-        file << "Center Of Mass: \n" << std::to_string(com.getX()) << " " << std::to_string(com.getY()) << " " << std::to_string(com.getZ()) << std::endl;
+        pNode["com_x"] = com.getX();
+        pNode["com_y"] = com.getY();
+        pNode["com_z"] = com.getZ();
+//        file << "Center Of Mass: \n" << std::to_string(com.getX()) << " " << std::to_string(com.getY()) << " " << std::to_string(com.getZ()) << std::endl;
         tf::Matrix3x3 inertia = param.inertia;
-        file << "Moment Inertia: \n";
-        file << "Ixx = " << std::to_string(inertia.getRow(0).getX()) << std::endl;
-        file << "Ixy = " << std::to_string(inertia.getRow(0).getY()) << std::endl;
-        file << "Ixz = " << std::to_string(inertia.getRow(0).getZ()) << std::endl;
-        file << "Iyy = " << std::to_string(inertia.getRow(1).getY()) << std::endl;
-        file << "Iyz = " << std::to_string(inertia.getRow(1).getZ()) << std::endl;
-        file << "Izz = " << std::to_string(inertia.getRow(2).getZ()) << std::endl;
+//        file << "Moment Inertia: \n";
+//        file << "Ixx = " << std::to_string(inertia.getRow(0).getX()) << std::endl;
+//        file << "Ixy = " << std::to_string(inertia.getRow(0).getY()) << std::endl;
+//        file << "Ixz = " << std::to_string(inertia.getRow(0).getZ()) << std::endl;
+//        file << "Iyy = " << std::to_string(inertia.getRow(1).getY()) << std::endl;
+//        file << "Iyz = " << std::to_string(inertia.getRow(1).getZ()) << std::endl;
+//        file << "Izz = " << std::to_string(inertia.getRow(2).getZ()) << std::endl;
+        pNode["Ixx"] = inertia.getRow(0).getX();
+        pNode["Ixy"] = inertia.getRow(0).getY();
+        pNode["Ixz"] = inertia.getRow(0).getZ();
+        pNode["Iyy"] = inertia.getRow(1).getY();
+        pNode["Iyz"] = inertia.getRow(1).getZ();
+        pNode["Izz"] = inertia.getRow(2).getZ();
+        doc["parameter"].push_back(pNode);
+    }
+    yamlEmit << doc;
 
+}
+
+void loadDynParm(std::string filename, std::vector<DynamicCalibratedParameters>& params)
+{
+    YAML::Node doc = YAML::LoadFile(filename);
+    for(YAML::Node pNode : doc){
+        DynamicCalibratedParameters param;
+        std::string name(pNode["link_name"].as<std::string>());
+        param.linkName = name;
+        param.mass = pNode["mass"].as<double>();
+        double x = pNode["com_x"].as<double>();
+        double y = pNode["com_y"].as<double>();
+        double z = pNode["com_z"].as<double>();
+        param.coM = tf::Vector3(x, y, z);
+        double ixx = pNode["Ixx"].as<double>();
+        double ixy = pNode["Ixy"].as<double>();
+        double ixz = pNode["Ixz"].as<double>();
+        double iyy = pNode["Iyy"].as<double>();
+        double iyz = pNode["Iyz"].as<double>();
+        double izz = pNode["Izz"].as<double>();
+        param.inertia = tf::Matrix3x3(ixx, ixy, ixz,
+                                      ixy, iyy, iyz,
+                                      ixz, iyz, izz);
+        params.push_back(param);
     }
 }
 

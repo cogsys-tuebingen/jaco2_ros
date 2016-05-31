@@ -9,17 +9,17 @@ struct AccelerationData {
     AccelerationData()
     {
         time = 0;
-        data[0] = 0;
-        data[1] = 0;
-        data[2] = 0;
+        vector[0] = 0;
+        vector[1] = 0;
+        vector[2] = 0;
     }
 
     AccelerationData(double t, double x, double y, double z)
     {
         time = t;
-        data[0] = x;
-        data[1] = y;
-        data[2] = z;
+        vector[0] = x;
+        vector[1] = y;
+        vector[2] = z;
     }
 
     std::string toString(const std::string delimiter = std::string(";"))
@@ -29,14 +29,25 @@ struct AccelerationData {
         res += std::to_string(time) + delimiter;
         for(std::size_t i = 0; i < dataLength; ++i)
         {
-            res += std::to_string(data[i]) + delimiter;
+            res += std::to_string(vector[i]) + delimiter;
+        }
+        return res;
+    }
+
+    std::string vectorToString(const std::string delimiter = std::string(";"))
+    {
+        std::string res;
+
+        for(std::size_t i = 0; i < dataLength; ++i)
+        {
+            res += std::to_string(vector[i]) + delimiter;
         }
         return res;
     }
 
     const int dataLength = 3;
     double time;
-    double data[3];
+    double vector[3];
 };
 
 struct AccelerationSamples {
@@ -88,7 +99,7 @@ struct AccelerationSamples {
             std::string line = std::to_string(samples[iMax][i].time) + delimiter;
             for(std::size_t j = 0; j < nJoints; ++j){
                 if(samples[j].size() > i){
-                    line += samples[j][i].toString(delimiter);
+                    line += samples[j][i].vectorToString(delimiter);
                 }
                 else{
                     line += std::string(delimiter);
