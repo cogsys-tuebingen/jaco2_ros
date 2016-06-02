@@ -78,20 +78,22 @@ bool Jaco2Calibration::calibrateAcc(const AccelerationSamples &samples)
     std::vector< imu_tk::TriadData > acc_data;
     imu_tk::CalibratedTriad init_acc_calib;
     init_acc_calib.setBias( Eigen::Vector3d(0.01, 0.01, 0.01) );
-    accCalib.setGravityMagnitude(gravityMag_);
+    accCalib.setGravityMagnitude(1.0);
 
     accCalib.enableVerboseOutput(true);
-    accCalib.enableAccUseMeans(false);
-    accCalib.setIntarvalsNumSamples(80);
+    accCalib.enableAccUseMeans(true);
+    accCalib.setIntarvalsNumSamples(200);
+    accCalib.setInitStaticIntervalDuration(6.5);
 
     accParams_.resize(samples.nJoints);
 
     for(std::size_t i = 0; i  < samples.nJoints; ++i)
     {
+        std::cout << "jaco_accelerometer_" << i+1 << std::endl;
         convert(i, samples, acc_data);
         accCalib.calibrateAcc(acc_data);
         imu_tk::CalibratedTriad calibParm = accCalib.getAccCalib();
-        std::string name = "jaco_accelerometer_" + std::to_string(i);
+        std::string name = "jaco_accelerometer_" + std::to_string(i+1);
         AccerlerometerCalibrationParam param(name, calibParm.getBiasVector(),
                                              calibParm.getMisalignmentMatrix(),
                                              calibParm.getScaleMatrix());
@@ -104,8 +106,9 @@ void Jaco2Calibration::convert(const std::size_t &idx, const AccelerationSamples
 {
     std::size_t nElem = samples.samples[idx].size();
     data.resize(nElem);
+    double t0 = samples.samples[0].at(0).time;
     for(std::size_t i = 0; i < nElem; ++i){
-        double t = samples.samples[idx][i].time;
+        double t = samples.samples[idx][i].time -t0;
         double x = samples.samples[idx][i].vector[0];
         double y = samples.samples[idx][i].vector[1];
         double z = samples.samples[idx][i].vector[2];

@@ -11,6 +11,7 @@
 #include <vector>
 #include <jaco2_calibration/dynamic_calibrated_parameters.hpp>
 #include <jaco2_calibration/dynamic_calibration_sample.hpp>
+#include <jaco2_calibration/acceleration_samples.hpp>
 #include <yaml-cpp/yaml.h>
 
 namespace Jaco2Calibration{
@@ -163,6 +164,67 @@ void importAsciiData(std::string filename, std::vector<DynamicCalibrationSample>
 
         }
         l++;
+    }
+    infile.close();
+}
+
+void importAsciiData(std::string filename, AccelerationSamples& samples, const char delimiter = ';')
+{
+    samples.clear();
+
+    std::string line;
+    std::ifstream infile;
+
+    infile.open ( filename );
+    if ( infile.is_open() )
+    {
+
+
+        int l = 0;
+        char value[256];
+
+        std::getline ( infile,line );
+        while ( std::getline ( infile,line ) )
+        {
+
+            std::stringstream ss;
+            ss<< line ;
+
+            AccelerationData sample[samples.nJoints];
+            int i = 0;
+            while( ss.getline( value, 256, delimiter ))
+            {
+                double val = std::atof(value);
+                if(i==0){
+                    for(std::size_t i = 0; i < samples.nJoints; ++i){
+                        sample[0].time = val;
+                    }
+                }
+                if( i > 0 && i < 4){
+                    sample[0].vector[i-1] = val;
+                }
+                if(i >= 4 && i<7){
+                    sample[1].vector[i-4] = val;
+                }
+                if(i >= 7 && i<10){
+                    sample[2].vector[i-7] = val;
+                }
+                if(i >= 10 && i<13){
+                    sample[3].vector[i-10] = val;
+                }
+                if(i >= 13 && i<16){
+                    sample[4].vector[i-13] = val;
+                }
+                if(i >= 16 && i<19){
+                    sample[5].vector[i-16] = val;
+                }
+                ++i;
+            }
+
+            for(std::size_t i = 0; i < samples.nJoints; ++i){
+                samples.push_back(i, sample[i]);
+            }
+        }
     }
     infile.close();
 }

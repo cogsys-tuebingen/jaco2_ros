@@ -112,6 +112,13 @@ struct AccelerationSamples {
         }
     }
 
+    void clear()
+    {
+        for(std::size_t j = 0; j < nJoints; ++j){
+            samples[j].clear();
+        }
+    }
+
     const std::size_t nJoints = 6;
     std::vector<AccelerationData> samples[6];
 };
