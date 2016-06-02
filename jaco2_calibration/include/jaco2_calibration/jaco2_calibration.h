@@ -4,12 +4,16 @@
 #include <vector>
 #include <ceres/ceres.h>
 //ROS
-
+#include <imu_tk/base.h>
+#include <imu_tk/calibration.h>
 //Jaco2 ROS
+#include <jaco2_driver/accelerometer_calibration.hpp>
 #include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
 #include <jaco2_calibration/dynamic_calibration_sample.hpp>
 #include <jaco2_calibration/dynamic_calibration_sample.hpp>
+#include <jaco2_calibration/acceleration_samples.hpp>
 #include <jaco2_calibration/dynamic_calibrated_parameters.hpp>
+namespace Jaco2Calibration {
 
 class Jaco2Calibration
 {
@@ -19,11 +23,22 @@ public:
 
     int calibrateCoMandInertia(const std::vector<DynamicCalibrationSample> &samples);
 
+    bool calibrateAcc(const AccelerationSamples & samples);
+
+    void setInitAccSamples(int n){initAccSamples_ = n;}
+    void setGravityMagnitude(double g){gravityMag_ = g;}
+
     std::vector<DynamicCalibratedParameters> getDynamicCalibration() const { return dynParams_;}
+    std::vector<AccerlerometerCalibrationParam> getAccCalibration() const { return accParams_;}
 
 private:
     Jaco2KinematicsDynamicsModel model_;
     std::vector<DynamicCalibratedParameters> dynParams_;
-};
+    int initAccSamples_;
+    double gravityMag_;
+    std::vector<AccerlerometerCalibrationParam> accParams_;
 
+    void convert(const std::size_t& idx, const AccelerationSamples& samples, std::vector<imu_tk::TriadData>& data );
+};
+}
 #endif // JACO2CALIBRATION_H

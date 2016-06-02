@@ -4,7 +4,7 @@
 #include <sensor_msgs/JointState.h>
 #include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
 #include <jaco2_msgs/JointAngles.h>
-#include <jaco2_calibration/jaco2_calibration_io.hpp>
+#include <jaco2_calibration/jaco2_calibration_io.hpp> 
 
 class Jaco2TorquePublisher
 {
@@ -20,9 +20,9 @@ public:
         diffPublisher_ = private_nh_.advertise<jaco2_msgs::JointAngles>("torque_diffs",2);
         lastTime_ = ros::Time::now();
 
-        std::vector<DynamicCalibratedParameters> calibParam;
-        Jaco2CalibIO::loadDynParm("/tmp/param.txt", calibParam);
-        for(DynamicCalibratedParameters param : calibParam){
+        std::vector<Jaco2Calibration::DynamicCalibratedParameters> calibParam;
+        Jaco2Calibration::loadDynParm("/tmp/param.txt", calibParam);
+        for(Jaco2Calibration::DynamicCalibratedParameters param : calibParam){
             solver_.changeDynamicParams(param.linkName, param.mass, param.coM, param.inertia);
         }
 

@@ -29,6 +29,7 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_msgs
   moveit_ros_planning
   moveit_ros_planning_interface
+  imu_tk
 )
 
 ## System dependencies are found with CMake's conventions
@@ -149,6 +150,7 @@ add_library(jaco2_calibration
     include/jaco2_calibration/acceleration_samples.hpp
     include/jaco2_calibration/jaco2_calibration.h
     include/jaco2_calibration/jaco2_calibration_io.hpp
+    include/jaco2_calibration/dynamic_calibrated_parameters.hpp
     src/jaco2_calibration.cpp
 )
 

@@ -13,7 +13,7 @@
 #include <jaco2_calibration/dynamic_calibration_sample.hpp>
 #include <yaml-cpp/yaml.h>
 
-namespace Jaco2CalibIO {
+namespace Jaco2Calibration{
 
 void save(std::string name, const std::vector<DynamicCalibratedParameters>& params)
 {
@@ -52,10 +52,17 @@ void save(std::string name, const std::vector<DynamicCalibratedParameters>& para
 
 }
 
+
 void loadDynParm(std::string filename, std::vector<DynamicCalibratedParameters>& params)
 {
     YAML::Node doc = YAML::LoadFile(filename);
-    for(YAML::Node pNode : doc){
+    doc = doc["parameter"];
+    if(!doc.IsDefined())
+    {
+        throw std::runtime_error("illegal document!");
+    }
+    for(auto it = doc.begin(); it != doc.end(); ++it){
+        auto pNode = *it;
         DynamicCalibratedParameters param;
         std::string name(pNode["link_name"].as<std::string>());
         param.linkName = name;

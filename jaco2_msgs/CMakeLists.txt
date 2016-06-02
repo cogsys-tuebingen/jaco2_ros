@@ -58,6 +58,7 @@ add_service_files(
    SetForceControlParams.srv
    Start.srv
    Stop.srv
+   CalibAcc.srv
 )
 
 ## Generate actions in the 'action' folder

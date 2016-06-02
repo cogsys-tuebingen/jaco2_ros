@@ -37,6 +37,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
+find_package(Eigen3 REQUIRED)
 
 
 link_directories(${PROJECT_SOURCE_DIR}/lib)
@@ -94,6 +95,7 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
+  ${EIGEN_INCLUDE_DIR}
 )
 ## Declare a C++ library
  add_library(jaco2_driver
@@ -109,6 +111,7 @@ include_directories(
    include/jaco2_driver/jaco2_controller.h
    include/jaco2_driver/velocity_controller.h
    include/jaco2_driver/point_2_point_velocity_controller.h
+   include/jaco2_driver/accelerometer_calibration.hpp
  )
 
 ## Add cmake target dependencies of the library
@@ -119,6 +122,7 @@ include_directories(
  target_link_libraries(jaco2_driver
    ${catkin_LIBRARIES}
    ${Boost_LIBRARIES}
+   yaml-cpp
 )
 
 ## Declare a C++ executable

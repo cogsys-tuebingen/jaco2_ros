@@ -50,6 +50,7 @@
   <build_depend>moveit_msgs</build_depend>
   <build_depend>moveit_ros_planning</build_depend>
   <build_depend>moveit_ros_planning_interface</build_depend>
+  <build_depend>imu_tk</build_depend>
   <run_depend>jaco2_driver</run_depend>
   <run_depend>jaco2_kin_dyn_lib</run_depend>
   <run_depend>jaco2_msgs</run_depend>
@@ -60,6 +61,7 @@
   <run_depend>moveit_msgs</run_depend>
   <run_depend>moveit_ros_planning</run_depend>
   <run_depend>moveit_ros_planning_interface</run_depend>
+  <run_depend>imu_tk</run_depend>
 
 
 

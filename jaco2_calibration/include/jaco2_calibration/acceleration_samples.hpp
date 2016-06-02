@@ -4,6 +4,9 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+namespace Jaco2Calibration {
+
+
 struct AccelerationData {
 
     AccelerationData()
@@ -112,6 +115,6 @@ struct AccelerationSamples {
     const std::size_t nJoints = 6;
     std::vector<AccelerationData> samples[6];
 };
-
+}
 #endif // ACCELERATION_SAMPLES_HPP
 

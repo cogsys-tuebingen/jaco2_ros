@@ -2,6 +2,8 @@
 #define DYNAMIC_CALIBRATION_SAMPLE_HPP
 #include <vector>
 #include <ceres/ceres.h>
+namespace Jaco2Calibration {
+
 struct DynamicCalibrationSample
 {
     DynamicCalibrationSample()
@@ -92,5 +94,5 @@ struct DynamicCalibrationSample
     std::vector<double> jointAcc;
     std::vector<double> jointTorque;
 };
-
+}
 #endif // DYNAMIC_CALIBRATION_SAMPLE_HPP

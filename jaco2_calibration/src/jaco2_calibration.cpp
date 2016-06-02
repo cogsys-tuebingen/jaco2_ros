@@ -1,7 +1,8 @@
 #include <jaco2_calibration/jaco2_calibration.h>
 #include <jaco2_calibration/com_inertia_residuals.hpp>
 #include <ceres/loss_function.h>
-
+#include <imu_tk/calibration.h>
+namespace Jaco2Calibration {
 Jaco2Calibration::Jaco2Calibration(std::string& urdf_param, std::string& root, std::string& tip)
     : model_(urdf_param, root, tip)
 {
@@ -10,6 +11,7 @@ Jaco2Calibration::Jaco2Calibration(std::string& urdf_param, std::string& root, s
 Jaco2Calibration::~Jaco2Calibration()
 {
 }
+
 
 
 int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibrationSample> &samples)
@@ -66,4 +68,50 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
 
     }
     return 0; // due to lack of better idea: TODO error handling
+}
+
+
+bool Jaco2Calibration::calibrateAcc(const AccelerationSamples &samples)
+{
+    imu_tk::MultiPosCalibration accCalib;
+
+    std::vector< imu_tk::TriadData > acc_data;
+    imu_tk::CalibratedTriad init_acc_calib;
+    init_acc_calib.setBias( Eigen::Vector3d(0.01, 0.01, 0.01) );
+    accCalib.setGravityMagnitude(gravityMag_);
+
+    accCalib.enableVerboseOutput(true);
+    accCalib.enableAccUseMeans(false);
+    accCalib.setIntarvalsNumSamples(80);
+
+    accParams_.resize(samples.nJoints);
+
+    for(std::size_t i = 0; i  < samples.nJoints; ++i)
+    {
+        convert(i, samples, acc_data);
+        accCalib.calibrateAcc(acc_data);
+        imu_tk::CalibratedTriad calibParm = accCalib.getAccCalib();
+        std::string name = "jaco_accelerometer_" + std::to_string(i);
+        AccerlerometerCalibrationParam param(name, calibParm.getBiasVector(),
+                                             calibParm.getMisalignmentMatrix(),
+                                             calibParm.getScaleMatrix());
+        accParams_[i] = param;
+    }
+
+}
+
+void Jaco2Calibration::convert(const std::size_t &idx, const AccelerationSamples &samples, std::vector<imu_tk::TriadData> &data)
+{
+    std::size_t nElem = samples.samples[idx].size();
+    data.resize(nElem);
+    for(std::size_t i = 0; i < nElem; ++i){
+        double t = samples.samples[idx][i].time;
+        double x = samples.samples[idx][i].vector[0];
+        double y = samples.samples[idx][i].vector[1];
+        double z = samples.samples[idx][i].vector[2];
+
+        imu_tk::TriadData tkAcc(t, x, y, z);
+        data[i] = tkAcc;
+    }
+}
 }

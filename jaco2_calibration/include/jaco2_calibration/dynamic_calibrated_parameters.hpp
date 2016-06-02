@@ -2,6 +2,7 @@
 #define DYNAMIC_CALIBRATED_PARAMETERS_HPP
 #include <string>
 #include <tf/tf.h>
+namespace Jaco2Calibration {
 
 struct DynamicCalibratedParameters
 {
@@ -11,6 +12,6 @@ struct DynamicCalibratedParameters
     tf::Matrix3x3 inertia;
 
 };
-
+}
 #endif // DYNAMIC_CALIBRATED_PARAMETERS_HPP
 
