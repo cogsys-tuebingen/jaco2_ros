@@ -82,7 +82,7 @@ bool Jaco2Calibration::calibrateAcc(const AccelerationSamples &samples)
 
     accCalib.enableVerboseOutput(true);
     accCalib.enableAccUseMeans(true);
-    accCalib.setIntarvalsNumSamples(200);
+    accCalib.setIntarvalsNumSamples(100);
     accCalib.setInitStaticIntervalDuration(6.5);
 
     accParams_.resize(samples.nJoints);
@@ -91,7 +91,7 @@ bool Jaco2Calibration::calibrateAcc(const AccelerationSamples &samples)
     {
         std::cout << "jaco_accelerometer_" << i+1 << std::endl;
         convert(i, samples, acc_data);
-        accCalib.calibrateAcc(acc_data);
+        accCalib.calibrateAccJumpDistDetect(acc_data);
         imu_tk::CalibratedTriad calibParm = accCalib.getAccCalib();
         std::string name = "jaco_accelerometer_" + std::to_string(i+1);
         AccerlerometerCalibrationParam param(name, calibParm.getBiasVector(),
