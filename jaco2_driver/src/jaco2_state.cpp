@@ -19,6 +19,8 @@ Jaco2State::Jaco2State(Jaco2API &api)
     current_current_.InitStruct();
     current_acceleration_.InitStruct();
     current_torque_gravity_free_.InitStruct();
+
+    int acc_counter_ =0;
 }
 
 AngularPosition Jaco2State::getAngularPosition() const
@@ -245,9 +247,15 @@ void Jaco2State::readPosition()
 
 void Jaco2State::readVelocity()
 {
+    lastVelocity_[acc_counter_] = current_velocity_;
     current_velocity_ = api_.getAngularVelocity();
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-    time_velocity_ = std::chrono::high_resolution_clock::now();
+    auto now = std::chrono::high_resolution_clock::now();
+    auto duration = now - time_velocity_ ;
+    time_velocity_ = now;
+    dt_[acc_counter_] = std::chrono::duration_cast<std::chrono::microseconds>(duration).count()*1e-6;
+    acc_counter_ = (acc_counter_ + 1) % 2;
+    calculateJointAcceleration();
 }
 
 void Jaco2State::readTorque()
@@ -290,4 +298,41 @@ void Jaco2State::readSensorInfo()
     sensor_info_ = api_.getSensorInfo();
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     time_sensor_info_ = std::chrono::high_resolution_clock::now();
+}
+
+void Jaco2State::setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccerlerometerCalibrationParam>& param)
+{
+    accCalibParam_ = param;
+}
+
+void Jaco2State::calculateJointAcceleration()
+{
+    double dtsum = dt_[0] + dt_[1];
+   current_joint_acceleration_.Actuators.Actuator1 = (current_velocity_.Actuators.Actuator1 - lastVelocity_[1].Actuators.Actuator1) / dtsum;
+   current_joint_acceleration_.Actuators.Actuator2 = (current_velocity_.Actuators.Actuator2 - lastVelocity_[1].Actuators.Actuator2) / dtsum;
+   current_joint_acceleration_.Actuators.Actuator3 = (current_velocity_.Actuators.Actuator3 - lastVelocity_[1].Actuators.Actuator3) / dtsum;
+   current_joint_acceleration_.Actuators.Actuator4 = (current_velocity_.Actuators.Actuator4 - lastVelocity_[1].Actuators.Actuator4) / dtsum;
+   current_joint_acceleration_.Actuators.Actuator6 = (current_velocity_.Actuators.Actuator5 - lastVelocity_[1].Actuators.Actuator5) / dtsum;
+   current_joint_acceleration_.Actuators.Actuator5 = (current_velocity_.Actuators.Actuator6 - lastVelocity_[1].Actuators.Actuator6) / dtsum;
+   current_joint_acceleration_.Fingers.Finger1 = (current_velocity_.Fingers.Finger1 - lastVelocity_[1].Fingers.Finger1) / dtsum;
+   current_joint_acceleration_.Fingers.Finger2 = (current_velocity_.Fingers.Finger2 - lastVelocity_[1].Fingers.Finger2) / dtsum;
+   current_joint_acceleration_.Fingers.Finger3 = (current_velocity_.Fingers.Finger3 - lastVelocity_[1].Fingers.Finger3) / dtsum;
+}
+
+void Jaco2State::applyAccelerationCalibration()
+{
+}
+
+void Jaco2State::getAcceleration(const std::size_t &index, const AngularAcceleration &acc, Eigen::Vector3d &vec)
+{
+    switch (index) {
+    case 0:
+        vec(0) = acc.Actuator1_X;
+        vec(1) = acc.Actuator1_Y;
+        vec(2) = acc.Actuator1_Z;
+
+        break;
+    default:
+        break;
+    }
 }

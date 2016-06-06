@@ -3,6 +3,7 @@
 
 #include "jaco2_api.h"
 #include <kinova/KinovaTypes.h>
+#include <jaco2_driver/accelerometer_calibration.hpp>
 
 enum ReadData
 {
@@ -53,6 +54,7 @@ public:
     void setHighPriQue(std::vector<int> que);
     void setLowPriQue(std::vector<int> que);
     void setPriorityRate(int rate);
+    void setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccerlerometerCalibrationParam>& param);
 
     ///
     /// \brief readQuickStatus reads the arms status over command layer
@@ -79,6 +81,8 @@ public:
     ///
     void readPosVel();
 
+    static void getAcceleration(const std::size_t& index, const AngularAcceleration& acc, Eigen::Vector3d& vec);
+
 
 
 private:
@@ -97,6 +101,7 @@ private:
 
     AngularPosition current_position_;
     AngularPosition current_velocity_;
+    AngularPosition current_joint_acceleration_;
     AngularPosition current_torque_;
     AngularPosition current_current_;
     AngularPosition current_torque_gravity_free_;
@@ -111,6 +116,10 @@ private:
     std::chrono::time_point<std::chrono::high_resolution_clock> time_acceleration_;
     std::chrono::time_point<std::chrono::high_resolution_clock> time_quick_status_;
     std::chrono::time_point<std::chrono::high_resolution_clock> time_sensor_info_;
+    std::vector<Jaco2Calibration::AccerlerometerCalibrationParam> accCalibParam_;
+    AngularPosition lastVelocity_[2];
+    double dt_[2];
+    int acc_counter_;
 
    private:
     void readPosition();
@@ -121,6 +130,9 @@ private:
     void readAcceleration();
     void readSensorInfo();
     void read(int dataID);
+
+    void calculateJointAcceleration();
+    void applyAccelerationCalibration();
 
 };
 
