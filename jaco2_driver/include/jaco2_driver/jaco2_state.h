@@ -51,10 +51,12 @@ public:
     std::vector<int> getHighPriQue() const;
     std::vector<int> getLowPriQue() const;
 
+    std::vector<Jaco2Calibration::AccelerometerCalibrationParam> getAccelerometerCalibration() const;
+
     void setHighPriQue(std::vector<int> que);
     void setLowPriQue(std::vector<int> que);
     void setPriorityRate(int rate);
-    void setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccerlerometerCalibrationParam>& param);
+    void setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam>& params);
 
     ///
     /// \brief readQuickStatus reads the arms status over command layer
@@ -82,6 +84,7 @@ public:
     void readPosVel();
 
     static void getAcceleration(const std::size_t& index, const AngularAcceleration& acc, Eigen::Vector3d& vec);
+    static void setAcceleration(const std::size_t& index, const Eigen::Vector3d vec, AngularAcceleration& acc);
 
 
 
@@ -116,7 +119,8 @@ private:
     std::chrono::time_point<std::chrono::high_resolution_clock> time_acceleration_;
     std::chrono::time_point<std::chrono::high_resolution_clock> time_quick_status_;
     std::chrono::time_point<std::chrono::high_resolution_clock> time_sensor_info_;
-    std::vector<Jaco2Calibration::AccerlerometerCalibrationParam> accCalibParam_;
+    std::vector<Jaco2Calibration::AccelerometerCalibrationParam> accCalibParam_;
+    std::vector<bool> calibrate_acc_;
     AngularPosition lastVelocity_[2];
     double dt_[2];
     int acc_counter_;

@@ -1,4 +1,5 @@
 #include <jaco2_driver/jaco2_state.h>
+#include <jaco2_driver/jaco2_driver_constants.h>
 
 Jaco2State::Jaco2State(Jaco2API &api)
     : api_(api), readCmd_(0),readCmdLowPri_(0), readCmdHighPri_(0), priortyThreshold_(2), priortyRate_(priortyThreshold_ + 1)
@@ -20,7 +21,8 @@ Jaco2State::Jaco2State(Jaco2API &api)
     current_acceleration_.InitStruct();
     current_torque_gravity_free_.InitStruct();
 
-    int acc_counter_ =0;
+    calibrate_acc_ = {false, false, false, false, false, false};
+    acc_counter_ =0;
 }
 
 AngularPosition Jaco2State::getAngularPosition() const
@@ -74,22 +76,15 @@ SensorsInfo Jaco2State::getSensorInfo() const
 void Jaco2State::readPosVelCur()
 {
     switch (readCmd_) {
-    case 0:
-    {
-
-//        current_position_ = api_.getAngularPosition();
+    case 0:{
         readPosition();
         break;
     }
-    case 1:
-    {
-//        current_velocity_ = api_.getAngularVelocity();
+    case 1:{
         readVelocity();
         break;
     }
-    case 2:
-    {
-//        current_current_ = api_.getAngularCurrent();
+    case 2:{
         readCurrent();
         break;
     }
@@ -101,14 +96,12 @@ void Jaco2State::readPosVelCur()
 
 void Jaco2State::read()
 {
-    if(readCmd_ < priortyThreshold_)
-    {
+    if(readCmd_ < priortyThreshold_) {
         read(highPriority_[readCmdHighPri_]);
         std::unique_lock<std::recursive_mutex> lock(data_mutex_);
         readCmdHighPri_ = (readCmdHighPri_ + 1) % highPriority_.size();
     }
-    else
-    {
+    else {
         read(lowPriority_[readCmdLowPri_]);
         std::unique_lock<std::recursive_mutex> lock(data_mutex_);
         readCmdLowPri_ =  (readCmdLowPri_ + 1) % lowPriority_.size();
@@ -221,15 +214,11 @@ void Jaco2State::readPosVel()
 {
 
     switch (readCmd_) {
-    case 0:
-    {
-//        current_velocity_ = api_.getAngularVelocity();
+    case 0: {
         readVelocity();
         break;
     }
-    case 1:
-    {
-//        current_position_ = api_.getAngularPosition();
+    case 1: {
         readPosition();
         break;
     }
@@ -277,6 +266,7 @@ void Jaco2State::readAcceleration()
   current_acceleration_ =api_.getActuatorAcceleration();
   std::unique_lock<std::recursive_mutex> lock(data_mutex_);
   time_acceleration_ = std::chrono::high_resolution_clock::now();
+  applyAccelerationCalibration();
 }
 
 void Jaco2State::readCurrent()
@@ -300,9 +290,20 @@ void Jaco2State::readSensorInfo()
     time_sensor_info_ = std::chrono::high_resolution_clock::now();
 }
 
-void Jaco2State::setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccerlerometerCalibrationParam>& param)
+void Jaco2State::setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam>& params)
 {
-    accCalibParam_ = param;
+    accCalibParam_.resize(Jaco2DriverConstants::n_Jaco2Joints);
+    for(std::size_t i = 0; i < Jaco2DriverConstants::accel_names.size(); ++i) {
+        Jaco2Calibration::AccelerometerCalibrationParam param;
+        bool contains = Jaco2Calibration::getParam(Jaco2DriverConstants::accel_names[i],params,param);
+        if(contains) {
+            calibrate_acc_[i] = true;
+            accCalibParam_[i] = param;
+        }
+        else {
+            calibrate_acc_[i] = false;
+        }
+    }
 }
 
 void Jaco2State::calculateJointAcceleration()
@@ -321,18 +322,100 @@ void Jaco2State::calculateJointAcceleration()
 
 void Jaco2State::applyAccelerationCalibration()
 {
+    for(std::size_t i = 0; i < Jaco2DriverConstants::n_Jaco2Joints; ++i){
+        if(calibrate_acc_[i]){
+        Eigen::Vector3d acc_raw;
+        getAcceleration(i,current_acceleration_, acc_raw);
+        Eigen::Matrix3d mat = accCalibParam_[i].misalignment;
+        Eigen::Vector3d acc_calib = mat*(acc_raw - accCalibParam_[i].bias);
+        setAcceleration(i,acc_calib,current_acceleration_);
+        }
+    }
 }
 
 void Jaco2State::getAcceleration(const std::size_t &index, const AngularAcceleration &acc, Eigen::Vector3d &vec)
 {
     switch (index) {
-    case 0:
+    case 0: {
         vec(0) = acc.Actuator1_X;
         vec(1) = acc.Actuator1_Y;
         vec(2) = acc.Actuator1_Z;
-
-        break;
-    default:
         break;
     }
+    case 1: {
+        vec(0) = acc.Actuator2_X;
+        vec(1) = acc.Actuator2_Y;
+        vec(2) = acc.Actuator2_Z;
+    }
+    case 2: {
+        vec(0) = acc.Actuator3_X;
+        vec(1) = acc.Actuator3_Y;
+        vec(2) = acc.Actuator3_Z;
+    }
+    case 3: {
+        vec(0) = acc.Actuator4_X;
+        vec(1) = acc.Actuator4_Y;
+        vec(2) = acc.Actuator4_Z;
+    }
+    case 4: {
+        vec(0) = acc.Actuator5_X;
+        vec(1) = acc.Actuator5_Y;
+        vec(2) = acc.Actuator5_Z;
+    }
+    case 5: {
+        vec(0) = acc.Actuator6_X;
+        vec(1) = acc.Actuator6_Y;
+        vec(2) = acc.Actuator6_Z;
+    }
+    default: {
+        throw std::runtime_error("illegal index!");
+        break;
+    }
+    }
+}
+
+void Jaco2State::setAcceleration(const std::size_t &index, const Eigen::Vector3d vec, AngularAcceleration &acc)
+{
+    switch (index) {
+    case 0:{
+        acc.Actuator1_X = vec(0);
+        acc.Actuator1_Y = vec(1);
+        acc.Actuator1_Z = vec(2);
+        break;
+    }
+    case 1: {
+        acc.Actuator2_X = vec(0);
+        acc.Actuator2_Y = vec(1);
+        acc.Actuator2_Z = vec(2);
+    }
+    case 2: {
+        acc.Actuator3_X = vec(0);
+        acc.Actuator3_Y = vec(1);
+        acc.Actuator3_Z = vec(2);
+    }
+    case 3: {
+        acc.Actuator4_X = vec(0);
+        acc.Actuator4_Y = vec(1);
+        acc.Actuator4_Z = vec(2);
+    }
+    case 4: {
+        acc.Actuator5_X = vec(0);
+        acc.Actuator5_Y = vec(1);
+        acc.Actuator5_Z = vec(2);
+    }
+    case 5: {
+        acc.Actuator6_X = vec(0);
+        acc.Actuator6_Y = vec(1);
+        acc.Actuator6_Z = vec(2);
+    }
+    default: {
+        throw std::runtime_error("illegal index!");
+        break;
+    }
+    }
+}
+
+std::vector<Jaco2Calibration::AccelerometerCalibrationParam> Jaco2State::getAccelerometerCalibration() const
+{
+    return accCalibParam_;
 }

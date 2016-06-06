@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include <kinova/KinovaTypes.h>
+#include <jaco2_driver/jaco2_driver_constants.h>
 
 class ManipulatorInfo
 {
@@ -20,7 +21,7 @@ public:
 
     ~ManipulatorInfo() {}
 
-    const std::size_t length_ = 6;
+    const std::size_t length_ = Jaco2DriverConstants::n_Jaco2Joints;
 
     double& operator[](std::size_t idx)
     {

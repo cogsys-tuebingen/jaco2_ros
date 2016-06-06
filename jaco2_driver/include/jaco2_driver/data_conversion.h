@@ -12,6 +12,8 @@
 #include <kinova/KinovaTypes.h>
 #include <jaco2_msgs/JointAngles.h>
 #include "joint_trajectory.h"
+//Jaco2
+#include "jaco2_driver_constants.h"
 
 
 namespace DataConversion {
@@ -26,15 +28,15 @@ void convert(const AngularPosition &in, std::vector<double> &out)
     out[4] = in.Actuators.Actuator5;
     out[5] = in.Actuators.Actuator6;
     //conversion encoder 2 degrees experimentaly determined
-    out[6] = 9.2028e-3*in.Fingers.Finger1;
-    out[7] = 9.2028e-3*in.Fingers.Finger2;
-    out[8] = 9.2028e-3*in.Fingers.Finger3;
+    out[6] = Jaco2DriverConstants::fingerAngleConversion*in.Fingers.Finger1;
+    out[7] = Jaco2DriverConstants::fingerAngleConversion*in.Fingers.Finger2;
+    out[8] = Jaco2DriverConstants::fingerAngleConversion*in.Fingers.Finger3;
 }
 
 void convert(const std::vector<double> &in, AngularPosition &out)
 {
     out.InitStruct();
-    if(in.size() >= 6)
+    if(in.size() >= Jaco2DriverConstants::n_Jaco2Joints)
     {
         out.Actuators.Actuator1 = in[0];
         out.Actuators.Actuator2 = in[1];
@@ -43,13 +45,13 @@ void convert(const std::vector<double> &in, AngularPosition &out)
         out.Actuators.Actuator5 = in[4];
         out.Actuators.Actuator6 = in[5];
 
-   if(in.size() == 9)
+   if(in.size() == Jaco2DriverConstants::n_Jaco2JointsAndKG3)
    {
        out.Fingers.Finger1 = in[6];
        out.Fingers.Finger1 = in[7];
        out.Fingers.Finger1 = in[8];
    }
-   if(in.size() == 8)
+   if(in.size() == Jaco2DriverConstants::n_Jaco2JointsAndKG2)
    {
        out.Fingers.Finger1 = in[6];
        out.Fingers.Finger1 = in[7];
@@ -151,38 +153,38 @@ void convert(const AngularAcceleration & in, const std::chrono::time_point<std::
     accMsg.vector.x = in.Actuator1_X;
     accMsg.vector.y = in.Actuator1_Y;
     accMsg.vector.z = in.Actuator1_Z;
-    accMsg.header.frame_id = "jaco_accelerometer_1";
+    accMsg.header.frame_id = Jaco2DriverConstants::name_accel_1;
     out[0] = accMsg;
     accMsg.vector.x = in.Actuator2_X;
     accMsg.vector.y = in.Actuator2_Y;
     accMsg.vector.z = in.Actuator2_Z;
-    accMsg.header.frame_id = "jaco_accelerometer_2";
+    accMsg.header.frame_id = Jaco2DriverConstants::name_accel_2;
     out[1] = accMsg;
     accMsg.vector.x = in.Actuator3_X;
     accMsg.vector.y = in.Actuator3_Y;
     accMsg.vector.z = in.Actuator3_Z;
-    accMsg.header.frame_id = "jaco_accelerometer_3";
+    accMsg.header.frame_id = Jaco2DriverConstants::name_accel_3;
     out[2] = accMsg;
     accMsg.vector.x = in.Actuator4_X;
     accMsg.vector.y = in.Actuator4_Y;
     accMsg.vector.z = in.Actuator4_Z;
-    accMsg.header.frame_id = "jaco_accelerometer_4";
+    accMsg.header.frame_id = Jaco2DriverConstants::name_accel_4;
     out[3] = accMsg;
     accMsg.vector.x = in.Actuator5_X;
     accMsg.vector.y = in.Actuator5_Y;
     accMsg.vector.z = in.Actuator5_Z;
-    accMsg.header.frame_id = "jaco_accelerometer_5";
+    accMsg.header.frame_id = Jaco2DriverConstants::name_accel_5;
     out[4] = accMsg;
     accMsg.vector.x = in.Actuator6_X;
     accMsg.vector.y = in.Actuator6_Y;
     accMsg.vector.z = in.Actuator6_Z;
-    accMsg.header.frame_id = "jaco_accelerometer_6";
+    accMsg.header.frame_id = Jaco2DriverConstants::name_accel_6;
     out[5] = accMsg;
 }
 
 void convert(const AngularInfo& in, std::vector<double>& out)
 {
-    out.resize(6);
+    out.resize(Jaco2DriverConstants::n_Jaco2Joints);
     out[0] = in.Actuator1;
     out[1] = in.Actuator2;
     out[2] = in.Actuator3;

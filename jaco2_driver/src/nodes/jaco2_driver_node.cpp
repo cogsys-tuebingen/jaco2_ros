@@ -4,6 +4,7 @@
 #include <jaco2_driver/data_conversion.h>
 #include <jaco2_msgs/FingerPosition.h>
 #include <jaco2_msgs/Jaco2Sensor.h>
+#include <jaco2_driver/jaco2_driver_constants.h>
 
 namespace {
 bool g_running_ = true;
@@ -63,17 +64,27 @@ Jaco2DriverNode::Jaco2DriverNode()
     jointStateMsg_.name[7] = tf_prefix_ + "joint_finger_2";
     jointStateMsg_.name[8] = tf_prefix_ + "joint_finger_3";
 
-    sensorMsg_.name.resize(6);
-    sensorMsg_.acceleration.resize(6);
-    sensorMsg_.temperature.resize(6);
-    sensorMsg_.torque.resize(6);
-    sensorMsg_.current.resize(6);
+    sensorMsg_.name.resize(Jaco2DriverConstants::n_Jaco2Joints);
+    sensorMsg_.acceleration.resize(Jaco2DriverConstants::n_Jaco2Joints);
+    sensorMsg_.temperature.resize(Jaco2DriverConstants::n_Jaco2Joints);
+    sensorMsg_.torque.resize(Jaco2DriverConstants::n_Jaco2Joints);
+    sensorMsg_.current.resize(Jaco2DriverConstants::n_Jaco2Joints);
     sensorMsg_.name[0] = tf_prefix_ + "joint_1";
     sensorMsg_.name[1] = tf_prefix_ + "joint_2";
     sensorMsg_.name[2] = tf_prefix_ + "joint_3";
     sensorMsg_.name[3] = tf_prefix_ + "joint_4";
     sensorMsg_.name[4] = tf_prefix_ + "joint_5";
     sensorMsg_.name[5] = tf_prefix_ + "joint_6";
+
+    bool use_accel_calib;
+    private_nh_.param<bool>("use_accelerometer_calib", use_accel_calib, false);
+    if(use_accel_calib) {
+        std::string acc_calib_file;
+        private_nh_.param<std::string>("accelerometer_calibration_file",acc_calib_file);
+        std::vector<Jaco2Calibration::AccelerometerCalibrationParam> acc_params;
+        Jaco2Calibration::loadAccCalib(acc_calib_file, acc_params);
+        controller_.setAccelerometerCalibration(acc_params);
+    }
 
     actionAngleServer_.start();
     trajServer_.start();

@@ -29,16 +29,17 @@ public:
     void setGravityMagnitude(double g){gravityMag_ = g;}
 
     std::vector<DynamicCalibratedParameters> getDynamicCalibration() const { return dynParams_;}
-    std::vector<AccerlerometerCalibrationParam> getAccCalibration() const { return accParams_;}
+    std::vector<AccelerometerCalibrationParam> getAccCalibration() const { return accParams_;}
 
 private:
     Jaco2KinematicsDynamicsModel model_;
     std::vector<DynamicCalibratedParameters> dynParams_;
     int initAccSamples_;
     double gravityMag_;
-    std::vector<AccerlerometerCalibrationParam> accParams_;
+    std::vector<AccelerometerCalibrationParam> accParams_;
 
     void convert(const std::size_t& idx, const AccelerationSamples& samples, std::vector<imu_tk::TriadData>& data );
+    void convert(const std::size_t &idx, const std::vector<imu_tk::TriadData> &data, AccelerationSamples &samples);
 };
 }
 #endif // JACO2CALIBRATION_H

@@ -186,6 +186,10 @@ AngularPosition Jaco2Driver::getCurrentTrajError() const
     return res;
 }
 
+std::vector<Jaco2Calibration::AccelerometerCalibrationParam> Jaco2Driver::getAccerlerometerCalibration() const
+{
+    return state_.getAccelerometerCalibration();
+}
 void Jaco2Driver::setTrajectoryPGains(const ManipulatorInfo &gains)
 {
     p2p_velocity_controller_.setGainP(gains);
@@ -295,4 +299,9 @@ QuickStatus Jaco2Driver::getQuickStatus() const
 SensorsInfo Jaco2Driver::getSensorInfo() const
 {
     return state_.getSensorInfo();
+}
+
+void Jaco2Driver::setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam> &params)
+{
+    state_.setAccelerometerCalibration(params);
 }
