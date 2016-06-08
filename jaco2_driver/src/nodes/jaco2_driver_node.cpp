@@ -77,10 +77,10 @@ Jaco2DriverNode::Jaco2DriverNode()
     sensorMsg_.name[5] = tf_prefix_ + "joint_6";
 
     bool use_accel_calib;
-    private_nh_.param<bool>("use_accelerometer_calib", use_accel_calib, false);
+    private_nh_.param<bool>("/jaco_use_accelerometer_calib", use_accel_calib, false);
     if(use_accel_calib) {
         std::string acc_calib_file;
-        private_nh_.param<std::string>("accelerometer_calibration_file",acc_calib_file);
+        private_nh_.param<std::string>("/jaco_accelerometer_calibration_file", acc_calib_file, "");
         std::vector<Jaco2Calibration::AccelerometerCalibrationParam> acc_params;
         Jaco2Calibration::loadAccCalib(acc_calib_file, acc_params);
         controller_.setAccelerometerCalibration(acc_params);

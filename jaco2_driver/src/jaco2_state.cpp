@@ -57,7 +57,7 @@ AngularPosition Jaco2State::getTorqueGFree() const
 
 AngularAcceleration Jaco2State::getAngularAcceleration() const
 {
-     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     return current_acceleration_;
 }
 
@@ -256,17 +256,17 @@ void Jaco2State::readTorque()
 
 void Jaco2State::readTorqueGravityFree()
 {
-  current_torque_gravity_free_ = api_.getAngularForceGravityFree();
-  std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-  time_torque_gravity_free_ = std::chrono::high_resolution_clock::now();
+    current_torque_gravity_free_ = api_.getAngularForceGravityFree();
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
+    time_torque_gravity_free_ = std::chrono::high_resolution_clock::now();
 }
 
 void Jaco2State::readAcceleration()
 {
-  current_acceleration_ =api_.getActuatorAcceleration();
-  std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-  time_acceleration_ = std::chrono::high_resolution_clock::now();
-  applyAccelerationCalibration();
+    current_acceleration_ =api_.getActuatorAcceleration();
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
+    time_acceleration_ = std::chrono::high_resolution_clock::now();
+    applyAccelerationCalibration();
 }
 
 void Jaco2State::readCurrent()
@@ -292,6 +292,7 @@ void Jaco2State::readSensorInfo()
 
 void Jaco2State::setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam>& params)
 {
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     accCalibParam_.resize(Jaco2DriverConstants::n_Jaco2Joints);
     for(std::size_t i = 0; i < Jaco2DriverConstants::accel_names.size(); ++i) {
         Jaco2Calibration::AccelerometerCalibrationParam param;
@@ -309,26 +310,27 @@ void Jaco2State::setAccelerometerCalibration(const std::vector<Jaco2Calibration:
 void Jaco2State::calculateJointAcceleration()
 {
     double dtsum = dt_[0] + dt_[1];
-   current_joint_acceleration_.Actuators.Actuator1 = (current_velocity_.Actuators.Actuator1 - lastVelocity_[1].Actuators.Actuator1) / dtsum;
-   current_joint_acceleration_.Actuators.Actuator2 = (current_velocity_.Actuators.Actuator2 - lastVelocity_[1].Actuators.Actuator2) / dtsum;
-   current_joint_acceleration_.Actuators.Actuator3 = (current_velocity_.Actuators.Actuator3 - lastVelocity_[1].Actuators.Actuator3) / dtsum;
-   current_joint_acceleration_.Actuators.Actuator4 = (current_velocity_.Actuators.Actuator4 - lastVelocity_[1].Actuators.Actuator4) / dtsum;
-   current_joint_acceleration_.Actuators.Actuator6 = (current_velocity_.Actuators.Actuator5 - lastVelocity_[1].Actuators.Actuator5) / dtsum;
-   current_joint_acceleration_.Actuators.Actuator5 = (current_velocity_.Actuators.Actuator6 - lastVelocity_[1].Actuators.Actuator6) / dtsum;
-   current_joint_acceleration_.Fingers.Finger1 = (current_velocity_.Fingers.Finger1 - lastVelocity_[1].Fingers.Finger1) / dtsum;
-   current_joint_acceleration_.Fingers.Finger2 = (current_velocity_.Fingers.Finger2 - lastVelocity_[1].Fingers.Finger2) / dtsum;
-   current_joint_acceleration_.Fingers.Finger3 = (current_velocity_.Fingers.Finger3 - lastVelocity_[1].Fingers.Finger3) / dtsum;
+    current_joint_acceleration_.Actuators.Actuator1 = (current_velocity_.Actuators.Actuator1 - lastVelocity_[1].Actuators.Actuator1) / dtsum;
+    current_joint_acceleration_.Actuators.Actuator2 = (current_velocity_.Actuators.Actuator2 - lastVelocity_[1].Actuators.Actuator2) / dtsum;
+    current_joint_acceleration_.Actuators.Actuator3 = (current_velocity_.Actuators.Actuator3 - lastVelocity_[1].Actuators.Actuator3) / dtsum;
+    current_joint_acceleration_.Actuators.Actuator4 = (current_velocity_.Actuators.Actuator4 - lastVelocity_[1].Actuators.Actuator4) / dtsum;
+    current_joint_acceleration_.Actuators.Actuator6 = (current_velocity_.Actuators.Actuator5 - lastVelocity_[1].Actuators.Actuator5) / dtsum;
+    current_joint_acceleration_.Actuators.Actuator5 = (current_velocity_.Actuators.Actuator6 - lastVelocity_[1].Actuators.Actuator6) / dtsum;
+    current_joint_acceleration_.Fingers.Finger1 = (current_velocity_.Fingers.Finger1 - lastVelocity_[1].Fingers.Finger1) / dtsum;
+    current_joint_acceleration_.Fingers.Finger2 = (current_velocity_.Fingers.Finger2 - lastVelocity_[1].Fingers.Finger2) / dtsum;
+    current_joint_acceleration_.Fingers.Finger3 = (current_velocity_.Fingers.Finger3 - lastVelocity_[1].Fingers.Finger3) / dtsum;
 }
 
 void Jaco2State::applyAccelerationCalibration()
 {
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     for(std::size_t i = 0; i < Jaco2DriverConstants::n_Jaco2Joints; ++i){
         if(calibrate_acc_[i]){
-        Eigen::Vector3d acc_raw;
-        getAcceleration(i,current_acceleration_, acc_raw);
-        Eigen::Matrix3d mat = accCalibParam_[i].misalignment;
-        Eigen::Vector3d acc_calib = mat*(acc_raw - accCalibParam_[i].bias);
-        setAcceleration(i,acc_calib,current_acceleration_);
+            Eigen::Vector3d acc_raw;
+            getAcceleration(i,current_acceleration_, acc_raw);
+            Eigen::Matrix3d mat = accCalibParam_[i].misalignment;
+            Eigen::Vector3d acc_calib = mat*(acc_raw - accCalibParam_[i].bias);
+            setAcceleration(i,acc_calib,current_acceleration_);
         }
     }
 }
@@ -346,26 +348,31 @@ void Jaco2State::getAcceleration(const std::size_t &index, const AngularAccelera
         vec(0) = acc.Actuator2_X;
         vec(1) = acc.Actuator2_Y;
         vec(2) = acc.Actuator2_Z;
+        break;
     }
     case 2: {
         vec(0) = acc.Actuator3_X;
         vec(1) = acc.Actuator3_Y;
         vec(2) = acc.Actuator3_Z;
+        break;
     }
     case 3: {
         vec(0) = acc.Actuator4_X;
         vec(1) = acc.Actuator4_Y;
         vec(2) = acc.Actuator4_Z;
+        break;
     }
     case 4: {
         vec(0) = acc.Actuator5_X;
         vec(1) = acc.Actuator5_Y;
         vec(2) = acc.Actuator5_Z;
+        break;
     }
     case 5: {
         vec(0) = acc.Actuator6_X;
         vec(1) = acc.Actuator6_Y;
         vec(2) = acc.Actuator6_Z;
+        break;
     }
     default: {
         throw std::runtime_error("illegal index!");
@@ -387,26 +394,31 @@ void Jaco2State::setAcceleration(const std::size_t &index, const Eigen::Vector3d
         acc.Actuator2_X = vec(0);
         acc.Actuator2_Y = vec(1);
         acc.Actuator2_Z = vec(2);
+        break;
     }
     case 2: {
         acc.Actuator3_X = vec(0);
         acc.Actuator3_Y = vec(1);
         acc.Actuator3_Z = vec(2);
+        break;
     }
     case 3: {
         acc.Actuator4_X = vec(0);
         acc.Actuator4_Y = vec(1);
         acc.Actuator4_Z = vec(2);
+        break;
     }
     case 4: {
         acc.Actuator5_X = vec(0);
         acc.Actuator5_Y = vec(1);
         acc.Actuator5_Z = vec(2);
+        break;
     }
     case 5: {
         acc.Actuator6_X = vec(0);
         acc.Actuator6_Y = vec(1);
         acc.Actuator6_Z = vec(2);
+        break;
     }
     default: {
         throw std::runtime_error("illegal index!");
