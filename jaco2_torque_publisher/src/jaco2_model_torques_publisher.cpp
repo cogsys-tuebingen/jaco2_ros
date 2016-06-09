@@ -4,6 +4,7 @@
 #include <sensor_msgs/JointState.h>
 #include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
 #include <jaco2_msgs/JointAngles.h>
+#include <jaco2_msgs/Jaco2Sensor.h>
 #include <jaco2_calibration/jaco2_calibration_io.hpp> 
 
 class Jaco2TorquePublisher
@@ -11,20 +12,23 @@ class Jaco2TorquePublisher
 public:
     Jaco2TorquePublisher(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip)
         : inital_(true),
+          counter_(0),
           private_nh_("~"),
           solver_(robot_model,chain_root,chain_tip)
     {
         boost::function<void(const sensor_msgs::JointStateConstPtr&)> cb = boost::bind(&Jaco2TorquePublisher::jointStateCb, this, _1);
         subJointState_ = private_nh_.subscribe("/jaco_arm_driver/out/joint_states", 1, cb);
+        boost::function<void(const jaco2_msgs::Jaco2SensorConstPtr&)> cbS = boost::bind(&Jaco2TorquePublisher::sensorInfoCb, this, _1);
+        subSensorInfo_ = private_nh_.subscribe("/jaco_arm_driver/out/sensor_info", 1,  cbS);
         publisher_ = private_nh_.advertise<jaco2_msgs::JointAngles>("model_torques",2);
         diffPublisher_ = private_nh_.advertise<jaco2_msgs::JointAngles>("torque_diffs",2);
         lastTime_ = ros::Time::now();
 
         std::vector<Jaco2Calibration::DynamicCalibratedParameters> calibParam;
-        Jaco2Calibration::loadDynParm("/tmp/param.txt", calibParam);
-        for(Jaco2Calibration::DynamicCalibratedParameters param : calibParam){
-            solver_.changeDynamicParams(param.linkName, param.mass, param.coM, param.inertia);
-        }
+//        Jaco2Calibration::loadDynParm("/tmp/param.txt", calibParam);
+//        for(Jaco2Calibration::DynamicCalibratedParameters param : calibParam){
+//            solver_.changeDynamicParams(param.linkName, param.mass, param.coM, param.inertia);
+//        }
 
     }
 
@@ -65,10 +69,23 @@ public:
         }
     }
 
+    void sensorInfoCb(const jaco2_msgs::Jaco2SensorConstPtr& msg)
+    {
+        gravity_[0] = msg->acceleration[0].vector.x;
+        gravity_[1] = msg->acceleration[0].vector.y;
+        gravity_[2] = msg->acceleration[0].vector.z;
+    }
+
     void tick()
     {
         ros::spinOnce();
         if(!inital_){
+//            if(counter_ == 0){
+                double x =  -gravity_[1] * (9.81);
+                double y =  -gravity_[0] * (9.81);
+                double z =  -gravity_[2] * (9.81);
+                solver_.setGravity(x,y,z);
+//            }
             solver_.getTorques(jointPos_,jointVel_,jointAcc_,modelTorques_);
             jaco2_msgs::JointAngles pubMsg;
             pubMsg.joint1 = modelTorques_[0];
@@ -88,15 +105,18 @@ public:
             diffMsg.joint5 = modelTorques_[4] / jointTorques_[4];
             diffMsg.joint6 = modelTorques_[5] / jointTorques_[5];
             diffPublisher_.publish(diffMsg);
+            counter_ = (counter_ + 1) % 10;
         }
     }
 
 
 private:
     bool inital_;
+    int counter_;
     ros::NodeHandle private_nh_;
     Jaco2KinematicsDynamicsModel solver_;
     ros::Subscriber subJointState_;
+    ros::Subscriber subSensorInfo_;
     ros::Publisher publisher_;
     ros::Publisher diffPublisher_;
     std::vector<double> jointPos_;
@@ -107,6 +127,7 @@ private:
     std::vector<double> modelTorques_;
     ros::Time lastTime_;
     double dt_;
+    double gravity_[3];
 
 };
 
@@ -116,7 +137,7 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "pub_jaco2_model_torques");
 //    ros::NodeHandle node("~");
     Jaco2TorquePublisher jacomodel("robot_description","jaco_link_base","jaco_link_hand");
-    ros::Rate r(80);
+    ros::Rate r(40);
     while(ros::ok()){
         ros::spinOnce();
         jacomodel.tick();

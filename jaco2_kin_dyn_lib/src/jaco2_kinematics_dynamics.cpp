@@ -129,6 +129,19 @@ int Jaco2KinematicsDynamicsModel::getTorques(const std::vector<double> &q, const
     return e_code;
 }
 
+void Jaco2KinematicsDynamicsModel::setGravity(double x, double y, double z)
+{
+    gravity_ = KDL::Vector(x, y, z);
+    // inverse dynamics solver
+    solverID_.reset(new KDL::ChainIdSolver_RNE(chain_,gravity_));
+
+    // forward kinematic
+    solverFK_.reset(new KDL::ChainFkSolverPos_recursive(chain_));
+
+    //initialize TRAC_IK solver: inverse kinematics
+    solverIK_.reset(new TRAC_IK::TRAC_IK(chain_, lowerLimits_, upperLimits_));
+}
+
 int Jaco2KinematicsDynamicsModel::getFKPose(const std::vector<double> &q_in, tf::Pose &out, std::string link)
 {
     KDL::JntArray q;

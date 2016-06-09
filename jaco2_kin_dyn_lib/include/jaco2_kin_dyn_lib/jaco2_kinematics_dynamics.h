@@ -61,6 +61,7 @@ public:
 
     void setTree(const std::string& robot_model);
     void setRootAndTip(const std::string& chain_root, const std::string& chain_tip);
+    void setGravity(double x, double y, double z);
 
     //Solver Calls
     /**
