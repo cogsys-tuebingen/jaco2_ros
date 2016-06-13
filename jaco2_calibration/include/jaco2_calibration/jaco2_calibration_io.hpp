@@ -119,8 +119,6 @@ void importAsciiData(std::string filename, std::vector<DynamicCalibrationSample>
 
     std::string line;
     std::ifstream infile;
-    double ts, d[24];
-    double start = 0.0;
 
     infile.open ( filename );
     if ( infile.is_open() )
@@ -156,6 +154,62 @@ void importAsciiData(std::string filename, std::vector<DynamicCalibrationSample>
                 }
                 if(i >= 19 && i<25){
                     sample.jointTorque[i-19] = val;
+                }
+                ++i;
+            }
+
+            samples.push_back(sample);
+
+        }
+        l++;
+    }
+    infile.close();
+}
+
+void importAsciiDataWithGravity(std::string filename, std::vector<DynamicCalibrationSample>& samples, const char delimiter = ';')
+{
+    samples.clear();
+
+    std::string line;
+    std::ifstream infile;
+
+    infile.open ( filename );
+    if ( infile.is_open() )
+    {
+
+
+        int l = 0;
+        char value[256];
+
+        std::getline ( infile,line );
+        while ( std::getline ( infile,line ) )
+        {
+
+            std::stringstream ss;
+            ss<< line ;
+
+            DynamicCalibrationSample sample;
+            int i = 0;
+            while( ss.getline( value, 256, delimiter ))
+            {
+                double val = std::atof(value);
+                if(i==0){
+                    sample.time = val;
+                }
+                if( i > 0 && i < 7){
+                    sample.jointPos[i-1] = val;
+                }
+                if(i >= 7 && i<13){
+                    sample.jointVel[i-7] = val;
+                }
+                if(i >= 13 && i<19){
+                    sample.jointAcc[i-13] = val;
+                }
+                if(i >= 19 && i<25){
+                    sample.jointTorque[i-19] = val;
+                }
+                if(i >= 25 && i<28){
+                    sample.gravity(i-25) = val;
                 }
                 ++i;
             }

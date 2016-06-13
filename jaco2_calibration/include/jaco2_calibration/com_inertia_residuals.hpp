@@ -32,7 +32,8 @@ public:
         if(ec >= 0)
         {
             double sum = 0;
-            for(std::size_t i = 0; i < 6; ++i){
+            std::size_t endJoint = solver_->getKDLSegmentIndex(link_);
+            for(std::size_t i = 0; i <= endJoint; ++i){
                 sum += fabs(modelTorques[i] - sample_.jointTorque[i]);
             }
             residuals[0] = sum;

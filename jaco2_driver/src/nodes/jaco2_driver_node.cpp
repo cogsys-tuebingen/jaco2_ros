@@ -4,7 +4,9 @@
 #include <jaco2_driver/data_conversion.h>
 #include <jaco2_msgs/FingerPosition.h>
 #include <jaco2_msgs/Jaco2Sensor.h>
+#include <jaco2_msgs/Jaco2JointState.h>
 #include <jaco2_driver/jaco2_driver_constants.h>
+
 
 namespace {
 bool g_running_ = true;
@@ -31,6 +33,8 @@ Jaco2DriverNode::Jaco2DriverNode()
     pubJointAngles_ = private_nh_.advertise<jaco2_msgs::JointAngles>("out/joint_angles",2);
     pubFingerPositions_ = private_nh_.advertise<jaco2_msgs::FingerPosition>("out/finger_positions",2);
     pubSensorInfo_ = private_nh_.advertise<jaco2_msgs::Jaco2Sensor>("out/sensor_info",2);
+    pubJaco2JointState = private_nh_.advertise<jaco2_msgs::Jaco2JointState>("out/joint_state_acc", 2);
+
     boost::function<void(const jaco2_msgs::JointVelocityConstPtr&)> cb = boost::bind(&Jaco2DriverNode::jointVelocityCb, this, _1);
     boost::function<void(const jaco2_msgs::FingerPositionConstPtr&)> cb_finger = boost::bind(&Jaco2DriverNode::fingerVelocityCb, this, _1);
     subJointVelocity_ = private_nh_.subscribe("in/joint_velocity", 10, cb);
@@ -408,12 +412,17 @@ void Jaco2DriverNode::publishJointState()
     pubJointState_.publish(jointStateMsg_);
 
 
-    AngularPosition pos = controller_.getAngularPosition();
-    jaco2_msgs::FingerPosition finger_msg;
-    finger_msg.finger1 = pos.Fingers.Finger1;
-    finger_msg.finger2 = pos.Fingers.Finger2;
-    finger_msg.finger3 = pos.Fingers.Finger3;
-    pubFingerPositions_.publish(finger_msg);
+    jaco2_msgs::Jaco2JointState jaco2JointStateMsg;
+    jaco2JointStateMsg.header = jointStateMsg_.header;
+    jaco2JointStateMsg.name = jointStateMsg_.name;
+    jaco2JointStateMsg.position = jointStateMsg_.position;
+    jaco2JointStateMsg.velocity = jointStateMsg_.velocity;
+    jaco2JointStateMsg.effort = jointStateMsg_.effort;
+
+    DataConversion::convert(controller_.getAngularAcceleration(), jaco2JointStateMsg.acceleration);
+    DataConversion::from_degrees(jaco2JointStateMsg.acceleration);
+
+    pubJaco2JointState.publish(jaco2JointStateMsg);
 }
 
 void Jaco2DriverNode::publishJointAngles()
@@ -431,6 +440,14 @@ void Jaco2DriverNode::publishJointAngles()
     jointAngleMsg_.joint6 = pos.Actuators.Actuator6;
 
     pubJointAngles_.publish(jointAngleMsg_);
+
+    AngularPosition posFing = controller_.getAngularPosition();
+    jaco2_msgs::FingerPosition finger_msg;
+    finger_msg.finger1 = posFing.Fingers.Finger1;
+    finger_msg.finger2 = posFing.Fingers.Finger2;
+    finger_msg.finger3 = posFing.Fingers.Finger3;
+    pubFingerPositions_.publish(finger_msg);
+
 }
 
 void Jaco2DriverNode::publishSensorInfo()

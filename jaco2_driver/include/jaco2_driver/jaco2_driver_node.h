@@ -64,6 +64,7 @@ private:
     ros::Publisher pubJointAngles_;
     ros::Publisher pubFingerPositions_;
     ros::Publisher pubSensorInfo_;
+    ros::Publisher pubJaco2JointState;
 
     ros::ServiceServer stopService_;
     ros::ServiceServer startService_;

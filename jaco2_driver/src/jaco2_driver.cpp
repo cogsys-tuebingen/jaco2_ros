@@ -54,6 +54,11 @@ AngularPosition Jaco2Driver::getAngularVelocity() const
     return state_.getAngularVelocity();
 }
 
+AngularPosition Jaco2Driver::getAngularAcceleration() const
+{
+    return state_.getAngularAcceleration();
+}
+
 AngularPosition Jaco2Driver::getAngularForce() const
 {
     return state_.getAngularForce();
@@ -288,7 +293,7 @@ AngularPosition Jaco2Driver::getAngularForceGravityFree() const
 
 AngularAcceleration Jaco2Driver::getActuatorAcceleration() const
 {
-    return state_.getAngularAcceleration();
+    return state_.getLinearAcceleration();
 }
 
 QuickStatus Jaco2Driver::getQuickStatus() const

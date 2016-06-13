@@ -21,8 +21,8 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
 
     //TODO ignore long sequences of not changing data
 
-//    auto link = links.rbegin();
-    for(std::vector<std::string>::reverse_iterator link = links.rbegin(); link != links.rend(); ++link ){
+    //    auto link = links.rbegin();
+    for(auto link = links.begin(); link != links.end(); ++link ){
         std::cout << *link << std::endl;
         tf::Vector3 com = model_.getLinkCoM(*link);
         tf::Matrix3x3 inertia = model_.getLinkInertiaCoM(*link);
@@ -50,7 +50,7 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
         ceres::Solver::Options options;
         options.linear_solver_type = ceres::DENSE_QR;
         options.minimizer_progress_to_stdout = true;
-//        options.max_num_iterations = 300;
+        //        options.max_num_iterations = 300;
 
         ceres::Solver::Summary summary;
         ceres::Solve(options, &problem, &summary);
@@ -63,8 +63,8 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
         linkparams.mass = model_.getLinkMass(*link);
         linkparams.coM = tf::Vector3(dyn_calib_params[0], dyn_calib_params[1], dyn_calib_params[2]);
         linkparams.inertia = tf::Matrix3x3(dyn_calib_params[3], dyn_calib_params[4], dyn_calib_params[5],
-                                           dyn_calib_params[4], dyn_calib_params[6], dyn_calib_params[7],
-                                           dyn_calib_params[5], dyn_calib_params[7], dyn_calib_params[8]);
+                dyn_calib_params[4], dyn_calib_params[6], dyn_calib_params[7],
+                dyn_calib_params[5], dyn_calib_params[7], dyn_calib_params[8]);
 
         dynParams_.push_back(linkparams);
 
@@ -90,7 +90,7 @@ bool Jaco2Calibration::calibrateAcc(const AccelerationSamples &samples)
 
     accParams_.resize(samples.nJoints);
 
-     AccelerationSamples calibAccSamples;
+    AccelerationSamples calibAccSamples;
 
     for(std::size_t i = 0; i  < samples.nJoints; ++i)
     {
@@ -100,8 +100,8 @@ bool Jaco2Calibration::calibrateAcc(const AccelerationSamples &samples)
         imu_tk::CalibratedTriad calibParm = accCalib.getAccCalib();
         std::string name = "jaco_accelerometer_" + std::to_string(i+1);
         AccelerometerCalibrationParam param(name, calibParm.getBiasVector(),
-                                             calibParm.getMisalignmentMatrix(),
-                                             calibParm.getScaleMatrix());
+                                            calibParm.getMisalignmentMatrix(),
+                                            calibParm.getScaleMatrix());
 
         accParams_[i] = param;
         std::vector<imu_tk::TriadData> calibSamples = accCalib.getCalibAccSamples();
@@ -109,28 +109,31 @@ bool Jaco2Calibration::calibrateAcc(const AccelerationSamples &samples)
         convert(i, calibSamples, calibAccSamples);
     }
     calibAccSamples.save("/tmp/calib_acc_samples.txt");
+    return true;
 }
 
 void Jaco2Calibration::convert(const std::size_t &idx, const AccelerationSamples &samples, std::vector<imu_tk::TriadData> &data)
 {
     std::size_t nElem = samples.samples[idx].size();
     data.resize(nElem);
-    double t0 = samples.samples[0].at(0).time;
-    for(std::size_t i = 0; i < nElem; ++i){
-        double t = samples.samples[idx][i].time -t0;
-        double x = samples.samples[idx][i].vector[0];
-        double y = samples.samples[idx][i].vector[1];
-        double z = samples.samples[idx][i].vector[2];
+    if(nElem > 0) {
+        double t0 = samples.samples[0].at(0).time;
+        for(std::size_t i = 0; i < nElem; ++i){
+            double t = samples.samples[idx][i].time -t0;
+            double x = samples.samples[idx][i].vector[0];
+            double y = samples.samples[idx][i].vector[1];
+            double z = samples.samples[idx][i].vector[2];
 
-        imu_tk::TriadData tkAcc(t, x, y, z);
-        data[i] = tkAcc;
+            imu_tk::TriadData tkAcc(t, x, y, z);
+            data[i] = tkAcc;
+        }
     }
 }
 
 void Jaco2Calibration::convert(const std::size_t &idx, const std::vector<imu_tk::TriadData> &data, AccelerationSamples &samples)
 {
     std::size_t nElem = data.size();
-//    samples[idx].resize(nElem);
+    //    samples[idx].resize(nElem);
 
     for(std::size_t i = 0; i < nElem; ++i){
 

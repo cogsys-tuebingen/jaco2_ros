@@ -31,6 +31,10 @@ public:
     std::vector<DynamicCalibratedParameters> getDynamicCalibration() const { return dynParams_;}
     std::vector<AccelerometerCalibrationParam> getAccCalibration() const { return accParams_;}
 
+    std::string getTipFrame() const {return model_.getTipLink();}
+    std::string getRootFrame() const {return model_.getRootLink();}
+
+
 private:
     Jaco2KinematicsDynamicsModel model_;
     std::vector<DynamicCalibratedParameters> dynParams_;

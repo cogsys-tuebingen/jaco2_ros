@@ -1,7 +1,7 @@
 #ifndef JACO2_STATE_H
 #define JACO2_STATE_H
 
-#include "jaco2_api.h"
+#include <jaco2_driver/jaco2_api.h>
 #include <kinova/KinovaTypes.h>
 #include <jaco2_driver/accelerometer_calibration.hpp>
 
@@ -34,13 +34,16 @@ public:
 
     AngularPosition getAngularVelocity() const;
 
+    AngularPosition getAngularAcceleration() const;
+
     AngularPosition getAngularForce() const;
 
     AngularPosition getAngularCurrent() const;
 
     AngularPosition getTorqueGFree() const;
 
-    AngularAcceleration getAngularAcceleration() const;
+
+    AngularAcceleration getLinearAcceleration() const;
 
     QuickStatus getQuickStatus() const;
 

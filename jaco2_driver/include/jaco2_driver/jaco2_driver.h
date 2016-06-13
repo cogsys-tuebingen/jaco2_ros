@@ -32,6 +32,7 @@ public:
     // GET
     AngularPosition getAngularPosition() const;
     AngularPosition getAngularVelocity() const;
+    AngularPosition getAngularAcceleration() const;
     AngularPosition getAngularForce() const;
     AngularPosition getCurrentTrajError() const;
     AngularPosition getAngularForceGravityFree() const;

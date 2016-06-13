@@ -84,6 +84,9 @@ struct DynamicCalibrationSample
         {
             res += std::to_string(jointTorque[j]) + delimiter;
         }
+        res += std::to_string(gravity(0)) + delimiter +
+               std::to_string(gravity(1)) + delimiter +
+               std::to_string(gravity(2)) + delimiter;
         return res;
     }
 
@@ -93,6 +96,7 @@ struct DynamicCalibrationSample
     std::vector<double> jointVel;
     std::vector<double> jointAcc;
     std::vector<double> jointTorque;
+    Eigen::Vector3d gravity;
 };
 }
 #endif // DYNAMIC_CALIBRATION_SAMPLE_HPP

@@ -95,6 +95,7 @@ public:
     int getIKSolution(const tf::Pose &pose, std::vector<double> &result, const std::vector<double>& seed = std::vector<double>());
 
     void changeDynamicParams(const std::string& link, const double mass, const tf::Vector3& com, const tf::Matrix3x3 inertia);
+    void changeDynamicParams(const std::string& link, const double mass, const tf::Vector3& com, const tf::Matrix3x3 inertia, double gx, double gy, double gz);
 
     void changeKineticParams(const std::string& link, const tf::Vector3& trans, const tf::Matrix3x3 rotation);
 
