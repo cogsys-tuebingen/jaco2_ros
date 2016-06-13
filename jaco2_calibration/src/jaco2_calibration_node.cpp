@@ -129,7 +129,10 @@ public:
             mean *= 1.0/((double)counter);
             sample.gravity = mean;
         }
-        samples_.push_back(sample);
+        if(currentSamples_ > 10) {
+            samples_.push_back(sample);
+
+        }
         ++currentSamples_;
 //        ROS_INFO_STREAM("Recoding_Data");
     }
@@ -183,7 +186,7 @@ public:
         return collision_result.collision;
     }
 
-    void tick()
+    void tick(bool& done)
     {
         ros::spinOnce();
         if(genData_ && currentSamples_ % 20 == 0 )
@@ -230,13 +233,22 @@ public:
             }
 
         }
+         done = currentSamples_ >= numberOfSamples_;
+
+        std::cout << "recording data ... samples: " << currentSamples_  << std::endl;
+
+    }
+
+
+    void calibrate(bool calib_acc)
+    {
         if(currentSamples_ > numberOfSamples_ && notCalib_)
         {
             std::cout << "calibrating ... " << std::endl;
             notCalib_ = false;
             accSamples_.save("/tmp/acc_samples.txt");
             Jaco2Calibration::save("/tmp/data.txt",samples_);
-            if(calibAcc_){
+            if(calibAcc_ || calib_acc){
                 bool succ = calibration_.calibrateAcc(accSamples_);
                 if(succ){
                     Jaco2Calibration::save("/tmp/acc_calib.txt",calibration_.getAccCalibration());
@@ -244,7 +256,7 @@ public:
 
             }
             else{
-                Jaco2Calibration::save("/tmp/samples.txt", samples_);
+                Jaco2Calibration::save("/tmp/dyn_samples.txt", samples_);
                 int ec = calibration_.calibrateCoMandInertia(samples_);
                 std::vector<Jaco2Calibration::DynamicCalibratedParameters> dynparams;
                 if(ec > -1){
@@ -254,8 +266,6 @@ public:
 
             }
         }
-        std::cout << "recording data ... samples: " << currentSamples_  << std::endl;
-
     }
 
 
@@ -388,10 +398,10 @@ private:
     jaco2_msgs::Jaco2Sensor jacoSensorMsg_;
     ros::ServiceServer calibServiceServer_;
     std::vector<Eigen::Vector3d> gsum_;
-    moveit::planning_interface::MoveGroup moveGroup_;
-    planning_scene_monitor::PlanningSceneMonitorPtr  planningMonitor_;
     std::vector<std::string> jointGroupNames_;
+    moveit::planning_interface::MoveGroup moveGroup_;
     moveit::planning_interface::PlanningSceneInterface planningSceneInterface_;
+    planning_scene_monitor::PlanningSceneMonitorPtr  planningMonitor_;
     //    ros::Publisher display_publisher_;
     //    moveit_msgs::DisplayTrajectory display_trajectory_;
 };
@@ -406,11 +416,17 @@ int main(int argc, char *argv[])
     spinner.start();
 
     node.saftyBox(0, -0.8,0.4);
-    while (ros::ok()) {
-        node.tick();
+    bool done = false;
+    while (ros::ok() && !done) {
+        node.tick(done);
         //        ros::spinOnce();
         r.sleep();
     }
+
+    spinner.stop();
+
+    node.calibrate(false);
+    node.calibrate(true);
     return 0;
 }
 
