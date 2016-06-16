@@ -437,5 +437,6 @@ void Jaco2State::setAcceleration(const std::size_t &index, const Eigen::Vector3d
 
 std::vector<Jaco2Calibration::AccelerometerCalibrationParam> Jaco2State::getAccelerometerCalibration() const
 {
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     return accCalibParam_;
 }

@@ -43,6 +43,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     stopService_ = private_nh_.advertiseService("in/stop", &Jaco2DriverNode::stopServiceCallback, this);
     startService_ = private_nh_.advertiseService("in/start", &Jaco2DriverNode::startServiceCallback, this);
     homingService_ = private_nh_.advertiseService("in/home_arm", &Jaco2DriverNode::homeArmServiceCallback, this);
+    zeroTorqueService_ = private_nh_.advertiseService("in/set_torque_zero", &Jaco2DriverNode::setTorqueZeroCallback, this);
 
     actionAngleServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::actionAngleGoalCb, this));
     trajServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::trajGoalCb, this));
@@ -498,6 +499,19 @@ bool Jaco2DriverNode::homeArmServiceCallback(jaco2_msgs::HomeArm::Request &req, 
         controller_.homeArm();
         res.homearm_result = "JACO ARM HAS BEEN RETURNED HOME";
         return true;
+}
+
+bool Jaco2DriverNode::setTorqueZeroCallback(jaco2_msgs::SetTorqueZero::Request &req, jaco2_msgs::SetTorqueZero::Response &res)
+{
+    controller_.setTorqueZero(req.actuator);
+    sleep(2.0);
+    while(!controller_.serviceDone())
+    {
+        usleep(10000);
+        ROS_INFO("Waiting");
+    }
+    res.result = controller_.getSetTorqueZeroResult();
+    return true;
 }
 
 int main(int argc, char *argv[])

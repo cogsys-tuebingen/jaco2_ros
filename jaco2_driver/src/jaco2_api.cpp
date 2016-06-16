@@ -28,6 +28,7 @@ Jaco2API::Jaco2API():
     SetAngularControl = (int (*)()) dlsym(commandLayer_handle,"SetAngularControl");
     SetCartesianControl = (int (*)()) dlsym(commandLayer_handle,"SetCartesianControl");
     GetSensorsInfo = (int (*)(SensorsInfo &)) dlsym(commandLayer_handle,"GetSensorsInfo");
+    SetTorqueZero = (int (*)(int)) dlsym(commandLayer_handle,"SetTorqueZero");
 
 }
 
@@ -227,4 +228,34 @@ void Jaco2API::initFingers()
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     InitFingers();
+}
+
+int Jaco2API::setTorqueZero(int actuator)
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    int result; //may return
+    switch (actuator) {
+    case 1:
+        result = (*SetTorqueZero)(16);
+        break;
+    case 2:
+        result = (*SetTorqueZero)(17);
+        break;
+    case 3:
+        result = (*SetTorqueZero)(18);
+        break;
+    case 4:
+        result = (*SetTorqueZero)(19);
+        break;
+    case 5:
+        result = (*SetTorqueZero)(20);
+        break;
+    case 6:
+        result = (*SetTorqueZero)(21);
+        break;
+    default:
+        break;
+    }
+    usleep(100000);
+    return result;
 }

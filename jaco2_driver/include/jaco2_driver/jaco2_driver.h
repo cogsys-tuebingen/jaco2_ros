@@ -29,6 +29,7 @@ public:
     ~Jaco2Driver();
 
     bool reachedGoal() const;
+    bool serviceDone() const;
     // GET
     AngularPosition getAngularPosition() const;
     AngularPosition getAngularVelocity() const;
@@ -42,6 +43,7 @@ public:
     SensorsInfo getSensorInfo() const;
     std::chrono::time_point<std::chrono::high_resolution_clock> getLastReadUpdate(int read_data) const;
     std::vector<Jaco2Calibration::AccelerometerCalibrationParam> getAccerlerometerCalibration() const;
+    int getSetTorqueZeroResult() const;
 
     //SET
     void setAngularPosition(const AngularPosition &position);
@@ -70,6 +72,7 @@ public:
     void startArm();
     void stopArm();
     void homeArm();
+    void setTorqueZero(int actuator);
 
     void finish();
 
@@ -97,6 +100,7 @@ private:
     void getJointValues();
     void tick();
     void executeLater(std::function<void()> fn);
+//    void executeLater(std::function<int()> fn);
 
 private:
     std::thread spinner_;
@@ -106,8 +110,11 @@ private:
     Jaco2State state_;
 
     std::vector<std::function<void()>> commands_;
+
     mutable std::recursive_mutex commands_mutex_;
+    int setTorqueZeroResult_;
     bool paused_;
+    bool serviceDone_;
 
 };
 

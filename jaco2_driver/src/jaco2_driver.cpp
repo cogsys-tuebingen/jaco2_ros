@@ -10,7 +10,8 @@ Jaco2Driver::Jaco2Driver():
     p2p_velocity_controller_(state_,jaco_api_),
     empty_controller_(state_,jaco_api_),
     gripper_controller_(state_,jaco_api_),
-    paused_(false)
+    paused_(false),
+    serviceDone_(true)
 {
     ROS_INFO_STREAM("create jaco 2 driver");
     int result = jaco_api_.init();
@@ -116,31 +117,53 @@ void Jaco2Driver::stopMovement()
 void Jaco2Driver::stopArm()
 {
     executeLater([this](){
+        serviceDone_ = false;
         jaco_api_.stopAPI();
         paused_ = true;
         usleep(5000);
+        serviceDone_= true;
     });
 }
 
 void Jaco2Driver::startArm()
 {
     executeLater([this](){
+        serviceDone_ = false;
         jaco_api_.startAPI();
         paused_ = false;
         usleep(5000);
+        serviceDone_= true;
     });
 }
 
 void Jaco2Driver::homeArm()
 {
     executeLater([this](){
+        serviceDone_ = false;
         paused_ = true;
         jaco_api_.moveHome();
         usleep(5000);
         jaco_api_.initFingers();
         usleep(10000);
         paused_ = false;
+        serviceDone_= true;
     });
+}
+
+void Jaco2Driver::setTorqueZero(int actuator)
+{
+    executeLater([this, actuator](){
+        serviceDone_ = false;
+        setTorqueZeroResult_ = jaco_api_.setTorqueZero(actuator);
+        usleep(10000);
+        serviceDone_= true;
+    });
+}
+
+bool Jaco2Driver::serviceDone() const
+{
+    std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
+    return serviceDone_;
 }
 
 void Jaco2Driver::executeLater(std::function<void ()> fn)
@@ -148,6 +171,7 @@ void Jaco2Driver::executeLater(std::function<void ()> fn)
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
     commands_.emplace_back(fn);
 }
+
 
 void Jaco2Driver::tick()
 {
@@ -173,6 +197,7 @@ void Jaco2Driver::tick()
     for(auto fn : commands) {
         fn();
     }
+
 }
 
 bool Jaco2Driver::reachedGoal() const
@@ -309,4 +334,10 @@ SensorsInfo Jaco2Driver::getSensorInfo() const
 void Jaco2Driver::setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam> &params)
 {
     state_.setAccelerometerCalibration(params);
+}
+
+int Jaco2Driver::getSetTorqueZeroResult() const
+{
+    std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
+    return setTorqueZeroResult_;
 }

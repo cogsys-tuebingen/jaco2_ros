@@ -20,6 +20,7 @@
 #include <jaco2_msgs/Start.h>
 #include <jaco2_msgs/Stop.h>
 #include <jaco2_msgs/HomeArm.h>
+#include <jaco2_msgs/SetTorqueZero.h>
 #include <jaco2_msgs/Jaco2Sensor.h>
 
 
@@ -47,6 +48,7 @@ private:
     bool stopServiceCallback(jaco2_msgs::Stop::Request &req, jaco2_msgs::Stop::Response &res);
     bool startServiceCallback(jaco2_msgs::Start::Request &req, jaco2_msgs::Start::Response &res);
     bool homeArmServiceCallback(jaco2_msgs::HomeArm::Request &req, jaco2_msgs::HomeArm::Response &res);
+    bool setTorqueZeroCallback(jaco2_msgs::SetTorqueZero::Request &req, jaco2_msgs::SetTorqueZero::Response & res);
 
     void dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureConfig &config, uint32_t level);
 
@@ -69,6 +71,7 @@ private:
     ros::ServiceServer stopService_;
     ros::ServiceServer startService_;
     ros::ServiceServer homingService_;
+    ros::ServiceServer zeroTorqueService_;
 
     actionlib::SimpleActionServer<jaco2_msgs::ArmJointAnglesAction> actionAngleServer_;
     actionlib::SimpleActionServer<control_msgs::FollowJointTrajectoryAction> trajServer_;

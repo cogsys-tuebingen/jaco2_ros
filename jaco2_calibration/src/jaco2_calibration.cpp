@@ -56,7 +56,13 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
             dyn_calib_params[8] = dynParams_[nLinks].inertia.getRow(2).getZ();
 
             ceres::Problem problem;
+
             problem.AddParameterBlock(dyn_calib_params.data(), 9);
+            for(std::size_t i= 0; i <9; ++i) {
+                problem.SetParameterLowerBound(dyn_calib_params.data(), i, -1.0);
+                problem.SetParameterUpperBound(dyn_calib_params.data(), i, 1.0);
+            }
+
             for(auto sample : samples)
             {
                 ceres::CostFunction* cost_function = ComInetriaResiduals::Create(&model_, sample, link);
@@ -67,6 +73,7 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
             ceres::Solver::Options options;
             options.linear_solver_type = ceres::DENSE_QR;
             options.minimizer_progress_to_stdout = true;
+
             //        options.max_num_iterations = 300;
 
             ceres::Solver::Summary summary;

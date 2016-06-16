@@ -1,0 +1,3 @@
+int64 actuator # Set the torque sensor of acuator with index actuator to zero for the current configuration. actuator in [1,6]
+---
+int64 result

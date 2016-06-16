@@ -33,6 +33,11 @@ public:
     void stopAPI();
     void moveHome();
     void initFingers();
+    /**
+     * @brief setTorqueZero sets the actuator torque sensor to zero for current position
+     * @param actuator the index of the actuator [1,..., 6]
+     */
+    int setTorqueZero(int actuator);
 
 private:
     void * commandLayer_handle;
@@ -58,6 +63,7 @@ private:
     int (*SetAngularControl)();
     int (*SetCartesianControl)();
     int (*GetSensorsInfo)(SensorsInfo &);
+    int (*SetTorqueZero)(int);
 
 
 
