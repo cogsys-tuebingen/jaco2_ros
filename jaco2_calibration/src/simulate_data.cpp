@@ -1,4 +1,5 @@
 #include <vector>
+#include <random>
 
 #include <ros/ros.h>
 #include <moveit/move_group_interface/move_group.h>
@@ -32,26 +33,30 @@ public:
           currentSamples_(0),
           g_counter_(0),
           moveGroup_("manipulator"),
-          dynSolver_(urdf_param, root, tip)
+          dynSolver_(urdf_param, root, tip),
+          distribution_(0,0.4)
     {
         boost::function<void(const sensor_msgs::JointStateConstPtr&)> cb = boost::bind(&SimCalibNode::jointStateCb, this, _1);
-        subJointState_ = private_nh_.subscribe("/joint_states", 10, cb);
+        subJointState_ = private_nh_.subscribe("/jaco_arm_driver/out/joint_states", 10, cb);
 
         calibration_.setGravityMagnitude(1.0);
         calibration_.setInitAccSamples(500);
 //        calibServiceServer_ = private_nh_.advertiseService("calibrate_acc", &SimCalibNode::changeCalibCallback, this);
 
         moveGroup_.setPlannerId("RRTkConfigDefault");
-        moveGroup_.setStartStateToCurrentState();
+//        moveGroup_.set
+//        moveGroup_.setStartStateToCurrentState();
         moveGroup_.setPlanningTime(2.0);
-        moveGroup_.setGoalPositionTolerance(0.01);
-        moveGroup_.setGoalOrientationTolerance(0.05);
+//        moveGroup_.setGoalPositionTolerance(0.01);
+//        moveGroup_.setGoalOrientationTolerance(0.05);
 
         planningMonitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
 
         jointGroupNames_ =  planningMonitor_->getRobotModel()->getJointModelGroup("manipulator")->getActiveJointModelNames();
 
         //    ros::Publisher display_publisher = node_handle.advertise<moveit_msgs::DisplayTrajectory>("/move_group/display_planned_path", 1, true);
+
+
 
     }
 
@@ -66,23 +71,34 @@ public:
         lastTime_ = now;
         dt_ = dt.toSec();
         Jaco2Calibration::DynamicCalibrationSample sample;
+        sample.time = dt_;
+
+        double tdiff = dt_;
+        if (samples_.size() > 2) {
+            tdiff = samples_.at(samples_.size() -1).time + samples_.at(samples_.size() -2).time;
+        }
         for(std::size_t i = 0; i < 6; ++i){
             sample.jointPos[i] = msg->position[i];
             sample.jointVel[i] = msg->velocity[i];
 //            sample.jointTorque[i] = msg->effort[i];
 //            sample.jointAcc[i] = msg->acceleration[i];
-            if(currentSamples_ > 0 && dt_ !=0)
+            if(samples_.size() > 2 && dt_ !=0)
             {
-                sample.jointAcc[i] = (sample.jointVel[i] - samples_.back().jointVel[i])/dt_;
+                sample.jointAcc[i] = (sample.jointVel[i] - samples_.at(samples_.size() -2).jointVel[i])/(tdiff);
             }
             else{
                 sample.jointAcc[i] = 0;
             }
-            dynSolver_.getTorques(sample.jointPos, sample.jointVel, sample.jointAcc,sample.jointTorque);
+        }
+        dynSolver_.getTorques(sample.jointPos, sample.jointVel, sample.jointAcc,sample.jointTorque);
+        // add white noise
+        for(std::size_t i = 0; i < 6; ++i) {
+            sample.jointTorque[i] += (double) distribution_(generator_);
         }
 
         //estimate jaco's base acceleration
         sample.gravity = Eigen::Vector3d(0, 0, -9.81);
+        samples_.push_back(sample);
 
         ++currentSamples_;
         //        ROS_INFO_STREAM("Recoding_Data");
@@ -172,7 +188,7 @@ public:
 
         }
         done = currentSamples_ >= numberOfSamples_;
-
+        ROS_INFO_STREAM("recording data ... samples: " <<currentSamples_);
         //        std::cout << "recording data ... samples: " << currentSamples_  << std::endl;
 
     }
@@ -195,13 +211,13 @@ public:
 
             }
             else{
-                Jaco2Calibration::save("/tmp/dyn_samples.txt", samples_);
+                Jaco2Calibration::save("/tmp/dyn_samples_sim.txt", samples_);
                 int ec = calibration_.calibrateCoMandInertia(samples_);
                 std::vector<Jaco2Calibration::DynamicCalibratedParameters> dynparams;
                 if(ec > -1){
                     dynparams = calibration_.getDynamicCalibration();
                 }
-                Jaco2Calibration::save("/tmp/test_params.txt", dynparams);
+                Jaco2Calibration::save("/tmp/sim_params.txt", dynparams);
 
             }
         }
@@ -342,6 +358,8 @@ private:
     moveit::planning_interface::PlanningSceneInterface planningSceneInterface_;
     planning_scene_monitor::PlanningSceneMonitorPtr  planningMonitor_;
     Jaco2KinematicsDynamicsModel dynSolver_;
+    std::default_random_engine generator_;
+    std::normal_distribution<double> distribution_;
     //    ros::Publisher display_publisher_;
     //    moveit_msgs::DisplayTrajectory display_trajectory_;
 };
@@ -355,7 +373,7 @@ int main(int argc, char *argv[])
     ros::AsyncSpinner spinner(1);
     spinner.start();
 
-    node.saftyBox(0, -1.5,1.5, -1.5, 1.5 );
+//    node.saftyBox(0, -1.5,1.5, -1.5, 1.5 );
     bool done = false;
     while (ros::ok() && !done) {
         node.tick(done);
