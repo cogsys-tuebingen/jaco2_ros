@@ -216,7 +216,7 @@ public:
 
                     moveit::planning_interface::MoveGroup::Plan my_plan;
                     moveGroup_.setJointValueTarget(jvalues);
-                    moveGroup_.setStartStateToCurrentState();
+//                    moveGroup_.setStartStateToCurrentState();
                     moveGroup_.setPlanningTime(3.0);
                     moveit_msgs::MoveItErrorCodes success = moveGroup_.plan(my_plan);
 
@@ -235,7 +235,7 @@ public:
         }
          done = currentSamples_ >= numberOfSamples_;
 
-        std::cout << "recording data ... samples: " << currentSamples_  << std::endl;
+//        std::cout << "recording data ... samples: " << currentSamples_  << std::endl;
 
     }
 

@@ -16,8 +16,9 @@ int main(int argc, char *argv[])
     Jaco2Calibration::Jaco2Calibration calib(urdf_param, base, tip);
     if(calib_mode == "dynamic"){
         std::vector<Jaco2Calibration::DynamicCalibrationSample> samples;
-        Jaco2Calibration::importAsciiData(file,samples);
+        Jaco2Calibration::importAsciiDataWithGravity(file,samples);
         calib.calibrateCoMandInertia(samples);
+//        calib.calibrateArmDynamic(samples);
         std::vector<Jaco2Calibration::DynamicCalibratedParameters> param = calib.getDynamicCalibration();
         Jaco2Calibration::save("/tmp/param.txt",param);
     }

@@ -22,6 +22,7 @@ public:
     ~Jaco2Calibration();
 
     int calibrateCoMandInertia(const std::vector<DynamicCalibrationSample> &samples);
+    int calibrateArmDynamic(const std::vector<DynamicCalibrationSample> &samples);
 
     bool calibrateAcc(const AccelerationSamples & samples);
 

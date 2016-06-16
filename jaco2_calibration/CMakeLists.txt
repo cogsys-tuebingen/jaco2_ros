@@ -151,6 +151,7 @@ add_library(jaco2_calibration
     include/jaco2_calibration/jaco2_calibration.h
     include/jaco2_calibration/jaco2_calibration_io.hpp
     include/jaco2_calibration/dynamic_calibrated_parameters.hpp
+    include/jaco2_calibration/manipulator_dynamic_residuals.hpp
     src/jaco2_calibration.cpp
 )
 
