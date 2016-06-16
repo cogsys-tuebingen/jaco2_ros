@@ -25,44 +25,41 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
     //    auto link = links.rbegin();
 
     dynParams_.resize(links.size());
-    for(int i = 0; i < 3; ++i) {
-        std::size_t link_counter = 0;
-        for(auto link = links.begin(); link != links.end(); ++link ) {
+
+    for(std::size_t nLinks = 0; nLinks < links.size(); ++nLinks)
+    {
+
+        dynParams_[nLinks].linkName = links[nLinks];
+        dynParams_[nLinks].mass = model_.getLinkMass(links[nLinks]);
+        dynParams_[nLinks].coM = model_.getLinkCoM(links[nLinks]);
+        dynParams_[nLinks].inertia = model_.getLinkInertiaCoM(links[nLinks]);
+    }
+
+    for(int n = 0; n < 3; ++n) {
+        std::cout << "iteration: " << n + 1 << " of 3" << std::endl;
+        for(std::size_t nLinks = 0; nLinks < links.size(); ++nLinks ) {
+
+            std::string link = links[nLinks];
+            std::cout << link << std::endl;
+//            tf::Vector3 com = model_.getLinkCoM(*link);
+//            tf::Matrix3x3 inertia = model_.getLinkInertiaCoM(*link);
+
             std::vector<double> dyn_calib_params(9);
-
-            std::cout << *link << std::endl;
-            tf::Vector3 com = model_.getLinkCoM(*link);
-            tf::Matrix3x3 inertia = model_.getLinkInertiaCoM(*link);
-
-            if(i == 0) {
-
-                dyn_calib_params[0] = com.getX();
-                dyn_calib_params[1] = com.getY();
-                dyn_calib_params[2] = com.getZ();
-                dyn_calib_params[3] = inertia.getRow(0).getX();
-                dyn_calib_params[4] = inertia.getRow(0).getY();
-                dyn_calib_params[5] = inertia.getRow(0).getZ();
-                dyn_calib_params[6] = inertia.getRow(1).getY();
-                dyn_calib_params[7] = inertia.getRow(1).getZ();
-                dyn_calib_params[8] = inertia.getRow(2).getZ();
-            }
-            else {
-                dyn_calib_params[0] = dynParams_[i].coM.getX();
-                dyn_calib_params[1] = dynParams_[i].coM.getY();
-                dyn_calib_params[2] = dynParams_[i].coM.getZ();
-                dyn_calib_params[3] = dynParams_[i].inertia.getRow(0).getX();
-                dyn_calib_params[4] = dynParams_[i].inertia.getRow(0).getY();
-                dyn_calib_params[5] = dynParams_[i].inertia.getRow(0).getZ();
-                dyn_calib_params[6] = dynParams_[i].inertia.getRow(1).getY();
-                dyn_calib_params[7] = dynParams_[i].inertia.getRow(1).getZ();
-                dyn_calib_params[8] = dynParams_[i].inertia.getRow(2).getZ();
-            }
+            dyn_calib_params[0] = dynParams_[nLinks].coM.getX();
+            dyn_calib_params[1] = dynParams_[nLinks].coM.getY();
+            dyn_calib_params[2] = dynParams_[nLinks].coM.getZ();
+            dyn_calib_params[3] = dynParams_[nLinks].inertia.getRow(0).getX();
+            dyn_calib_params[4] = dynParams_[nLinks].inertia.getRow(0).getY();
+            dyn_calib_params[5] = dynParams_[nLinks].inertia.getRow(0).getZ();
+            dyn_calib_params[6] = dynParams_[nLinks].inertia.getRow(1).getY();
+            dyn_calib_params[7] = dynParams_[nLinks].inertia.getRow(1).getZ();
+            dyn_calib_params[8] = dynParams_[nLinks].inertia.getRow(2).getZ();
 
             ceres::Problem problem;
             problem.AddParameterBlock(dyn_calib_params.data(), 9);
             for(auto sample : samples)
             {
-                ceres::CostFunction* cost_function = ComInetriaResiduals::Create(&model_, sample, *link);
+                ceres::CostFunction* cost_function = ComInetriaResiduals::Create(&model_, sample, link);
                 problem.AddResidualBlock(cost_function, new ceres::CauchyLoss(0.5), dyn_calib_params.data());
 
             }/*NULL */
@@ -79,16 +76,14 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
 
 
             DynamicCalibratedParameters linkparams;
-            linkparams.linkName = *link;
-            linkparams.mass = model_.getLinkMass(*link);
+            linkparams.linkName = link;
+            linkparams.mass = model_.getLinkMass(link);
             linkparams.coM = tf::Vector3(dyn_calib_params[0], dyn_calib_params[1], dyn_calib_params[2]);
             linkparams.inertia = tf::Matrix3x3(dyn_calib_params[3], dyn_calib_params[4], dyn_calib_params[5],
-                    dyn_calib_params[4], dyn_calib_params[6], dyn_calib_params[7],
-                    dyn_calib_params[5], dyn_calib_params[7], dyn_calib_params[8]);
+                                               dyn_calib_params[4], dyn_calib_params[6], dyn_calib_params[7],
+                                               dyn_calib_params[5], dyn_calib_params[7], dyn_calib_params[8]);
 
-            dynParams_[i] = (linkparams);
-
-            ++link_counter;
+            dynParams_[nLinks] = linkparams;
 
 
         }

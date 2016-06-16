@@ -36,7 +36,11 @@ public:
             double sum = 0;
             std::size_t endJoint = solver_->getKDLSegmentIndex(link_);
             for(std::size_t i = 0; i <= endJoint; ++i){
-                sum += fabs(modelTorques[i] - sample_.jointTorque[i]);
+//                sum += fabs(modelTorques[i] - sample_.jointTorque[i]);
+
+                double diff = modelTorques[i] - sample_.jointTorque[i];
+                //sum of Mahalanobis-Distance
+                sum += sqrt(diff*(1.4/0.16)*diff);
             }
             residuals[0] = sum;
             return true;

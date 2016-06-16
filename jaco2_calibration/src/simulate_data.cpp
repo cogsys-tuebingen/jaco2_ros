@@ -34,7 +34,7 @@ public:
           moveGroup_("manipulator"),
           dynSolver_(urdf_param, root, tip)
     {
-        boost::function<void(const jaco2_msgs::Jaco2JointStateConstPtr&)> cb = boost::bind(&SimCalibNode::jointStateCb, this, _1);
+        boost::function<void(const sensor_msgs::JointStateConstPtr&)> cb = boost::bind(&SimCalibNode::jointStateCb, this, _1);
         subJointState_ = private_nh_.subscribe("/joint_states", 10, cb);
 
         calibration_.setGravityMagnitude(1.0);
@@ -70,7 +70,7 @@ public:
             sample.jointPos[i] = msg->position[i];
             sample.jointVel[i] = msg->velocity[i];
 //            sample.jointTorque[i] = msg->effort[i];
-            sample.jointAcc[i] = msg->acceleration[i];
+//            sample.jointAcc[i] = msg->acceleration[i];
             if(currentSamples_ > 0 && dt_ !=0)
             {
                 sample.jointAcc[i] = (sample.jointVel[i] - samples_.back().jointVel[i])/dt_;
