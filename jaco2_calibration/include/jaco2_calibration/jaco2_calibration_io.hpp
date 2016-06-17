@@ -28,12 +28,12 @@ void save(std::string name, const std::vector<DynamicCalibratedParameters>& para
         pNode["mass"] = param.mass;
 //        file << param.linkName << std::endl;
 //        file << "mass: \n" << std::to_string(param.mass) << std::endl;
-        tf::Vector3 com = param.coM;
-        pNode["com_x"] = com.getX();
-        pNode["com_y"] = com.getY();
-        pNode["com_z"] = com.getZ();
+        Eigen::Vector3d com = param.coM;
+        pNode["com_x"] = com(0);
+        pNode["com_y"] = com(1);
+        pNode["com_z"] = com(2);
 //        file << "Center Of Mass: \n" << std::to_string(com.getX()) << " " << std::to_string(com.getY()) << " " << std::to_string(com.getZ()) << std::endl;
-        tf::Matrix3x3 inertia = param.inertia;
+        Eigen::Matrix3d inertia = param.inertia;
 //        file << "Moment Inertia: \n";
 //        file << "Ixx = " << std::to_string(inertia.getRow(0).getX()) << std::endl;
 //        file << "Ixy = " << std::to_string(inertia.getRow(0).getY()) << std::endl;
@@ -41,12 +41,12 @@ void save(std::string name, const std::vector<DynamicCalibratedParameters>& para
 //        file << "Iyy = " << std::to_string(inertia.getRow(1).getY()) << std::endl;
 //        file << "Iyz = " << std::to_string(inertia.getRow(1).getZ()) << std::endl;
 //        file << "Izz = " << std::to_string(inertia.getRow(2).getZ()) << std::endl;
-        pNode["Ixx"] = inertia.getRow(0).getX();
-        pNode["Ixy"] = inertia.getRow(0).getY();
-        pNode["Ixz"] = inertia.getRow(0).getZ();
-        pNode["Iyy"] = inertia.getRow(1).getY();
-        pNode["Iyz"] = inertia.getRow(1).getZ();
-        pNode["Izz"] = inertia.getRow(2).getZ();
+        pNode["Ixx"] = inertia(0,0);
+        pNode["Ixy"] = inertia(0,1);
+        pNode["Ixz"] = inertia(0,2);
+        pNode["Iyy"] = inertia(1,1);
+        pNode["Iyz"] = inertia(1,1);
+        pNode["Izz"] = inertia(2,2);
         doc["parameter"].push_back(pNode);
     }
     yamlEmit << doc;
@@ -71,16 +71,16 @@ void loadDynParm(std::string filename, std::vector<DynamicCalibratedParameters>&
         double x = pNode["com_x"].as<double>();
         double y = pNode["com_y"].as<double>();
         double z = pNode["com_z"].as<double>();
-        param.coM = tf::Vector3(x, y, z);
+        param.coM = Eigen::Vector3d(x, y, z);
         double ixx = pNode["Ixx"].as<double>();
         double ixy = pNode["Ixy"].as<double>();
         double ixz = pNode["Ixz"].as<double>();
         double iyy = pNode["Iyy"].as<double>();
         double iyz = pNode["Iyz"].as<double>();
         double izz = pNode["Izz"].as<double>();
-        param.inertia = tf::Matrix3x3(ixx, ixy, ixz,
-                                      ixy, iyy, iyz,
-                                      ixz, iyz, izz);
+        param.inertia << ixx, ixy, ixz,
+                         ixy, iyy, iyz,
+                         ixz, iyz, izz;
         params.push_back(param);
     }
 }

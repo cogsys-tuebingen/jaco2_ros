@@ -188,15 +188,15 @@ int Jaco2KinematicsDynamicsModel::getIKSolution(const tf::Pose& pose, std::vecto
 }
 
 
-void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, const double mass, const tf::Vector3 &com, const tf::Matrix3x3 inertia)
+void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, const double mass, const Eigen::Vector3d &com, const Eigen::Matrix3d& inertia)
 {
     int segId = getKDLSegmentIndex(link);
 
     if(segId > -1)
     {
-        KDL::Vector cog(com.getX(), com.getY(), com.getZ());
-        KDL::RotationalInertia inertiaKDL(inertia.getRow(0).getX(), inertia.getRow(1).getY(), inertia.getRow(2).getZ(),
-                                          inertia.getRow(0).getY(), inertia.getRow(0).getZ(), inertia.getRow(1).getZ());
+        KDL::Vector cog(com(0), com(1), com(2));
+        KDL::RotationalInertia inertiaKDL(inertia(0,0), inertia(1,1), inertia(2,2),
+                                          inertia(0,1), inertia(0,2), inertia(1,2));
 
         KDL::Chain newChain;
         for(int i = 0; i < segId; ++i)
@@ -220,15 +220,15 @@ void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, 
     }
 }
 
-void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, const double mass, const tf::Vector3 &com, const tf::Matrix3x3 inertia, double gx, double gy, double gz)
+void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, const double mass, const Eigen::Vector3d &com, const Eigen::Matrix3d& inertia, double gx, double gy, double gz)
 {
     gravity_ =KDL::Vector(gx, gy, gz);
     int segId = getKDLSegmentIndex(link);
     if(segId > -1)
     {
-        KDL::Vector cog(com.getX(), com.getY(), com.getZ());
-        KDL::RotationalInertia inertiaKDL(inertia.getRow(0).getX(), inertia.getRow(1).getY(), inertia.getRow(2).getZ(),
-                                          inertia.getRow(0).getY(), inertia.getRow(0).getZ(), inertia.getRow(1).getZ());
+        KDL::Vector cog(com(0), com(1), com(2));
+        KDL::RotationalInertia inertiaKDL(inertia(0,0), inertia(1,1), inertia(2,2),
+                                          inertia(0,1), inertia(0,2), inertia(1,2));
 
         KDL::Chain newChain;
         for(int i = 0; i < segId; ++i)
@@ -253,17 +253,17 @@ void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, 
 
 
 
-void Jaco2KinematicsDynamicsModel::changeKineticParams(const std::string &link, const tf::Vector3 &trans, const tf::Matrix3x3 rotation)
+void Jaco2KinematicsDynamicsModel::changeKineticParams(const std::string &link, const Eigen::Vector3d &trans, const Eigen::Matrix3d& rotation)
 {
     {
         int segId = getKDLSegmentIndex(link);
         if(segId > -1)
         {
-            KDL::Vector p(trans.getX(), trans.getY(), trans.getZ());
+            KDL::Vector p(trans(0), trans(1), trans(2));
             //            KDL::Rotation rot(xx,yx,zx,xy,yy,zy,xz,yz,zz);
-            KDL::Rotation rot(rotation.getColumn(0).getX(), rotation.getColumn(0).getY(), rotation.getColumn(0).getZ(),
-                              rotation.getColumn(1).getX(), rotation.getColumn(1).getY(), rotation.getColumn(1).getZ(),
-                              rotation.getColumn(2).getX(), rotation.getColumn(2).getY(), rotation.getColumn(2).getZ());
+            KDL::Rotation rot(rotation(0,0), rotation(1,0), rotation(2,0),
+                              rotation(0,1), rotation(1,1), rotation(2,1),
+                              rotation(0,2), rotation(1,2), rotation(2,2));
 
             KDL::Chain newChain;
             for(int i = 0; i < segId; ++i)
@@ -360,45 +360,45 @@ double Jaco2KinematicsDynamicsModel::getLinkMass(const std::string &link) const
         return 0;
     }
 }
-tf::Vector3 Jaco2KinematicsDynamicsModel::getLinkCoM(const std::string &link) const
+Eigen::Vector3d Jaco2KinematicsDynamicsModel::getLinkCoM(const std::string &link) const
 {
     int segmentID = getKDLSegmentIndex(link);
     if(segmentID > -1){
         KDL::Vector vec = chain_.getSegment(segmentID).getInertia().getCOG();
-        tf::Vector3 result(vec(0), vec(1), vec(2));
+        Eigen::Vector3d result(vec(0), vec(1), vec(2));
         return result;
     }
     else{
         ROS_ERROR_STREAM("Link " << link << " not found! Wrong name?");
-        return tf::Vector3();
+        return Eigen::Vector3d ();
     }
 }
 
-tf::Matrix3x3 Jaco2KinematicsDynamicsModel::getLinkInertia(const std::string &link) const
+Eigen::Matrix3d Jaco2KinematicsDynamicsModel::getLinkInertia(const std::string &link) const
 {
     int segmentID = getKDLSegmentIndex(link);
     if(segmentID > -1){
         KDL::RotationalInertia mat = chain_.getSegment(segmentID).getInertia().getRotationalInertia();
-        tf::Matrix3x3 result;
-        result.setValue(mat.data[0], mat.data[1], mat.data[2],
-                mat.data[3], mat.data[4], mat.data[5],
-                mat.data[6], mat.data[7], mat.data[8]);
+        Eigen::Matrix3d result;
+        result << mat.data[0], mat.data[1], mat.data[2],
+                  mat.data[3], mat.data[4], mat.data[5],
+                  mat.data[6], mat.data[7], mat.data[8];
         return result;
     }
     else{
         ROS_ERROR_STREAM("Link " << link << " not found! Wrong name?");
-        return tf::Matrix3x3();
+        return Eigen::Matrix3d();
     }
 }
 
-tf::Matrix3x3 Jaco2KinematicsDynamicsModel::getLinkInertiaCoM(const std::string &link) const
+Eigen::Matrix3d Jaco2KinematicsDynamicsModel::getLinkInertiaCoM(const std::string &link) const
 {
     int segmentID = getKDLSegmentIndex(link);
     if(segmentID > -1){
         KDL::RotationalInertia mat = chain_.getSegment(segmentID).getInertia().getRotationalInertia();
         double mass = chain_.getSegment(segmentID).getInertia().getMass();
         KDL::Vector com = chain_.getSegment(segmentID).getInertia().getCOG();
-        tf::Matrix3x3 result;
+        Eigen::Matrix3d result;
 
         double xx = mat.data[0] - mass *(com(1)*com(1) + com(2)*com(2));
         double yy = mat.data[4] - mass *(com(0)*com(0) + com(2)*com(2));
@@ -407,45 +407,45 @@ tf::Matrix3x3 Jaco2KinematicsDynamicsModel::getLinkInertiaCoM(const std::string 
         double xz = mat.data[2] + mass * com(0)*com(2);
         double yz = mat.data[5] + mass * com(1)*com(2);
 
-        result.setValue(xx, xy, xz,
-                        xy, yy, yz,
-                        xz, yz, zz);
+        result << xx, xy, xz,
+                  xy, yy, yz,
+                  xz, yz, zz;
         return result;
     }
     else{
         ROS_ERROR_STREAM("Link " << link << " not found! Wrong name?");
-        return tf::Matrix3x3();
+        return Eigen::Matrix3d();
     }
 }
 
-tf::Vector3 Jaco2KinematicsDynamicsModel::getLinkFixedTranslation(const std::string &link) const
+Eigen::Vector3d Jaco2KinematicsDynamicsModel::getLinkFixedTranslation(const std::string &link) const
 {
     int segmentID = getKDLSegmentIndex(link);
     if(segmentID > -1){
         KDL::Vector vec = chain_.getSegment(segmentID).getFrameToTip().p;
-        tf::Vector3 result(vec(0), vec(1), vec(2));
+        Eigen::Vector3d result(vec(0), vec(1), vec(2));
         return result;
     }
     else{
         ROS_ERROR_STREAM("Link " << link << " not found! Wrong name?");
-        return tf::Vector3();
+        return Eigen::Vector3d();
     }
 }
 
-tf::Matrix3x3 Jaco2KinematicsDynamicsModel::getLinkFixedRotation(const std::string &link) const
+Eigen::Matrix3d Jaco2KinematicsDynamicsModel::getLinkFixedRotation(const std::string &link) const
 {
     int segmentID = getKDLSegmentIndex(link);
     if(segmentID > -1){
         KDL::Rotation mat = chain_.getSegment(segmentID).getFrameToTip().M;
-        tf::Matrix3x3 result;
-        result.setValue(mat.data[0], mat.data[3], mat.data[6],
-                mat.data[1], mat.data[4], mat.data[7],
-                mat.data[2], mat.data[5], mat.data[8]);
+        Eigen::Matrix3d result;
+        result << mat.data[0], mat.data[3], mat.data[6],
+                  mat.data[1], mat.data[4], mat.data[7],
+                  mat.data[2], mat.data[5], mat.data[8];
         return result;
     }
     else{
         ROS_ERROR_STREAM("Link " << link << " not found! Wrong name?");
-        return tf::Matrix3x3();
+        return Eigen::Matrix3d();
     }
 }
 

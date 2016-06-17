@@ -36,6 +36,7 @@ public:
     std::string getRootFrame() const {return model_.getRootLink();}
 
 
+
 private:
     Jaco2KinematicsDynamicsModel model_;
     std::vector<DynamicCalibratedParameters> dynParams_;

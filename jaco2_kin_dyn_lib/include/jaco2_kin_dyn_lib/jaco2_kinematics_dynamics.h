@@ -94,10 +94,10 @@ public:
      */
     int getIKSolution(const tf::Pose &pose, std::vector<double> &result, const std::vector<double>& seed = std::vector<double>());
 
-    void changeDynamicParams(const std::string& link, const double mass, const tf::Vector3& com, const tf::Matrix3x3 inertia);
-    void changeDynamicParams(const std::string& link, const double mass, const tf::Vector3& com, const tf::Matrix3x3 inertia, double gx, double gy, double gz);
+    void changeDynamicParams(const std::string& link, const double mass, const Eigen::Vector3d& com, const Eigen::Matrix3d& inertia);
+    void changeDynamicParams(const std::string& link, const double mass, const Eigen::Vector3d& com, const Eigen::Matrix3d& inertia, double gx, double gy, double gz);
 
-    void changeKineticParams(const std::string& link, const tf::Vector3& trans, const tf::Matrix3x3 rotation);
+    void changeKineticParams(const std::string& link, const Eigen::Vector3d& trans, const Eigen::Matrix3d& rotation);
 
     void useUrdfDynamicParams();
     void getRandomConfig(std::vector<double>& config);
@@ -115,23 +115,23 @@ public:
      * @param link the name of the link
      * @return displacement vector form link origin(rotation axis) to the center of mass.
      */
-    tf::Vector3 getLinkCoM(const std::string &link) const;
+    Eigen::Vector3d getLinkCoM(const std::string &link) const;
     /**
      * @brief getLinkInertia gets the inertia moment matrix of a link
      * @param link the name of the link
      * @return the inertia moment matrix at link origin = rotation axis
      */
-    tf::Matrix3x3 getLinkInertia(const std::string &link) const;
+    Eigen::Matrix3d getLinkInertia(const std::string &link) const;
 
     /**
      * @brief getLinkInertiaCoM gets the inertia moment matrix of a link with respect to the center of mass;
      * @param link the name of the link
      * @return the inertia moment matrix at link origin = center of mass (CoM)
      */
-    tf::Matrix3x3 getLinkInertiaCoM(const std::string &link) const;
+    Eigen::Matrix3d getLinkInertiaCoM(const std::string &link) const;
 
-    tf::Vector3 getLinkFixedTranslation(const std::string &link) const;
-    tf::Matrix3x3 getLinkFixedRotation(const std::string &link) const;
+    Eigen::Vector3d getLinkFixedTranslation(const std::string &link) const;
+    Eigen::Matrix3d getLinkFixedRotation(const std::string &link) const;
 
     static void convert(const KDL::JntArray& in, std::vector<double>& out);
     static void convert(const std::vector<double>& in, KDL::JntArray& out);

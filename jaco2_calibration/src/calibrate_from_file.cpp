@@ -16,6 +16,8 @@ int main(int argc, char *argv[])
     std::string base("jaco_link_base");
     std::string tip("jaco_link_hand");
     Jaco2Calibration::Jaco2Calibration calib(urdf_param, base, tip);
+
+
     if(calib_mode == "dynamic"){
         std::vector<Jaco2Calibration::DynamicCalibrationSample> samples;
         Jaco2Calibration::importAsciiDataWithGravity(file,samples);
@@ -38,6 +40,8 @@ int main(int argc, char *argv[])
         std::vector<Jaco2Calibration::DynamicCalibratedParameters> param = calib.getDynamicCalibration();
         Jaco2Calibration::save("/tmp/param_sim.txt",param);
 //        Jaco2Calibration::save("/tmp/param_org.txt",param);
+
+
     }
     if(calib_mode == "acc"){
         calib.setGravityMagnitude(1.0);

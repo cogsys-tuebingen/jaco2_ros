@@ -21,11 +21,12 @@ public:
     bool operator() ( const double* const params, double* residuals ) const
     {
         double mass = solver_->getLinkMass(link_);
-        tf::Vector3  vect(params[0], params[1], params[2]);
+        Eigen::Vector3d  vect(params[0], params[1], params[2]);
 
-        tf::Matrix3x3 mat(params[3], params[4], params[5],
-                          params[4], params[6], params[7],
-                          params[5], params[7], params[8]);
+        Eigen::Matrix3d mat;
+        mat << params[3], params[4], params[5],
+               params[4], params[6], params[7],
+               params[5], params[7], params[8];
 
 //        solver_->changeDynamicParams(link_ ,mass, vect, mat);
         solver_->changeDynamicParams(link_, mass, vect, mat, sample_.gravity(0), sample_.gravity(1), sample_.gravity(2));
