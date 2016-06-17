@@ -3,6 +3,7 @@
 #include <jaco2_calibration/manipulator_dynamic_residuals.hpp>
 #include <ceres/loss_function.h>
 #include <imu_tk/calibration.h>
+#include <random>
 namespace Jaco2Calibration {
 Jaco2Calibration::Jaco2Calibration(std::string& urdf_param, std::string& root, std::string& tip)
     : model_(urdf_param, root, tip)
@@ -26,13 +27,26 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
 
     dynParams_.resize(links.size());
 
+    std::default_random_engine gen;
+    std::normal_distribution<double> dist(0,0.2);
+
     for(std::size_t nLinks = 0; nLinks < links.size(); ++nLinks)
     {
 
         dynParams_[nLinks].linkName = links[nLinks];
         dynParams_[nLinks].mass = model_.getLinkMass(links[nLinks]);
-        dynParams_[nLinks].coM = model_.getLinkCoM(links[nLinks]);
-        dynParams_[nLinks].inertia = model_.getLinkInertiaCoM(links[nLinks]);
+        dynParams_[nLinks].coM = model_.getLinkCoM(links[nLinks]) + tf::Vector3(dist(gen), dist(gen), dist(gen));
+        double rv1 = dist(gen);
+        double rv2 = dist(gen);
+        double rv3 = dist(gen);
+        double rv4 = dist(gen);
+        double rv5 = dist(gen);
+        double rv6 = dist(gen);
+        tf::Matrix3x3 in = model_.getLinkInertiaCoM(links[nLinks]);
+        tf::Matrix3x3 rmat(rv1+in.getRow(0).getX(),rv2+in.getRow(0).getY(),rv3+in.getRow(0).getZ(),
+                           rv2+in.getRow(0).getY(),rv4+in.getRow(1).getX(),rv5+in.getRow(1).getZ(),
+                           rv3+in.getRow(0).getZ(),rv5+in.getRow(1).getZ(),rv6+in.getRow(2).getZ());
+        dynParams_[nLinks].inertia =  rmat;
     }
 
     for(int n = 0; n < 3; ++n) {
@@ -95,6 +109,7 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
 
         }
     }
+
     return 0; // due to lack of better idea: TODO error handling
 }
 

@@ -24,18 +24,20 @@ int main(int argc, char *argv[])
             std::default_random_engine generator;
             std::normal_distribution<double> distribution(0,0.4);
             //TODO TEST
-            for(auto sample : samples) {
-                for(auto tau : sample.jointTorque)
+            for(auto sample = samples.begin(); sample != samples.end(); ++sample) {
+                for(auto tau = sample->jointTorque.begin(); tau != sample->jointTorque.end(); ++tau)
                 {
-                    tau += distribution(generator);
+                    double white_noise = distribution(generator);
+                    (*tau) += white_noise;
                 }
             }
         }
-
+        Jaco2Calibration::save("/tmp/dyn_calib_with_noise.txt",samples);
         calib.calibrateCoMandInertia(samples);
 //        calib.calibrateArmDynamic(samples);
         std::vector<Jaco2Calibration::DynamicCalibratedParameters> param = calib.getDynamicCalibration();
-        Jaco2Calibration::save("/tmp/param.txt",param);
+        Jaco2Calibration::save("/tmp/param_sim.txt",param);
+//        Jaco2Calibration::save("/tmp/param_org.txt",param);
     }
     if(calib_mode == "acc"){
         calib.setGravityMagnitude(1.0);
