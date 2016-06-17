@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
     Jaco2Calibration::Jaco2Calibration calib(urdf_param, base, tip);
 
 
+
     if(calib_mode == "dynamic"){
         std::vector<Jaco2Calibration::DynamicCalibrationSample> samples;
         Jaco2Calibration::importAsciiDataWithGravity(file,samples);
@@ -39,9 +40,19 @@ int main(int argc, char *argv[])
 //        calib.calibrateArmDynamic(samples);
         std::vector<Jaco2Calibration::DynamicCalibratedParameters> param = calib.getDynamicCalibration();
         Jaco2Calibration::save("/tmp/param_sim.txt",param);
-//        Jaco2Calibration::save("/tmp/param_org.txt",param);
+        std::vector<Jaco2Calibration::DynamicCalibratedParameters> org_param = calib.getDynamicUrdfParam();
+//        Jaco2Calibration::save("/tmp/param_org.txt",org_param);
+        std::vector<Jaco2Calibration::DynamicCalibratedParameters> diff;
+        for(std::size_t i = 0; i < param.size(); ++i)
+        {
+            Jaco2Calibration::DynamicCalibratedParameters tmp;
 
-
+            tmp.linkName = param[i].linkName;
+            tmp.coM = (param[i].coM - org_param[i].coM).array() / param[i].coM.array() ;
+            tmp.inertia = (param[i].inertia - org_param[i].inertia).array() / param[i].inertia.array();
+            diff.push_back(tmp);
+        }
+        Jaco2Calibration::save("/tmp/diff_param.txt",diff);
     }
     if(calib_mode == "acc"){
         calib.setGravityMagnitude(1.0);

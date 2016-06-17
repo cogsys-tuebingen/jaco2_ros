@@ -28,7 +28,7 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
     dynParams_.resize(links.size());
 
     std::default_random_engine gen;
-    std::normal_distribution<double> dist(0,0.2);
+    std::normal_distribution<double> dist(0,0.05);
 
     for(std::size_t nLinks = 0; nLinks < links.size(); ++nLinks)
     {
@@ -53,7 +53,7 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
         dynParams_[nLinks].inertia =  in + rmat;
     }
 
-    for(int n = 0; n < 3; ++n) {
+    for(int n = 0; n < 1; ++n) {
         std::cout << "iteration: " << n + 1 << " of 3" << std::endl;
         for(std::size_t nLinks = 0; nLinks < links.size(); ++nLinks ) {
 
@@ -77,14 +77,14 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
 
             problem.AddParameterBlock(dyn_calib_params.data(), 9);
             for(std::size_t i= 0; i <9; ++i) {
-                problem.SetParameterLowerBound(dyn_calib_params.data(), i, -1.0);
-                problem.SetParameterUpperBound(dyn_calib_params.data(), i, 1.0);
+                problem.SetParameterLowerBound(dyn_calib_params.data(), i, -20 * dyn_calib_params[i]);
+                problem.SetParameterUpperBound(dyn_calib_params.data(), i,  20 * dyn_calib_params[i]);
             }
 
             for(auto sample : samples)
             {
                 ceres::CostFunction* cost_function = ComInetriaResiduals::Create(&model_, sample, link);
-                problem.AddResidualBlock(cost_function, new ceres::CauchyLoss(0.5), dyn_calib_params.data());
+                problem.AddResidualBlock(cost_function, new ceres::CauchyLoss(0.1), dyn_calib_params.data());
 
             }/*NULL */
 
@@ -279,5 +279,21 @@ void Jaco2Calibration::convert(const std::size_t &idx, const std::vector<imu_tk:
         AccelerationData samp(t, x, y,z);
         samples.push_back(idx,samp);
     }
+}
+
+std::vector<DynamicCalibratedParameters> Jaco2Calibration::getDynamicUrdfParam() const
+{
+    std::vector<DynamicCalibratedParameters> result;
+    for(auto link : model_.getLinkNames())
+    {
+        DynamicCalibratedParameters param;
+        param.linkName = link;
+        param.coM = model_.getURDFLinkCoM(link);
+        param.inertia = model_.getURDFLinkInertiaCoM(link);
+        param.mass = model_.getURDFLinkMass(link);
+
+        result.push_back(param);
+    }
+    return result;
 }
 }

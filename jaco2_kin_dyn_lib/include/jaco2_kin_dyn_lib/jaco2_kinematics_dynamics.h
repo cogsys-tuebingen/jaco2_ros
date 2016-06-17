@@ -130,6 +130,10 @@ public:
      */
     Eigen::Matrix3d getLinkInertiaCoM(const std::string &link) const;
 
+    Eigen::Vector3d getURDFLinkCoM(const std::string &link) const;
+    Eigen::Matrix3d getURDFLinkInertiaCoM(const std::string &link) const;
+    double getURDFLinkMass(const std::string &link) const;
+
     Eigen::Vector3d getLinkFixedTranslation(const std::string &link) const;
     Eigen::Matrix3d getLinkFixedRotation(const std::string &link) const;
 

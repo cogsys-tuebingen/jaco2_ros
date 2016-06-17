@@ -34,6 +34,9 @@ public:
 
     std::string getTipFrame() const {return model_.getTipLink();}
     std::string getRootFrame() const {return model_.getRootLink();}
+    std::vector<std::string> getLinkNames() const {return model_.getLinkNames();}
+
+    std::vector<DynamicCalibratedParameters> getDynamicUrdfParam() const;
 
 
 

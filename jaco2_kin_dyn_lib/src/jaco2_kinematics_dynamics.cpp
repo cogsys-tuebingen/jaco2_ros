@@ -490,3 +490,57 @@ void Jaco2KinematicsDynamicsModel::PoseTFToKDL(const tf::Pose& t, KDL::Frame& k)
     }
 }
 
+double Jaco2KinematicsDynamicsModel::getURDFLinkMass(const std::string &link) const
+{
+    int segmentID = getKDLSegmentIndex(link);
+    if(segmentID > -1){
+        return chainFile_.getSegment(segmentID).getInertia().getMass();
+    }
+    else{
+        ROS_ERROR_STREAM("Link " << link << " not found! Wrong name?");
+        return 0;
+    }
+}
+Eigen::Vector3d Jaco2KinematicsDynamicsModel::getURDFLinkCoM(const std::string &link) const
+{
+    int segmentID = getKDLSegmentIndex(link);
+    if(segmentID > -1){
+        KDL::Vector vec = chainFile_.getSegment(segmentID).getInertia().getCOG();
+        Eigen::Vector3d result(vec(0), vec(1), vec(2));
+        return result;
+    }
+    else{
+        ROS_ERROR_STREAM("Link " << link << " not found! Wrong name?");
+        return Eigen::Vector3d ();
+    }
+}
+
+
+
+Eigen::Matrix3d Jaco2KinematicsDynamicsModel::getURDFLinkInertiaCoM(const std::string &link) const
+{
+    int segmentID = getKDLSegmentIndex(link);
+    if(segmentID > -1){
+        KDL::RotationalInertia mat = chainFile_.getSegment(segmentID).getInertia().getRotationalInertia();
+        double mass = chainFile_.getSegment(segmentID).getInertia().getMass();
+        KDL::Vector com = chainFile_.getSegment(segmentID).getInertia().getCOG();
+        Eigen::Matrix3d result;
+
+        double xx = mat.data[0] - mass *(com(1)*com(1) + com(2)*com(2));
+        double yy = mat.data[4] - mass *(com(0)*com(0) + com(2)*com(2));
+        double zz = mat.data[8] - mass *(com(0)*com(0) + com(1)*com(1));
+        double xy = mat.data[1] + mass * com(0)*com(1);
+        double xz = mat.data[2] + mass * com(0)*com(2);
+        double yz = mat.data[5] + mass * com(1)*com(2);
+
+        result << xx, xy, xz,
+                  xy, yy, yz,
+                  xz, yz, zz;
+        return result;
+    }
+    else{
+        ROS_ERROR_STREAM("Link " << link << " not found! Wrong name?");
+        return Eigen::Matrix3d();
+    }
+}
+
