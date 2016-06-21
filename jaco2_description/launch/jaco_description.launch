@@ -4,7 +4,7 @@
   <arg name="gui" default="false" />
 
   <!-- Load the URDF file -->
-  <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find jaco_description)/robots/standalone_arm.urdf.xacro'" />
+  <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find jaco2_description)/robots/standalone_arm.urdf.xacro'" />
   <param name="robot_description" command="$(arg urdf_file)" />
   
   <!-- State publishers -->

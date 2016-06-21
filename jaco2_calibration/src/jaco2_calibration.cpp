@@ -76,10 +76,10 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
             ceres::Problem problem;
 
             problem.AddParameterBlock(dyn_calib_params.data(), 9);
-            for(std::size_t i= 0; i <9; ++i) {
-                problem.SetParameterLowerBound(dyn_calib_params.data(), i, -20 * dyn_calib_params[i]);
-                problem.SetParameterUpperBound(dyn_calib_params.data(), i,  20 * dyn_calib_params[i]);
-            }
+//            for(std::size_t i= 0; i <9; ++i) {
+                problem.SetParameterLowerBound(dyn_calib_params.data(), 1, -20 * dyn_calib_params[1]);
+                problem.SetParameterUpperBound(dyn_calib_params.data(), 1,  20 * dyn_calib_params[1]);
+//            }
 
             for(auto sample : samples)
             {

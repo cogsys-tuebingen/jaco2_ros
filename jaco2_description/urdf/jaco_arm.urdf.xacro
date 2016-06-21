@@ -180,7 +180,7 @@
             </inertial>
 			<visual>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco_description/meshes/${link_name}.min.dae" />
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}.min.dae" />
 				</geometry>
 				<material name="carbon_fiber">
 					<color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -188,7 +188,7 @@
 			</visual>
 			<collision>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco_description/meshes/${link_name}.stl" />
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}.stl" />
 				</geometry>
 			</collision>
 		</link>
@@ -203,7 +203,7 @@
             </inertial>
 			<visual>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco_description/meshes/${link_name}.min.dae" />
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}.min.dae" />
 				</geometry>
 				<material name="carbon_fiber">
 					<color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -211,7 +211,7 @@
 			</visual>
 			<collision>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco_description/meshes/${link_name}.stl" />
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}.stl" />
 				</geometry>
 			</collision>
 		</link>
@@ -226,7 +226,7 @@
             </inertial>
 			<visual>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco_description/meshes/${link_name}_4_5.min.dae" />
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}_4_5.min.dae" />
 				</geometry>
 				<material name="carbon_fiber">
 					<color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -234,7 +234,7 @@
 			</visual>
 			<collision>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco_description/meshes/${link_name}_4_5.stl" />
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}_4_5.stl" />
 				</geometry>
 			</collision>
 		</link>
@@ -249,7 +249,7 @@
             </inertial>
 			<visual>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco_description/meshes/jaco_${size}_ring_cover.min.dae" />
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/jaco_${size}_ring_cover.min.dae" />
 				</geometry>
 				<material name="carbon_fiber">
 					<color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -257,7 +257,7 @@
 			</visual>
 			<collision>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco_description/meshes/jaco_${size}_ring_cover.stl" />
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/jaco_${size}_ring_cover.stl" />
 				</geometry>
 			</collision>
 		</link>
