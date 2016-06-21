@@ -43,9 +43,9 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
         double rv5 = dist(gen);
         double rv6 = dist(gen);
         Eigen::Matrix3d in = model_.getLinkInertiaCoM(links[nLinks]);
-//        tf::Matrix3x3 rmat(rv1+in.getRow(0).getX(),rv2+in.getRow(0).getY(),rv3+in.getRow(0).getZ(),
-//                           rv2+in.getRow(0).getY(),rv4+in.getRow(1).getX(),rv5+in.getRow(1).getZ(),
-//                           rv3+in.getRow(0).getZ(),rv5+in.getRow(1).getZ(),rv6+in.getRow(2).getZ());
+        //        tf::Matrix3x3 rmat(rv1+in.getRow(0).getX(),rv2+in.getRow(0).getY(),rv3+in.getRow(0).getZ(),
+        //                           rv2+in.getRow(0).getY(),rv4+in.getRow(1).getX(),rv5+in.getRow(1).getZ(),
+        //                           rv3+in.getRow(0).getZ(),rv5+in.getRow(1).getZ(),rv6+in.getRow(2).getZ());
         Eigen::Matrix3d rmat;
         rmat << rv1, rv2, rv3,
                 rv2, rv4, rv5,
@@ -59,8 +59,8 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
 
             std::string link = links[nLinks];
             std::cout << link << std::endl;
-//            tf::Vector3 com = model_.getLinkCoM(*link);
-//            tf::Matrix3x3 inertia = model_.getLinkInertiaCoM(*link);
+            //            tf::Vector3 com = model_.getLinkCoM(*link);
+            //            tf::Matrix3x3 inertia = model_.getLinkInertiaCoM(*link);
 
             std::vector<double> dyn_calib_params(9);
             dyn_calib_params[0] = dynParams_[nLinks].coM(0);
@@ -76,10 +76,21 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
             ceres::Problem problem;
 
             problem.AddParameterBlock(dyn_calib_params.data(), 9);
-//            for(std::size_t i= 0; i <9; ++i) {
-                problem.SetParameterLowerBound(dyn_calib_params.data(), 1, -20 * dyn_calib_params[1]);
-                problem.SetParameterUpperBound(dyn_calib_params.data(), 1,  20 * dyn_calib_params[1]);
-//            }
+            //            for(std::size_t i= 0; i <9; ++i) {
+            double scale = 1.5;
+            for(std::size_t i = 0; i < 9; ++i) {
+                if( i < 3) {
+                    double val = model_.getURDFLinkCoM(link).maxCoeff();
+                    problem.SetParameterLowerBound(dyn_calib_params.data(), i, -scale * val);
+                    problem.SetParameterUpperBound(dyn_calib_params.data(), i,  scale * val);
+                }
+                else {
+                    double val = model_.getURDFLinkInertiaCoM(link).maxCoeff();
+                    problem.SetParameterLowerBound(dyn_calib_params.data(), i, -scale * val);
+                    problem.SetParameterUpperBound(dyn_calib_params.data(), i,  scale * val);
+                }
+            }
+
 
             for(auto sample : samples)
             {
