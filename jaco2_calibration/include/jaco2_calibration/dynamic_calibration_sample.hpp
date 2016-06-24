@@ -14,16 +14,6 @@ struct DynamicCalibrationSample
         jointTorque.resize(length);
     }
 
-
-//    DynamicCalibrationSample(const DynamicCalibrationSample& sample):
-//        jointPos(sample.jointPos),
-//        jointVel(sample.jointVel),
-//        jointAcc(sample.jointAcc),
-//        jointTorque(sample.jointTorque),
-//        gravity_(sample.gravity),
-//    {
-//    }
-
     void set(std::size_t index, double pos, double vel, double acc, double torque)
     {
         if(index > -1 && index < length){

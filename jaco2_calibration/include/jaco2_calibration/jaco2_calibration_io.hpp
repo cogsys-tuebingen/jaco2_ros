@@ -1,9 +1,6 @@
 #ifndef JACO2_CALIBRATION_IO_HPP
 #define JACO2_CALIBRATION_IO_HPP
-//#include <string>
-//#include <stdio.h>
-//#include <vector>
-//#include <fstream>
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -26,21 +23,11 @@ void save(std::string name, const std::vector<DynamicCalibratedParameters>& para
         YAML::Node pNode;
         pNode["link_name"] = param.linkName;
         pNode["mass"] = param.mass;
-//        file << param.linkName << std::endl;
-//        file << "mass: \n" << std::to_string(param.mass) << std::endl;
         Eigen::Vector3d com = param.coM;
         pNode["com_x"] = com(0);
         pNode["com_y"] = com(1);
         pNode["com_z"] = com(2);
-//        file << "Center Of Mass: \n" << std::to_string(com.getX()) << " " << std::to_string(com.getY()) << " " << std::to_string(com.getZ()) << std::endl;
         Eigen::Matrix3d inertia = param.inertia;
-//        file << "Moment Inertia: \n";
-//        file << "Ixx = " << std::to_string(inertia.getRow(0).getX()) << std::endl;
-//        file << "Ixy = " << std::to_string(inertia.getRow(0).getY()) << std::endl;
-//        file << "Ixz = " << std::to_string(inertia.getRow(0).getZ()) << std::endl;
-//        file << "Iyy = " << std::to_string(inertia.getRow(1).getY()) << std::endl;
-//        file << "Iyz = " << std::to_string(inertia.getRow(1).getZ()) << std::endl;
-//        file << "Izz = " << std::to_string(inertia.getRow(2).getZ()) << std::endl;
         pNode["Ixx"] = inertia(0,0);
         pNode["Ixy"] = inertia(0,1);
         pNode["Ixz"] = inertia(0,2);
