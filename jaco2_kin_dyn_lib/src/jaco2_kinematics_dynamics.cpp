@@ -334,7 +334,12 @@ int Jaco2KinematicsDynamicsModel::getKDLSegmentIndex(const std::string &name) co
             return i;
         }
     }
-    return -1;
+    if(name == root_) {
+        return -1;
+    }
+    else {
+        return -2;
+    }
 }
 
 void Jaco2KinematicsDynamicsModel::getRandomConfig(std::vector<double>& config)
@@ -544,3 +549,60 @@ Eigen::Matrix3d Jaco2KinematicsDynamicsModel::getURDFLinkInertiaCoM(const std::s
     }
 }
 
+Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const std::string &root,
+                                                                         const std::string &tip,
+                                                                         const std::vector<double> &q,
+                                                                         const std::vector<double> &q_Dot,
+                                                                         const std::vector<double> &q_DotDot,
+                                                                         const std::vector<double> &torques)
+{
+
+    int tipId = getKDLSegmentIndexFK(tip);
+    int rootId = getKDLSegmentIndexFK(root);
+    // determine Matrix dimensions
+    int nLinks = tipId - rootId + 1;
+
+    Eigen::MatrixXd result(nLinks,nLinks*10); // 10 is the total number of rigid body dynamic parameters 1 (mass) + 3 (center of mass) + 6 (inertia matrix)
+
+    // for each link n between root and tip calculate regression matrices A_n see Handbook of Robotics EQ (14.41) page 331.
+    // similar to newton - euler algorighm cf. KDL
+
+    // calculate A_n in body coordinates;
+    //Sweep from root to leaf
+//    for(unsigned int i=0;i<ns;i++){
+//        double q_,qdot_,qdotdot_;
+//        if(chain.getSegment(i).getJoint().getType()!=Joint::None){
+//            q_=q(j);
+//            qdot_=q_dot(j);
+//            qdotdot_=q_dotdot(j);
+//            j++;
+//        }else
+//            q_=qdot_=qdotdot_=0.0;
+
+//        //Calculate segment properties: X,S,vj,cj
+//        X[i]=chain.getSegment(i).pose(q_);//Remark this is the inverse of the
+//        //frame for transformations from
+//        //the parent to the current coord frame
+//        //Transform velocity and unit velocity to segment frame
+//        Twist vj=X[i].M.Inverse(chain.getSegment(i).twist(q_,qdot_));
+//        S[i]=X[i].M.Inverse(chain.getSegment(i).twist(q_,1.0));
+//        //We can take cj=0, see remark section 3.5, page 55 since the unit velocity vector S of our joints is always time constant
+//        //calculate velocity and acceleration of the segment (in segment coordinates)
+//        if(i==0){
+//            v[i]=vj;
+//            a[i]=X[i].Inverse(ag)+S[i]*qdotdot_+v[i]*vj;
+//        }else{
+//            v[i]=X[i].Inverse(v[i-1])+vj;
+//            a[i]=X[i].Inverse(a[i-1])+S[i]*qdotdot_+v[i]*vj;
+//        }
+//    }
+
+
+
+    // Calculate Matrix K .transform matrices into each link n frame see Handbook of Robotics EQ (14.49) page 333.
+    // return K
+
+    std::cerr << "not implemented, yet." << std::endl;
+
+    return result;
+}

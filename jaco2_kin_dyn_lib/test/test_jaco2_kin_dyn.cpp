@@ -33,6 +33,11 @@ TEST(Jaco2KinematicsDynamicsModelTest,chaintest)
     EXPECT_TRUE(jaco2KDL.getTipLink().find("jaco_link_hand")!=std::string::npos);
     EXPECT_EQ(jaco2KDL.getNrOfJoints(),6);
     EXPECT_EQ(jaco2KDL.getNrOfSegments(),6);
+    EXPECT_EQ(jaco2KDL.getKDLSegmentIndex("jaco_link_base"), -1);
+    EXPECT_EQ(jaco2KDL.getKDLSegmentIndex("jaco_link_1"),0);
+    EXPECT_EQ(jaco2KDL.getKDLSegmentIndex("jaco_link_5"),4);
+    EXPECT_EQ(jaco2KDL.getKDLSegmentIndex("jaco_link_hand"), 5);
+    EXPECT_EQ(jaco2KDL.getKDLSegmentIndexFK("jaco_link_5"), 5);
 }
 
 TEST(Jaco2KinematicsDynamicsModelTest, DynParam)

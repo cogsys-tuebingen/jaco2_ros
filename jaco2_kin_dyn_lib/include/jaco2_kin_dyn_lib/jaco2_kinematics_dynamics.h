@@ -101,7 +101,17 @@ public:
 
     void useUrdfDynamicParams();
     void getRandomConfig(std::vector<double>& config);
+    /**
+     * @brief getKDLSegmentIndex gets the KDL segment index for a given segment/ link name
+     * @param name the name of the segment/ link
+     * @return returns index of segment -1 if name == root_ ; -2 if link name not found.
+     */
     int getKDLSegmentIndex(const std::string &name ) const;
+    /**
+     * @brief getKDLSegmentIndexFK gets the index of a link as needed for forward kinematics. root = 0, ...
+     * @param name name of the segment/link.
+     * @return the index of the segment/link.
+     */
     int getKDLSegmentIndexFK(const std::string &name) const;
     int getNrOfJoints() const {return chain_.getNrOfJoints();}
     int getNrOfSegments() const {return chain_.getNrOfJoints();}
@@ -140,6 +150,12 @@ public:
     static void convert(const KDL::JntArray& in, std::vector<double>& out);
     static void convert(const std::vector<double>& in, KDL::JntArray& out);
     static void PoseTFToKDL(const tf::Pose& t, KDL::Frame& k);
+
+    Eigen::MatrixXd getRigidBodyRegressionMatrix(const std::string& root, const std::string& tip,
+                                               const std::vector<double>& q,
+                                               const std::vector<double>& q_Dot,
+                                               const std::vector<double>& q_DotDot,
+                                               const std::vector<double>& torques);
 
 
 private:
