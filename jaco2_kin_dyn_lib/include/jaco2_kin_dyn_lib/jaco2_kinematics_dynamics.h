@@ -154,8 +154,7 @@ public:
     Eigen::MatrixXd getRigidBodyRegressionMatrix(const std::string& root, const std::string& tip,
                                                const std::vector<double>& q,
                                                const std::vector<double>& q_Dot,
-                                               const std::vector<double>& q_DotDot,
-                                               const std::vector<double>& torques);
+                                               const std::vector<double>& q_DotDot);
 
 
 private:
@@ -176,6 +175,9 @@ private:
     KDL::JntArray upperLimits_;
 
     void initialize();
+
+    static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
+    static Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);
 
 };
 

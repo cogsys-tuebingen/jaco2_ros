@@ -68,7 +68,7 @@ void vector2Jaco2ManipulatorDynParams(const std::vector<double>& in, const std::
    for(std::size_t i = 0; i < in.size(); ++i) {
        int local_id = i % elements_per_link;
        values[local_id] = in[i];
-       if( i > 0 &&  local_id == 0) {
+       if( i > 0 &&  local_id == elements_per_link - 1) {
            DynamicCalibratedParameters param;
            param.linkName = links[link_counter];
            ++link_counter;
@@ -111,7 +111,6 @@ void vector2Jaco2ManipulatorDynParams(const std::vector<double>& in, const std::
                throw std::logic_error("something terribly wrong");
                break;
            }
-
            out.push_back(param);
        }
    }

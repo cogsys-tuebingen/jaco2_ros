@@ -136,10 +136,10 @@ void Jaco2KinematicsDynamicsModel::setGravity(double x, double y, double z)
     solverID_.reset(new KDL::ChainIdSolver_RNE(chain_,gravity_));
 
     // forward kinematic
-    solverFK_.reset(new KDL::ChainFkSolverPos_recursive(chain_));
+//    solverFK_.reset(new KDL::ChainFkSolverPos_recursive(chain_));
 
     //initialize TRAC_IK solver: inverse kinematics
-    solverIK_.reset(new TRAC_IK::TRAC_IK(chain_, lowerLimits_, upperLimits_));
+//    solverIK_.reset(new TRAC_IK::TRAC_IK(chain_, lowerLimits_, upperLimits_));
 }
 
 int Jaco2KinematicsDynamicsModel::getFKPose(const std::vector<double> &q_in, tf::Pose &out, std::string link)
@@ -553,8 +553,7 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
                                                                          const std::string &tip,
                                                                          const std::vector<double> &q,
                                                                          const std::vector<double> &q_Dot,
-                                                                         const std::vector<double> &q_DotDot,
-                                                                         const std::vector<double> &torques)
+                                                                         const std::vector<double> &q_DotDot)
 {
 
     int tipId = getKDLSegmentIndexFK(tip);
@@ -562,47 +561,102 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
     // determine Matrix dimensions
     int nLinks = tipId - rootId + 1;
 
-    Eigen::MatrixXd result(nLinks,nLinks*10); // 10 is the total number of rigid body dynamic parameters 1 (mass) + 3 (center of mass) + 6 (inertia matrix)
+    if(nLinks > q.size() && nLinks > q_Dot.size() && nLinks > q_DotDot.size())
+    {
+        ROS_ERROR_STREAM("getRigidBodyRegressionMatrix: Dimension Mismatch: chain length and joint space vectors should have equal length.");
+    }
+
+    Eigen::MatrixXd result(nLinks,q.size()*10); // 10 is the total number of rigid body dynamic parameters 1 (mass) + 3 (center of mass) + 6 (inertia matrix)
 
     // for each link n between root and tip calculate regression matrices A_n see Handbook of Robotics EQ (14.41) page 331.
     // similar to newton - euler algorighm cf. KDL
 
     // calculate A_n in body coordinates;
-    //Sweep from root to leaf
-//    for(unsigned int i=0;i<ns;i++){
-//        double q_,qdot_,qdotdot_;
-//        if(chain.getSegment(i).getJoint().getType()!=Joint::None){
-//            q_=q(j);
-//            qdot_=q_dot(j);
-//            qdotdot_=q_dotdot(j);
-//            j++;
-//        }else
-//            q_=qdot_=qdotdot_=0.0;
+    // Sweep from root to leaf
+    int j = 0;
+    std::vector<KDL::Frame> X(q.size());
+    std::vector<KDL::Twist> S(q.size());
+    std::vector<KDL::Twist> v;
+    std::vector<KDL::Twist> a;
+    std::vector<Wrench> f;
+    std::vector<Eigen::Matrix<double, 6, 10> > An(q.size());
+    KDL::Twist ag = -KDL::Twist(gravity_,KDL::Vector::Zero());
 
-//        //Calculate segment properties: X,S,vj,cj
-//        X[i]=chain.getSegment(i).pose(q_);//Remark this is the inverse of the
-//        //frame for transformations from
-//        //the parent to the current coord frame
-//        //Transform velocity and unit velocity to segment frame
-//        Twist vj=X[i].M.Inverse(chain.getSegment(i).twist(q_,qdot_));
-//        S[i]=X[i].M.Inverse(chain.getSegment(i).twist(q_,1.0));
-//        //We can take cj=0, see remark section 3.5, page 55 since the unit velocity vector S of our joints is always time constant
-//        //calculate velocity and acceleration of the segment (in segment coordinates)
-//        if(i==0){
+    for(unsigned int i = 0; i < q.size(); ++i) {
+        double q_,qdot_,qdotdot_;
+        if(chain_.getSegment(i).getJoint().getType()!=KDL::Joint::None){
+            q_=q[j];
+            qdot_=q_Dot[j];
+            qdotdot_=q_DotDot[j];
+            ++j;
+        }else
+            q_=qdot_=qdotdot_=0.0;
+
+        // Calculate segment properties: X,S,vj,cj
+        X[i]=chain_.getSegment(i).pose(q_);//Remark this is the inverse of the
+        // frame for transformations from
+        // the parent to the current coord frame
+        // Transform velocity and unit velocity to segment frame
+        KDL::Twist vj = X[i].M.Inverse(chain_.getSegment(i).twist(q_,qdot_));
+        S[i]=X[i].M.Inverse(chain_.getSegment(i).twist(q_,1.0));
+        // We can take cj=0, see remark section 3.5, page 55 since the unit velocity vector S of our joints is always time constant
+        // calculate velocity and acceleration of the segment (in segment coordinates)
+
+        KDL::Twist vparent;
+        KDL::Twist aparent;
+        if(i==0){
+            vparent = KDL::Twist(KDL::Vector::Zero(), KDL::Vector::Zero());
+            aparent = X[i].Inverse(ag);
 //            v[i]=vj;
 //            a[i]=X[i].Inverse(ag)+S[i]*qdotdot_+v[i]*vj;
-//        }else{
+        }else{
+            vparent = X[i].Inverse(v[i-1]);
+            aparent = X[i].Inverse(a[i-1]);
 //            v[i]=X[i].Inverse(v[i-1])+vj;
 //            a[i]=X[i].Inverse(a[i-1])+S[i]*qdotdot_+v[i]*vj;
-//        }
-//    }
+        }
+        v[i] = vparent + vj;
+        a[i] = aparent + S[i]*qdotdot_ + v[i]*vj;
+        // Calculate the regression Matrix An for each Link
+        // See Handbook of Robotics page 331
+        KDL::Twist d = aparent - X[i].Inverse(ag); // see text page 331
+        An[i].block<3,1>(0,0).setZero();
+        An[i].block<3,3>(0,1) = -skewSymMat(d.vel);
+        An[i].block<3,6>(0,4) = inertiaProductMat(a[i].rot) + skewSymMat(v[i].rot) * inertiaProductMat(v[i].rot);
+        An[i].block<3,1>(4,0) = Eigen::Vector3d(d.vel(0), d.vel(1), d.vel(2));
+        An[i].block<3,3>(4,1) = skewSymMat(a[i].rot) + skewSymMat(v[i].rot) * skewSymMat(v[i].rot);
+        An[i].block<3,6>(4,4).setZero();
+    }
 
 
 
     // Calculate Matrix K .transform matrices into each link n frame see Handbook of Robotics EQ (14.49) page 333.
+    int col = 0;
+//    for(unsigned int i = rootId; i <= tipID; ++i) {
+//        result.block<
+//    }
     // return K
 
     std::cerr << "not implemented, yet." << std::endl;
 
     return result;
+}
+
+Eigen::Matrix3d Jaco2KinematicsDynamicsModel::skewSymMat(const KDL::Vector &vec)
+{
+    Eigen::Matrix3d res;
+    res << 0    , -vec(2)   , vec(1),
+          vec(2), 0         , -vec(0),
+         -vec(1), vec(1)    , 0;
+    return res;
+}
+
+Eigen::Matrix<double, 3, 6> Jaco2KinematicsDynamicsModel::inertiaProductMat(const KDL::Vector &vec)
+{
+    Eigen::Matrix<double, 3, 6> res;
+    res << vec(0), vec(1), vec(2), 0     , 0     , 0,
+            0    , vec(0), 0     , vec(1), vec(2), 0,
+            0    , 0     , vec(0), 0     , vec(1), vec(2);
+    return res;
+
 }
