@@ -575,6 +575,7 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
     // Sweep from root to leaf
     int j = 0;
     std::vector<KDL::Frame> X(q.size());
+    std::vector<KDL::Frame> Xij(q.size());
     std::vector<KDL::Twist> S(q.size());
     std::vector<KDL::Twist> v;
     std::vector<KDL::Twist> a;
@@ -596,6 +597,7 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
         X[i]=chain_.getSegment(i).pose(q_);//Remark this is the inverse of the
         // frame for transformations from
         // the parent to the current coord frame
+
         // Transform velocity and unit velocity to segment frame
         KDL::Twist vj = X[i].M.Inverse(chain_.getSegment(i).twist(q_,qdot_));
         S[i]=X[i].M.Inverse(chain_.getSegment(i).twist(q_,1.0));
@@ -607,11 +609,15 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
         if(i==0){
             vparent = KDL::Twist(KDL::Vector::Zero(), KDL::Vector::Zero());
             aparent = X[i].Inverse(ag);
+            Xij[i] = X[i];
 //            v[i]=vj;
 //            a[i]=X[i].Inverse(ag)+S[i]*qdotdot_+v[i]*vj;
         }else{
             vparent = X[i].Inverse(v[i-1]);
             aparent = X[i].Inverse(a[i-1]);
+            Xij[i] = X[i-1] * X[i]; //Remark this is the inverse of the
+            // frame for transformations from
+            // the root to the current coord frame
 //            v[i]=X[i].Inverse(v[i-1])+vj;
 //            a[i]=X[i].Inverse(a[i-1])+S[i]*qdotdot_+v[i]*vj;
         }
