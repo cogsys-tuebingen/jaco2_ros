@@ -615,7 +615,7 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
         }else{
             vparent = X[i].Inverse(v[i-1]);
             aparent = X[i].Inverse(a[i-1]);
-            Xij[i] = X[i] * X[i-1]; //Remark this is the inverse of the
+            Xij[i] = Xij[i-1] * X[i]; //Remark this is the inverse of the
             // frame for transformations from
             // the root to the current coord frame
 //            v[i]=X[i].Inverse(v[i-1])+vj;
@@ -639,18 +639,20 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
     int colMat = 0;
     for(unsigned int col = tipId; col > rootId; --col) {
         for(unsigned int row = 0; row <= col; ++row) {
-            KDL::Vector rotAxis = chain_.getSegment(row).getJoint().JointAxis();
+            KDL::Vector rotAxis = X[row].Inverse()*chain_.getSegment(row).getJoint().JointAxis();
             Eigen::Matrix<double, 1, 6> zi;
             double norm =rotAxis.Norm();
+//            double norm =1.0;
             zi << rotAxis(0)/norm, rotAxis(1)/norm, rotAxis(2)/norm, 0, 0, 0;
-            KDL::Frame pose;
-            KDL::JntArray q_in;
-            KDL::Frame pose1;
-            convert(q,q_in);
-            int error_code = solverFK_->JntToCart(q_in, pose, col);
-            error_code = solverFK_->JntToCart(q_in, pose1, 1);
-            pose =pose1.Inverse() * pose;
-            Eigen::Matrix<double, 6, 6> Xi = kdlFrame2Spatial(Xij[col] * Xij[row].Inverse()).transpose();
+//            KDL::Frame pose;
+//            KDL::JntArray q_in;
+//            KDL::Frame pose1;
+//            convert(q,q_in);
+//            int error_code = solverFK_->JntToCart(q_in, pose, col+1);
+//            error_code = solverFK_->JntToCart(q_in, pose1, 1);
+//            pose =pose1.Inverse() * pose;
+            KDL::Frame xi = Xij[row].Inverse() * Xij[col];
+            Eigen::Matrix<double, 6, 6> Xi = kdlFrame2Spatial(xi.Inverse()).transpose();
             Eigen::Matrix<double, 1, 10> Kij = zi * Xi * An[col];
             result.block<1,10>(row,colMat * 10) = Kij;
 
