@@ -156,6 +156,11 @@ public:
                                                const std::vector<double>& q_Dot,
                                                const std::vector<double>& q_DotDot);
 
+    static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
+    static Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);
+    static Eigen::Matrix<double, 6, 6> kdlFrame2Spatial(const KDL::Frame& frame);
+    static Eigen::Matrix<double, 3, 3> kdlMatrix2Eigen(const KDL::Rotation& rot);
+
 
 private:
     std::string urdf_param_;
@@ -176,8 +181,7 @@ private:
 
     void initialize();
 
-    static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
-    static Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);
+
 
 };
 

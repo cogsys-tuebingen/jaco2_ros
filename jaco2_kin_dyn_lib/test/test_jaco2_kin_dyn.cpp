@@ -69,6 +69,7 @@ TEST(Jaco2KinematicsDynamicsModelTest, DynParam)
     EXPECT_NEAR(inertia(2,2),  0.0243, 1e-4);
 
 }
+
 TEST(Jaco2KinematicsDynamicsModelTEST, KinParam)
 {
     Eigen::Vector3d trans = jaco2KDL.getLinkFixedTranslation("jaco_link_1");
@@ -186,7 +187,7 @@ TEST(Jaco2KinematicsDynamicsModelTest, changeDynParam)
     ec = jaco2KDL.getTorques(q2,qDot,qDot,t2);
     for(int i = 0; i <6; ++i)
     {
-        std::cout << "t2(" << i <<") = " << t2[i] << " | torques(" << i <<") = " << torques[i] <<  std::endl;
+//        std::cout << "t2(" << i <<") = " << t2[i] << " | torques(" << i <<") = " << torques[i] <<  std::endl;
         EXPECT_TRUE(t2[i] != torques[i]);
     }
 
@@ -238,7 +239,108 @@ TEST(Jaco2KinematicsDynamicsModelTest, IK)
     std::cout << "success rate: " <<  successRate << std::endl;
 }
 
+TEST(Jaco2KinematicsDynamicsModelTest, kdlEigenConversion)
+{
+    KDL::Vector vec1(1,2,3);
+    KDL::Vector vec2(3,4,5);
+    KDL::Vector kdlcross = vec1*vec2;
 
+    Eigen::Vector3d vec2_eigen(3,4,5);
+    Eigen::Matrix3d mat = Jaco2KinematicsDynamicsModel::skewSymMat(vec1);
+    Eigen::Vector3d crossprod = mat * vec2_eigen;
+
+    KDL::Rotation r(0.707107,0.707107,0,
+                    0,0,1,
+                    0.707107,-0.707107,0);
+
+    KDL::Vector rot_vec2 = r * vec2;
+
+    Eigen::Vector3d rot_vec2_e= Jaco2KinematicsDynamicsModel::kdlMatrix2Eigen(r) * vec2_eigen;
+
+    KDL::Vector t(0.1,0.2,0.3);
+    KDL::Frame frame(r,t);
+    KDL::Twist twist(vec1, vec2);
+    KDL::Twist twist_trans = frame*twist;
+
+    Eigen::Matrix<double, 6, 1> vec1_spatial;
+    vec1_spatial << vec2(0), vec2(1), vec2(2), vec1(0), vec1(1), vec1(2);
+    Eigen::Matrix<double, 6, 6> eframe = Jaco2KinematicsDynamicsModel::kdlFrame2Spatial(frame);
+    Eigen::Matrix<double, 6, 1> etrans = eframe *vec1_spatial;
+
+    KDL::Wrench w_t = frame * KDL::Wrench(vec1,vec2);
+    Eigen::Matrix<double, 6, 1> wrench;
+    wrench << vec2(0), vec2(1), vec2(2), vec1(0), vec1(1), vec1(2);
+    KDL::Frame i_frame = frame.Inverse();
+    Eigen::Matrix<double, 6, 1> wrench_t = Jaco2KinematicsDynamicsModel::kdlFrame2Spatial(i_frame).transpose() * wrench;
+
+    Eigen::Matrix<double, 3, 6> in_prod =Jaco2KinematicsDynamicsModel::inertiaProductMat(KDL::Vector(1,2,3));
+
+
+    for(int i = 0; i < 3; ++i) {
+        EXPECT_EQ(kdlcross(i), crossprod(i));
+        EXPECT_EQ(rot_vec2(i), rot_vec2_e(i));
+        EXPECT_NEAR(twist_trans.rot(i), etrans(i), 1e-6);
+        EXPECT_NEAR(twist_trans.vel(i), etrans(i+3), 1e-6);
+        EXPECT_NEAR(w_t.torque(i), wrench_t(i), 1e-6);
+        EXPECT_NEAR(w_t.force(i), wrench_t(i+3), 1e-6);
+        EXPECT_EQ(in_prod(0,i+3),0);
+    }
+    EXPECT_EQ(in_prod(0,0),1);
+    EXPECT_EQ(in_prod(0,1),2);
+    EXPECT_EQ(in_prod(0,2),3);
+    EXPECT_EQ(in_prod(1,0),0);
+    EXPECT_EQ(in_prod(1,1),1);
+    EXPECT_EQ(in_prod(1,2),0);
+    EXPECT_EQ(in_prod(1,3),2);
+    EXPECT_EQ(in_prod(1,4),3);
+    EXPECT_EQ(in_prod(1,5),0);
+    EXPECT_EQ(in_prod(2,0),0);
+    EXPECT_EQ(in_prod(2,1),0);
+    EXPECT_EQ(in_prod(2,2),1);
+    EXPECT_EQ(in_prod(2,3),0);
+    EXPECT_EQ(in_prod(2,4),2);
+    EXPECT_EQ(in_prod(2,5),3);
+}
+
+
+TEST(Jaco2KinematicsDynamicsModelTest, getRigidBodyRegressionMatrix)
+{
+    std::vector<double> q = {4.77, 2.97, 1.03, -2.08, 1.35, 1.38};
+//    std::vector<double> qDot = {0.1, 0.04, 0.05, 0.06, 0.03, 0.1};
+//    std::vector<double> qDotDot = {0.1, 0, 0, 0, -0.1, 0.4};
+    std::vector<double> qDot = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    std::vector<double> qDotDot = {0.0, 0, 0, 0, 0.0, 0.0};
+
+    std::vector<double> torque;
+    jaco2KDL.getTorques(q, qDot, qDotDot, torque);
+    Eigen::Matrix<double, 60, 1> param_vec;
+    int id = 0;
+    for(auto link : jaco2KDL.getLinkNames()) {
+        param_vec(id) = jaco2KDL.getLinkMass(link);
+        Eigen::Vector3d mc = jaco2KDL.getLinkMass(link) * jaco2KDL.getLinkCoM(link);
+        param_vec(id+1) = mc(0);
+        param_vec(id+2) = mc(1);
+        param_vec(id+3) = mc(2);
+        param_vec(id+4) = jaco2KDL.getLinkInertia(link)(0,0);
+        param_vec(id+5) = jaco2KDL.getLinkInertia(link)(0,1);
+        param_vec(id+6) = jaco2KDL.getLinkInertia(link)(0,2);
+        param_vec(id+7) = jaco2KDL.getLinkInertia(link)(1,1);
+        param_vec(id+8) = jaco2KDL.getLinkInertia(link)(1,2);
+        param_vec(id+9) = jaco2KDL.getLinkInertia(link)(2,2);
+        id += 10;
+    }
+    Eigen::Matrix<double, 10,1> param_vec6 = Eigen::Matrix<double, 10, 1>::Zero();
+    param_vec6 = param_vec.block<10,1>(50,0);
+
+//    Eigen::Matrix<double, 6, 60> matrix = jaco2KDL.getRigidBodyRegressionMatrix("jaco_link_base", "jaco_link_hand",q, qDot, qDotDot);
+    Eigen::Matrix<double, 6, 10> matrix = jaco2KDL.getRigidBodyRegressionMatrix("jaco_link_5", "jaco_link_hand",q, qDot, qDotDot);
+    Eigen::Matrix<double, 6, 1> tau = matrix*param_vec6;
+//    double val = matrix *param_vec6;
+    for(int i = 0; i <6; ++i) {
+        EXPECT_NEAR(torque[i], tau(i), 1e-6);
+    }
+
+}
 
 int main(int argc, char *argv[])
 {
