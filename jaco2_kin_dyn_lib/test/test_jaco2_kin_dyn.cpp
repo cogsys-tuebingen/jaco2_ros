@@ -333,16 +333,16 @@ TEST(Jaco2KinematicsDynamicsModelTest, getRigidBodyRegressionMatrix)
     Eigen::Matrix<double, 10,1> param_vec6 = Eigen::Matrix<double, 10, 1>::Zero();
     param_vec6 = param_vec.block<10,1>(50,0);
 
-//    Eigen::Matrix<double, 6, 60> matrix = jaco2KDL.getRigidBodyRegressionMatrix("jaco_link_base", "jaco_link_hand",q, qDot, qDotDot);
-    Eigen::Matrix<double, 6, 10> matrix = jaco2KDL.getRigidBodyRegressionMatrix("jaco_link_5", "jaco_link_hand",q, qDot, qDotDot);
-//    Eigen::Matrix<double, 6, 1> tau = matrix*param_vec;
+    Eigen::Matrix<double, 6, 10> matrix = jaco2KDL.getRigidBodyRegressionMatrix("jaco_link_hand", "jaco_link_hand",q, qDot, qDotDot);
     Eigen::Matrix<double, 6, 1> tau = matrix*param_vec6;
-
     EXPECT_NEAR(torque[5], tau[5], 1e-4);
 
-//    for(int i = 0; i <6; ++i) {
-//        EXPECT_NEAR(torque[i], tau(i), 1e-4);
-//    }
+    Eigen::Matrix<double, 6, 60> full_matrix = jaco2KDL.getRigidBodyRegressionMatrix("jaco_link_1", "jaco_link_hand",q, qDot, qDotDot);
+    Eigen::Matrix<double, 6, 1> tau_full = full_matrix*param_vec;
+
+    for(int i = 0; i <6; ++i) {
+        EXPECT_NEAR(torque[i], tau_full(i), 1e-4);
+    }
 
 }
 

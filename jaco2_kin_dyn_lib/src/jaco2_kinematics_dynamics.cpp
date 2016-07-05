@@ -559,7 +559,7 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
     int tipId = getKDLSegmentIndex(tip);
     int rootId = getKDLSegmentIndex(root);
     // determine Matrix dimensions
-    int nLinks = tipId - rootId ;//+ 1;
+    int nLinks = tipId - rootId + 1;
 
 //    if(nLinks > q.size() && nLinks > q_Dot.size() && nLinks > q_DotDot.size())
 //    {
@@ -626,6 +626,7 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
         // Calculate the regression Matrix An for each Link
         // See Handbook of Robotics page 331
 
+//        KDL::Twist rotAg = Xij[i].Inverse(ag);
         KDL::Twist d = aparent;// - X[i].Inverse(ag); // see text page 331
         An[i].block<3,1>(0,0).setZero();
         An[i].block<3,3>(0,1) = -skewSymMat(d.vel);
@@ -637,7 +638,7 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
 
     // Calculate Matrix K .transform matrices into each link n frame see Handbook of Robotics EQ (14.49) page 333.
     int colMat = 0;
-    for(unsigned int col = tipId; col > rootId; --col) {
+    for(int col = tipId; col >= rootId; --col) {
         for(unsigned int row = 0; row <= col; ++row) {
             KDL::Vector rotAxis = X[row].Inverse()*chain_.getSegment(row).getJoint().JointAxis();
             Eigen::Matrix<double, 1, 6> zi;
@@ -652,7 +653,7 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
 //            error_code = solverFK_->JntToCart(q_in, pose1, 1);
 //            pose =pose1.Inverse() * pose;
             KDL::Frame xi = Xij[row].Inverse() * Xij[col];
-            Eigen::Matrix<double, 6, 6> Xi = kdlFrame2Spatial(xi.Inverse()).transpose();
+            Eigen::Matrix<double, 6, 6> Xi = kdlFrame2Spatial(xi);
             Eigen::Matrix<double, 1, 10> Kij = zi * Xi * An[col];
             result.block<1,10>(row,colMat * 10) = Kij;
 
