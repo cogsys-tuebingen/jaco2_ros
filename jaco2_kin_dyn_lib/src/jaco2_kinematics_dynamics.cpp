@@ -609,16 +609,14 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
             vparent = KDL::Twist(KDL::Vector::Zero(), KDL::Vector::Zero());
             aparent = X[i].Inverse(ag);
             Xij[i] = X[i];
-            //            v[i]=vj;
-            //            a[i]=X[i].Inverse(ag)+S[i]*qdotdot_+v[i]*vj;
+//            v[i]=vj;
+//            a[i]=X[i].Inverse(ag)+S[i]*qdotdot_+v[i]*vj;
         }else{
             vparent = X[i].Inverse(v[i-1]);
             aparent = X[i].Inverse(a[i-1]);
-            Xij[i] = Xij[i-1] * X[i]; //Remark this is the inverse of the
-            // frame for transformations from
-            // the root to the current coord frame
-            //            v[i]=X[i].Inverse(v[i-1])+vj;
-            //            a[i]=X[i].Inverse(a[i-1])+S[i]*qdotdot_+v[i]*vj;
+            Xij[i] = Xij[i-1] * X[i];
+//            v[i]=X[i].Inverse(v[i-1])+vj;
+//            a[i]=X[i].Inverse(a[i-1])+S[i]*qdotdot_+v[i]*vj;
         }
         v[i] = vparent + vj;
         a[i] = aparent + S[i]*qdotdot_ + v[i]*vj;
@@ -626,30 +624,26 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
         // See Handbook of Robotics page 331
 
         //        KDL::Twist rotAg = Xij[i].Inverse(ag);
-        KDL::Twist d = aparent;// - X[i].Inverse(ag); // see text page 331
+//        KDL::Twist d = aparent;// - Xij[i].Inverse(ag); // see text page 331
+        KDL::Vector d = a[i].vel + v[i].rot * v[i].vel;
         An[i].block<3,1>(0,0).setZero();
-        An[i].block<3,3>(0,1) = -skewSymMat(d.vel);
+//        An[i].block<3,3>(0,1) = -1.0 * skewSymMat(d.vel);
+        An[i].block<3,3>(0,1) = -1.0 * skewSymMat(d);
         An[i].block<3,6>(0,4) = inertiaProductMat(a[i].rot) + skewSymMat(v[i].rot) * inertiaProductMat(v[i].rot);
-        An[i].block<3,1>(3,0) = Eigen::Vector3d(d.vel(0), d.vel(1), d.vel(2));
+//        An[i].block<3,1>(3,0) = Eigen::Vector3d(d.vel(0), d.vel(1), d.vel(2));
+        An[i].block<3,1>(3,0) = Eigen::Vector3d(d(0), d(1), d(2));
         An[i].block<3,3>(3,1) = skewSymMat(a[i].rot) + skewSymMat(v[i].rot) * skewSymMat(v[i].rot);
         An[i].block<3,6>(3,4).setZero();
     }
 
     // Calculate Matrix K .transform matrices into each link n frame see Handbook of Robotics EQ (14.49) page 333.
-    int colMat = 0;
-//    for(int col = tipId; col >= rootId; --col) {
     for(int col = 0; col <nLinks; ++col) {
-        //        for(int row = 0; row <= col; ++row) {
-//        for(int row = 0; row < q.size(); ++row) {
         for(int row = 0; row < nLinks; ++row) {
             if(col <= row) { // == nLinks -1 - row <= nLinks -1 - col
-//                KDL::Vector rotAxis = X[row].Inverse().M*chain_.getSegment(row).getJoint().JointAxis();
                 KDL::Vector rotAxis = X[tipId - row].Inverse().M*chain_.getSegment(tipId - row).getJoint().JointAxis();
                 Eigen::Matrix<double, 1, 6> zi;
                 double norm =rotAxis.Norm();
-                //            double norm =1.0;
                 zi << rotAxis(0)/norm, rotAxis(1)/norm, rotAxis(2)/norm, 0, 0, 0;
-//                KDL::Frame xi = Xij[row].Inverse() * Xij[col];
                 KDL::Frame xi = Xij[tipId - row].Inverse() * Xij[tipId - col];
                 Eigen::Matrix<double, 6, 6> Xi = kdlFrame2Spatial(xi.Inverse()).transpose();
                 Eigen::Matrix<double, 1, 10> Kij = zi * Xi * An[tipId - col];
@@ -660,9 +654,7 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
             }
 
         }
-//        ++colMat;
     }
-    //    std::cerr << "not implemented, yet." << std::endl;
 
     return result;
 }

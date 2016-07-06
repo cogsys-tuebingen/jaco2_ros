@@ -306,11 +306,13 @@ TEST(Jaco2KinematicsDynamicsModelTest, kdlEigenConversion)
 TEST(Jaco2KinematicsDynamicsModelTest, getRigidBodyRegressionMatrix)
 {
 //    std::vector<double> q = {4.77, 3.14, 3.14, 0.0, 0, 3.14};
-    std::vector<double> q = {4.77, 2.97, 1.03, -2.08, 1.36, 1.38};
+    std::vector<double> q = {4.74, 2.96, 1.04, -2.08, 0.37, 1.37};
 //    std::vector<double> qDot = {0.1, 0.04, 0.05, 0.06, 0.03, 0.1};
 //    std::vector<double> qDotDot = {0.1, 0, 0, 0, -0.1, 0.4};
     std::vector<double> qDot = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     std::vector<double> qDotDot = {0.0, 0, 0, 0, 0.0, 0.0};
+
+    double accuracy = 1e-9;
 
     std::vector<double> torque;
     jaco2KDL.getTorques(q, qDot, qDotDot, torque);
@@ -335,37 +337,38 @@ TEST(Jaco2KinematicsDynamicsModelTest, getRigidBodyRegressionMatrix)
 
     Eigen::Matrix<double, 1, 10> matrix = jaco2KDL.getRigidBodyRegressionMatrix("jaco_link_hand", "jaco_link_hand",q, qDot, qDotDot);
     double tau6 = matrix*param_vec6;
-    EXPECT_NEAR(torque[5], tau6, 1e-5);
+    EXPECT_NEAR(torque[5], tau6, accuracy);
 
     Eigen::Matrix<double, 2, 20> mat56 = jaco2KDL.getRigidBodyRegressionMatrix("jaco_link_5", "jaco_link_hand",q, qDot, qDotDot);
     Eigen::Matrix<double, 2, 1> tau56 = mat56*param_vec.block<20,1>(40,0);
-    EXPECT_NEAR(torque[4], tau56(0), 1e-5);
-    EXPECT_NEAR(torque[5], tau56(1), 1e-5);
+    EXPECT_NEAR(torque[4], tau56(0), 1e-9);
+    EXPECT_NEAR(torque[5], tau56(1), 1e-9);
 
     Eigen::Matrix<double, 6, 60> full_matrix = jaco2KDL.getRigidBodyRegressionMatrix("jaco_link_1", "jaco_link_hand",q, qDot, qDotDot);
     Eigen::Matrix<double, 6, 1> tau_full = full_matrix*param_vec;
 
     for(int i = 0; i <6; ++i) {
-        EXPECT_NEAR(torque[i], tau_full(i), 1e-5);
+        EXPECT_NEAR(torque[i], tau_full(i), accuracy);
     }
 
-    qDot = {0.1, 0.04, 0.05, 0.06, 0.03, 0.1};
+    qDot = {100.1, 1.04, 1.05, 1.06, 1.03, 100.1};
+    qDotDot = {10.1, 1.0, 1.0, 1.0, -1.1, -100.4};
     jaco2KDL.getTorques(q, qDot, qDotDot, torque);
 
     matrix = jaco2KDL.getRigidBodyRegressionMatrix("jaco_link_hand", "jaco_link_hand",q, qDot, qDotDot);
     tau6 = matrix*param_vec6;
-    EXPECT_NEAR(torque[5], tau6, 1e-5);
+    EXPECT_NEAR(torque[5], tau6, accuracy);
 
     mat56 = jaco2KDL.getRigidBodyRegressionMatrix("jaco_link_5", "jaco_link_hand",q, qDot, qDotDot);
     tau56 = mat56*param_vec.block<20,1>(40,0);
-    EXPECT_NEAR(torque[4], tau56(0), 1e-4);
-    EXPECT_NEAR(torque[5], tau56(1), 1e-4);
+    EXPECT_NEAR(torque[4], tau56(0), accuracy);
+    EXPECT_NEAR(torque[5], tau56(1), accuracy);
 
     full_matrix = jaco2KDL.getRigidBodyRegressionMatrix("jaco_link_1", "jaco_link_hand",q, qDot, qDotDot);
     tau_full = full_matrix*param_vec;
 
     for(int i = 0; i <6; ++i) {
-        EXPECT_NEAR(torque[i], tau_full(i), 1e-5);
+        EXPECT_NEAR(torque[i], tau_full(i), accuracy);
     }
 
 }
