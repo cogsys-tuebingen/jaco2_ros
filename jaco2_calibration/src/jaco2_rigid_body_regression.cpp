@@ -23,8 +23,13 @@ int main(int argc, char *argv[])
         std::string tip("jaco_link_hand");
         Jaco2KinematicsDynamicsModel model(urdf_param, base, tip);
 
+        std::vector<Jaco2Calibration::DynamicCalibrationSample> samples2;
+        Jaco2Calibration::importAsciiDataWithGravity(input,samples2);
         std::vector<Jaco2Calibration::DynamicCalibrationSample> samples;
-        Jaco2Calibration::importAsciiDataWithGravity(input,samples);
+        for(int i = 0; i <10; ++i)
+        {
+            samples.push_back(samples2[i]);
+        }
 
         Eigen::MatrixXd full_matrix(num_links*samples.size(),num_cols);
         Eigen::MatrixXd tau(num_links*samples.size(),1);
@@ -46,6 +51,7 @@ int main(int argc, char *argv[])
 
             full_matrix.block<num_links, num_cols>(sample_counter * num_links,0) = sample_mat;
             tau.block<num_links,1>(sample_counter * num_links,0) = sample_tau;
+            ++sample_counter;
 
         }
 
