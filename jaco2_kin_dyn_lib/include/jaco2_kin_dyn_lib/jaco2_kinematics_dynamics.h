@@ -62,6 +62,7 @@ public:
     void setTree(const std::string& robot_model);
     void setRootAndTip(const std::string& chain_root, const std::string& chain_tip);
     void setGravity(double x, double y, double z);
+    void getGravity(double& gx, double& gy, double& gz);
 
     //Solver Calls
     /**
@@ -152,9 +153,13 @@ public:
     static void PoseTFToKDL(const tf::Pose& t, KDL::Frame& k);
 
     Eigen::MatrixXd getRigidBodyRegressionMatrix(const std::string& root, const std::string& tip,
-                                               const std::vector<double>& q,
-                                               const std::vector<double>& q_Dot,
-                                               const std::vector<double>& q_DotDot);
+                                                 const std::vector<double>& q,
+                                                 const std::vector<double>& q_Dot,
+                                                 const std::vector<double>& q_DotDot,
+                                                 const double& gx,
+                                                 const double& gy,
+                                                 const double& gz,
+                                                 const bool project = true);
 
     static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
     static Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);

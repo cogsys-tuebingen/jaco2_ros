@@ -142,6 +142,13 @@ void Jaco2KinematicsDynamicsModel::setGravity(double x, double y, double z)
     //    solverIK_.reset(new TRAC_IK::TRAC_IK(chain_, lowerLimits_, upperLimits_));
 }
 
+void Jaco2KinematicsDynamicsModel::getGravity(double &gx, double &gy, double &gz)
+{
+    gx = gravity_(0);
+    gy = gravity_(1);
+    gz = gravity_(2);
+}
+
 int Jaco2KinematicsDynamicsModel::getFKPose(const std::vector<double> &q_in, tf::Pose &out, std::string link)
 {
     KDL::JntArray q;
@@ -348,9 +355,6 @@ void Jaco2KinematicsDynamicsModel::getRandomConfig(std::vector<double>& config)
     solverIK_->getKDLLimits(lb, ub);
     config.resize(chain_.getNrOfJoints());
     for(std::size_t i = 0; i < config.size(); ++i){
-        //        std::uniform_real_distribution<double> unif(lb(i),ub(i));
-        //        std::default_random_engine re;
-        //        config[i] = unif(re);
         config[i] = jointDist_[i](randEng_);
     }
 }
@@ -553,7 +557,11 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
                                                                            const std::string &tip,
                                                                            const std::vector<double> &q,
                                                                            const std::vector<double> &q_Dot,
-                                                                           const std::vector<double> &q_DotDot)
+                                                                           const std::vector<double> &q_DotDot,
+                                                                           const double& gx,
+                                                                           const double& gy,
+                                                                           const double& gz,
+                                                                           const bool project)
 {
 
     int tipId = getKDLSegmentIndex(tip);
@@ -561,15 +569,22 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
     // determine Matrix dimensions
     int nLinks = tipId - rootId + 1;
 
-    //    if(nLinks > q.size() && nLinks > q_Dot.size() && nLinks > q_DotDot.size())
-    //    {
-    //        ROS_ERROR_STREAM("getRigidBodyRegressionMatrix: Dimension Mismatch: chain length and joint space vectors should have equal length.");
-    //        return Eigen::Matrix<double,1,1>();
-    //    }
+    if(q.size() != q_Dot.size() && q.size() != q_DotDot.size() && q.size() != chain_.getNrOfJoints()){
+        ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is" << q.size() << ". While q_Dot has dimension " << q_Dot.size() << " and q_DotDot "
+                         << q_DotDot.size()<<". The KDL chain contains " <<  chain_.getNrOfJoints() << "  joints." << std::endl);
+        return Eigen::MatrixXd(0,0);
+    }
 
-    Eigen::MatrixXd result(nLinks,nLinks*10); // 10 is the total number of rigid body dynamic parameters 1 (mass) + 3 (center of mass) + 6 (inertia matrix)
-    // for each link n between root and tip calculate regression matrices A_n see Handbook of Robotics EQ (14.41) page 331.
-    // similar to newton - euler algorighm cf. KDL
+    Eigen::MatrixXd result;
+
+    if(project) {
+        result = Eigen::MatrixXd(nLinks,nLinks*10); // 10 is the total number of rigid body dynamic parameters 1 (mass) + 3 (center of mass) + 6 (inertia matrix)
+        // for each link n between root and tip calculate regression matrices A_n see Handbook of Robotics EQ (14.41) page 331.
+        // similar to newton - euler algorighm cf. KDL
+    }
+    else {
+        result = Eigen::MatrixXd(nLinks * 6, nLinks * 10); // if we have 3D force sensing in each joint
+    }
 
     // calculate A_n in body coordinates;
     // Sweep from root to leaf
@@ -580,7 +595,7 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
     std::vector<KDL::Twist> v(q.size());
     std::vector<KDL::Twist> a(q.size());
     std::vector<Eigen::Matrix<double, 6, 10> > An(q.size());
-    KDL::Twist ag = -KDL::Twist(gravity_,KDL::Vector::Zero());
+    KDL::Twist ag = -KDL::Twist(KDL::Vector(gx,gy,gz),KDL::Vector::Zero());
 
     for(unsigned int i = 0; i < q.size(); ++i) {
         double q_,qdot_,qdotdot_;
@@ -609,28 +624,21 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
             vparent = KDL::Twist(KDL::Vector::Zero(), KDL::Vector::Zero());
             aparent = X[i].Inverse(ag);
             Xij[i] = X[i];
-//            v[i]=vj;
-//            a[i]=X[i].Inverse(ag)+S[i]*qdotdot_+v[i]*vj;
         }else{
             vparent = X[i].Inverse(v[i-1]);
             aparent = X[i].Inverse(a[i-1]);
             Xij[i] = Xij[i-1] * X[i];
-//            v[i]=X[i].Inverse(v[i-1])+vj;
-//            a[i]=X[i].Inverse(a[i-1])+S[i]*qdotdot_+v[i]*vj;
         }
         v[i] = vparent + vj;
         a[i] = aparent + S[i]*qdotdot_ + v[i]*vj;
+
         // Calculate the regression Matrix An for each Link
         // See Handbook of Robotics page 331
 
-        //        KDL::Twist rotAg = Xij[i].Inverse(ag);
-//        KDL::Twist d = aparent;// - Xij[i].Inverse(ag); // see text page 331
-        KDL::Vector d = a[i].vel + v[i].rot * v[i].vel;
+        KDL::Vector d = a[i].vel + v[i].rot * v[i].vel; // - Xij[i].Inverse(ag); // see text page 331
         An[i].block<3,1>(0,0).setZero();
-//        An[i].block<3,3>(0,1) = -1.0 * skewSymMat(d.vel);
         An[i].block<3,3>(0,1) = -1.0 * skewSymMat(d);
         An[i].block<3,6>(0,4) = inertiaProductMat(a[i].rot) + skewSymMat(v[i].rot) * inertiaProductMat(v[i].rot);
-//        An[i].block<3,1>(3,0) = Eigen::Vector3d(d.vel(0), d.vel(1), d.vel(2));
         An[i].block<3,1>(3,0) = Eigen::Vector3d(d(0), d(1), d(2));
         An[i].block<3,3>(3,1) = skewSymMat(a[i].rot) + skewSymMat(v[i].rot) * skewSymMat(v[i].rot);
         An[i].block<3,6>(3,4).setZero();
@@ -646,11 +654,22 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
                 zi << rotAxis(0)/norm, rotAxis(1)/norm, rotAxis(2)/norm, 0, 0, 0;
                 KDL::Frame xi = Xij[tipId - row].Inverse() * Xij[tipId - col];
                 Eigen::Matrix<double, 6, 6> Xi = kdlFrame2Spatial(xi.Inverse()).transpose();
-                Eigen::Matrix<double, 1, 10> Kij = zi * Xi * An[tipId - col];
-                result.block<1,10>( nLinks -1 - row,(nLinks -1 - col) * 10) = Kij;
+                if(project) {
+                    Eigen::Matrix<double, 1, 10> Kij = zi * Xi * An[tipId - col];
+                    result.block<1,10>( nLinks -1 - row,(nLinks -1 - col) * 10) = Kij;
+                }
+                else {
+                    Eigen::Matrix<double, 6, 10> Aij = Xi * An[tipId - col];
+                    result.block<6,10>( (nLinks -1 - row) * 6, (nLinks -1 - col) * 10) = Aij;
+                }
             }
             else {
-                result.block<1,10>(nLinks -1 - row,(nLinks -1 - col) * 10).setZero();
+                if(project) {
+                    result.block<1,10>(nLinks -1 - row,(nLinks -1 - col) * 10).setZero();
+                }
+                else {
+                    result.block<6,10>((nLinks -1 - row) * 6,(nLinks -1 - col) * 10).setZero();
+                }
             }
 
         }

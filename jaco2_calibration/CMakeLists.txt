@@ -164,6 +164,7 @@ add_dependencies(jaco2_calibration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_
 add_executable(jaco2_calibration_node src/jaco2_calibration_node.cpp)
 add_executable(jaco2_file_calibration_node src/calibrate_from_file.cpp)
 add_executable(jaco2_simulate_calibration src/simulate_data.cpp)
+add_executable(jaco2_rigid_body_regression src/jaco2_rigid_body_regression.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -171,6 +172,7 @@ add_dependencies(jaco2_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${ca
 
 add_dependencies(jaco2_file_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
 add_dependencies(jaco2_simulate_calibration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
+add_dependencies(jaco2_rigid_body_regression ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(jaco2_calibration
@@ -195,6 +197,13 @@ add_dependencies(jaco2_simulate_calibration ${${PROJECT_NAME}_EXPORTED_TARGETS} 
 )
 
  target_link_libraries(jaco2_simulate_calibration
+   ${catkin_LIBRARIES}
+   ${CERES_LIBRARIES}
+   ${Boost_LIBRARIES}
+   jaco2_calibration
+)
+
+ target_link_libraries(jaco2_rigid_body_regression
    ${catkin_LIBRARIES}
    ${CERES_LIBRARIES}
    ${Boost_LIBRARIES}

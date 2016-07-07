@@ -24,8 +24,9 @@ void to_vector(const Jaco2Calibration::Jaco2ManipulatorDynParams& in, std::vecto
     links.clear();
     for(auto param : in)
     {
+        links.push_back(param.linkName);
         if(move_mass) {
-            links.push_back(param.linkName);
+            out.push_back(param.mass);
         }
         if(move_coM) {
             out.push_back(param.coM(0));
@@ -44,7 +45,7 @@ void to_vector(const Jaco2Calibration::Jaco2ManipulatorDynParams& in, std::vecto
 
 }
 
-void vector2Jaco2ManipulatorDynParams(const std::vector<double>& in, const std::vector<std::string> links,
+void to_Jaco2ManipulatorDynParams(const std::vector<double>& in, const std::vector<std::string> links,
                                       Jaco2Calibration::Jaco2ManipulatorDynParams& out,
                                       bool move_mass = true, bool move_coM = true, bool move_inertia = true)
 {
@@ -114,6 +115,42 @@ void vector2Jaco2ManipulatorDynParams(const std::vector<double>& in, const std::
            out.push_back(param);
        }
    }
+}
+
+void to_eigen(const Jaco2Calibration::Jaco2ManipulatorDynParams& in, Eigen::MatrixXd & out)
+{
+    int counter = 0;
+    out = Eigen::MatrixXd(in.size()*10,1);
+    for(auto param : in) {
+        out(counter++) = param.mass;
+        out.block<3,1>(counter++,0) = param.coM;
+        out(counter++,0) = param.inertia(0,0);
+        out(counter++,0) = param.inertia(0,1);
+        out(counter++,0) = param.inertia(0,2);
+        out(counter++,0) = param.inertia(1,1);
+        out(counter++,0) = param.inertia(1,2);
+        out(counter++,0) = param.inertia(2,2);
+    }
+}
+
+void to_Jaco2ManipulatorDynParams(const Eigen::MatrixXd & in, const std::vector<std::string> links,
+                                  Jaco2Calibration::Jaco2ManipulatorDynParams& out)
+{
+    out.clear();
+    int nlinks = in.size() / 10;
+    for(int n = 0; n < nlinks; ++n) {
+        DynamicCalibratedParameters param;
+        param.linkName = links[n];
+        param.mass = in(n*10);
+        param.coM = in.block<3,1>(n*10+1,0);
+        Eigen::Matrix<double, 6, 1> inertia = in.block<6,1>(n*10+4,0);
+        param.inertia << inertia(0), inertia(1), inertia(2),
+                         inertia(1), inertia(3), inertia(4),
+                         inertia(2), inertia(4), inertia(5);
+
+        out.push_back(param);
+
+    }
 }
 
 std::vector<std::string> getLinkNames(const Jaco2Calibration::Jaco2ManipulatorDynParams& params)
