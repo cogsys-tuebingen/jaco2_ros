@@ -119,17 +119,19 @@ void to_Jaco2ManipulatorDynParams(const std::vector<double>& in, const std::vect
 
 void to_eigen(const Jaco2Calibration::Jaco2ManipulatorDynParams& in, Eigen::MatrixXd & out)
 {
-    int counter = 0;
-    out = Eigen::MatrixXd(in.size()*10,1);
-    for(auto param : in) {
-        out(counter++) = param.mass;
-        out.block<3,1>(counter++,0) = param.coM;
-        out(counter++,0) = param.inertia(0,0);
-        out(counter++,0) = param.inertia(0,1);
-        out(counter++,0) = param.inertia(0,2);
-        out(counter++,0) = param.inertia(1,1);
-        out(counter++,0) = param.inertia(1,2);
-        out(counter++,0) = param.inertia(2,2);
+//    int counter = 0;
+    out = Eigen::MatrixXd::Zero(in.size()*10,1);
+    for(std::size_t i = 0; i < in.size(); ++i) {
+        auto param = in[i];
+        int id = i*10;
+        out(id) = param.mass;
+        out.block<3,1>(id+1,0) = param.coM;
+        out(id+4,0) = param.inertia(0,0);
+        out(id+5,0) = param.inertia(0,1);
+        out(id+6,0) = param.inertia(0,2);
+        out(id+7,0) = param.inertia(1,1);
+        out(id+8,0) = param.inertia(1,2);
+        out(id+9,0) = param.inertia(2,2);
     }
 }
 

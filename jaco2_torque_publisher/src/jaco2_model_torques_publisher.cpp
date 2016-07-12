@@ -26,7 +26,7 @@ public:
         lastTime_ = ros::Time::now();
 
         std::vector<Jaco2Calibration::DynamicCalibratedParameters> calibParam;
-        Jaco2Calibration::loadDynParm("/tmp/param.txt", calibParam);
+        Jaco2Calibration::loadDynParm("/tmp/regression_rb_param.txt", calibParam);
         for(Jaco2Calibration::DynamicCalibratedParameters param : calibParam){
             solver_.changeDynamicParams(param.linkName, param.mass, param.coM, param.inertia);
         }
