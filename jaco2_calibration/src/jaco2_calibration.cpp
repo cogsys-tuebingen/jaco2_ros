@@ -244,7 +244,7 @@ bool Jaco2Calibration::calibrateAcc(const AccelerationSamples &samples)
         convert(i, samples, acc_data);
         accCalib.calibrateAccJumpDistDetect(acc_data);
         imu_tk::CalibratedTriad calibParm = accCalib.getAccCalib();
-        std::string name = "jaco_accelerometer_" + std::to_string(i+1);
+        std::string name = "jaco_accelerometer_" + std::to_string(i);
         AccelerometerCalibrationParam param(name, calibParm.getBiasVector(),
                                             calibParm.getMisalignmentMatrix(),
                                             calibParm.getScaleMatrix());

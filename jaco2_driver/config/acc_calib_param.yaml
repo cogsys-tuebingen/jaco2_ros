@@ -4,7 +4,7 @@ parameter:
     ms_xy: -0.01936656953862676
     ms_xx: 0.9071917116906366
     ms_yz: -0.001129667811610153
-    acc_name: jaco_accelerometer_1
+    acc_name: jaco_accelerometer_0
     bias_z: -0.02478896097263331
     bias_x: 0.0105300785592269
     bias_y: 0.0122377348305195
@@ -13,7 +13,7 @@ parameter:
     ms_xz: 0.0006025386837863944
     ms_yx: 0
   - bias_z: -0.02035572246372357
-    acc_name: jaco_accelerometer_2
+    acc_name: jaco_accelerometer_1
     bias_x: 0.08357216413530974
     bias_y: 0.008351279314268649
     ms_zy: 0
@@ -26,7 +26,7 @@ parameter:
     ms_xz: 0.004571071915153544
     ms_xy: 0.003197167609391518
   - ms_zy: 0
-    acc_name: jaco_accelerometer_3
+    acc_name: jaco_accelerometer_2
     ms_xy: -0.001169666801258205
     ms_xx: 0.9014907537413072
     bias_z: -0.02589221133489625
@@ -47,7 +47,7 @@ parameter:
     bias_z: -0.05660984885289944
     bias_x: -0.0325420077477632
     bias_y: 0.06614946841771543
-    acc_name: jaco_accelerometer_4
+    acc_name: jaco_accelerometer_3
     ms_yy: 0.8988436154057337
     ms_zx: 0
     ms_yz: 0.001241731129266309
@@ -55,7 +55,7 @@ parameter:
     bias_y: 0.0812586477904202
     ms_xz: 0.002219688411118489
     ms_yx: 0
-    acc_name: jaco_accelerometer_5
+    acc_name: jaco_accelerometer_4
     bias_x: 0.00707533200602074
     ms_xy: -0.01223257801195708
     ms_xx: 0.9048525818245359
@@ -71,7 +71,7 @@ parameter:
     ms_zz: 0.9233808131838379
     ms_xy: -0.01334083829716814
     ms_xz: 0.01045436583828578
-    acc_name: jaco_accelerometer_6
+    acc_name: jaco_accelerometer_5
     bias_x: 0.05394382071564503
     bias_y: 0.08466774846689579
     bias_z: -0.08170311608780728

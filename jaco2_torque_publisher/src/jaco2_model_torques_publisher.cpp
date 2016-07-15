@@ -4,6 +4,7 @@
 #include <sensor_msgs/JointState.h>
 #include <jaco2_msgs/Jaco2JointState.h>
 #include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
+#include <jaco2_kin_dyn_lib/yaml_to_kdl_tranform.h>
 #include <jaco2_msgs/JointAngles.h>
 #include <jaco2_msgs/Jaco2Sensor.h>
 #include <jaco2_calibration/jaco2_calibration_io.hpp> 
@@ -35,7 +36,9 @@ public:
         }
 
 
-        listener_.waitForTransform("jaco_link_base","jaco_link_hand",ros::Time(0),ros::Duration(3));
+
+        Jaco2Yaml2KDLTransform::load("/tmp/acc_transforms.yaml",staticAccTrans_);
+        //        listener_.waitForTransform("jaco_link_base","jaco_link_hand",ros::Time(0),ros::Duration(3));  //or use tf and store transformations
         links_ = solver_.getLinkNames();
 
     }
@@ -116,9 +119,12 @@ public:
         ros::spinOnce();
         if(!inital_ && !initalSensor_){
             //            if(counter_ == 0){
-            double x =  -gravityMean_[1] * (9.81);
-            double y =  -gravityMean_[0] * (9.81);
-            double z =  -gravityMean_[2] * (9.81);
+            double x =  gravityMean_[1] * (9.81);
+            double y =  gravityMean_[0] * (9.81);
+            double z =  gravityMean_[2] * (9.81);
+//            double x =  0;
+//            double y =  0;
+//            double z =  -9.81;
             solver_.setGravity(x,y,z);
             //            }
             std::cout << jointAcc_.size() << std::endl;
@@ -147,26 +153,30 @@ public:
             solver_.getAcceleration(links_,x,y,z,jointPos_,jointVel_,jointAcc_,spatial_accs);
             tf::StampedTransform transform;
             jaco2_msgs::Jaco2Acc modelAccs;
-            try{
-                for(std::size_t i =1; i < links_.size(); ++i) {
-//                    listener_.lookupTransform(links_[i-1], frameNames_[i] ,ros::Time(0),transform);
-//                    KDL::Frame trans;
-                    //                tf::Matrix3x3 rot(transform.getRotation());
-                    //                trans.M = KDL::Rotation(rot.getRow(0).getX(), rot.getRow(0).getY(), rot.getRow(0).getZ(),
-                    //                                        rot.getRow(1).getX(), rot.getRow(1).getY(), rot.getRow(2).getZ(),
-                    //                                        rot.getRow(2).getX(), rot.getRow(2).getY(), rot.getRow(2).getZ());
-//                    tf::transformTFToKDL(transform,trans);
-//                    KDL::Twist a = trans * spatial_accs[i-1];
-                    KDL::Twist a = spatial_accs[i-1];
-                    modelAccs.acc_x.push_back(a.vel(0));
-                    modelAccs.acc_y.push_back(a.vel(1));
-                    modelAccs.acc_z.push_back(a.vel(2));
-                    modelAccs.name.push_back(frameNames_[i]);
-                }
+            //            try{
+            for(std::size_t i =0; i < links_.size() -1; ++i) {
+                //                    listener_.lookupTransform(links_[i-1], frameNames_[i] ,ros::Time(0),transform);
+                //                    KDL::Frame trans;
+                //                tf::Matrix3x3 rot(transform.getRotation());
+                //                trans.M = KDL::Rotation(rot.getRow(0).getX(), rot.getRow(0).getY(), rot.getRow(0).getZ(),
+                //                                        rot.getRow(1).getX(), rot.getRow(1).getY(), rot.getRow(2).getZ(),
+                //                                        rot.getRow(2).getX(), rot.getRow(2).getY(), rot.getRow(2).getZ());
+                //                    tf::transformTFToKDL(transform,trans);
+                //                    KDL::Twist a = trans * spatial_accs[i-1];
+                KDL::Twist a = staticAccTrans_[i+1].frame.Inverse() * spatial_accs[i]/9.81;
+//                KDL::Twist a = staticAccTrans_[i].frame * spatial_accs[i]/9.81;
+//                 KDL::Twist a = spatial_accs[i]/9.81;
+                modelAccs.acc_x.push_back(a.vel(0));// -acceleration_[i](0));
+                modelAccs.acc_y.push_back(a.vel(1)); //-acceleration_[i](1));
+                modelAccs.acc_z.push_back(a.vel(2)); //-acceleration_[i](2));
+                modelAccs.name.push_back(frameNames_[i]);
             }
-            catch( tf::TransformException ex){
-                ROS_ERROR("transfrom exception : %s",ex.what());
-            }
+            //            }
+            //            catch( tf::TransformException ex){
+            //                ROS_ERROR("transfrom exception : %s",ex.what());
+            //            }
+            modelAccs.header.stamp = ros::Time::now();
+            modelAccs.header.frame_id = "base_link";
             accPublisher_.publish(modelAccs);
 
         }
@@ -195,7 +205,8 @@ private:
     double gravity_[6][3];
     double gravityMean_[3];
     int gravityCounter_;
-    tf::TransformListener listener_;
+    //    tf::TransformListener listener_;
+    std::vector<Jaco2Yaml2KDLTransform::KDLTransformation> staticAccTrans_;
     std::vector<std::string> links_;
     std::vector<std::string> frameNames_;
     std::vector<Eigen::Vector3d> acceleration_;

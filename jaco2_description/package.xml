@@ -2,7 +2,7 @@
 <package>
   <name>jaco2_description</name>
   <version>0.0.25</version>
-  <description>3D Model and URDF of the Kinova JACO2 Arm. Changed wpi model. </description>
+  <description>3D Model and URDF of the Kinova JACO2 Arm. Changed WPI model. </description>
 
 
   <maintainer email="adrian.zwiener@uni-tuebingen.de">Adrian Zwiener</maintainer>  
@@ -18,7 +18,6 @@
   <url type="repository">https://github.com/RIVeR-Lab/wpi_jaco</url>
 
   <buildtool_depend>catkin</buildtool_depend>
-
   <run_depend>xacro</run_depend>
   <run_depend>joint_state_publisher</run_depend>
   <run_depend>robot_state_publisher</run_depend>

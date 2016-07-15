@@ -19,7 +19,7 @@ endif()
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  kdl_parser
+#  kdl_parser
   roscpp
   rostest
   tf
@@ -139,6 +139,9 @@ include_directories(
 ## Declare a C++ library
  add_library(jaco2_kin_dyn_lib
    src/jaco2_kinematics_dynamics.cpp
+   src/yaml_to_kdl_tranform.cpp
+   include/jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h
+   include/jaco2_kin_dyn_lib/yaml_to_kdl_tranform.h
 )
 
 ## Add cmake target dependencies of the library
@@ -147,16 +150,24 @@ include_directories(
 add_dependencies(jaco2_kin_dyn_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
+add_executable(jaco2_tf_static_transforms_conversion src/jaco2_tf_static_tranforms_conversion.cpp)
 add_executable(jaco2_kin_dyn_lib_test test/test_jaco2_kin_dyn.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
+add_dependencies(jaco2_tf_static_transforms_conversion ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_kin_dyn_lib)
 add_dependencies(jaco2_kin_dyn_lib_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${GTEST_LIBRARIES} jaco2_kin_dyn_lib)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(jaco2_kin_dyn_lib
    ${catkin_LIBRARIES}
    ${orocos_kdl_LIBRARIES}
+   yaml-cpp
+)
+
+target_link_libraries(jaco2_tf_static_transforms_conversion
+   ${catkin_LIBRARIES}
+   jaco2_kin_dyn_lib
 )
 
 target_link_libraries(jaco2_kin_dyn_lib_test
