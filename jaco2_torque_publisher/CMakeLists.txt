@@ -25,6 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
   jaco2_msgs
   roscpp
   tf
+  tf_conversions
 )
 
 ## System dependencies are found with CMake's conventions

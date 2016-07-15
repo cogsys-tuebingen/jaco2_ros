@@ -7,12 +7,15 @@
 #include <jaco2_msgs/JointAngles.h>
 #include <jaco2_msgs/Jaco2Sensor.h>
 #include <jaco2_calibration/jaco2_calibration_io.hpp> 
-
+#include <tf/transform_listener.h>
+#include <jaco2_msgs/Jaco2Acc.h>
+#include <tf_conversions/tf_kdl.h>
 class Jaco2TorquePublisher
 {
 public:
     Jaco2TorquePublisher(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip)
         : inital_(true),
+          initalSensor_(true),
           counter_(0),
           private_nh_("~"),
           solver_(robot_model,chain_root,chain_tip)
@@ -23,13 +26,17 @@ public:
         subSensorInfo_ = private_nh_.subscribe("/jaco_arm_driver/out/sensor_info", 1,  cbS);
         publisher_ = private_nh_.advertise<jaco2_msgs::JointAngles>("model_torques",2);
         diffPublisher_ = private_nh_.advertise<jaco2_msgs::JointAngles>("torque_diffs",2);
-        lastTime_ = ros::Time::now();
+        accPublisher_ = private_nh_.advertise<jaco2_msgs::Jaco2Acc>("model_acc",2);        lastTime_ = ros::Time::now();
 
         std::vector<Jaco2Calibration::DynamicCalibratedParameters> calibParam;
         Jaco2Calibration::loadDynParm("/tmp/regression_rb_param.txt", calibParam);
         for(Jaco2Calibration::DynamicCalibratedParameters param : calibParam){
             solver_.changeDynamicParams(param.linkName, param.mass, param.coM, param.inertia);
         }
+
+
+        listener_.waitForTransform("jaco_link_base","jaco_link_hand",ros::Time(0),ros::Duration(3));
+        links_ = solver_.getLinkNames();
 
     }
 
@@ -60,15 +67,15 @@ public:
             jointAcc_[i] = msg->acceleration[i];
 
         }
-//        for(std::size_t i = 0; i < 6; ++i){
-//            if(dt_ !=0){
-//                jointAcc_[i] = (jointVel_[i] -jointVelLast_[i])/dt_;
-//                jointVelLast_[i] = jointVel_[i];
-//            }
-//            else{
-//                jointAcc_[i] = 0;
-//            }
-//        }
+        //        for(std::size_t i = 0; i < 6; ++i){
+        //            if(dt_ !=0){
+        //                jointAcc_[i] = (jointVel_[i] -jointVelLast_[i])/dt_;
+        //                jointVelLast_[i] = jointVel_[i];
+        //            }
+        //            else{
+        //                jointAcc_[i] = 0;
+        //            }
+        //        }
     }
 
     void sensorInfoCb(const jaco2_msgs::Jaco2SensorConstPtr& msg)
@@ -89,18 +96,32 @@ public:
             gravityMean_[2] = sum[2];
         }
         ++gravityCounter_;
+        if(initalSensor_) {
+
+            frameNames_.resize(msg->name.size());
+            acceleration_.resize(msg->name.size());
+            initalSensor_ = false;
+        }
+
+        for(std::size_t i = 0; i < msg->name.size(); ++i){
+            frameNames_[i] = msg->acceleration[i].header.frame_id;
+            acceleration_[i] = Eigen::Vector3d(msg->acceleration[i].vector.x,
+                                               msg->acceleration[i].vector.y,
+                                               msg->acceleration[i].vector.z);
+        }
     }
 
     void tick()
     {
         ros::spinOnce();
-        if(!inital_){
-//            if(counter_ == 0){
-                double x =  -gravityMean_[1] * (9.81);
-                double y =  -gravityMean_[0] * (9.81);
-                double z =  -gravityMean_[2] * (9.81);
-                solver_.setGravity(x,y,z);
-//            }
+        if(!inital_ && !initalSensor_){
+            //            if(counter_ == 0){
+            double x =  -gravityMean_[1] * (9.81);
+            double y =  -gravityMean_[0] * (9.81);
+            double z =  -gravityMean_[2] * (9.81);
+            solver_.setGravity(x,y,z);
+            //            }
+            std::cout << jointAcc_.size() << std::endl;
             solver_.getTorques(jointPos_,jointVel_,jointAcc_,modelTorques_);
             jaco2_msgs::JointAngles pubMsg;
             pubMsg.joint1 = modelTorques_[0];
@@ -121,12 +142,40 @@ public:
             diffMsg.joint6 = modelTorques_[5] - jointTorques_[5];
             diffPublisher_.publish(diffMsg);
             counter_ = (counter_ + 1) % 10;
+
+            std::vector<KDL::Twist> spatial_accs;
+            solver_.getAcceleration(links_,x,y,z,jointPos_,jointVel_,jointAcc_,spatial_accs);
+            tf::StampedTransform transform;
+            jaco2_msgs::Jaco2Acc modelAccs;
+            try{
+                for(std::size_t i =1; i < links_.size(); ++i) {
+//                    listener_.lookupTransform(links_[i-1], frameNames_[i] ,ros::Time(0),transform);
+//                    KDL::Frame trans;
+                    //                tf::Matrix3x3 rot(transform.getRotation());
+                    //                trans.M = KDL::Rotation(rot.getRow(0).getX(), rot.getRow(0).getY(), rot.getRow(0).getZ(),
+                    //                                        rot.getRow(1).getX(), rot.getRow(1).getY(), rot.getRow(2).getZ(),
+                    //                                        rot.getRow(2).getX(), rot.getRow(2).getY(), rot.getRow(2).getZ());
+//                    tf::transformTFToKDL(transform,trans);
+//                    KDL::Twist a = trans * spatial_accs[i-1];
+                    KDL::Twist a = spatial_accs[i-1];
+                    modelAccs.acc_x.push_back(a.vel(0));
+                    modelAccs.acc_y.push_back(a.vel(1));
+                    modelAccs.acc_z.push_back(a.vel(2));
+                    modelAccs.name.push_back(frameNames_[i]);
+                }
+            }
+            catch( tf::TransformException ex){
+                ROS_ERROR("transfrom exception : %s",ex.what());
+            }
+            accPublisher_.publish(modelAccs);
+
         }
     }
 
 
 private:
     bool inital_;
+    bool initalSensor_;
     int counter_;
     ros::NodeHandle private_nh_;
     Jaco2KinematicsDynamicsModel solver_;
@@ -134,6 +183,7 @@ private:
     ros::Subscriber subSensorInfo_;
     ros::Publisher publisher_;
     ros::Publisher diffPublisher_;
+    ros::Publisher accPublisher_;
     std::vector<double> jointPos_;
     std::vector<double> jointVel_;
     std::vector<double> jointVelLast_;
@@ -145,6 +195,10 @@ private:
     double gravity_[6][3];
     double gravityMean_[3];
     int gravityCounter_;
+    tf::TransformListener listener_;
+    std::vector<std::string> links_;
+    std::vector<std::string> frameNames_;
+    std::vector<Eigen::Vector3d> acceleration_;
 
 
 };
@@ -153,7 +207,7 @@ private:
 int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "pub_jaco2_model_torques");
-//    ros::NodeHandle node("~");
+    //    ros::NodeHandle node("~");
     Jaco2TorquePublisher jacomodel("robot_description","jaco_link_base","jaco_link_hand");
     ros::Rate r(40);
     while(ros::ok()){
