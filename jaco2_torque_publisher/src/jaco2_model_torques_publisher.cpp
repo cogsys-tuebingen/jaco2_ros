@@ -9,7 +9,8 @@
 #include <jaco2_msgs/Jaco2Sensor.h>
 #include <jaco2_calibration/jaco2_calibration_io.hpp> 
 #include <tf/transform_listener.h>
-#include <jaco2_msgs/Jaco2Acc.h>
+//#include <jaco2_msgs/Jaco2Acc.h>
+#include <jaco2_msgs/Jaco2Accelerometers.h>
 #include <tf_conversions/tf_kdl.h>
 class Jaco2TorquePublisher
 {
@@ -27,7 +28,7 @@ public:
         subSensorInfo_ = private_nh_.subscribe("/jaco_arm_driver/out/sensor_info", 1,  cbS);
         publisher_ = private_nh_.advertise<jaco2_msgs::JointAngles>("model_torques",2);
         diffPublisher_ = private_nh_.advertise<jaco2_msgs::JointAngles>("torque_diffs",2);
-        accPublisher_ = private_nh_.advertise<jaco2_msgs::Jaco2Acc>("model_acc",2);        lastTime_ = ros::Time::now();
+        accPublisher_ = private_nh_.advertise<jaco2_msgs::Jaco2Accelerometers>("model_acc",2);        lastTime_ = ros::Time::now();
 
         std::vector<Jaco2Calibration::DynamicCalibratedParameters> calibParam;
         Jaco2Calibration::loadDynParm("/tmp/regression_rb_param.txt", calibParam);
@@ -127,7 +128,7 @@ public:
 //            double z =  -9.81;
             solver_.setGravity(x,y,z);
             //            }
-            std::cout << jointAcc_.size() << std::endl;
+
             solver_.getTorques(jointPos_,jointVel_,jointAcc_,modelTorques_);
             jaco2_msgs::JointAngles pubMsg;
             pubMsg.joint1 = modelTorques_[0];
@@ -150,33 +151,23 @@ public:
             counter_ = (counter_ + 1) % 10;
 
             std::vector<KDL::Twist> spatial_accs;
-            solver_.getAcceleration(links_,x,y,z,jointPos_,jointVel_,jointAcc_,spatial_accs);
-            tf::StampedTransform transform;
-            jaco2_msgs::Jaco2Acc modelAccs;
-            //            try{
-            for(std::size_t i =0; i < links_.size() -1; ++i) {
-                //                    listener_.lookupTransform(links_[i-1], frameNames_[i] ,ros::Time(0),transform);
-                //                    KDL::Frame trans;
-                //                tf::Matrix3x3 rot(transform.getRotation());
-                //                trans.M = KDL::Rotation(rot.getRow(0).getX(), rot.getRow(0).getY(), rot.getRow(0).getZ(),
-                //                                        rot.getRow(1).getX(), rot.getRow(1).getY(), rot.getRow(2).getZ(),
-                //                                        rot.getRow(2).getX(), rot.getRow(2).getY(), rot.getRow(2).getZ());
-                //                    tf::transformTFToKDL(transform,trans);
-                //                    KDL::Twist a = trans * spatial_accs[i-1];
-                KDL::Twist a = staticAccTrans_[i+1].frame.Inverse() * spatial_accs[i]/9.81;
-//                KDL::Twist a = staticAccTrans_[i].frame * spatial_accs[i]/9.81;
-//                 KDL::Twist a = spatial_accs[i]/9.81;
-                modelAccs.acc_x.push_back(a.vel(0));// -acceleration_[i](0));
-                modelAccs.acc_y.push_back(a.vel(1)); //-acceleration_[i](1));
-                modelAccs.acc_z.push_back(a.vel(2)); //-acceleration_[i](2));
-                modelAccs.name.push_back(frameNames_[i]);
+            std::vector<std::string> frame_names;
+            solver_.getAcceleration(x,y,z,jointPos_,jointVel_,jointAcc_,frame_names,spatial_accs);
+
+            jaco2_msgs::Jaco2Accelerometers modelAccs;
+
+            for(std::size_t i =0; i < links_.size() -1; ++i) { // accelerometer 1 to 5 is published
+
+                KDL::Twist a = staticAccTrans_[i+1].frame.Inverse() * spatial_accs[i]/9.81; //staticAccTrans_ contains accelerometers 0 to 5;
+                geometry_msgs::Vector3Stamped vs;
+                vs.header.frame_id = frameNames_[i+1]; //frameNames_ contains accelerometers 0 to 5;
+                vs.header.stamp = ros::Time::now();
+                vs.vector.x = a.vel(0);
+                vs.vector.y = a.vel(1);
+                vs.vector.z = a.vel(2);
+                modelAccs.lin_acc.push_back(vs);
             }
-            //            }
-            //            catch( tf::TransformException ex){
-            //                ROS_ERROR("transfrom exception : %s",ex.what());
-            //            }
-            modelAccs.header.stamp = ros::Time::now();
-            modelAccs.header.frame_id = "base_link";
+
             accPublisher_.publish(modelAccs);
 
         }

@@ -66,7 +66,8 @@ private:
     ros::Publisher pubJointAngles_;
     ros::Publisher pubFingerPositions_;
     ros::Publisher pubSensorInfo_;
-    ros::Publisher pubJaco2JointState;
+    ros::Publisher pubJaco2JointState_;
+    ros::Publisher pubJaco2LinAcc_;
 
     ros::ServiceServer stopService_;
     ros::ServiceServer startService_;
@@ -94,6 +95,7 @@ private:
     dynamic_reconfigure::Server<jaco2_driver::jaco2_driver_configureConfig> paramServer_;
     dynamic_reconfigure::Server<jaco2_driver::jaco2_driver_configureConfig>::CallbackType f_;
 
+    std::chrono::time_point<std::chrono::high_resolution_clock>  lastTimeAccPublished_;
 
     double j6o_;
 };

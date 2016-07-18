@@ -95,15 +95,40 @@ public:
      */
     int getIKSolution(const tf::Pose &pose, std::vector<double> &result, const std::vector<double>& seed = std::vector<double>());
 
-    int getAcceleration(const std::vector<std::string>& links, const double gx, const double gy, const double gz,
+    /**
+     * @brief getAcceleration gets the accerlaration for all moving frames
+     * @param gx acceleration of the basis frame x-component
+     * @param gy acceleration of the basis frame y-component
+     * @param gz acceleration of the basis frame z-component
+     * @param q joint positions
+     * @param q_Dot joint velocities
+     * @param q_DotDot joint accelerations
+     * @param links name of the link frame
+     * @param spatial_acc the spatial velocity of the link in link coordinates
+     * @return
+     */
+    int getAcceleration(const double gx, const double gy, const double gz,
                         const std::vector<double>& q,
                         const std::vector<double>& q_Dot,
                         const std::vector<double>& q_DotDot,
+                        std::vector<std::string>& links,
                         std::vector<Eigen::Matrix<double, 6, 1> > &spatial_acc );
-    int getAcceleration(const std::vector<std::string>& links, const double gx, const double gy, const double gz,
+    /**
+     * @brief getAcceleration gets the accerlaration for all moving frames
+     * @param gx acceleration of the basis frame x-component
+     * @param gy acceleration of the basis frame y-component
+     * @param gz acceleration of the basis frame z-component
+     * @param q joint positions
+     * @param q_Dot joint velocities
+     * @param q_DotDot joint accelerations
+     * @param links name of the link frame
+     * @param spatial_acc the spatial velocity of the link in link coordinates
+     * @return
+     */
+    int getAcceleration(const double gx, const double gy, const double gz,
                         const std::vector<double>& q,
                         const std::vector<double>& q_Dot,
-                        const std::vector<double>& q_DotDot,
+                        const std::vector<double>& q_DotDot, std::vector<std::string> &links,
                         std::vector<KDL::Twist > &spatial_acc );
 
     void changeDynamicParams(const std::string& link, const double mass, const Eigen::Vector3d& com, const Eigen::Matrix3d& inertia);

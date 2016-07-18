@@ -5,6 +5,7 @@
 #include <jaco2_msgs/FingerPosition.h>
 #include <jaco2_msgs/Jaco2Sensor.h>
 #include <jaco2_msgs/Jaco2JointState.h>
+#include <jaco2_msgs/Jaco2Accelerometers.h>
 #include <jaco2_driver/jaco2_driver_constants.h>
 
 
@@ -33,7 +34,8 @@ Jaco2DriverNode::Jaco2DriverNode()
     pubJointAngles_ = private_nh_.advertise<jaco2_msgs::JointAngles>("out/joint_angles",2);
     pubFingerPositions_ = private_nh_.advertise<jaco2_msgs::FingerPosition>("out/finger_positions",2);
     pubSensorInfo_ = private_nh_.advertise<jaco2_msgs::Jaco2Sensor>("out/sensor_info",2);
-    pubJaco2JointState = private_nh_.advertise<jaco2_msgs::Jaco2JointState>("out/joint_state_acc", 2);
+    pubJaco2JointState_ = private_nh_.advertise<jaco2_msgs::Jaco2JointState>("out/joint_state_acc", 2);
+    pubJaco2LinAcc_ = private_nh_.advertise<jaco2_msgs::Jaco2Accelerometers>("out/accelerometers",2);
 
     boost::function<void(const jaco2_msgs::JointVelocityConstPtr&)> cb = boost::bind(&Jaco2DriverNode::jointVelocityCb, this, _1);
     boost::function<void(const jaco2_msgs::FingerPositionConstPtr&)> cb_finger = boost::bind(&Jaco2DriverNode::fingerVelocityCb, this, _1);
@@ -95,6 +97,8 @@ Jaco2DriverNode::Jaco2DriverNode()
     trajServer_.start();
     graspServer_.start();
     fingerServer_.start();
+
+    lastTimeAccPublished_ = std::chrono::high_resolution_clock ::now();
 }
 
 
@@ -423,7 +427,7 @@ void Jaco2DriverNode::publishJointState()
     DataConversion::convert(controller_.getAngularAcceleration(), jaco2JointStateMsg.acceleration);
     DataConversion::from_degrees(jaco2JointStateMsg.acceleration);
 
-    pubJaco2JointState.publish(jaco2JointStateMsg);
+    pubJaco2JointState_.publish(jaco2JointStateMsg);
 }
 
 void Jaco2DriverNode::publishJointAngles()
@@ -453,9 +457,18 @@ void Jaco2DriverNode::publishJointAngles()
 
 void Jaco2DriverNode::publishSensorInfo()
 {
-    AngularAcceleration acc = controller_.getActuatorAcceleration();
+    AngularAcceleration acc = controller_.getActuatorAcceleration(); // TODO remove acc from sensor
     std::chrono::time_point<std::chrono::high_resolution_clock>  stamp = controller_.getLastReadUpdate(READ_ACCELRATION);
     DataConversion::convert(acc,stamp,sensorMsg_.acceleration);
+    if(stamp != lastTimeAccPublished_) {
+        std::vector<geometry_msgs::Vector3Stamped> acc_msg(Jaco2DriverConstants::n_Jaco2Joints);
+        DataConversion::convert(acc,stamp, acc_msg);
+        jaco2_msgs::Jaco2Accelerometers jaco2_acc;
+        jaco2_acc.lin_acc = acc_msg;
+        pubJaco2LinAcc_.publish(jaco2_acc);
+        lastTimeAccPublished_ = stamp;
+
+    }
     stamp = controller_.getLastReadUpdate(READ_TORQUE_GRAVITY_FREE);
     AngularPosition torque = controller_.getAngularForceGravityFree();
     DataConversion::convert(torque.Actuators,sensorMsg_.torque);
