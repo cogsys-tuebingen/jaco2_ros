@@ -232,6 +232,8 @@ int Jaco2KinematicsDynamicsModel::getAcceleration(const double gx, const double 
 
     KDL::Twist ag = -KDL::Twist(KDL::Vector(gx,gy,gz),KDL::Vector::Zero());
     int j = 0;
+    double ns = chain_.getNrOfSegments() ;
+//    std::cout << "ns " << ns << " nj " << chain_.getNrOfJoints() << std::endl;
     for(int i = 0; i < chain_.getNrOfJoints(); ++i) {
         double q_,qdot_,qdotdot_;
         if(chain_.getSegment(i).getJoint().getType()!=KDL::Joint::None){

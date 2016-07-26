@@ -249,7 +249,8 @@ void Jaco2State::readVelocity()
     auto duration = now - time_velocity_ ;
     time_velocity_ = now;
     dt_[acc_counter_] = std::chrono::duration_cast<std::chrono::microseconds>(duration).count()*1e-6;
-    acc_counter_ = (acc_counter_ + 1) % 2;
+//    acc_counter_ = (acc_counter_ + 1) % 2;
+    acc_counter_ = 0;
     calculateJointAcceleration();
 }
 
@@ -315,9 +316,10 @@ void Jaco2State::setAccelerometerCalibration(const std::vector<Jaco2Calibration:
 
 void Jaco2State::calculateJointAcceleration()
 {
-    double dtsum = dt_[0] + dt_[1];
-//    double dtsum = dt_[0];
-    int i = 1;
+//    double dtsum = dt_[0] + dt_[1];
+    double dtsum = dt_[0];
+    int i = 0;
+//    int i = 1;
     current_joint_acceleration_.Actuators.Actuator1 = (current_velocity_.Actuators.Actuator1 - lastVelocity_[i].Actuators.Actuator1) / dtsum;
     current_joint_acceleration_.Actuators.Actuator2 = (current_velocity_.Actuators.Actuator2 - lastVelocity_[i].Actuators.Actuator2) / dtsum;
     current_joint_acceleration_.Actuators.Actuator3 = (current_velocity_.Actuators.Actuator3 - lastVelocity_[i].Actuators.Actuator3) / dtsum;

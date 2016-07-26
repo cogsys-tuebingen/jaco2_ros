@@ -73,7 +73,7 @@ public:
         for(std::size_t i = 0; i < 6; ++i){
             sample.jointPos[i] = msg->position[i];
             sample.jointVel[i] = msg->velocity[i];
-            sample.jointTorque[i] = msg->effort[i];
+            sample.jointTorque[i] = -msg->effort[i];
             sample.jointAcc[i] = msg->acceleration[i];
             //                if(currentSamples_ > 0 && dt_ !=0)
             //                {

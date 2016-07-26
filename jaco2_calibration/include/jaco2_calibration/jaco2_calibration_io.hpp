@@ -77,19 +77,19 @@ void save(std::string name, std::vector<DynamicCalibrationSample> samples, std::
     std::ofstream file(name);
     //    std::string delimiter(";");
     file << "time " << delimiter;
-    for(int i = 0; i <samples[0].jointPos.size(); ++i)
+    for(std::size_t i = 0; i <samples[0].jointPos.size(); ++i)
     {
         file << "joint_pos_" << std::to_string(i) << delimiter;
     }
-    for(int i = 0; i <samples[0].jointVel.size(); ++i)
+    for(std::size_t i = 0; i <samples[0].jointVel.size(); ++i)
     {
         file << "joint_vel_" << std::to_string(i) << delimiter;
     }
-    for(int i = 0; i <samples[0].jointAcc.size(); ++i)
+    for(std::size_t i = 0; i <samples[0].jointAcc.size(); ++i)
     {
         file << "joint_acc_" << std::to_string(i) << delimiter;
     }
-    for(int i = 0; i <samples[0].jointTorque.size(); ++i)
+    for(std::size_t i = 0; i <samples[0].jointTorque.size(); ++i)
     {
         file << "joint_torque_" << std::to_string(i) << delimiter;
     }
@@ -221,7 +221,7 @@ void importAsciiData(std::string filename, AccelerationSamples& samples, const c
     {
 
 
-        int l = 0;
+//        int l = 0;
         char value[256];
 
         std::getline ( infile,line );

@@ -1,19 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jaco2_calibration)
 
-#############
-## C++ 11  ##
-#############
+## Enforce that we use C++11
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 if(COMPILER_SUPPORTS_CXX11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    add_definitions(-std=c++11)
 elseif(COMPILER_SUPPORTS_CXX0X)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+    add_definitions(-std=c++0x)
 else()
-        message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+    message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
+
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -165,6 +164,8 @@ add_executable(jaco2_calibration_node src/jaco2_calibration_node.cpp)
 add_executable(jaco2_file_calibration_node src/calibrate_from_file.cpp)
 add_executable(jaco2_simulate_calibration src/simulate_data.cpp)
 add_executable(jaco2_rigid_body_regression src/jaco2_rigid_body_regression.cpp)
+add_executable(record_calibration_data src/record_calibration_data.cpp)
+
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -204,6 +205,13 @@ add_dependencies(jaco2_rigid_body_regression ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 
  target_link_libraries(jaco2_rigid_body_regression
+   ${catkin_LIBRARIES}
+   ${CERES_LIBRARIES}
+   ${Boost_LIBRARIES}
+   jaco2_calibration
+)
+
+target_link_libraries(record_calibration_data
    ${catkin_LIBRARIES}
    ${CERES_LIBRARIES}
    ${Boost_LIBRARIES}

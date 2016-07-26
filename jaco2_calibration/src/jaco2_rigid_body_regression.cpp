@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
         Jaco2Calibration::to_eigen(init_param,initial_param);
 
 
+
         // load samples
         std::vector<Jaco2Calibration::DynamicCalibrationSample> samples_org;
         Jaco2Calibration::importAsciiDataWithGravity(input,samples_org);
@@ -63,13 +64,19 @@ int main(int argc, char *argv[])
         for(Jaco2Calibration::DynamicCalibrationSample sample : samples_org) {
 //            if(sample.jointPos.size() == 6 /*&& samples.size() < 300*/) {
 //                double vel_sum = 0;
-//                for( auto vel : sample.jointVel) {
+//                for( auto vel : sample.jointAcc) {
 //                    vel_sum += vel;
 //                }
-//                if(vel_sum > 0.001) {
+//                if(vel_sum < 0.1) {
                     samples.push_back(sample);
 //                }
 //            }
+        }
+        std::vector<Jaco2Calibration::DynamicCalibrationSample> second_samples;
+        Jaco2Calibration::importAsciiDataWithGravity("/tmp/dyn_data_better_results.txt", second_samples);
+
+        for( auto sample : second_samples) {
+            samples.push_back(sample);
         }
 
 
@@ -117,10 +124,14 @@ int main(int argc, char *argv[])
         Eigen::MatrixXd full_matrix;
         Eigen::MatrixXd tau;
         double lambda = 0.05;
-        Eigen::MatrixXd uncertainty_scale = Eigen::MatrixXd::Identity(num_links*samples.size()+num_cols,num_links*samples.size()+num_cols);
-        for(std::size_t n = 0; n < num_links*samples.size(); ++n) {
-            uncertainty_scale(n,n) = 1.0;///0.4/0.4;
-        }
+//        int us_size = num_links*samples.size()+num_cols;
+//        Eigen::MatrixXd uncertainty_scale(us_size, us_size);
+
+//        uncertainty_scale.setZero(us_size, us_size);
+
+//        for(std::size_t n = 0; n < num_links*samples.size(); ++n) {
+//            uncertainty_scale(n,n) = 1.0;///0.4/0.4;
+//        }
         Eigen::MatrixXd scale_init_param = lambda* Eigen::MatrixXd::Identity(num_cols, num_cols);
 
 

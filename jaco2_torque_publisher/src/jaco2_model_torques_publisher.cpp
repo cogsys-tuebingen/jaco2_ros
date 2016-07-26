@@ -33,7 +33,7 @@ public:
         std::vector<Jaco2Calibration::DynamicCalibratedParameters> calibParam;
         Jaco2Calibration::loadDynParm("/tmp/regression_rb_param.txt", calibParam);
         for(Jaco2Calibration::DynamicCalibratedParameters param : calibParam){
-            solver_.changeDynamicParams(param.linkName, param.mass, param.coM, param.inertia);
+            solver_.changeDynamicParams(param.linkName, param.mass, param.coM, 2.3*param.inertia);
         }
 
 
@@ -131,22 +131,22 @@ public:
 
             solver_.getTorques(jointPos_,jointVel_,jointAcc_,modelTorques_);
             jaco2_msgs::JointAngles pubMsg;
-            pubMsg.joint1 = modelTorques_[0];
-            pubMsg.joint2 = modelTorques_[1];
-            pubMsg.joint3 = modelTorques_[2];
-            pubMsg.joint4 = modelTorques_[3];
-            pubMsg.joint5 = modelTorques_[4];
-            pubMsg.joint6 = modelTorques_[5];
+            pubMsg.joint1 = -modelTorques_[0];
+            pubMsg.joint2 = -modelTorques_[1];
+            pubMsg.joint3 = -modelTorques_[2];
+            pubMsg.joint4 = -modelTorques_[3];
+            pubMsg.joint5 = -modelTorques_[4];
+            pubMsg.joint6 = -modelTorques_[5];
             publisher_.publish(pubMsg);
 
             jaco2_msgs::JointAngles diffMsg;
 
-            diffMsg.joint1 = modelTorques_[0] - jointTorques_[0];
-            diffMsg.joint2 = modelTorques_[1] - jointTorques_[1];
-            diffMsg.joint3 = modelTorques_[2] - jointTorques_[2];
-            diffMsg.joint4 = modelTorques_[3] - jointTorques_[3];
-            diffMsg.joint5 = modelTorques_[4] - jointTorques_[4];
-            diffMsg.joint6 = modelTorques_[5] - jointTorques_[5];
+            diffMsg.joint1 = modelTorques_[0] + jointTorques_[0];
+            diffMsg.joint2 = modelTorques_[1] + jointTorques_[1];
+            diffMsg.joint3 = modelTorques_[2] + jointTorques_[2];
+            diffMsg.joint4 = modelTorques_[3] + jointTorques_[3];
+            diffMsg.joint5 = modelTorques_[4] + jointTorques_[4];
+            diffMsg.joint6 = modelTorques_[5] + jointTorques_[5];
             diffPublisher_.publish(diffMsg);
             counter_ = (counter_ + 1) % 10;
 
@@ -159,12 +159,13 @@ public:
             for(std::size_t i =0; i < links_.size() -1; ++i) { // accelerometer 1 to 5 is published
 
                 KDL::Twist a = staticAccTrans_[i+1].frame.Inverse() * spatial_accs[i]/9.81; //staticAccTrans_ contains accelerometers 0 to 5;
+//                KDL::Twist a = staticAccTrans_[i+1].frame * spatial_accs[i]/9.81;
                 geometry_msgs::Vector3Stamped vs;
                 vs.header.frame_id = frameNames_[i+1]; //frameNames_ contains accelerometers 0 to 5;
                 vs.header.stamp = ros::Time::now();
-                vs.vector.x = a.vel(0);
-                vs.vector.y = a.vel(1);
-                vs.vector.z = a.vel(2);
+                vs.vector.x = a.vel(0) - acceleration_[i+1](0);
+                vs.vector.y = a.vel(1)- acceleration_[i+1](1);;
+                vs.vector.z = a.vel(2)- acceleration_[i+1](2);;
                 modelAccs.lin_acc.push_back(vs);
             }
 
@@ -211,7 +212,7 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "pub_jaco2_model_torques");
     //    ros::NodeHandle node("~");
     Jaco2TorquePublisher jacomodel("robot_description","jaco_link_base","jaco_link_hand");
-    ros::Rate r(40);
+    ros::Rate r(60);
     while(ros::ok()){
         ros::spinOnce();
         jacomodel.tick();

@@ -16,7 +16,7 @@ struct DynamicCalibrationSample
 
     void set(std::size_t index, double pos, double vel, double acc, double torque)
     {
-        if(index > -1 && index < length){
+        if(index < length){
             jointPos[index] = pos;
             jointVel[index] = vel;
             jointAcc[index] = acc;
@@ -45,7 +45,7 @@ struct DynamicCalibrationSample
 
     std::vector<double> getValues(std::size_t index)
     {
-        if(index > -1 && index < length){
+        if(index < length){
             std::vector<double> result = {jointPos[index], jointVel[index], jointAcc[index], jointTorque[index]};
             return result;
         }

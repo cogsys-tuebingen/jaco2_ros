@@ -316,7 +316,7 @@ TEST(Jaco2KinematicsDynamicsModelTest, getRigidBodyRegressionMatrix)
     std::vector<double> qDotDot = {0.0, 0, 0, 0, 0.0, 0.0};
     std::vector<double> torque;
 
-    int num_stat_tests = 10;
+    int num_stat_tests = 100;
     double accuracy = 1e-9;
 
     Eigen::Matrix<double, 1, 10> matrix;

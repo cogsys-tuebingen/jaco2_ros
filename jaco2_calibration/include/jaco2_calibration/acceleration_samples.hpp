@@ -25,13 +25,13 @@ struct AccelerationData {
         vector[2] = z;
     }
 
-    AccelerationData& operator=(const AccelerationData& other)
-    {
-        this->time = other.time;
-        this->vector[0] = other.vector[0];
-        this->vector[1] = other.vector[1];
-        this->vector[2] = other.vector[2];
-    }
+//    AccelerationData& operator=(const AccelerationData& other)
+//    {
+//        this->time = other.time;
+//        this->vector[0] = other.vector[0];
+//        this->vector[1] = other.vector[1];
+//        this->vector[2] = other.vector[2];
+//    }
 
     std::string toString(const std::string delimiter = std::string(";"))
     {
@@ -56,7 +56,7 @@ struct AccelerationData {
         return res;
     }
 
-    const int dataLength = 3;
+    const std::size_t dataLength = 3;
     double time;
     double vector[3];
 };
