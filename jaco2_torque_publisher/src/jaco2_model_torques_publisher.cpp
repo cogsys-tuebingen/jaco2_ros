@@ -33,7 +33,7 @@ public:
         std::vector<Jaco2Calibration::DynamicCalibratedParameters> calibParam;
         Jaco2Calibration::loadDynParm("/tmp/regression_rb_param.txt", calibParam);
         for(Jaco2Calibration::DynamicCalibratedParameters param : calibParam){
-            solver_.changeDynamicParams(param.linkName, param.mass, param.coM, 2.3*param.inertia);
+            solver_.changeDynamicParams(param.linkName, param.mass, param.coM, param.inertia);
         }
 
 
