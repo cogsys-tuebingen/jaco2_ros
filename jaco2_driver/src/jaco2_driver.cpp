@@ -177,7 +177,7 @@ void Jaco2Driver::tick()
 {
     if(active_controller_ && !paused_) {
         active_controller_->read();
-        usleep(4000);
+//        usleep(2000);
         if(active_controller_)
         {
             active_controller_->execute();

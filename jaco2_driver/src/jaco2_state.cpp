@@ -103,14 +103,19 @@ void Jaco2State::readPosVelCur()
 void Jaco2State::read()
 {
     if(readCmd_ < priortyThreshold_) {
-        read(highPriority_[readCmdHighPri_]);
-        std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-        readCmdHighPri_ = (readCmdHighPri_ + 1) % highPriority_.size();
+        for(int toread : highPriority_){
+            read(toread);
+        }
+//        std::unique_lock<std::recursive_mutex> lock(data_mutex_);
+//        readCmdHighPri_ = (readCmdHighPri_ + 1) % highPriority_.size();
     }
     else {
-        read(lowPriority_[readCmdLowPri_]);
-        std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-        readCmdLowPri_ =  (readCmdLowPri_ + 1) % lowPriority_.size();
+        for(int toread : lowPriority_){
+            read(toread);
+        }
+//        read(lowPriority_[readCmdLowPri_]);
+//        std::unique_lock<std::recursive_mutex> lock(data_mutex_);
+//        readCmdLowPri_ =  (readCmdLowPri_ + 1) % lowPriority_.size();
     }
 
     readCmd_ = (readCmd_ + 1) % (priortyRate_);
