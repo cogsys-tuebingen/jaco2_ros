@@ -72,12 +72,12 @@ int main(int argc, char *argv[])
 //                }
 //            }
         }
-        std::vector<Jaco2Calibration::DynamicCalibrationSample> second_samples;
-        Jaco2Calibration::importAsciiDataWithGravity("/tmp/dyn_data_better_results.txt", second_samples);
+//        std::vector<Jaco2Calibration::DynamicCalibrationSample> second_samples;
+//        Jaco2Calibration::importAsciiDataWithGravity("/tmp/dyn_data_better_results.txt", second_samples);
 
-        for( auto sample : second_samples) {
-            samples.push_back(sample);
-        }
+//        for( auto sample : second_samples) {
+//            samples.push_back(sample);
+//        }
 
 
 
@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
 
         Eigen::MatrixXd tau_param = full_matrix * param;
 
-        Eigen::MatrixXd diff = tau_param - tau;
+        Eigen::MatrixXd diff = tau_param + tau;
 
         double mean_diff = diff.array().abs().mean();
 
@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
         //        double mean_diff = diff.array().abs().mean();
 
 
-        Eigen::MatrixXd intitial_diff = full_matrix *initial_param - tau;
+        Eigen::MatrixXd intitial_diff = full_matrix *initial_param + tau;
         std::cout << "mean per diff per joint: \n " << jointMeanfromList(diff, samples.size(), num_links) << std::endl;
         std::cout << "mean per diff per joint initial param: \n " << jointMeanfromList(intitial_diff, samples.size(), num_links) << std::endl;
 

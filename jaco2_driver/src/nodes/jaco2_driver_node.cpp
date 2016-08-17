@@ -534,7 +534,7 @@ int main(int argc, char *argv[])
     signal(SIGINT, siginthandler);
 
     Jaco2DriverNode node;
-    ros::Rate r(80);
+    ros::Rate r(65);
 
     while(ros::ok())
     {

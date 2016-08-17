@@ -187,7 +187,7 @@ void Jaco2Driver::tick()
     else
     {
         empty_controller_.read();
-        usleep(5000);
+//        usleep(5000);
     }
 
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
