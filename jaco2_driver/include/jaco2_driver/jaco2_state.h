@@ -5,6 +5,8 @@
 #include <kinova/KinovaTypes.h>
 #include <jaco2_driver/accelerometer_calibration.hpp>
 
+#include <deque>
+
 enum ReadData
 {
     READ_POSITION = 0,
@@ -124,8 +126,8 @@ private:
     std::chrono::time_point<std::chrono::high_resolution_clock> time_sensor_info_;
     std::vector<Jaco2Calibration::AccelerometerCalibrationParam> accCalibParam_;
     std::vector<bool> calibrate_acc_;
-    AngularPosition lastVelocity_[2];
-    double dt_[2];
+    std::deque<AngularPosition> lastVelocity_;
+    std::deque<double> dt_;
     int acc_counter_;
 
    private:
