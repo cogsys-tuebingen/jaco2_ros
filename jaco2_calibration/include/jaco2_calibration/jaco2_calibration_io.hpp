@@ -13,7 +13,7 @@
 
 namespace Jaco2Calibration{
 
-void save(std::string name, const std::vector<DynamicCalibratedParameters>& params)
+inline void save(std::string name, const std::vector<DynamicCalibratedParameters>& params)
 {
     std::ofstream file(name);
     YAML::Emitter yamlEmit(file);
@@ -41,7 +41,7 @@ void save(std::string name, const std::vector<DynamicCalibratedParameters>& para
 }
 
 
-void loadDynParm(std::string filename, std::vector<DynamicCalibratedParameters>& params)
+inline void loadDynParm(std::string filename, std::vector<DynamicCalibratedParameters>& params)
 {
     YAML::Node doc = YAML::LoadFile(filename);
     doc = doc["parameter"];
@@ -72,7 +72,7 @@ void loadDynParm(std::string filename, std::vector<DynamicCalibratedParameters>&
     }
 }
 
-void save(std::string name, std::vector<DynamicCalibrationSample> samples, std::string delimiter = std::string(";"))
+inline void save(std::string name, std::vector<DynamicCalibrationSample> samples, std::string delimiter = std::string(";"))
 {
     std::ofstream file(name);
     //    std::string delimiter(";");
@@ -100,7 +100,7 @@ void save(std::string name, std::vector<DynamicCalibrationSample> samples, std::
     }
 }
 
-void importAsciiData(std::string filename, std::vector<DynamicCalibrationSample>& samples, const char delimiter = ';')
+inline void importAsciiData(std::string filename, std::vector<DynamicCalibrationSample>& samples, const char delimiter = ';')
 {
     samples.clear();
 
@@ -153,7 +153,7 @@ void importAsciiData(std::string filename, std::vector<DynamicCalibrationSample>
     infile.close();
 }
 
-void importAsciiDataWithGravity(std::string filename, std::vector<DynamicCalibrationSample>& samples, const char delimiter = ';')
+inline void importAsciiDataWithGravity(std::string filename, std::vector<DynamicCalibrationSample>& samples, const char delimiter = ';')
 {
     samples.clear();
 
@@ -209,7 +209,7 @@ void importAsciiDataWithGravity(std::string filename, std::vector<DynamicCalibra
     infile.close();
 }
 
-void importAsciiData(std::string filename, AccelerationSamples& samples, const char delimiter = ';')
+inline void importAsciiData(std::string filename, AccelerationSamples& samples, const char delimiter = ';')
 {
     samples.clear();
 
