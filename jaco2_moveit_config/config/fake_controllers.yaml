@@ -1,4 +1,7 @@
+rate: 10 (Hz, used for interpolation controller)
 controller_list:
+  - name: fake_arm_controller
+    type: interpolate
   - name: fake_manipulator_controller
     joints:
       - jaco_joint_1
@@ -15,3 +18,6 @@ controller_list:
       - jaco_joint_finger_tip_2
       - jaco_joint_finger_3
       - jaco_joint_finger_tip_3
+initial:
+  - group: manipulator
+    pose:  home
