@@ -1,0 +1,10 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: jaco2_description
+    relative_path: robots/standalone_arm.urdf.xacro
+  SRDF:
+    relative_path: config/jaco.srdf
+  CONFIG:
+    author_name: Adrian Zwiener
+    author_email: adrian.zwiener@uni-tuebingen.de
+    generated_timestamp: 1472761784
