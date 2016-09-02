@@ -6,11 +6,14 @@
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit_msgs/DisplayTrajectory.h>
+#include <actionlib/client/simple_action_client.h>
+#include <actionlib/client/terminal_state.h>
 
 #include <jaco2_msgs/Jaco2Sensor.h>
 //#include <jaco2_msgs/CalibAcc.h>
 #include <jaco2_msgs/JointVelocity.h>
 #include <jaco2_msgs/Jaco2JointState.h>
+#include <jaco2_msgs/ArmJointAnglesAction.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <jaco2_calibration/jaco2_calibration.h>
 #include <jaco2_calibration/dynamic_calibration_sample.hpp>
@@ -38,60 +41,53 @@ int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "jaco2_creat_calib_data_node");
     ros::NodeHandle private_nh_("~");
-    ros::Rate r(50);
+//    ros::Rate r(50);
     //    boost::function<void(const jaco2_msgs::Jaco2JointStateConstPtr&)> cb = boost::bind(&jointStateCb, this _1);
     ros::Subscriber subJointState_ = private_nh_.subscribe("/jaco_arm_driver/out/joint_state_acc", 10, cb);
     ros::Publisher pubJointVel = private_nh_.advertise<jaco2_msgs::JointVelocity>("/jaco_arm_driver/in/joint_velocity",2);
+    actionlib::SimpleActionClient<jaco2_msgs::ArmJointAnglesAction> ac("/jaco_arm_driver/arm_joint_angles", true);
 
-    ros::Rate r2(65);
+    ac.waitForServer();
+    ros::AsyncSpinner r(65);
+    r.start();
 
-    while (ros::ok()) {
+//    while (ros::ok()) {
 
 
         ros::spinOnce();
         if(recieved_data_){
             double pos0 = samples_.back().jointPos[0];
-            double pos5 = samples_.back().jointPos[5];
-            bool reachedGoal = false;
-            double p1 = 1.5;
-            while(!reachedGoal){
-                jaco2_msgs::JointVelocity v_msg;
-                v_msg.joint1 = p1*(2*M_PI+pos0 -samples_.back().jointPos[0]);
-                v_msg.joint2 = 0;
-                v_msg.joint3 = 0;
-                v_msg.joint4 = 0;
-                v_msg.joint5 = 0;
-                v_msg.joint6 = 10;
 
-                pubJointVel.publish(v_msg);
-                ros::spinOnce();
-                reachedGoal = fabs(samples_.back().jointPos[0] - pos0 - 2*M_PI) < 0.01;
-                r2.sleep();
-            }
-            ros::spinOnce();
-            double p5 = 1.5;
-            reachedGoal = false;
-            while(!reachedGoal){
-                jaco2_msgs::JointVelocity v_msg;
-                v_msg.joint1 = p1*(pos0 -samples_.back().jointPos[0]);
-                v_msg.joint2 = 0;
-                v_msg.joint3 = 0;
-                v_msg.joint4 = 0;
-                v_msg.joint5 = 0;
-                v_msg.joint6 = p5*(pos5 - samples_.back().jointPos[5]);
+            jaco2_msgs::ArmJointAnglesGoal goal;
 
-                pubJointVel.publish(v_msg);
-                ros::spinOnce();
-                reachedGoal = fabs(samples_.back().jointPos[0] - pos0) < 0.01;
-                r2.sleep();
-            }
-            if(reachedGoal)
-            {
-                return 0;
-            }
-        }
+            goal.angles.joint1 = pos0 + 2*M_PI;
+            goal.angles.joint2 = samples_.back().jointPos[1];
+            goal.angles.joint3 = samples_.back().jointPos[2];
+            goal.angles.joint4 = samples_.back().jointPos[3];
+            goal.angles.joint5 = samples_.back().jointPos[4];
+            goal.angles.joint6 = samples_.back().jointPos[5];
 
-        r.sleep();
+            ac.sendGoal(goal);
+
+            bool finished = ac.waitForResult(ros::Duration(20));
+
+            jaco2_msgs::ArmJointAnglesGoal goal1;
+
+            goal1.angles.joint1 = pos0;
+            goal1.angles.joint2 = goal.angles.joint2;
+            goal1.angles.joint3 = goal.angles.joint3;
+            goal1.angles.joint4 = goal.angles.joint4;
+            goal1.angles.joint5 = goal.angles.joint5;
+            goal1.angles.joint6 = goal.angles.joint6;
+
+            ac.sendGoal(goal1);
+
+            finished = ac.waitForResult(ros::Duration(20));
+
+
+//        }
+
+//        r.sleep();
 
     }
     return 0;

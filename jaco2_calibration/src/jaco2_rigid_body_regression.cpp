@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
 
         Eigen::MatrixXd tau_param = full_matrix * param;
 
-        Eigen::MatrixXd diff = tau_param + tau;
+        Eigen::MatrixXd diff = tau_param - tau;
 
         double mean_diff = diff.array().abs().mean();
 
