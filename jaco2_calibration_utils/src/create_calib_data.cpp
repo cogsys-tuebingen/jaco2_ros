@@ -16,9 +16,9 @@
 #include <jaco2_msgs/ArmJointAnglesAction.h>
 #include <geometry_msgs/Vector3Stamped.h>
 
-#include <jaco2_calibration/dynamic_calibration_sample.hpp>
-#include <jaco2_calibration/acceleration_samples.hpp>
-#include <jaco2_calibration/jaco2_calibration_io.hpp>
+#include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
+#include <jaco2_calibration_utils/acceleration_samples.hpp>
+#include <jaco2_calibration_utils/jaco2_calibration_io.h>
 
 std::vector<Jaco2Calibration::DynamicCalibrationSample> samples_;
 bool recieved_data_ = false;

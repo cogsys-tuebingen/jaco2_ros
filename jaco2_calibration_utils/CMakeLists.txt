@@ -45,7 +45,7 @@ find_package(Boost REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES jaco2_calibration
+  LIBRARIES jaco2_calibration_utils
   CATKIN_DEPENDS jaco2_driver jaco2_kin_dyn_lib jaco2_msgs roscpp sensor_msgs tf
   DEPENDS system_lib
 )
@@ -67,8 +67,9 @@ include_directories(
 add_library(jaco2_calibration_utils
     include/jaco2_calibration_utils/dynamic_calibration_sample.hpp
     include/jaco2_calibration_utils/acceleration_samples.hpp
-    include/jaco2_calibration_utils/jaco2_calibration_io.hpp
     include/jaco2_calibration_utils/dynamic_calibrated_parameters.hpp
+    src/jaco2_calibration_io.cpp
+    ${ALL_HEADERS}
 )
 
 add_executable(jaco2_create_calib_data_node src/create_calib_data.cpp)
@@ -78,8 +79,8 @@ add_executable(record_calibration_data src/record_calibration_data.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(jaco2_calibration_utils ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(jaco2_rigid_body_regression ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
-add_dependencies(jaco2_create_calib_data_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
+add_dependencies(jaco2_rigid_body_regression ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration_utils)
+add_dependencies(jaco2_create_calib_data_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration_utils)
 ## Specify libraries to link a library or executable target against
 
 target_link_libraries(jaco2_calibration_utils
@@ -91,23 +92,23 @@ target_link_libraries(jaco2_calibration_utils
 
 
  target_link_libraries(jaco2_rigid_body_regression
-   jaco2_calibration_utils
    ${catkin_LIBRARIES}
    ${Boost_LIBRARIES}
+   jaco2_calibration_utils
 )
 
 
 
 target_link_libraries(jaco2_create_calib_data_node
-   jaco2_calibration_utils
    ${catkin_LIBRARIES}
    ${Boost_LIBRARIES}
+   jaco2_calibration_utils
 )
 
 target_link_libraries(record_calibration_data
-   jaco2_calibration_utils
    ${catkin_LIBRARIES}
    ${Boost_LIBRARIES}
+   jaco2_calibration_utils
 )
 
 #############

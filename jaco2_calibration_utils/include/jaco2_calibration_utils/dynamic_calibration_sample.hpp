@@ -1,7 +1,8 @@
 #ifndef DYNAMIC_CALIBRATION_SAMPLE_HPP
 #define DYNAMIC_CALIBRATION_SAMPLE_HPP
 #include <vector>
-#include <ceres/ceres.h>
+#include <Eigen/Core>
+//#include <ceres/ceres.h>
 namespace Jaco2Calibration {
 
 struct DynamicCalibrationSample

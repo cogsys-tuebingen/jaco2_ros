@@ -13,9 +13,9 @@
 #include <jaco2_msgs/JointAngles.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <jaco2_calibration/jaco2_calibration.h>
-#include <jaco2_calibration/dynamic_calibration_sample.hpp>
-#include <jaco2_calibration/acceleration_samples.hpp>
-#include <jaco2_calibration/jaco2_calibration_io.hpp>
+#include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
+#include <jaco2_calibration_utils/acceleration_samples.hpp>
+#include <jaco2_calibration_utils/jaco2_calibration_io.h>
 
 
 class SimCalibNode
@@ -211,13 +211,13 @@ public:
 
             }
             else{
-                Jaco2Calibration::save("/tmp/dyn_samples_sim.txt", samples_);
+                Jaco2Calibration::Jaco2CalibrationIO::save("/tmp/dyn_samples_sim.txt", samples_);
                 int ec = calibration_.calibrateCoMandInertia(samples_);
                 std::vector<Jaco2Calibration::DynamicCalibratedParameters> dynparams;
                 if(ec > -1){
                     dynparams = calibration_.getDynamicCalibration();
                 }
-                Jaco2Calibration::save("/tmp/sim_params.txt", dynparams);
+                Jaco2Calibration::Jaco2CalibrationIO::save("/tmp/sim_params.txt", dynparams);
 
             }
         }

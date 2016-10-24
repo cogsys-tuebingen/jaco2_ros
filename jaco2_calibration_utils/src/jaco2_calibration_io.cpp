@@ -1,19 +1,10 @@
-#ifndef JACO2_CALIBRATION_IO_HPP
-#define JACO2_CALIBRATION_IO_HPP
-
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <vector>
-#include <jaco2_calibration/dynamic_calibrated_parameters.hpp>
-#include <jaco2_calibration/dynamic_calibration_sample.hpp>
-#include <jaco2_calibration/acceleration_samples.hpp>
+#include <jaco2_calibration_utils/jaco2_calibration_io.h>
 #include <yaml-cpp/yaml.h>
 
-namespace Jaco2Calibration{
+//namespace Jaco2Calibration{
+using namespace Jaco2Calibration;
 
-inline void save(std::string name, const std::vector<DynamicCalibratedParameters>& params)
+void Jaco2CalibrationIO::save(std::string name, const std::vector<DynamicCalibratedParameters>& params)
 {
     std::ofstream file(name);
     YAML::Emitter yamlEmit(file);
@@ -41,7 +32,7 @@ inline void save(std::string name, const std::vector<DynamicCalibratedParameters
 }
 
 
-inline void loadDynParm(std::string filename, std::vector<DynamicCalibratedParameters>& params)
+void Jaco2CalibrationIO::loadDynParm(std::string filename, std::vector<DynamicCalibratedParameters>& params)
 {
     YAML::Node doc = YAML::LoadFile(filename);
     doc = doc["parameter"];
@@ -72,7 +63,7 @@ inline void loadDynParm(std::string filename, std::vector<DynamicCalibratedParam
     }
 }
 
-inline void save(std::string name, std::vector<DynamicCalibrationSample> samples, std::string delimiter = std::string(";"))
+void Jaco2CalibrationIO::save(std::string name, std::vector<DynamicCalibrationSample> samples, std::string delimiter)
 {
     std::ofstream file(name);
     //    std::string delimiter(";");
@@ -100,7 +91,7 @@ inline void save(std::string name, std::vector<DynamicCalibrationSample> samples
     }
 }
 
-inline void importAsciiData(std::string filename, std::vector<DynamicCalibrationSample>& samples, const char delimiter = ';')
+void Jaco2CalibrationIO::importAsciiData(std::string filename, std::vector<DynamicCalibrationSample>& samples, const char delimiter)
 {
     samples.clear();
 
@@ -153,7 +144,7 @@ inline void importAsciiData(std::string filename, std::vector<DynamicCalibration
     infile.close();
 }
 
-inline void importAsciiDataWithGravity(std::string filename, std::vector<DynamicCalibrationSample>& samples, const char delimiter = ';')
+void Jaco2CalibrationIO::importAsciiDataWithGravity(std::string filename, std::vector<DynamicCalibrationSample>& samples, const char delimiter)
 {
     samples.clear();
 
@@ -209,7 +200,7 @@ inline void importAsciiDataWithGravity(std::string filename, std::vector<Dynamic
     infile.close();
 }
 
-inline void importAsciiData(std::string filename, AccelerationSamples& samples, const char delimiter = ';')
+void Jaco2CalibrationIO::importAsciiData(std::string filename, AccelerationSamples& samples, const char delimiter)
 {
     samples.clear();
 
@@ -270,6 +261,6 @@ inline void importAsciiData(std::string filename, AccelerationSamples& samples, 
     infile.close();
 }
 
-}
-#endif // JACO2_CALIBRATION_IO_HPP
+//}
+
 

@@ -4,7 +4,7 @@
 #include <ceres/ceres.h>
 #include <tf/tf.h>
 #include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
-#include <jaco2_calibration/dynamic_calibration_sample.hpp>
+#include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
 
 namespace Jaco2Calibration {
 typedef ceres::Jet<double,9> Vector9d;

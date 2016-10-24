@@ -4,8 +4,8 @@
 #include <Eigen/SVD>
 #include <ros/ros.h>
 #include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
-#include <jaco2_calibration/jaco2_calibration_io.hpp>
-#include <jaco2_calibration/acceleration_samples.hpp>
+#include <jaco2_calibration_utils/jaco2_calibration_io.h>
+#include <jaco2_calibration_utils/acceleration_samples.hpp>
 
 Eigen::MatrixXd jointMeanfromList(Eigen::MatrixXd list, int sample_size, int num_joints)
 {
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 
         // load samples
         std::vector<Jaco2Calibration::DynamicCalibrationSample> samples_org;
-        Jaco2Calibration::importAsciiDataWithGravity(input,samples_org);
+        Jaco2Calibration::Jaco2CalibrationIO::importAsciiDataWithGravity(input, samples_org);
         std::vector<Jaco2Calibration::DynamicCalibrationSample> samples;
 
 
@@ -225,8 +225,8 @@ int main(int argc, char *argv[])
         {
             Jaco2Calibration::Jaco2ManipulatorDynParams params;
             Jaco2Calibration::to_Jaco2ManipulatorDynParams(mean_param, model.getLinkNames(),params);
-            Jaco2Calibration::save(output,params);
-            Jaco2Calibration::save("/tmp/cad_params.txt",init_param);
+            Jaco2Calibration::Jaco2CalibrationIO::save(output,params);
+            Jaco2Calibration::Jaco2CalibrationIO::save("/tmp/cad_params.txt",init_param);
         }
 
         return 0;

@@ -7,7 +7,7 @@
 #include <jaco2_kin_dyn_lib/yaml_to_kdl_tranform.h>
 #include <jaco2_msgs/JointAngles.h>
 #include <jaco2_msgs/Jaco2Sensor.h>
-#include <jaco2_calibration/jaco2_calibration_io.hpp> 
+#include <jaco2_calibration_utils/jaco2_calibration_io.h>
 #include <tf/transform_listener.h>
 //#include <jaco2_msgs/Jaco2Acc.h>
 #include <jaco2_msgs/Jaco2Accelerometers.h>
@@ -31,7 +31,7 @@ public:
         accPublisher_ = private_nh_.advertise<jaco2_msgs::Jaco2Accelerometers>("model_acc",2);        lastTime_ = ros::Time::now();
 
         std::vector<Jaco2Calibration::DynamicCalibratedParameters> calibParam;
-        Jaco2Calibration::loadDynParm("/tmp/regression_rb_param.txt", calibParam);
+        Jaco2Calibration::Jaco2CalibrationIO::loadDynParm("/tmp/regression_rb_param.txt", calibParam);
         for(Jaco2Calibration::DynamicCalibratedParameters param : calibParam){
             solver_.changeDynamicParams(param.linkName, param.mass, param.coM, param.inertia);
         }

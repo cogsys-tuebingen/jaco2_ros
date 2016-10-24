@@ -37,6 +37,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
 find_package(Ceres QUIET)
+find_package(imu_tk QUIET)
 find_package(Boost REQUIRED)
 
 ###################################
@@ -71,7 +72,7 @@ include_directories(
 
 
 
-if(${CERES_FOUND})
+if(${CERES_FOUND} AND ${imu_tk_FOUND})
 
     add_library(jaco2_calibration
         include/jaco2_calibration/com_inertia_residuals.hpp
@@ -116,8 +117,8 @@ if(${CERES_FOUND})
       ${Boost_LIBRARIES}
       jaco2_calibration
     )
-
-
+else(${CERES_FOUND} AND ${imu_tk_FOUND})
+    message("Optional package jaco2_calibration is not going to be build, since ceres and imu_tk is not found.")
 
 endif()
 

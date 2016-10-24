@@ -9,10 +9,10 @@
 //Jaco2 ROS
 #include <jaco2_driver/accelerometer_calibration.hpp>
 #include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
-#include <jaco2_calibration/dynamic_calibration_sample.hpp>
-#include <jaco2_calibration/dynamic_calibration_sample.hpp>
-#include <jaco2_calibration/acceleration_samples.hpp>
-#include <jaco2_calibration/dynamic_calibrated_parameters.hpp>
+#include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
+#include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
+#include <jaco2_calibration_utils/acceleration_samples.hpp>
+#include <jaco2_calibration_utils/dynamic_calibrated_parameters.hpp>
 namespace Jaco2Calibration {
 
 class Jaco2Calibration
