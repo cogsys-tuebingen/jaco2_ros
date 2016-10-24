@@ -43,6 +43,7 @@
   <build_depend>jaco2_driver</build_depend>
   <build_depend>jaco2_kin_dyn_lib</build_depend>
   <build_depend>jaco2_msgs</build_depend>
+  <build_depend>jaco2_calibration_utils</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>tf</build_depend>
@@ -54,6 +55,7 @@
   <run_depend>jaco2_driver</run_depend>
   <run_depend>jaco2_kin_dyn_lib</run_depend>
   <run_depend>jaco2_msgs</run_depend>
+  <run_depend>jaco2_calibration_utils</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>tf</run_depend>

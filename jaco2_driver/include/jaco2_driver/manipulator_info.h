@@ -52,6 +52,7 @@ public:
         {
             values_[i] = arg.values_[i];
         }
+        return *this;
     }
     ManipulatorInfo operator/(const double &b)
     {
@@ -69,6 +70,7 @@ public:
         {
             values_[i] /= b;
         }
+        return *this;
     }
 
     ManipulatorInfo operator*(const double &b)
@@ -99,6 +101,7 @@ public:
         {
             values_[i] *= b;
         }
+        return *this;
     }
 
     ManipulatorInfo operator+(const ManipulatorInfo &other)

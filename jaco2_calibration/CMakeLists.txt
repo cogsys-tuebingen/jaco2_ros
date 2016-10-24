@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   jaco2_driver
   jaco2_kin_dyn_lib
   jaco2_msgs
+  jaco2_calibration_utils
   roscpp
   sensor_msgs
   tf
@@ -31,86 +32,12 @@ find_package(catkin REQUIRED COMPONENTS
   imu_tk
 )
 
+
+
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
-find_package(Ceres REQUIRED)
+find_package(Ceres QUIET)
 find_package(Boost REQUIRED)
-
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
-
-################################################
-## Declare ROS messages, services and actions ##
-################################################
-
-## To declare and build messages, services or actions from within this
-## package, follow these steps:
-## * Let MSG_DEP_SET be the set of packages whose message types you use in
-##   your messages/services/actions (e.g. std_msgs, actionlib_msgs, ...).
-## * In the file package.xml:
-##   * add a build_depend tag for "message_generation"
-##   * add a build_depend and a run_depend tag for each package in MSG_DEP_SET
-##   * If MSG_DEP_SET isn't empty the following dependency has been pulled in
-##     but can be declared for certainty nonetheless:
-##     * add a run_depend tag for "message_runtime"
-## * In this file (CMakeLists.txt):
-##   * add "message_generation" and every package in MSG_DEP_SET to
-##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * add "message_runtime" and every package in MSG_DEP_SET to
-##     catkin_package(CATKIN_DEPENDS ...)
-##   * uncomment the add_*_files sections below as needed
-##     and list every .msg/.srv/.action file to be processed
-##   * uncomment the generate_messages entry below
-##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
-
-## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
-
-## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
-
-## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
-
-## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   jaco2_msgs#   sensor_msgs
-# )
-
-################################################
-## Declare ROS dynamic reconfigure parameters ##
-################################################
-
-## To declare and build dynamic reconfigure parameters within this
-## package, follow these steps:
-## * In the file package.xml:
-##   * add a build_depend and a run_depend tag for "dynamic_reconfigure"
-## * In this file (CMakeLists.txt):
-##   * add "dynamic_reconfigure" to
-##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * uncomment the "generate_dynamic_reconfigure_options" section below
-##     and list every .cfg file to be processed
-
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
 
 ###################################
 ## catkin specific configuration ##
@@ -124,7 +51,7 @@ find_package(Boost REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES jaco2_calibration
-  CATKIN_DEPENDS jaco2_driver jaco2_kin_dyn_lib jaco2_msgs roscpp sensor_msgs tf
+  CATKIN_DEPENDS jaco2_driver jaco2_kin_dyn_lib jaco2_msgs jaco2_calibration_utils roscpp sensor_msgs tf
   DEPENDS system_lib
 )
 
@@ -142,90 +69,59 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
-add_library(jaco2_calibration
-    include/jaco2_calibration/com_inertia_residuals.hpp
-    include/jaco2_calibration/dynamic_calibration_sample.hpp
-    include/jaco2_calibration/acceleration_samples.hpp
-    include/jaco2_calibration/jaco2_calibration.h
-    include/jaco2_calibration/jaco2_calibration_io.hpp
-    include/jaco2_calibration/dynamic_calibrated_parameters.hpp
-    include/jaco2_calibration/manipulator_dynamic_residuals.hpp
-    src/jaco2_calibration.cpp
-)
-
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-add_dependencies(jaco2_calibration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-## Declare a C++ executable
-add_executable(jaco2_calibration_node src/jaco2_calibration_node.cpp)
-add_executable(jaco2_file_calibration_node src/calibrate_from_file.cpp)
-add_executable(jaco2_simulate_calibration src/simulate_data.cpp)
-add_executable(jaco2_rigid_body_regression src/jaco2_rigid_body_regression.cpp)
-add_executable(record_calibration_data src/record_calibration_data.cpp)
-add_executable(jaco2_create_calib_data_node src/create_calib_data.cpp)
 
 
+if(${CERES_FOUND})
 
-## Add cmake target dependencies of the executable
-## same as for the library above
-add_dependencies(jaco2_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
+    add_library(jaco2_calibration
+        include/jaco2_calibration/com_inertia_residuals.hpp
+        include/jaco2_calibration/manipulator_dynamic_residuals.hpp
+        src/jaco2_calibration.cpp
+    )
 
-add_dependencies(jaco2_file_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
-add_dependencies(jaco2_simulate_calibration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
-add_dependencies(jaco2_rigid_body_regression ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
-add_dependencies(jaco2_create_calib_data_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
-## Specify libraries to link a library or executable target against
- target_link_libraries(jaco2_calibration
-   ${catkin_LIBRARIES}
-   ${CERES_LIBRARIES}
-   ${Boost_LIBRARIES}
-   yaml-cpp
-)
+    add_executable(jaco2_calibration_node src/jaco2_calibration_node.cpp)
+    add_executable(jaco2_file_calibration_node src/calibrate_from_file.cpp)
+    add_executable(jaco2_simulate_calibration src/simulate_data.cpp)
 
- target_link_libraries(jaco2_calibration_node
-   ${catkin_LIBRARIES}
-   ${CERES_LIBRARIES}
-   ${Boost_LIBRARIES}
-   jaco2_calibration
-)
 
- target_link_libraries(jaco2_file_calibration_node
-   ${catkin_LIBRARIES}
-   ${CERES_LIBRARIES}
-   ${Boost_LIBRARIES}
-   jaco2_calibration
-)
+    add_dependencies(jaco2_calibration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+    add_dependencies(jaco2_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
+    add_dependencies(jaco2_file_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
+    add_dependencies(jaco2_simulate_calibration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
 
- target_link_libraries(jaco2_simulate_calibration
-   ${catkin_LIBRARIES}
-   ${CERES_LIBRARIES}
-   ${Boost_LIBRARIES}
-   jaco2_calibration
-)
+    target_link_libraries(jaco2_calibration
+      ${catkin_LIBRARIES}
+      ${CERES_LIBRARIES}
+      ${Boost_LIBRARIES}
+      yaml-cpp
+    )
 
- target_link_libraries(jaco2_rigid_body_regression
-   ${catkin_LIBRARIES}
-   ${CERES_LIBRARIES}
-   ${Boost_LIBRARIES}
-   jaco2_calibration
-)
+    target_link_libraries(jaco2_calibration_node
+      ${catkin_LIBRARIES}
+      ${CERES_LIBRARIES}
+      ${Boost_LIBRARIES}
+      jaco2_calibration
+    )
 
-target_link_libraries(record_calibration_data
-   ${catkin_LIBRARIES}
-   ${CERES_LIBRARIES}
-   ${Boost_LIBRARIES}
-   jaco2_calibration
-)
+    target_link_libraries(jaco2_file_calibration_node
+      ${catkin_LIBRARIES}
+      ${CERES_LIBRARIES}
+      ${Boost_LIBRARIES}
+      jaco2_calibration
+    )
 
-target_link_libraries(jaco2_create_calib_data_node
-   ${catkin_LIBRARIES}
-   ${CERES_LIBRARIES}
-   ${Boost_LIBRARIES}
-   jaco2_calibration
-)
+    target_link_libraries(jaco2_simulate_calibration
+      ${catkin_LIBRARIES}
+      ${CERES_LIBRARIES}
+      ${Boost_LIBRARIES}
+      jaco2_calibration
+    )
+
+
+
+endif()
+
+
 
 #############
 ## Install ##
