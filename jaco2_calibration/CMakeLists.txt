@@ -29,7 +29,6 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_msgs
   moveit_ros_planning
   moveit_ros_planning_interface
-  imu_tk
 )
 
 
@@ -68,6 +67,7 @@ include_directories(
   ${EIGEN_INCLUDE_DIR}
   ${CERES_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
+  ${imu_tk_INCLUDE_DIRS}
 )
 
 
@@ -94,6 +94,7 @@ if(${CERES_FOUND} AND ${imu_tk_FOUND})
       ${catkin_LIBRARIES}
       ${CERES_LIBRARIES}
       ${Boost_LIBRARIES}
+      ${imu_tk_LIBRARIES}
       yaml-cpp
     )
 
@@ -101,6 +102,7 @@ if(${CERES_FOUND} AND ${imu_tk_FOUND})
       ${catkin_LIBRARIES}
       ${CERES_LIBRARIES}
       ${Boost_LIBRARIES}
+      ${imu_tk_LIBRARIES}
       jaco2_calibration
     )
 
@@ -108,6 +110,7 @@ if(${CERES_FOUND} AND ${imu_tk_FOUND})
       ${catkin_LIBRARIES}
       ${CERES_LIBRARIES}
       ${Boost_LIBRARIES}
+      ${imu_tk_LIBRARIES}
       jaco2_calibration
     )
 
@@ -115,6 +118,7 @@ if(${CERES_FOUND} AND ${imu_tk_FOUND})
       ${catkin_LIBRARIES}
       ${CERES_LIBRARIES}
       ${Boost_LIBRARIES}
+      ${imu_tk_LIBRARIES}
       jaco2_calibration
     )
 else(${CERES_FOUND} AND ${imu_tk_FOUND})
