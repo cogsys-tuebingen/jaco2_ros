@@ -22,6 +22,8 @@ int main(int argc, char *argv[])
     group.setStartStateToCurrentState();
     group.setPlanningTime(5.0);
     group.setNamedTarget("home");
+
+
     moveit_msgs::MoveItErrorCodes success = group.plan(my_plan);
     if(success.val == moveit_msgs::MoveItErrorCodes::SUCCESS) {
         ROS_INFO("Success! Now move");

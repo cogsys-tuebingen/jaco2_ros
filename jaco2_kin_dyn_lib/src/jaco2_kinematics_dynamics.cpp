@@ -306,7 +306,14 @@ int Jaco2KinematicsDynamicsModel::getAcceleration(const double gx, const double 
     return ec;
 
 }
+void Jaco2KinematicsDynamicsModel::getChainDynParam(const double gx, const double gy, const double gz,
+                                                    const std::vector<double> &q,
+                                                    const std::vector<double> &q_Dot,
+                                                    const std::vector<double> &q_DotDot,
+                                                    Eigen::MatrixXd &H, Eigen::VectorXd &C, Eigen::VectorXd &G)
+{
 
+}
 
 void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, const double mass, const Eigen::Vector3d &com, const Eigen::Matrix3d& inertia)
 {

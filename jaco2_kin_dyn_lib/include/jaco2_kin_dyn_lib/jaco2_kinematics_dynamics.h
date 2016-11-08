@@ -135,6 +135,27 @@ public:
     void changeDynamicParams(const std::string& link, const double mass, const Eigen::Vector3d& com, const Eigen::Matrix3d& inertia, double gx, double gy, double gz);
 
     void changeKineticParams(const std::string& link, const Eigen::Vector3d& trans, const Eigen::Matrix3d& rotation);
+    /**
+     * @brief getChainDynParam calculates the matrices H,C and G needed for the inverse dynamics problem. KDL wrapper
+     * @param gx acceleration of the basis frame x-component
+     * @param gy acceleration of the basis frame y-component
+     * @param gz acceleration of the basis frame z-component
+     * @param q joint positions
+     * @param q_Dot joint velocities
+     * @param q_DotDot joint accelerations
+     * @param H interia matrix
+     * @param C coriolis and centripetal forces
+     * @param G influnce of gravitaional forces
+     * Wrapper for KDL::chainDynParam:
+     * Implementation of a method to calculate the matrices H (inertia),C(coriolis) and G(gravitation) for the calculation torques out of the pose and derivatives. (inverse dynamics)
+     * The algorithm implementation for H is based on the book "Rigid Body Dynamics Algorithms" of Roy Featherstone, 2008 (ISBN:978-0-387-74314-1) See page 107 for the pseudo-code. This algorithm is extended for the use of fixed joints
+     * It calculates the joint-space inertia matrix, given the motion of the joints (q,qdot,qdotdot), external forces on the segments (expressed in the segments reference frame) and the dynamical parameters of the segments.
+     */
+    void getChainDynParam(const double gx, const double gy, const double gz,
+                          const std::vector<double>& q,
+                          const std::vector<double>& q_Dot,
+                          const std::vector<double>& q_DotDot,
+                          Eigen::MatrixXd& H, Eigen::VectorXd& C, Eigen::VectorXd& G);
 
     void useUrdfDynamicParams();
     void getRandomConfig(std::vector<double>& config);

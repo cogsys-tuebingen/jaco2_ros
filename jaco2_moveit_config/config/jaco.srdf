@@ -9,6 +9,9 @@
     <!--JOINTS: When a joint is specified, the child link of that joint (which will always exist) is automatically included-->
     <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
     <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
+    <group name="base_group">
+        <link name="root" />
+    </group>
     <group name="manipulator">
         <link name="jaco_link_1" />
         <link name="jaco_link_2" />
@@ -41,6 +44,8 @@
         <joint name="jaco_joint_5" value="1.4448" />
         <joint name="jaco_joint_6" value="1.3206" />
     </group_state>
+    <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
+    <end_effector name="eef_g" parent_link="root" group="manipulator" parent_group="base_group" />
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <virtual_joint name="world_joint" type="fixed" parent_frame="odom" child_link="root" />
     <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
