@@ -1,5 +1,8 @@
 rate: 10 (Hz, used for interpolation controller)
 controller_list:
+  - name: fake_base_group_controller
+    joints:
+      []
   - name: fake_manipulator_controller
     type: interpolate
     joints:
@@ -16,6 +19,18 @@ controller_list:
       - jaco_joint_finger_tip_1
       - jaco_joint_finger_2
       - jaco_joint_finger_tip_2
+      - jaco_joint_finger_3
+      - jaco_joint_finger_tip_3
+  - name: fake_finger1_controller
+    joints:
+      - jaco_joint_finger_1
+      - jaco_joint_finger_tip_1
+  - name: fake_finger2_controller
+    joints:
+      - jaco_joint_finger_2
+      - jaco_joint_finger_tip_2
+  - name: fake_finger3_controller
+    joints:
       - jaco_joint_finger_3
       - jaco_joint_finger_tip_3
 initial:

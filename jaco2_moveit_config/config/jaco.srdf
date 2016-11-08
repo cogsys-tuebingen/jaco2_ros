@@ -9,9 +9,6 @@
     <!--JOINTS: When a joint is specified, the child link of that joint (which will always exist) is automatically included-->
     <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
     <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
-    <group name="base_group">
-        <link name="root" />
-    </group>
     <group name="manipulator">
         <link name="jaco_link_1" />
         <link name="jaco_link_2" />
@@ -34,6 +31,24 @@
         <joint name="jaco_joint_finger_tip_1" />
         <joint name="jaco_joint_finger_tip_2" />
         <joint name="jaco_joint_finger_tip_3" />
+        <group name="finger1" />
+        <group name="finger2" />
+        <group name="finger3" />
+    </group>
+    <group name="finger1">
+        <joint name="jaco_joint_finger_1" />
+        <joint name="jaco_joint_finger_tip_1" />
+        <chain base_link="jaco_link_finger_1" tip_link="jaco_link_finger_tip_1" />
+    </group>
+    <group name="finger2">
+        <joint name="jaco_joint_finger_tip_2" />
+        <joint name="jaco_joint_finger_2" />
+        <chain base_link="jaco_link_finger_2" tip_link="jaco_link_finger_tip_2" />
+    </group>
+    <group name="finger3">
+        <joint name="jaco_joint_finger_3" />
+        <joint name="jaco_joint_finger_tip_3" />
+        <chain base_link="jaco_link_finger_3" tip_link="jaco_link_finger_tip_3" />
     </group>
     <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
     <group_state name="home" group="manipulator">
@@ -45,7 +60,7 @@
         <joint name="jaco_joint_6" value="1.3206" />
     </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
-    <end_effector name="eef_g" parent_link="root" group="manipulator" parent_group="base_group" />
+    <end_effector name="eef_g" parent_link="jaco_link_hand" group="gripper" parent_group="manipulator" />
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <virtual_joint name="world_joint" type="fixed" parent_frame="odom" child_link="root" />
     <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
