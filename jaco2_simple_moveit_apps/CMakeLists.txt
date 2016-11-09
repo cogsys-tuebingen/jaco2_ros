@@ -1,6 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jaco2_simple_moveit_apps)
 
+## Enforce that we use C++11
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+if(COMPILER_SUPPORTS_CXX11)
+    add_definitions(-std=c++11)
+elseif(COMPILER_SUPPORTS_CXX0X)
+    add_definitions(-std=c++0x)
+else()
+    message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+endif()
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -131,13 +143,18 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(home_arm src/home_arm.cpp)
+add_executable(move_to_new_rand_configuration src/move_to_new_rand_conf.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(home_arm ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(move_to_new_rand_configuration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(home_arm
+   ${catkin_LIBRARIES}
+)
+target_link_libraries(move_to_new_rand_configuration
    ${catkin_LIBRARIES}
 )
 
