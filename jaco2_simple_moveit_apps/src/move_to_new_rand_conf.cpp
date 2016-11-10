@@ -72,7 +72,7 @@ struct ConfigurationList{
         }
     }
 
-    void load(std::string filename)
+    bool load(std::string filename)
     {
 
 
@@ -113,10 +113,15 @@ struct ConfigurationList{
                 configurations.push_back(cfg);
 
             }
+            infile.close();
+            n_joints_ = jointNames.size();
+            return true;
         }
-        infile.close();
+        else{
+            return false;
+        }
 
-        n_joints_ = jointNames.size();
+
     }
 
     std::size_t n_joints_;
@@ -132,7 +137,6 @@ public:
     {
         planningMonitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>(description);
         jointNames_ =  planningMonitor_->getRobotModel()->getJointModelGroup("manipulator")->getActiveJointModelNames();
-        planningMonitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
 
         group_.setPlannerId(planner);
         group_.setStartStateToCurrentState();
@@ -150,10 +154,17 @@ public:
 
     bool loadConfigurations(std::string file)
     {
-        configurations_.load(file);
+        bool res;
+        bool loaded = configurations_.load(file);
+        if(loaded){
+            return configurations_.jointNames.size() == jointNames_.size();
+        }
+        else{
 
-        bool res = configurations_.jointNames == jointNames_;
-        return res;
+            configurations_.n_joints_ = jointNames_.size();
+            configurations_.jointNames = jointNames_;
+        }
+        return loaded;
     }
 
     void save(std::string file)
@@ -171,7 +182,7 @@ public:
         return configurations_.configurations.back();
     }
 
-    void move2NewConf()
+    bool move2NewConf()
     {
         bool collision = false;
         bool succeded = false;
@@ -184,6 +195,8 @@ public:
 //            std::vector<double> jvalues(configurations_.n_joints_);
 //            rand.angles = group_.getRandomJointValues();
             rand.angles.resize(configurations_.n_joints_);
+
+//            planningMonitor_->updatesScene();
             robot_state::RobotState& random_state = planningMonitor_->getPlanningScene()->getCurrentStateNonConst();
 
             random_state.setToRandomPositions();
@@ -206,11 +219,11 @@ public:
                 moveit::planning_interface::MoveGroup::Plan my_plan;
                 group_.setJointValueTarget(rand.angles);
                 group_.setStartStateToCurrentState();
-                group_.setPlanningTime(1.0);
+                group_.setPlanningTime(3.0);
                 moveit_msgs::MoveItErrorCodes success = group_.plan(my_plan);
 
-                //                    std::cout << "Test 4: Planning successfull:  "
-                //                              << "error code: " << success.val << std::endl;
+//                std::cout << "Test 4: Planning successfull:  "
+//                          << "error code: " << success.val << std::endl;
                 if(success.val == moveit_msgs::MoveItErrorCodes::SUCCESS) {
                     success = group_.execute(my_plan);
 //                    success = group_.move();
@@ -219,7 +232,7 @@ public:
                     configurations_.configurations.push_back(rand);
                 }
                 if(success.val != moveit_msgs::MoveItErrorCodes::SUCCESS) {
-                    succeded = true;
+                    succeded = false;
                 }
             }
             ++iteration;
@@ -239,7 +252,6 @@ public:
         collision_detection::CollisionRequest collision_request;
         collision_detection::CollisionResult collision_result;
         collision_detection::AllowedCollisionMatrix acm = scene->getAllowedCollisionMatrix();
-
 
         collision_request.group_name = group_.getName();
         collision_result.clear();
@@ -353,7 +365,13 @@ public:
 
         collision_objects.push_back(collision_object);
         planning_scene_interface_.addCollisionObjects(collision_objects);
-        group_.attachObject("ground_plan","root");
+//        bool suc =  group_.attachObject("ground_plan","root");
+//        std::cout << suc << std::endl;
+    }
+
+    std::size_t getConfigurationSize()
+    {
+        return configurations_.configurations.size();
     }
 
 private:
@@ -376,7 +394,8 @@ bool newConfCb(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse & res)
     planner->move2NewConf();
 
     res.success = true;
-    res.message = planner->getLastConfiguration().to_string();
+    if(planner->getConfigurationSize() > 0)
+        res.message = planner->getLastConfiguration().to_string();
     return true;
 }
 
@@ -396,7 +415,7 @@ void mySigintHandler(int sig)
 
 int main(int argc, char *argv[])
 {
-    ros::init (argc, argv, "move_to_new_rand_conf");
+    ros::init (argc, argv, "jaco_2_random_sampling");
     ros::NodeHandle node_handle("~");
 
     node_handle.param("configuration_list", conf_list, conf_list);
@@ -432,8 +451,8 @@ int main(int argc, char *argv[])
     }
 
 
-    ros::ServiceServer new_conf_service = node_handle.advertiseService("jaco2_simple_moveit_apps/new_configuration", &newConfCb);
-    ros::ServiceServer record_calib_service = node_handle.advertiseService("jaco2_simple_moveit_apps/save_configurations", &saveCb);
+    ros::ServiceServer new_conf_service = node_handle.advertiseService("new_configuration", &newConfCb);
+    ros::ServiceServer record_calib_service = node_handle.advertiseService("save_configurations", &saveCb);
 
 
     ros::AsyncSpinner spinner(1);
