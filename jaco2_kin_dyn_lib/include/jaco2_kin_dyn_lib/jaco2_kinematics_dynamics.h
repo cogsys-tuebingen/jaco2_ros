@@ -16,6 +16,7 @@
 #include <kdl/chain.hpp>
 #include <kdl/chainidsolver_recursive_newton_euler.hpp>
 #include <kdl/solveri.hpp>
+#include <kdl/chaindynparam.hpp>
 
 struct Wrench{
 
@@ -151,10 +152,9 @@ public:
      * The algorithm implementation for H is based on the book "Rigid Body Dynamics Algorithms" of Roy Featherstone, 2008 (ISBN:978-0-387-74314-1) See page 107 for the pseudo-code. This algorithm is extended for the use of fixed joints
      * It calculates the joint-space inertia matrix, given the motion of the joints (q,qdot,qdotdot), external forces on the segments (expressed in the segments reference frame) and the dynamical parameters of the segments.
      */
-    void getChainDynParam(const double gx, const double gy, const double gz,
+    int getChainDynParam(const double gx, const double gy, const double gz,
                           const std::vector<double>& q,
                           const std::vector<double>& q_Dot,
-                          const std::vector<double>& q_DotDot,
                           Eigen::MatrixXd& H, Eigen::VectorXd& C, Eigen::VectorXd& G);
 
     void useUrdfDynamicParams();
@@ -222,7 +222,8 @@ public:
     static Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);
     static Eigen::Matrix<double, 6, 6> kdlFrame2Spatial(const KDL::Frame& frame);
     static Eigen::Matrix<double, 3, 3> kdlMatrix2Eigen(const KDL::Rotation& rot);
-
+    static void kdlJntArray2Eigen(const KDL::JntArray& q, Eigen::VectorXd &res);
+    static void kdlMatrix2Eigen(const KDL::JntSpaceInertiaMatrix& mat, Eigen::MatrixXd &res);
 
 private:
     std::string urdf_param_;

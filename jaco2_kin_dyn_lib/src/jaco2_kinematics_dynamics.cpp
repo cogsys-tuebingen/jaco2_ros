@@ -10,6 +10,7 @@
 
 
 
+
 Jaco2KinematicsDynamicsModel::Jaco2KinematicsDynamicsModel():
     gravity_(0,0,-9.81)//, solverID_(chain_,gravity_)
 {
@@ -306,12 +307,45 @@ int Jaco2KinematicsDynamicsModel::getAcceleration(const double gx, const double 
     return ec;
 
 }
-void Jaco2KinematicsDynamicsModel::getChainDynParam(const double gx, const double gy, const double gz,
+int Jaco2KinematicsDynamicsModel::getChainDynParam(const double gx, const double gy, const double gz,
                                                     const std::vector<double> &q,
                                                     const std::vector<double> &q_Dot,
-                                                    const std::vector<double> &q_DotDot,
                                                     Eigen::MatrixXd &H, Eigen::VectorXd &C, Eigen::VectorXd &G)
 {
+    if(q.size() != q_Dot.size() || q.size() != chain_.getNrOfJoints()){
+        ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is " << q.size() << ". While q_Dot has dimension " << q_Dot.size()
+                         <<". The KDL chain contains " <<  chain_.getNrOfJoints() << "  joints." << std::endl);
+        return KDL::SolverI::E_UNDEFINED;
+    }
+
+    KDL::ChainDynParam dynparam(chain_, KDL::Vector(gx, gy, gz));
+
+    KDL::JntArray theta;
+    KDL::JntArray omega;
+    KDL::JntArray coriolis;
+    KDL::JntArray gravity;
+    KDL::JntSpaceInertiaMatrix inertia;
+    convert(q,theta);
+    convert(q_Dot, omega);
+
+    int res = dynparam.JntToCoriolis(theta, omega, coriolis);
+    if(res == KDL::SolverI::E_NOERROR){
+        res = dynparam.JntToGravity(theta, gravity);
+        if(res == KDL::SolverI::E_NOERROR){
+            res = dynparam.JntToMass(theta, inertia);
+        }
+        else{
+            return res;
+        }
+    }
+    else{
+        return res;
+    }
+
+    kdlJntArray2Eigen(coriolis, C);
+    kdlJntArray2Eigen(gravity, G);
+
+    kdlMatrix2Eigen(inertia, H);
 
 }
 
@@ -835,4 +869,22 @@ Eigen::Matrix<double, 3, 3> Jaco2KinematicsDynamicsModel::kdlMatrix2Eigen(const 
             rot.data[3], rot.data[4], rot.data[5],
             rot.data[6], rot.data[7], rot.data[8];
     return result;
+}
+
+void Jaco2KinematicsDynamicsModel::kdlJntArray2Eigen(const KDL::JntArray &q, Eigen::VectorXd& res)
+{
+    res.setZero(q.rows());
+    for(std::size_t i = 0; i < q.rows(); ++i){
+        res(i) = q(i);
+    }
+}
+
+void Jaco2KinematicsDynamicsModel::kdlMatrix2Eigen(const KDL::JntSpaceInertiaMatrix& mat, Eigen::MatrixXd & res)
+{
+    res.setZero(mat.rows(), mat.columns());
+    for(std::size_t i = 0; i < mat.rows(); ++i){
+        for(std::size_t j = 0; j < mat.columns(); ++j){
+            res(i,j) = mat(i,j);
+        }
+    }
 }
