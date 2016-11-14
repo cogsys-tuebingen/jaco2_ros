@@ -419,9 +419,37 @@ TEST(Jaco2KinematicsDynamicsModelTest, getRigidBodyRegressionMatrix)
         EXPECT_NEAR(samples_tau(i), tau2(i), accuracy);
     }
 
-
 }
 
+TEST(Jaco2KinematicsDynamicsModelTest, dynParamMatrices)
+{
+    //    std::vector<double> q = {4.77, 3.14, 3.14, 0.0, 0, 3.14};
+    std::vector<double> q = {4.74, 2.96, 1.04, -2.08, 0.37, 1.37};
+    //    std::vector<double> qDot = {0.1, 0.04, 0.05, 0.06, 0.03, 0.1};
+    //    std::vector<double> qDotDot = {0.1, 0, 0, 0, -0.1, 0.4};
+    std::vector<double> qDot = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    std::vector<double> qDotDot = {0.0, 0, 0, 0, 0.0, 0.0};
+    std::vector<double> torque;
+
+    jaco2KDL.getTorques(q,qDot,qDotDot,torque);
+
+    Eigen::VectorXd C;
+    Eigen::VectorXd G;
+    Eigen::MatrixXd H;
+
+    Eigen::VectorXd alpha;
+    alpha << qDotDot[0], qDotDot[1], qDotDot[2], qDotDot[3], qDotDot[4], qDotDot[5];
+    jaco2KDL.getChainDynParam(0, 0, 9.81, q, qDot, H, C, G );
+
+    Eigen::VectorXd  tau = H*alpha + C + G;
+
+    double accuracy = 1e-3;
+    for(int i = 0; i < torque.size(); ++i) {
+        EXPECT_NEAR(torque[i], tau(i), accuracy);
+    }
+
+
+}
 int main(int argc, char *argv[])
 {
     testing::InitGoogleTest(&argc, argv);
