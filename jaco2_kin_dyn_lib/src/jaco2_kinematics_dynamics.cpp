@@ -322,9 +322,9 @@ int Jaco2KinematicsDynamicsModel::getChainDynParam(const double gx, const double
 
     KDL::JntArray theta;
     KDL::JntArray omega;
-    KDL::JntArray coriolis;
-    KDL::JntArray gravity;
-    KDL::JntSpaceInertiaMatrix inertia;
+    KDL::JntArray coriolis(q.size());
+    KDL::JntArray gravity(q.size());
+    KDL::JntSpaceInertiaMatrix inertia(q.size());
     convert(q,theta);
     convert(q_Dot, omega);
 
