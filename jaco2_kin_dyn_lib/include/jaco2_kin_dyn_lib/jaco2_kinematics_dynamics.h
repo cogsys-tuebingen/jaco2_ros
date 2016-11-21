@@ -218,6 +218,16 @@ public:
                                                  const double& gz,
                                                  const bool project = true);
 
+    void modifiedNE(const std::string& root, const std::string& tip,
+                    const double gx,
+                    const double gy,
+                    const double gz,
+                    const Eigen::VectorXd& q1,
+                    const Eigen::VectorXd& q2,
+                    const Eigen::VectorXd& q3,
+                    const Eigen::VectorXd& q4,
+                    Eigen::VectorXd& res);
+
     static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
     static Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);
     static Eigen::Matrix<double, 6, 6> kdlFrame2Spatial(const KDL::Frame& frame);

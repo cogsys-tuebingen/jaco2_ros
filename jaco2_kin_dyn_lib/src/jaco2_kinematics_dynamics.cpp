@@ -196,11 +196,11 @@ int Jaco2KinematicsDynamicsModel::getIKSolution(const tf::Pose& pose, std::vecto
 }
 
 int Jaco2KinematicsDynamicsModel::getAcceleration(const double gx, const double gy, const double gz,
-                    const std::vector<double>& q,
-                    const std::vector<double>& q_Dot,
-                    const std::vector<double>& q_DotDot,
-                    std::vector<std::string>& links,
-                    std::vector<KDL::Twist > &spatial_acc )
+                                                  const std::vector<double>& q,
+                                                  const std::vector<double>& q_Dot,
+                                                  const std::vector<double>& q_DotDot,
+                                                  std::vector<std::string>& links,
+                                                  std::vector<KDL::Twist > &spatial_acc )
 {
 
     if(q.size() != q_Dot.size() || q.size() != q_DotDot.size() || q.size() != chain_.getNrOfJoints()){
@@ -209,21 +209,21 @@ int Jaco2KinematicsDynamicsModel::getAcceleration(const double gx, const double 
         return KDL::SolverI::E_UNDEFINED;
     }
 
-//    int linkEnd;
-//    std::vector<int> ids;
-//    if(links.size() == q.size()) {
-//        linkEnd = q.size();
-//    }
-//    else {
-//        linkEnd= -2;
-//        for(auto link : links) {
-//            int id = getKDLSegmentIndexFK(link);
-//            ids.push_back(id);
-//            if(id > linkEnd) {
-//                linkEnd = id;
-//            }
-//        }
-//    }
+    //    int linkEnd;
+    //    std::vector<int> ids;
+    //    if(links.size() == q.size()) {
+    //        linkEnd = q.size();
+    //    }
+    //    else {
+    //        linkEnd= -2;
+    //        for(auto link : links) {
+    //            int id = getKDLSegmentIndexFK(link);
+    //            ids.push_back(id);
+    //            if(id > linkEnd) {
+    //                linkEnd = id;
+    //            }
+    //        }
+    //    }
 
     std::vector<KDL::Frame> X(q.size());
     std::vector<KDL::Frame> Xij(q.size());
@@ -234,7 +234,7 @@ int Jaco2KinematicsDynamicsModel::getAcceleration(const double gx, const double 
     KDL::Twist ag = -KDL::Twist(KDL::Vector(gx,gy,gz),KDL::Vector::Zero());
     int j = 0;
     double ns = chain_.getNrOfSegments() ;
-//    std::cout << "ns " << ns << " nj " << chain_.getNrOfJoints() << std::endl;
+    //    std::cout << "ns " << ns << " nj " << chain_.getNrOfJoints() << std::endl;
     for(int i = 0; i < chain_.getNrOfJoints(); ++i) {
         double q_,qdot_,qdotdot_;
         if(chain_.getSegment(i).getJoint().getType()!=KDL::Joint::None){
@@ -276,13 +276,13 @@ int Jaco2KinematicsDynamicsModel::getAcceleration(const double gx, const double 
     spatial_acc.resize(chain_.getNrOfSegments());
     links.resize(chain_.getNrOfSegments());
     for(std::size_t i = 0; i < links.size(); ++i) {
-//        if(links.size() != q.size()) {
-//            spatial_acc[ids[i]] = a[ids[i]];
-//        }
-//        else {
+        //        if(links.size() != q.size()) {
+        //            spatial_acc[ids[i]] = a[ids[i]];
+        //        }
+        //        else {
         links[i] = chain_.getSegment(i).getName();
-            spatial_acc[i] = a[i];
-//        }
+        spatial_acc[i] = a[i];
+        //        }
     }
     return KDL::SolverI::E_NOERROR;
 }
@@ -308,9 +308,9 @@ int Jaco2KinematicsDynamicsModel::getAcceleration(const double gx, const double 
 
 }
 int Jaco2KinematicsDynamicsModel::getChainDynParam(const double gx, const double gy, const double gz,
-                                                    const std::vector<double> &q,
-                                                    const std::vector<double> &q_Dot,
-                                                    Eigen::MatrixXd &H, Eigen::VectorXd &C, Eigen::VectorXd &G)
+                                                   const std::vector<double> &q,
+                                                   const std::vector<double> &q_Dot,
+                                                   Eigen::MatrixXd &H, Eigen::VectorXd &C, Eigen::VectorXd &G)
 {
     if(q.size() != q_Dot.size() || q.size() != chain_.getNrOfJoints()){
         ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is " << q.size() << ". While q_Dot has dimension " << q_Dot.size()
@@ -830,6 +830,71 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
     }
 
     return result;
+}
+
+void Jaco2KinematicsDynamicsModel::modifiedNE(const std::string &root, const std::string &tip,
+                                              const double gx, const double gy, const double gz,
+                                              const Eigen::VectorXd &q1, const Eigen::VectorXd &q2,
+                                              const Eigen::VectorXd &q3, const Eigen::VectorXd &q4,
+                                              Eigen::VectorXd &res)
+{
+    int tipId = getKDLSegmentIndex(tip);
+    int rootId = getKDLSegmentIndex(root);
+    // determine Matrix dimensions
+    int nLinks = tipId - rootId + 1;
+
+    if(q1.rows() != q2.rows() && q2.rows() != q3.rows() &&  q3.rows() != q4.rows() && q4.rows() != chain_.getNrOfJoints()){
+        ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q1 is" << q1.rows() << ". While q2 has dimension " << q2.rows() << ", q3 "
+                         << q3.rows() << " and q4 " << q4.rows() <<". The KDL chain contains "
+                         <<  chain_.getNrOfJoints() << "  joints." << std::endl);
+        return;
+    }
+
+    unsigned int j=0;
+    //Sweep from root to leaf
+
+//    for(unsigned int i=tipId;i<ns;i++){
+//        double q_,qdot_,qdotdot_;
+//        if(chain.getSegment(i).getJoint().getType()!=Joint::None){
+//            q_=q(j);
+//            qdot_=q_dot(j);
+//            qdotdot_=q_dotdot(j);
+//            j++;
+//        }else
+//            q_=qdot_=qdotdot_=0.0;
+
+//        //Calculate segment properties: X,S,vj,cj
+//        X[i]=chain.getSegment(i).pose(q_);//Remark this is the inverse of the
+//        //frame for transformations from
+//        //the parent to the current coord frame
+//        //Transform velocity and unit velocity to segment frame
+//        Twist vj=X[i].M.Inverse(chain.getSegment(i).twist(q_,qdot_));
+//        S[i]=X[i].M.Inverse(chain.getSegment(i).twist(q_,1.0));
+//        //We can take cj=0, see remark section 3.5, page 55 since the unit velocity vector S of our joints is always time constant
+//        //calculate velocity and acceleration of the segment (in segment coordinates)
+//        if(i==0){
+//            v[i]=vj;
+//            a[i]=X[i].Inverse(ag)+S[i]*qdotdot_+v[i]*vj;
+//        }else{
+//            v[i]=X[i].Inverse(v[i-1])+vj;
+//            a[i]=X[i].Inverse(a[i-1])+S[i]*qdotdot_+v[i]*vj;
+//        }
+//        //Calculate the force for the joint
+//        //Collect RigidBodyInertia and external forces
+//        RigidBodyInertia Ii=chain.getSegment(i).getInertia();
+//        f[i]=Ii*a[i]+v[i]*(Ii*v[i])-f_ext[i];
+//        //std::cout << "a[i]=" << a[i] << "\n f[i]=" << f[i] << "\n S[i]" << S[i] << std::endl;
+//    }
+    //Sweep from leaf to root
+//    j=nj-1;
+//    for(int i=ns-1;i>=0;i--){
+//        if(chain.getSegment(i).getJoint().getType()!=Joint::None)
+//            torques(j--)=dot(S[i],f[i]);
+//        if(i!=0)
+//            f[i-1]=f[i-1]+X[i]*f[i];
+//    }
+//    return (error = E_NOERROR);
+
 }
 
 Eigen::Matrix3d Jaco2KinematicsDynamicsModel::skewSymMat(const KDL::Vector &vec)
