@@ -218,7 +218,7 @@ public:
                                                  const double& gz,
                                                  const bool project = true);
 
-    void modifiedNE(const std::string& root, const std::string& tip,
+    void modifiedRNE(const std::string& root, const std::string& tip,
                     const double gx,
                     const double gy,
                     const double gz,
@@ -253,6 +253,13 @@ private:
     KDL::JntArray upperLimits_;
 
     void initialize();
+
+    /**
+     * @brief getLinkInertiaCoM gets the inertia moment matrix of a link with respect to the center of mass;
+     * @param link the name of the link
+     * @return the inertia moment matrix at link origin = center of mass (CoM)
+     */
+    KDL::RotationalInertia getLinkInertiaCoM(const int id) const;
 
 
 

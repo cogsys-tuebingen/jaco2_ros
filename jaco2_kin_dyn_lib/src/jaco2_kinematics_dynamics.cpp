@@ -581,6 +581,24 @@ Eigen::Matrix3d Jaco2KinematicsDynamicsModel::getLinkInertiaCoM(const std::strin
     }
 }
 
+KDL::RotationalInertia Jaco2KinematicsDynamicsModel::getLinkInertiaCoM(const int id) const
+{
+        KDL::RotationalInertia mat = chain_.getSegment(id).getInertia().getRotationalInertia();
+        double mass = chain_.getSegment(id).getInertia().getMass();
+        KDL::Vector com = chain_.getSegment(id).getInertia().getCOG();
+
+        double xx = mat.data[0] - mass *(com(1)*com(1) + com(2)*com(2));
+        double yy = mat.data[4] - mass *(com(0)*com(0) + com(2)*com(2));
+        double zz = mat.data[8] - mass *(com(0)*com(0) + com(1)*com(1));
+        double xy = mat.data[1] + mass * com(0)*com(1);
+        double xz = mat.data[2] + mass * com(0)*com(2);
+        double yz = mat.data[5] + mass * com(1)*com(2);
+
+        return KDL::RotationalInertia(xx, yy, zz, xy, xz, yz);
+}
+
+
+
 Eigen::Vector3d Jaco2KinematicsDynamicsModel::getLinkFixedTranslation(const std::string &link) const
 {
     int segmentID = getKDLSegmentIndex(link);
@@ -832,7 +850,7 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
     return result;
 }
 
-void Jaco2KinematicsDynamicsModel::modifiedNE(const std::string &root, const std::string &tip,
+void Jaco2KinematicsDynamicsModel::modifiedRNE(const std::string &root, const std::string &tip,
                                               const double gx, const double gy, const double gz,
                                               const Eigen::VectorXd &q1, const Eigen::VectorXd &q2,
                                               const Eigen::VectorXd &q3, const Eigen::VectorXd &q4,
@@ -843,6 +861,7 @@ void Jaco2KinematicsDynamicsModel::modifiedNE(const std::string &root, const std
     // determine Matrix dimensions
     int nLinks = tipId - rootId + 1;
 
+
     if(q1.rows() != q2.rows() && q2.rows() != q3.rows() &&  q3.rows() != q4.rows() && q4.rows() != chain_.getNrOfJoints()){
         ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q1 is" << q1.rows() << ". While q2 has dimension " << q2.rows() << ", q3 "
                          << q3.rows() << " and q4 " << q4.rows() <<". The KDL chain contains "
@@ -850,49 +869,85 @@ void Jaco2KinematicsDynamicsModel::modifiedNE(const std::string &root, const std
         return;
     }
 
+    std::size_t nj = q1.rows();
     unsigned int j=0;
     //Sweep from root to leaf
+    KDL::Vector ag(gx, gy, gz);
 
-//    for(unsigned int i=tipId;i<ns;i++){
-//        double q_,qdot_,qdotdot_;
-//        if(chain.getSegment(i).getJoint().getType()!=Joint::None){
-//            q_=q(j);
-//            qdot_=q_dot(j);
-//            qdotdot_=q_dotdot(j);
-//            j++;
-//        }else
-//            q_=qdot_=qdotdot_=0.0;
+    std::vector<KDL::Frame> X(nj);
+    std::vector<KDL::Twist> S(nj);
+    std::vector<KDL::Vector> omega(nj);;
+    std::vector<KDL::Vector> omega_a(nj);;
+    std::vector<KDL::Vector> omegaDot(nj);
+    std::vector<KDL::Vector> a(nj);
+    std::vector<KDL::Vector> F(nj);
+    std::vector<KDL::Vector> N(nj);
+    std::vector<KDL::Vector> n(nj);
+    std::vector<KDL::Vector> f(nj);
+    res.resize(nj);
 
-//        //Calculate segment properties: X,S,vj,cj
-//        X[i]=chain.getSegment(i).pose(q_);//Remark this is the inverse of the
-//        //frame for transformations from
-//        //the parent to the current coord frame
-//        //Transform velocity and unit velocity to segment frame
-//        Twist vj=X[i].M.Inverse(chain.getSegment(i).twist(q_,qdot_));
-//        S[i]=X[i].M.Inverse(chain.getSegment(i).twist(q_,1.0));
-//        //We can take cj=0, see remark section 3.5, page 55 since the unit velocity vector S of our joints is always time constant
-//        //calculate velocity and acceleration of the segment (in segment coordinates)
-//        if(i==0){
-//            v[i]=vj;
-//            a[i]=X[i].Inverse(ag)+S[i]*qdotdot_+v[i]*vj;
-//        }else{
-//            v[i]=X[i].Inverse(v[i-1])+vj;
-//            a[i]=X[i].Inverse(a[i-1])+S[i]*qdotdot_+v[i]*vj;
-//        }
-//        //Calculate the force for the joint
-//        //Collect RigidBodyInertia and external forces
-//        RigidBodyInertia Ii=chain.getSegment(i).getInertia();
-//        f[i]=Ii*a[i]+v[i]*(Ii*v[i])-f_ext[i];
-//        //std::cout << "a[i]=" << a[i] << "\n f[i]=" << f[i] << "\n S[i]" << S[i] << std::endl;
-//    }
-    //Sweep from leaf to root
-//    j=nj-1;
-//    for(int i=ns-1;i>=0;i--){
-//        if(chain.getSegment(i).getJoint().getType()!=Joint::None)
-//            torques(j--)=dot(S[i],f[i]);
-//        if(i!=0)
-//            f[i-1]=f[i-1]+X[i]*f[i];
-//    }
+
+    for(unsigned int i = rootId; i < tipId; ++i){
+        double q_,qdot_, qdot_a_,qdotdot_;
+        if(chain_.getSegment(i).getJoint().getType()!=KDL::Joint::None){
+            q_=q1(j);
+            qdot_=q2(j);
+            qdot_a_ =q3(j);
+            qdotdot_=q4(j);
+            j++;
+        }else
+            q_=qdot_=qdot_a_=qdotdot_=0.0;
+
+        //Calculate segment properties: X,S
+        X[i]=chain_.getSegment(i).pose(q_);//Remark this is the inverse of the
+        //frame for transformations from
+        //the parent to the current coord frame
+        S[i]=X[i].M.Inverse(chain_.getSegment(i).twist(q_,1.0));
+
+        // calculate angular velocity
+
+        if(i == 0){
+            omega[i] = KDL::Vector(0, 0, 0);
+            omega_a[i] = omega[i] = KDL::Vector(0, 0, 0);
+            omegaDot[i] = KDL::Vector(0, 0, 0);
+            a[i]=X[i].Inverse(ag);
+        }else{
+            KDL::Rotation Eij = X[i].M;                         // tranformation from i to j = i-1
+            omega[i] = Eij.Inverse(S[i].rot * qdot_);           // (AVR)
+            omega_a[i] = Eij.Inverse(S[i].rot * qdot_a_);       // (AVR*)
+            omegaDot[i] = Eij.Inverse(omegaDot[i-1]) + S[i].rot * qdotdot_ + Eij.Inverse(omega_a[i-i]) * S[i].rot *  qdot_; // (AAR*0)
+            a[i] = Eij.Inverse(a[i-1] + omegaDot[i-1] * X[i].p + omega[i-1] * (omega_a[i-1] * X[i].p ));                     // (LAR'*0)
+
+        }
+        //Calculate the force for the joint
+        //Collect RigidBodyInertia no external forces
+        KDL::RigidBodyInertia I = chain_.getSegment(i).getInertia();
+        F[i] = I.getMass() * (a[i] + omega[i] * I.getCOG() + omega[i] *(omega_a[i])*I.getCOG());
+        KDL::RotationalInertia Icm = getLinkInertiaCoM(i);
+        N[i] = Icm * omegaDot[i] + omega_a[i] * (Icm * omega[i]);
+        //std::cout << "a[i]=" << a[i] << "\n f[i]=" << f[i] << "\n S[i]" << S[i] << std::endl;
+    }
+
+    //    Sweep from leaf to root
+    j = nj;
+
+    for(int i = nj; i >= 0; --i){
+        KDL::RigidBodyInertia I = chain_.getSegment(i).getInertia();
+        KDL::Rotation Eij = X[i].M;                         // tranformation from i to j = i-1
+        if(i == nj)
+        {
+            f[i] = F[i];
+            n[i] = N[i] + I.getCOG() * F[i];
+        }
+        else{
+            KDL::Vector fi = Eij.Inverse(f[i+1]);   //   original         f[i-1]=f[i-1]+X[i]*f[i];
+            f[i] = F[i] + fi;
+            n[i] = N[i] + I.getCOG() * F[i] + Eij.Inverse(n[i+1]) + X[i].p * fi;
+        }
+        if(chain_.getSegment(i).getJoint().getType()!=KDL::Joint::None){
+            res(j--)=dot(S[i].rot,n[i]);
+        }
+    }
 //    return (error = E_NOERROR);
 
 }
