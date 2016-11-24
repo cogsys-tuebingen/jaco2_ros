@@ -147,7 +147,7 @@ public:
 
         for(std::size_t i = 0; i < jointNames_.size(); ++i)
         {
-            configurations_.offsets.push_back(0.1);
+            configurations_.offsets.push_back(0.05);
         }
 
     }
@@ -165,6 +165,11 @@ public:
             configurations_.jointNames = jointNames_;
         }
         return loaded;
+    }
+
+    void push_back_last_conf()
+    {
+        configurations_.configurations.push_back(last_conf_);
     }
 
     void save(std::string file)
@@ -229,7 +234,8 @@ public:
 //                    success = group_.move();
                     succeded = true;
                     std::cout << success << std::endl;
-                    configurations_.configurations.push_back(rand);
+                    last_conf_ = rand;
+//                    configurations_.configurations.push_back(rand);
                 }
                 if(success.val != moveit_msgs::MoveItErrorCodes::SUCCESS) {
                     succeded = false;
@@ -374,6 +380,8 @@ public:
         return configurations_.configurations.size();
     }
 
+public:
+    Configuration last_conf_;
 private:
 
     std::vector<std::string> jointNames_;
@@ -395,12 +403,13 @@ bool newConfCb(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse & res)
 
     res.success = true;
     if(planner->getConfigurationSize() > 0)
-        res.message = planner->getLastConfiguration().to_string();
+        res.message = planner->last_conf_.to_string();
     return true;
 }
 
 bool saveCb(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse & res)
 {
+    planner->push_back_last_conf();
     planner->save(save_file);
     res.success = true;
     res.message = "saved file as " + save_file;
