@@ -512,6 +512,16 @@ void Jaco2KinematicsDynamicsModel::getRandomConfig(std::vector<double>& config)
         config[i] = jointDist_[i](randEng_);
     }
 }
+
+void Jaco2KinematicsDynamicsModel::getRandomConfig(Eigen::VectorXd& config)
+{
+    config.resize(chain_.getNrOfJoints());
+    std::vector<double> rand;
+    getRandomConfig(rand);
+    for(std::size_t i = 0; i < rand.size(); ++i){
+        config(i) = rand[i];
+    }
+}
 double Jaco2KinematicsDynamicsModel::getLinkMass(const std::string &link) const
 {
     int segmentID = getKDLSegmentIndex(link);
@@ -852,8 +862,8 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
 
 void Jaco2KinematicsDynamicsModel::modifiedRNE(const std::string &root, const std::string &tip,
                                               const double gx, const double gy, const double gz,
-                                              const Eigen::VectorXd &q1, const Eigen::VectorXd &q2,
-                                              const Eigen::VectorXd &q3, const Eigen::VectorXd &q4,
+                                              const std::vector<double> &q1, const std::vector<double> &q2,
+                                              const std::vector<double> &q3, const std::vector<double> &q4,
                                               Eigen::VectorXd &res)
 {
     int tipId = getKDLSegmentIndex(tip);
@@ -862,14 +872,14 @@ void Jaco2KinematicsDynamicsModel::modifiedRNE(const std::string &root, const st
     int nLinks = tipId - rootId + 1;
 
 
-    if(q1.rows() != q2.rows() && q2.rows() != q3.rows() &&  q3.rows() != q4.rows() && q4.rows() != chain_.getNrOfJoints()){
-        ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q1 is" << q1.rows() << ". While q2 has dimension " << q2.rows() << ", q3 "
-                         << q3.rows() << " and q4 " << q4.rows() <<". The KDL chain contains "
+    if(q1.size() != q2.size() && q2.size() != q3.size() &&  q3.size() != q4.size() && q4.size() != chain_.getNrOfJoints()){
+        ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q1 is" << q1.size() << ". While q2 has dimension " << q2.size() << ", q3 "
+                         << q3.size() << " and q4 " << q4.size() <<". The KDL chain contains "
                          <<  chain_.getNrOfJoints() << "  joints." << std::endl);
         return;
     }
 
-    std::size_t nj = q1.rows();
+    std::size_t nj = q1.size();
     unsigned int j=0;
     //Sweep from root to leaf
     KDL::Vector ag(gx, gy, gz);
@@ -890,10 +900,10 @@ void Jaco2KinematicsDynamicsModel::modifiedRNE(const std::string &root, const st
     for(unsigned int i = rootId; i < tipId; ++i){
         double q_,qdot_, qdot_a_,qdotdot_;
         if(chain_.getSegment(i).getJoint().getType()!=KDL::Joint::None){
-            q_=q1(j);
-            qdot_=q2(j);
-            qdot_a_ =q3(j);
-            qdotdot_=q4(j);
+            q_=q1[j];
+            qdot_=q2[j];
+            qdot_a_ =q3[j];
+            qdotdot_=q4[j];
             j++;
         }else
             q_=qdot_=qdot_a_=qdotdot_=0.0;
@@ -940,12 +950,12 @@ void Jaco2KinematicsDynamicsModel::modifiedRNE(const std::string &root, const st
             n[i] = N[i] + I.getCOG() * F[i];
         }
         else{
-            KDL::Vector fi = Eij.Inverse(f[i+1]);   //   original         f[i-1]=f[i-1]+X[i]*f[i];
+            KDL::Vector fi = Eij * f[i+1];//Eij.Inverse(f[i+1]);   //   original         f[i-1]=f[i-1]+X[i]*f[i];
             f[i] = F[i] + fi;
-            n[i] = N[i] + I.getCOG() * F[i] + Eij.Inverse(n[i+1]) + X[i].p * fi;
+            n[i] = N[i] + I.getCOG() * F[i]  + Eij * n[i+1]  + X[i].p * fi;//+ Eij.Inverse(n[i+1]) + X[i].p * fi;
         }
         if(chain_.getSegment(i).getJoint().getType()!=KDL::Joint::None){
-            res(j--)=dot(S[i].rot,n[i]);
+            res(j--) = dot(S[i].rot,n[i]);
         }
     }
 //    return (error = E_NOERROR);

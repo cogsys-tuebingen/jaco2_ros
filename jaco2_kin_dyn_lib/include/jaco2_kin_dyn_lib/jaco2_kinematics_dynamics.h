@@ -164,6 +164,7 @@ public:
      * @param name the name of the segment/ link
      * @return returns index of segment -1 if name == root_ ; -2 if link name not found.
      */
+    void getRandomConfig(Eigen::VectorXd& config);
     int getKDLSegmentIndex(const std::string &name ) const;
     /**
      * @brief getKDLSegmentIndexFK gets the index of a link as needed for forward kinematics. root = 0, ...
@@ -222,10 +223,10 @@ public:
                     const double gx,
                     const double gy,
                     const double gz,
-                    const Eigen::VectorXd& q1,
-                    const Eigen::VectorXd& q2,
-                    const Eigen::VectorXd& q3,
-                    const Eigen::VectorXd& q4,
+                    const std::vector<double> &q1,
+                    const std::vector<double> &q2,
+                    const std::vector<double> &q3,
+                    const std::vector<double> &q4,
                     Eigen::VectorXd& res);
 
     static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);

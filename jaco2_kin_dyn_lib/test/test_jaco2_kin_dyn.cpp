@@ -454,9 +454,28 @@ TEST(Jaco2KinematicsDynamicsModelTest, dynParamMatrices)
             EXPECT_NEAR(torque[i], tau(i), accuracy);
         }
     }
+}
 
+TEST(Jaco2KinematicsDynamicsModelTest, modifiedRNE)
+{
+    std::vector<double> q = {4.74, 2.96, 1.04, -2.08, 0.37, 1.37};
+//    std::vector<double> qDot = {0.1, 0.04, 0.05, 0.06, 0.03, 0.1};
+//    std::vector<double> qDotDot = {0.1, 0, 0, 0, -0.1, 0.4};
+        std::vector<double> qDot = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        std::vector<double> qDotDot = {0.0, 0, 0, 0, 0.0, 0.0};
+
+        std::vector<double> torques;
+        Eigen::VectorXd mrne_res(6);
+
+        jaco2KDL.modifiedRNE("jaco_link_1", "jaco_link_hand",0,0,9.81,q,qDot,qDot,qDotDot,mrne_res);
+        jaco2KDL.getTorques(q, qDot,qDotDot,torques);
+
+        for(int i = 0; i < torques.size(); ++i) {
+            EXPECT_NEAR(torques[i], mrne_res(i), 1e-5);
+        }
 
 }
+
 int main(int argc, char *argv[])
 {
     testing::InitGoogleTest(&argc, argv);
