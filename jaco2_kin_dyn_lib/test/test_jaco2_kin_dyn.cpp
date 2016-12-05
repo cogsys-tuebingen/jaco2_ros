@@ -459,20 +459,23 @@ TEST(Jaco2KinematicsDynamicsModelTest, dynParamMatrices)
 TEST(Jaco2KinematicsDynamicsModelTest, modifiedRNE)
 {
     std::vector<double> q = {4.74, 2.96, 1.04, -2.08, 0.37, 1.37};
-//    std::vector<double> qDot = {0.1, 0.04, 0.05, 0.06, 0.03, 0.1};
-//    std::vector<double> qDotDot = {0.1, 0, 0, 0, -0.1, 0.4};
-        std::vector<double> qDot = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-        std::vector<double> qDotDot = {0.0, 0, 0, 0, 0.0, 0.0};
+    std::vector<double> qDot = {1.1, 1.04, 1.05, 1.06, 1.03, 1.1};
+    std::vector<double> qDotDot = {0.0, 0, 0, 0, 0.0, 0.0};
+//        std::vector<double> qDot = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+//        std::vector<double> qDotDot = {1.0, 1, 1, 1, 1.0, 1.0};
 
         std::vector<double> torques;
         Eigen::VectorXd mrne_res(6);
 
-        jaco2KDL.modifiedRNE("jaco_link_1", "jaco_link_hand",0,0,9.81,q,qDot,qDot,qDotDot,mrne_res);
+        jaco2KDL.modifiedRNE("jaco_link_1", "jaco_link_hand",0,0,-9.81,q,qDot,qDot,qDotDot,mrne_res);
         jaco2KDL.getTorques(q, qDot,qDotDot,torques);
 
         for(int i = 0; i < torques.size(); ++i) {
-            EXPECT_NEAR(torques[i], mrne_res(i), 1e-5);
+            EXPECT_NEAR(torques[i], mrne_res(i), 1e-10);
         }
+
+
+
 
 }
 

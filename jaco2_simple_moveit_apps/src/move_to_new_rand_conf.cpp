@@ -222,6 +222,8 @@ public:
 
 
                 moveit::planning_interface::MoveGroup::Plan my_plan;
+                my_plan.trajectory_.joint_trajectory;
+
                 group_.setJointValueTarget(rand.angles);
                 group_.setStartStateToCurrentState();
                 group_.setPlanningTime(3.0);
