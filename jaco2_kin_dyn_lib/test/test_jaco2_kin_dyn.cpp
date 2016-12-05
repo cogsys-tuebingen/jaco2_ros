@@ -467,7 +467,7 @@ TEST(Jaco2KinematicsDynamicsModelTest, modifiedRNE)
     std::vector<double> torques;
     Eigen::VectorXd mrne_res(6);
 
-    for(std::size_t i = 0; i <10 ; ++ i){
+    for(std::size_t i = 0; i <50 ; ++ i){
         jaco2KDL.getRandomConfig(q);
         jaco2KDL.getRandomConfig(qDot);
         jaco2KDL.getRandomConfig(qDotDot);
