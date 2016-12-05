@@ -135,12 +135,6 @@ void Jaco2KinematicsDynamicsModel::setGravity(double x, double y, double z)
     gravity_ = KDL::Vector(x, y, z);
     // inverse dynamics solver
     solverID_.reset(new KDL::ChainIdSolver_RNE(chain_,gravity_));
-
-    // forward kinematic
-    //    solverFK_.reset(new KDL::ChainFkSolverPos_recursive(chain_));
-
-    //initialize TRAC_IK solver: inverse kinematics
-    //    solverIK_.reset(new TRAC_IK::TRAC_IK(chain_, lowerLimits_, upperLimits_));
 }
 
 void Jaco2KinematicsDynamicsModel::getGravity(double &gx, double &gy, double &gz)
@@ -209,22 +203,6 @@ int Jaco2KinematicsDynamicsModel::getAcceleration(const double gx, const double 
         return KDL::SolverI::E_UNDEFINED;
     }
 
-    //    int linkEnd;
-    //    std::vector<int> ids;
-    //    if(links.size() == q.size()) {
-    //        linkEnd = q.size();
-    //    }
-    //    else {
-    //        linkEnd= -2;
-    //        for(auto link : links) {
-    //            int id = getKDLSegmentIndexFK(link);
-    //            ids.push_back(id);
-    //            if(id > linkEnd) {
-    //                linkEnd = id;
-    //            }
-    //        }
-    //    }
-
     std::vector<KDL::Frame> X(q.size());
     std::vector<KDL::Frame> Xij(q.size());
     std::vector<KDL::Twist> S(q.size());
@@ -252,9 +230,6 @@ int Jaco2KinematicsDynamicsModel::getAcceleration(const double gx, const double 
 
         // Transform velocity and unit velocity to segment frame
         KDL::Twist vj = X[i].M.Inverse(chain_.getSegment(i).twist(q_,qdot_));
-        S[i]=X[i].M.Inverse(chain_.getSegment(i).twist(q_,1.0));
-        // We can take cj=0, see remark section 3.5, page 55 since the unit velocity vector S of our joints is always time constant
-        // calculate velocity and acceleration of the segment (in segment coordinates)
 
         KDL::Twist vparent;
         KDL::Twist aparent;
@@ -270,19 +245,12 @@ int Jaco2KinematicsDynamicsModel::getAcceleration(const double gx, const double 
         v[i] = vparent + vj;
         a[i] = aparent + S[i]*qdotdot_ + v[i]*vj;
 
-        // Calculate the regression Matrix An for each Link
-        // See Handbook of Robotics page 331
     }
     spatial_acc.resize(chain_.getNrOfSegments());
     links.resize(chain_.getNrOfSegments());
     for(std::size_t i = 0; i < links.size(); ++i) {
-        //        if(links.size() != q.size()) {
-        //            spatial_acc[ids[i]] = a[ids[i]];
-        //        }
-        //        else {
         links[i] = chain_.getSegment(i).getName();
         spatial_acc[i] = a[i];
-        //        }
     }
     return KDL::SolverI::E_NOERROR;
 }
