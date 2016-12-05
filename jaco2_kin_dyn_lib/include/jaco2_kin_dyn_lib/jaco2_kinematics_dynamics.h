@@ -153,9 +153,9 @@ public:
      * It calculates the joint-space inertia matrix, given the motion of the joints (q,qdot,qdotdot), external forces on the segments (expressed in the segments reference frame) and the dynamical parameters of the segments.
      */
     int getChainDynParam(const double gx, const double gy, const double gz,
-                          const std::vector<double>& q,
-                          const std::vector<double>& q_Dot,
-                          Eigen::MatrixXd& H, Eigen::VectorXd& C, Eigen::VectorXd& G);
+                         const std::vector<double>& q,
+                         const std::vector<double>& q_Dot,
+                         Eigen::MatrixXd& H, Eigen::VectorXd& C, Eigen::VectorXd& G);
 
     void useUrdfDynamicParams();
     void getRandomConfig(std::vector<double>& config);
@@ -219,15 +219,14 @@ public:
                                                  const double& gz,
                                                  const bool project = true);
 
-    void modifiedRNE(const std::string& root, const std::string& tip,
-                    const double gx,
-                    const double gy,
-                    const double gz,
-                    const std::vector<double> &q1,
-                    const std::vector<double> &q2,
-                    const std::vector<double> &q3,
-                    const std::vector<double> &q4,
-                    Eigen::VectorXd& res);
+    void modifiedRNE(const double gx,
+                     const double gy,
+                     const double gz,
+                     const std::vector<double> &q1,
+                     const std::vector<double> &q2,
+                     const std::vector<double> &q3,
+                     const std::vector<double> &q4,
+                     Eigen::VectorXd& res);
 
     static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
     static Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);
