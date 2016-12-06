@@ -831,19 +831,26 @@ Eigen::MatrixXd Jaco2KinematicsDynamicsModel::getRigidBodyRegressionMatrix(const
 void Jaco2KinematicsDynamicsModel::modifiedRNE(const double gx, const double gy, const double gz,
                                                const std::vector<double> &q1, const std::vector<double> &q2,
                                                const std::vector<double> &q3, const std::vector<double> &q4,
-                                               Eigen::VectorXd &res)
+                                               Eigen::MatrixXd& res, std::size_t column)
 {
     std::size_t nj = chain_.getNrOfJoints();
     std::size_t ns = chain_.getNrOfSegments();
 
 
     if(q1.size() != q2.size()
-            && q2.size() != q3.size()
-            &&  q3.size() != q4.size()
-            && q4.size() != chain_.getNrOfJoints()){
-        ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q1 is" << q1.size() << ". While q2 has dimension " << q2.size() << ", q3 "
+            || q2.size() != q3.size()
+            || q3.size() != q4.size()
+            || q4.size() != chain_.getNrOfJoints()
+            || res.cols() < 1
+            || res.rows() != q1.size()){
+        ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q1 is " << q1.size()
+                         << ". While q2 has dimension " << q2.size() << ", q3 "
                          << q3.size() << " and q4 " << q4.size() <<". The KDL chain contains "
-                         <<  chain_.getNrOfJoints() << "  joints." << std::endl);
+                         <<  chain_.getNrOfJoints() << "  joints."
+                         << " The result must have at least dimension "
+                         << chain_.getNrOfJoints() << " x 1. But is "
+                         << res.rows() << " x " << res.cols() << "!"
+                         << std::endl);
         return;
     }
 
@@ -861,7 +868,7 @@ void Jaco2KinematicsDynamicsModel::modifiedRNE(const double gx, const double gy,
     std::vector<KDL::Vector> N(ns);
     std::vector<KDL::Vector> n(ns);
     std::vector<KDL::Vector> f(ns);
-    res.resize(nj);
+//    res.resize(nj);
 
     for(unsigned int i = 0; i < nj; ++i){
         double q_,qdot_, qdot_a_,qdotdot_;
@@ -922,37 +929,33 @@ void Jaco2KinematicsDynamicsModel::modifiedRNE(const double gx, const double gy,
         }
         //        }
         if(chain_.getSegment(i).getJoint().getType()!=KDL::Joint::None){
-            res(j--) = dot(S[i].rot, n[i]);
+            res(j--,column) = dot(S[i].rot, n[i]);
         }
     }
     //    return (error = E_NOERROR);
 
 }
 
-void Jaco2KinematicsDynamicsModel::getMatrixC(const double gx, const double gy, const double gz,
-                                              const std::vector<double> &q,
+void Jaco2KinematicsDynamicsModel::getMatrixC(const std::vector<double> &q,
                                               const std::vector<double> &qDot,
-                                              const std::vector<double> &qDotDot,
                                               Eigen::MatrixXd& res)
 {
 
-    if(q.size() != qDot.size() && q.size() != qDotDot.size() && q.size() != chain_.getNrOfJoints()){
-        ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is" << q.size() << ". While q_Dot has dimension " << qDot.size() << " and q_DotDot "
-                         << qDotDot.size()<<". The KDL chain contains " <<  chain_.getNrOfJoints() << "  joints." << std::endl);
+    if(q.size() != qDot.size() || q.size() != chain_.getNrOfJoints()){
+        ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is" << q.size() << ". While q_Dot has dimension " << qDot.size()
+                         <<". The KDL chain contains " <<  chain_.getNrOfJoints() << "  joints." << std::endl);
         return;
     }
     std::size_t n_joints = q.size();
+    std::vector<double> qDotDot(n_joints, 0);
     res.resize(n_joints, n_joints);
 
     for(std::size_t i = 0; i < n_joints; ++i){
         std::vector<double> unit_vec(n_joints);
         unit_vec[i] = 1.0;
 
-//        Eigen::VectorXd coloum;
+        modifiedRNE(0, 0, 0, q, qDot, unit_vec, qDotDot, res, i);
 
-//        Eigen::Block<
-
-//        modifiedRNE(gx, gy, gz, q, qDot, unit_vec, qDotDot, res.col(i));
     }
 }
 
