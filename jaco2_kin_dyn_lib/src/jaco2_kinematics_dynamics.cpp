@@ -929,6 +929,33 @@ void Jaco2KinematicsDynamicsModel::modifiedRNE(const double gx, const double gy,
 
 }
 
+void Jaco2KinematicsDynamicsModel::getMatrixC(const double gx, const double gy, const double gz,
+                                              const std::vector<double> &q,
+                                              const std::vector<double> &qDot,
+                                              const std::vector<double> &qDotDot,
+                                              Eigen::MatrixXd& res)
+{
+
+    if(q.size() != qDot.size() && q.size() != qDotDot.size() && q.size() != chain_.getNrOfJoints()){
+        ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is" << q.size() << ". While q_Dot has dimension " << qDot.size() << " and q_DotDot "
+                         << qDotDot.size()<<". The KDL chain contains " <<  chain_.getNrOfJoints() << "  joints." << std::endl);
+        return;
+    }
+    std::size_t n_joints = q.size();
+    res.resize(n_joints, n_joints);
+
+    for(std::size_t i = 0; i < n_joints; ++i){
+        std::vector<double> unit_vec(n_joints);
+        unit_vec[i] = 1.0;
+
+//        Eigen::VectorXd coloum;
+
+//        Eigen::Block<
+
+//        modifiedRNE(gx, gy, gz, q, qDot, unit_vec, qDotDot, res.col(i));
+    }
+}
+
 Eigen::Matrix3d Jaco2KinematicsDynamicsModel::skewSymMat(const KDL::Vector &vec)
 {
     Eigen::Matrix3d res;

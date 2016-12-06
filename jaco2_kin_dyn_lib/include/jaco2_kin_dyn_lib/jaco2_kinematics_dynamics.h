@@ -20,34 +20,34 @@
 
 struct Wrench{
 
-    double force[3];
-    double torque[3];
+    Eigen::Vector3d force;
+    Eigen::Vector3d torque;
 
     Wrench()
     {
-        force[0] = 0;
-        force[1] = 0;
-        force[2] = 0;
-        torque[0] = 0;
-        torque[1] = 0;
-        torque[2] = 0;
+        force(0) = 0;
+        force(1) = 0;
+        force(2) = 0;
+        torque(0) = 0;
+        torque(1) = 0;
+        torque(2) = 0;
     }
 
     Wrench(double fx, double fy, double fz,
            double tx, double ty, double tz)
     {
-        force[0] = fx;
-        force[1] = fy;
-        force[2] = fz;
-        torque[0] = tx;
-        torque[1] = ty;
-        torque[2] = tz;
+        force (0) = fx;
+        force (1) = fy;
+        force (2) = fz;
+        torque(0) = tx;
+        torque(1) = ty;
+        torque(2) = tz;
     }
 
     KDL::Wrench toKDL() const
     {
-        KDL::Vector f(force[0],force[2],force[3]);
-        KDL::Vector tau(torque[0],torque[1],torque[3]);
+        KDL::Vector f(force(0),force(2),force(3));
+        KDL::Vector tau(torque(0),torque(1),torque(3));
 
         return KDL::Wrench(f,tau);
     }
@@ -226,7 +226,15 @@ public:
                      const std::vector<double> &q2,
                      const std::vector<double> &q3,
                      const std::vector<double> &q4,
-                     Eigen::VectorXd& res);
+                     Eigen::VectorXd &res);
+
+    void getMatrixC(const double gx,
+                    const double gy,
+                    const double gz,
+                    const std::vector<double> &q,
+                    const std::vector<double> &qDot,
+                    const std::vector<double> &qDotDot,
+                    Eigen::MatrixXd& res);
 
     static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
     static Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);
