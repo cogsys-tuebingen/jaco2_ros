@@ -315,6 +315,43 @@ int Jaco2KinematicsDynamicsModel::getChainDynParam(const double gx, const double
 
     kdlMatrix2Eigen(inertia, H);
 
+    return res;
+
+}
+
+int Jaco2KinematicsDynamicsModel::getChainDynInertiaAndGravity(const double gx, const double gy, const double gz,
+                                                              const std::vector<double>& q,
+                                                              Eigen::MatrixXd& H,
+                                                              Eigen::VectorXd &G)
+{
+    if(q.size() != chain_.getNrOfJoints()){
+        ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is " << q.size()
+                         <<". The KDL chain contains " <<  chain_.getNrOfJoints() << "  joints." << std::endl);
+        return KDL::SolverI::E_UNDEFINED;
+    }
+
+    KDL::ChainDynParam dynparam(chain_, KDL::Vector(gx, gy, gz));
+
+    KDL::JntArray theta;
+    KDL::JntArray gravity(q.size());
+
+    KDL::JntSpaceInertiaMatrix inertia(q.size());
+    convert(q,theta);
+
+    int res = dynparam.JntToGravity(theta, gravity);
+    if(res == KDL::SolverI::E_NOERROR){
+        res = dynparam.JntToMass(theta, inertia);
+    }
+    else{
+        return res;
+    }
+
+    kdlJntArray2Eigen(gravity, G);
+
+    kdlMatrix2Eigen(inertia, H);
+
+    return res;
+
 }
 
 void Jaco2KinematicsDynamicsModel::changeDynamicParams(const std::string &link, const double mass, const Eigen::Vector3d &com, const Eigen::Matrix3d& inertia)
@@ -868,7 +905,7 @@ void Jaco2KinematicsDynamicsModel::modifiedRNE(const double gx, const double gy,
     std::vector<KDL::Vector> N(ns);
     std::vector<KDL::Vector> n(ns);
     std::vector<KDL::Vector> f(ns);
-//    res.resize(nj);
+    //    res.resize(nj);
 
     for(unsigned int i = 0; i < nj; ++i){
         double q_,qdot_, qdot_a_,qdotdot_;

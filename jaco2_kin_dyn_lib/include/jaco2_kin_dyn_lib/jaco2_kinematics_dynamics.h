@@ -157,6 +157,11 @@ public:
                          const std::vector<double>& q_Dot,
                          Eigen::MatrixXd& H, Eigen::VectorXd& C, Eigen::VectorXd& G);
 
+    int getChainDynInertiaAndGravity(const double gx, const double gy, const double gz,
+                                     const std::vector<double>& q,
+                                     Eigen::MatrixXd& H,
+                                     Eigen::VectorXd& G);
+
     void useUrdfDynamicParams();
     void getRandomConfig(std::vector<double>& config);
     /**
