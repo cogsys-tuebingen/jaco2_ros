@@ -226,14 +226,10 @@ public:
                      const std::vector<double> &q2,
                      const std::vector<double> &q3,
                      const std::vector<double> &q4,
-                     Eigen::VectorXd &res);
+                     Eigen::MatrixXd& res, std::size_t column = 0);
 
-    void getMatrixC(const double gx,
-                    const double gy,
-                    const double gz,
-                    const std::vector<double> &q,
+    void getMatrixC(const std::vector<double> &q,
                     const std::vector<double> &qDot,
-                    const std::vector<double> &qDotDot,
                     Eigen::MatrixXd& res);
 
     static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);

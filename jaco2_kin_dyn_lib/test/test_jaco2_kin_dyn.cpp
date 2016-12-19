@@ -12,7 +12,7 @@
 
 Jaco2KinematicsDynamicsModel jaco2KDL;
 
-TEST(Jaco2KinematicsDynamicsModelTest,converttest)
+TEST(Jaco2KinematicsDynamicsToolTests,converttest)
 {
     KDL::JntArray q(6);
     std::vector<double> qvec;
@@ -30,7 +30,7 @@ TEST(Jaco2KinematicsDynamicsModelTest,converttest)
     }
 }
 
-TEST(Jaco2KinematicsDynamicsModelTest,chaintest)
+TEST(Jaco2KinematicsDynamicsToolTests,chaintest)
 {
     EXPECT_TRUE(jaco2KDL.getRootLink().find("jaco_link_base")!=std::string::npos);
     EXPECT_TRUE(jaco2KDL.getTipLink().find("jaco_link_hand")!=std::string::npos);
@@ -43,7 +43,7 @@ TEST(Jaco2KinematicsDynamicsModelTest,chaintest)
     EXPECT_EQ(jaco2KDL.getKDLSegmentIndexFK("jaco_link_5"), 5);
 }
 
-TEST(Jaco2KinematicsDynamicsModelTest, DynParam)
+TEST(Jaco2KinematicsDynamicsToolTests, DynParam)
 {
     Eigen::Vector3d comLink1 = jaco2KDL.getLinkCoM("jaco_link_1");
     EXPECT_NEAR(comLink1(0), 0, 1e-4);
@@ -73,7 +73,7 @@ TEST(Jaco2KinematicsDynamicsModelTest, DynParam)
 
 }
 
-TEST(Jaco2KinematicsDynamicsModelTEST, KinParam)
+TEST(Jaco2KinematicsDynamicsToolTests, KinParam)
 {
     Eigen::Vector3d trans = jaco2KDL.getLinkFixedTranslation("jaco_link_1");
     Eigen::Matrix3d rot = jaco2KDL.getLinkFixedRotation("jaco_link_1");
@@ -91,7 +91,7 @@ TEST(Jaco2KinematicsDynamicsModelTEST, KinParam)
     EXPECT_NEAR(rot(2,2), -1, 1e-4);
 }
 
-TEST(Jaco2KinematicsDynamicsModelTest,inverseDynamics)
+TEST(Jaco2DynamicsTests,inverseDynamics)
 {
     std::vector<double> q = {0, M_PI, M_PI, 0, 0, M_PI};
     std::vector<double> qDot;
@@ -103,7 +103,7 @@ TEST(Jaco2KinematicsDynamicsModelTest,inverseDynamics)
     for(int i = 0; i <6; ++i)
     {
         EXPECT_NEAR(torques[i], 0, 1e-4);
-        std::cout << "torques(" << i <<") = " << torques[i] <<  std::endl;
+//        std::cout << "torques(" << i <<") = " << torques[i] <<  std::endl;
     }
     std::vector<double> q2 = {4.776098185246001, 2.9779051856135985, 1.0370221453036228, -2.089493953881068, 1.3567380962770526, 1.3811624792663872};
     std::vector<double> qDot2;
@@ -114,11 +114,11 @@ TEST(Jaco2KinematicsDynamicsModelTest,inverseDynamics)
         if(i>0){
             EXPECT_TRUE(fabs(torques[i]) > 1e-4);
         }
-        std::cout << "torques(" << i <<") = " << torques[i] <<  std::endl;
+//        std::cout << "torques(" << i <<") = " << torques[i] <<  std::endl;
     }
 }
 
-TEST(Jaco2KinematicsDynamicsModelTest, fk)
+TEST(Jaco2KinematicsTests, fk)
 {
     std::vector<double> q = {0, M_PI, M_PI, 0, 0, M_PI};
     tf::Vector3 posH(-0.000, 0.063, 1.018);
@@ -150,7 +150,7 @@ TEST(Jaco2KinematicsDynamicsModelTest, fk)
 
 }
 
-TEST(Jaco2KinematicsDynamicsModelTest, changeDynParam)
+TEST(Jaco2DynamicsToolsTests, changeDynParam)
 {
     std::string linkName("jaco_link_hand");
     Eigen::Vector3d com(1.1, 0.1, 0.1);
@@ -197,7 +197,7 @@ TEST(Jaco2KinematicsDynamicsModelTest, changeDynParam)
 
 }
 
-TEST(Jaco2KinematicsDynamicsModelTest, IK)
+TEST(Jaco2KinematicsTests, IK)
 {
     std::vector<double> zero;
     std::vector<double> jointAngles  = {0, M_PI, M_PI, 0, 0, M_PI};
@@ -242,7 +242,7 @@ TEST(Jaco2KinematicsDynamicsModelTest, IK)
     std::cout << "success rate: " <<  successRate << std::endl;
 }
 
-TEST(Jaco2KinematicsDynamicsModelTest, kdlEigenConversion)
+TEST(Jaco2DynamicsToolsTests, kdlEigenConversion)
 {
     KDL::Vector vec1(1,2,3);
     KDL::Vector vec2(3,4,5);
@@ -306,7 +306,7 @@ TEST(Jaco2KinematicsDynamicsModelTest, kdlEigenConversion)
 }
 
 
-TEST(Jaco2KinematicsDynamicsModelTest, getRigidBodyRegressionMatrix)
+TEST(Jaco2DynamicsTests, getRigidBodyRegressionMatrix)
 {
     //    std::vector<double> q = {4.77, 3.14, 3.14, 0.0, 0, 3.14};
     std::vector<double> q = {4.74, 2.96, 1.04, -2.08, 0.37, 1.37};
@@ -423,7 +423,7 @@ TEST(Jaco2KinematicsDynamicsModelTest, getRigidBodyRegressionMatrix)
 
 }
 
-TEST(Jaco2KinematicsDynamicsModelTest, dynParamMatrices)
+TEST(Jaco2DynamicsTests, dynParamMatrices)
 {
     //    std::vector<double> q = {4.77, 3.14, 3.14, 0.0, 0, 3.14};
     std::vector<double> q = {4.74, 2.96, 1.04, -2.08, 0.37, 1.37};
@@ -456,7 +456,7 @@ TEST(Jaco2KinematicsDynamicsModelTest, dynParamMatrices)
     }
 }
 
-TEST(Jaco2KinematicsDynamicsModelTest, modifiedRNE)
+TEST(Jaco2DynamicsTests, modifiedRNE)
 {
     std::vector<double> q = {4.74, 2.96, 1.04, -2.08, 0.37, 1.37};
     std::vector<double> qDot = {1.1, 1.04, 1.05, 1.06, 1.03, 1.1};
@@ -465,24 +465,63 @@ TEST(Jaco2KinematicsDynamicsModelTest, modifiedRNE)
     std::vector<double> qDotDot = {1.0, 1, 1, 1, 1.0, 1.0};
 
     std::vector<double> torques;
-    Eigen::VectorXd mrne_res(6);
+    Eigen::MatrixXd mrne_res(6,1);
+//    std::vector<double> mod_torques;
 
     for(std::size_t i = 0; i <50 ; ++ i){
+
+        jaco2KDL.modifiedRNE(0,0,-9.81,q,qDot,qDot,qDotDot,mrne_res);
+//        jaco2KDL.modifiedRNE(0,0,-9.81,q,qDot,qDot,qDotDot, mod_torques);
+        jaco2KDL.getTorques(q, qDot,qDotDot,torques);
         jaco2KDL.getRandomConfig(q);
         jaco2KDL.getRandomConfig(qDot);
         jaco2KDL.getRandomConfig(qDotDot);
 
-        jaco2KDL.modifiedRNE(0,0,-9.81,q,qDot,qDot,qDotDot,mrne_res);
-        jaco2KDL.getTorques(q, qDot,qDotDot,torques);
-
         for(int i = 0; i < torques.size(); ++i) {
             EXPECT_NEAR(torques[i], mrne_res(i), 1e-10);
+//            EXPECT_NEAR(torques[i], mod_torques[i], 1e-10);
         }
 
     }
+}
+
+TEST(Jaco2DynamicsTests, matrixC)
+{
+    std::vector<double> q = {4.74, 2.96, 1.04, -2.08, 0.37, 1.37};
+    std::vector<double> qDot = {1.1, 1.04, 1.05, 1.06, 1.03, 1.1};
+    //    std::vector<double> qDotDot = {0.0, 0, 0, 0, 0.0, 0.0};
+    //        std::vector<double> qDot = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    std::vector<double> qDotDot = {1.0, 1, 1, 1, 1.0, 1.0};
+
+    std::vector<double> torques;
+    Eigen::MatrixXd mrne_res(6,1);
+    Eigen::MatrixXd H;
+    Eigen::MatrixXd C;
+    Eigen::VectorXd c;
+    Eigen::VectorXd g;
 
 
+    for(std::size_t i = 0; i < 50 ; ++ i){
 
+        jaco2KDL.getChainDynParam(0, 0, 9.81, q, qDot, H, c, g );
+        jaco2KDL.getMatrixC(q, qDot, C);
+
+        Eigen::VectorXd omega(6);
+        omega << qDot[0], qDot[1], qDot[2], qDot[3], qDot[4], qDot[5];
+
+        Eigen::VectorXd c2 = C * omega;
+
+        for(int i = 0; i < 6; ++i) {
+            EXPECT_NEAR(c(i), c2(i), 1e-10);
+
+        }
+
+        jaco2KDL.getRandomConfig(q);
+        jaco2KDL.getRandomConfig(qDot);
+        jaco2KDL.getRandomConfig(qDotDot);
+
+
+    }
 }
 
 int main(int argc, char *argv[])
