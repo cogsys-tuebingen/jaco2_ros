@@ -56,22 +56,22 @@ void Jaco2ResidualVector::changeDynamicParams(const std::string &link, const dou
     model_.changeDynamicParams(link, mass, com, inertia);
 }
 
-void Jaco2ResidualVector::getResidualVector(std::vector<ResidualData> &sequence, std::vector<double> &residual_vec) const
+void Jaco2ResidualVector::getResidualVector(std::vector<ResidualData> &sequence, std::vector<Eigen::VectorXd> &residual_vec) const
 {
     // initialization
     std::size_t n_joints =  model_.getNrOfJoints();
-    std::vector<Eigen::VectorXd> vec_m(sequence.size());
-    std::vector<Eigen::VectorXd> model_coeff(sequence.size());
-    std::vector<Eigen::VectorXd> r_old(sequence.size());
-    std::vector<Eigen::VectorXd> r_next(sequence.size());
+    Eigen::VectorXd r0(n_joints);
+    r0.setZero(n_joints);
 
-    auto it_model_coeff = model_coeff.begin();
-    auto it_vec_m = vec_m.begin();
-    auto it_r_old = r_next.begin();
+    residual_vec.resize(sequence.size());
+
+    auto it_residual_vec = residual_vec.begin();
+    *it_residual_vec = r0;
+
+    Eigen::VectorXd last_integral(n_joints);
+    last_integral.setZero(n_joints);
 
     for(auto data : sequence){
-        (*it_r_old).setZero(n_joints);
-        ++it_r_old;
 
         Eigen::MatrixXd C;
         model_.getMatrixC(data.joint_positions,data.joint_velocities, C);
@@ -84,68 +84,23 @@ void Jaco2ResidualVector::getResidualVector(std::vector<ResidualData> &sequence,
         Eigen::MatrixXd H;
         Eigen::VectorXd G;
         model_.getChainDynInertiaAndGravity(data.gx, data.gy, data.gz, data.joint_positions, H, G);
-        *it_vec_m = H*omega;
-        ++it_vec_m;
+        Eigen::VectorXd m = H * omega;
+        Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - G + *it_residual_vec;
 
-        *it_model_coeff  = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - G;
-        ++it_model_coeff;
-    }
+        Eigen::VectorXd integral = integration_step(data.dt, last_integral, to_integrate);
+        last_integral = integral;
 
-    //self consistant loop
-    double diff = 1e10;
-    std::size_t iterations = 0;
-
-    while(diff > accuracy_ || iterations > max_iter_){
-        r_old = r_next;
-        iteration(sequence, model_coeff, r_old,vec_m, r_next);
-        diff = std::abs((r_next.back() - r_old.back()).sum());
-        ++iterations;
+        *it_residual_vec = gains_ * (m - integral);
+        ++it_residual_vec;
     }
 
 
 }
 
-void Jaco2ResidualVector::iteration(const std::vector<ResidualData> &sequence,
-                                    const std::vector<Eigen::VectorXd>& model_coeff,
-                                    const std::vector<Eigen::VectorXd>& r_old,
-                                    const std::vector<Eigen::VectorXd>& vec_m,
-                                    std::vector<Eigen::VectorXd> &res) const
+
+Eigen::VectorXd Jaco2ResidualVector::integration_step(const double dt, const Eigen::VectorXd &last_integral, const Eigen::VectorXd &next_integrant) const
 {
-    auto it_r_old = r_old.begin();
-    auto it_model_coeff = model_coeff.begin();
-    auto it_vec_m = vec_m.begin();
-    auto it_r_next = res.begin();
-    for(std::size_t i  = 0; i < sequence.size(); ++i){
-        Eigen::VectorXd integral;
-        integrate(i, sequence, model_coeff, r_old, integral);
-        *it_r_next = gains_ * ((*it_vec_m) - integral);
-    }
-
-}
-void Jaco2ResidualVector::integrate(const std::size_t iter,
-                                    const std::vector<ResidualData> &sequence,
-                                    const std::vector<Eigen::VectorXd>& model_coeff,
-                                    const std::vector<Eigen::VectorXd>& r_old,
-                                    Eigen::VectorXd &res) const
-{
-
-
-    //TODO Implement
-
-
-//    res.resize(f.size(),0);
-//    auto t_i = stamp.begin();
-//    auto f_i = f.begin();
-//    auto res_i = f.begin();
-//    *res_i = 0;
-//    ++res_i;
-
-//    for(res_i; res_i < res.end(); ++res_i){
-//        double t_pre =*t_i;
-//        ++t_i;
-//        *res_i = (*t_i - t_pre) * (*f_i);
-//        ++f_i;
-//    }
+    // TODO
 }
 
 void Jaco2ResidualVector::vector2EigenVector(const std::vector<double> &vec, Eigen::VectorXd &res)
