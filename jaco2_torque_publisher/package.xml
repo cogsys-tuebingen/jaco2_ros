@@ -40,13 +40,13 @@
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>jaco2_calibration</build_depend>
+  <build_depend>jaco2_calibration_utils</build_depend>
   <build_depend>jaco2_kin_dyn</build_depend>
   <build_depend>jaco2_msgs</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>tf_conversions</build_depend>
-  <run_depend>jaco2_calibration</run_depend>
+  <run_depend>jaco2_calibration_utils</run_depend>
   <run_depend>jaco2_kin_dyn</run_depend>
   <run_depend>jaco2_msgs</run_depend>
   <run_depend>roscpp</run_depend>
