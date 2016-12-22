@@ -85,7 +85,16 @@ public:
      * @param link  input: the link for which the pose should be calculated.
      * @return
      */
-    int getFKPose(const std::vector<double>& q_in, tf::Pose& out, std::string link);
+    int getFKPose(const std::vector<double>& q_in, tf::Pose& out, const std::string link);
+
+    /**
+     * @brief getFKPose Given the joint variables q_in the world space coordinates are calculated. KDL wrapper
+     * @param q_in  input: joint variables
+     * @param out   output: pose (position and orientation)
+     * @param link  input: the link for which the pose should be calculated.
+     * @return
+     */
+    int getFKPose(const std::vector<double>& q_in, KDL::Frame& out, const std::string link);
 
     /**
      * @brief getIKSolution given a end effector pose a corresponding joint configuration is search. trac_ik wrapper

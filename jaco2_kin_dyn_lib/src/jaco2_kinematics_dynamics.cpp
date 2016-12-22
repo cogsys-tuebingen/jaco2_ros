@@ -144,27 +144,34 @@ void Jaco2KinematicsDynamicsModel::getGravity(double &gx, double &gy, double &gz
     gz = gravity_(2);
 }
 
-int Jaco2KinematicsDynamicsModel::getFKPose(const std::vector<double> &q_in, tf::Pose &out, std::string link)
+int Jaco2KinematicsDynamicsModel::getFKPose(const std::vector<double> &q_in, KDL::Frame &out, const std::string link)
 {
     KDL::JntArray q;
-    KDL::Frame pose;
-
     convert(q_in,q);
+
     int segId = getKDLSegmentIndexFK(link);
 
     if(segId > -2){
-        int error_code = solverFK_->JntToCart(q, pose, segId);
-        double qx, qy, qz, qw;
-        pose.M.GetQuaternion(qx,qy,qz,qw);
-        out.setRotation(tf::Quaternion(qx, qy, qz, qw));
-        out.setOrigin(tf::Vector3(pose.p(0), pose.p(1), pose.p(2)));
-        //        tf::PoseKDLToTF(pose,out);
+        int error_code = solverFK_->JntToCart(q, out, segId);
         return error_code;
     }
     else{
         ROS_ERROR_STREAM("Link " << link << "is not part of KDL chain.");
         return KDL::SolverI::E_UNDEFINED;
     }
+}
+
+int Jaco2KinematicsDynamicsModel::getFKPose(const std::vector<double> &q_in, tf::Pose &out, const std::string link)
+{
+    KDL::Frame pose;
+
+    int error_code = getFKPose(q_in, pose, link);
+    double qx, qy, qz, qw;
+    pose.M.GetQuaternion(qx,qy,qz,qw);
+    out.setRotation(tf::Quaternion(qx, qy, qz, qw));
+    out.setOrigin(tf::Vector3(pose.p(0), pose.p(1), pose.p(2)));
+    return error_code;
+
 }
 
 int Jaco2KinematicsDynamicsModel::getIKSolution(const tf::Pose& pose, std::vector<double>& result, const std::vector<double> &seed)
