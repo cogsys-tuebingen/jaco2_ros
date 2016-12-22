@@ -97,10 +97,26 @@ void Jaco2ResidualVector::getResidualVector(std::vector<ResidualData> &sequence,
 
 }
 
+void Jaco2ResidualVector::getResidualVector(std::vector<ResidualData> &sequence, std::vector<std::vector<double> > &residual_vec) const
+{
+   std::vector<Eigen::VectorXd> res;
+   getResidualVector(sequence, res);
+   residual_vec.resize(sequence.size());
+   auto it_res_vec = residual_vec.begin();
+   for(auto data : res){
+       eigenVector2vector(data, *it_res_vec);
+   }
+}
+
+void Jaco2ResidualVector::getResidualVector(const ResidualData &last_data, const ResidualData &new_data, const Eigen::VectorXd last_residual)
+{
+    //TODO
+}
 
 Eigen::VectorXd Jaco2ResidualVector::integration_step(const double dt, const Eigen::VectorXd &last_integral, const Eigen::VectorXd &next_integrant) const
 {
-    // TODO
+    Eigen::VectorXd result = last_integral + dt * next_integrant;
+    return result;
 }
 
 void Jaco2ResidualVector::vector2EigenVector(const std::vector<double> &vec, Eigen::VectorXd &res)
@@ -111,5 +127,13 @@ void Jaco2ResidualVector::vector2EigenVector(const std::vector<double> &vec, Eig
     {
         res(i) = data;
         ++i;
+    }
+}
+
+void Jaco2ResidualVector::eigenVector2vector(const Eigen::VectorXd &vec, std::vector<double> &res)
+{
+    res.resize(vec.rows());
+    for(std::size_t i = 0; i < vec.rows(); ++i){
+        res[i] = vec(i);
     }
 }

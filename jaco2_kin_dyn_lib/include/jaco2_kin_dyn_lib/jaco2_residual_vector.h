@@ -30,12 +30,15 @@ public:
 
     void changeDynamicParams(const std::string& link, const double mass, const Eigen::Vector3d& com, const Eigen::Matrix3d& inertia);
     void getResidualVector(std::vector<ResidualData>& sequence, std::vector<Eigen::VectorXd>& residual_vec) const;
+    void getResidualVector(std::vector<ResidualData>& sequence, std::vector<std::vector<double>>& residual_vec) const;
+    void getResidualVector(const ResidualData& last_data, const ResidualData& new_data, const Eigen::VectorXd last_residual);
 
+    static void vector2EigenVector(const std::vector<double>& vec, Eigen::VectorXd& res);
+    static void eigenVector2vector(const Eigen::VectorXd &vec, std::vector<double> &res);
 
 private:
     Eigen::VectorXd integration_step(const double dt, const Eigen::VectorXd& last_integral, const Eigen::VectorXd& next_integrant) const;
 
-    static void vector2EigenVector(const std::vector<double>& vec, Eigen::VectorXd& res);
 
 private:
     mutable Jaco2KinematicsDynamicsModel model_;
