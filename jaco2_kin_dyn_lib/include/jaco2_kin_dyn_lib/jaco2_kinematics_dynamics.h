@@ -246,8 +246,13 @@ public:
                     const std::vector<double> &qDot,
                     Eigen::MatrixXd& res);
 
-    KDL::Vector getRotationAxis(const std::string &link);
-    Eigen::Vector3d getRotationAxis(const std::string &link);
+    /**
+     * @brief getRotationAxis gets the rotation axis of the link in the link frame
+     * @param link the name of the link
+     * @param rot_axis the rotation axis normaly z-axis (DH connvention)
+     */
+    void getRotationAxis(const std::string &link, KDL::Vector &rot_axis);
+    void getRotationAxis(const std::string &link, Eigen::Vector3d& rot_axis);
 
 
     static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);

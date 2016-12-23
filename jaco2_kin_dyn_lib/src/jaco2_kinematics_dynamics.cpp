@@ -1003,20 +1003,22 @@ void Jaco2KinematicsDynamicsModel::getMatrixC(const std::vector<double> &q,
     }
 }
 
-KDL::Vector Jaco2KinematicsDynamicsModel::getRotationAxis(const std::string &link)
+void Jaco2KinematicsDynamicsModel::getRotationAxis(const std::string &link, KDL::Vector& rot_axis)
 {
     int id = getKDLSegmentIndex(link);
-    return chain_.getSegment(id).getJoint().JointAxis();
+    KDL::Frame X = chain_.getSegment(id).pose(0);
+    rot_axis = X.Inverse().M * chain_.getSegment(id).getJoint().JointAxis();
 }
 
-Eigen::Vector3d Jaco2KinematicsDynamicsModel::getRotationAxis(const std::string &link)
+void Jaco2KinematicsDynamicsModel::getRotationAxis(const std::string &link, Eigen::Vector3d &rot_axis)
 {
-    KDL::Vector v = getRotationAxis(link);
+    KDL::Vector v;
+    getRotationAxis(link, v);
     Eigen::Vector3d res;
-    res(0) = v(0);
-    res(1) = v(1);
-    res(2) = v(2);
-    return res;
+    rot_axis(0) = v(0);
+    rot_axis(1) = v(1);
+    rot_axis(2) = v(2);
+
 }
 
 Eigen::Matrix3d Jaco2KinematicsDynamicsModel::skewSymMat(const KDL::Vector &vec)

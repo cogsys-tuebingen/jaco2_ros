@@ -91,6 +91,40 @@ TEST(Jaco2KinematicsDynamicsToolTests, KinParam)
     EXPECT_NEAR(rot(2,2), -1, 1e-4);
 }
 
+TEST(Jaco2KinematicsDynamicsToolTests, getRotationAxisTest)
+{
+    Eigen::Vector3d j1;
+    jaco2KDL.getRotationAxis("jaco_link_1", j1);
+    EXPECT_NEAR(j1(0), 0, 1e-8);
+    EXPECT_NEAR(j1(1), 0, 1e-8);
+    EXPECT_NEAR(j1(2), 1, 1e-8);
+    Eigen::Vector3d j2;
+    jaco2KDL.getRotationAxis("jaco_link_2", j2);
+    EXPECT_NEAR(j2(0), 0, 1e-8);
+    EXPECT_NEAR(j2(1), 0, 1e-8);
+    EXPECT_NEAR(j2(2), 1, 1e-8);
+    Eigen::Vector3d j3;
+    jaco2KDL.getRotationAxis("jaco_link_3", j3);
+    EXPECT_NEAR(j3(0), 0, 1e-8);
+    EXPECT_NEAR(j3(1), 0, 1e-8);
+    EXPECT_NEAR(j3(2), 1, 1e-8);
+    Eigen::Vector3d j4;
+    jaco2KDL.getRotationAxis("jaco_link_4", j4);
+    EXPECT_NEAR(j4(0), 0, 1e-8);
+    EXPECT_NEAR(j4(1), 0, 1e-8);
+    EXPECT_NEAR(j4(2), 1, 1e-8);
+    Eigen::Vector3d j5;
+    jaco2KDL.getRotationAxis("jaco_link_5", j5);
+    EXPECT_NEAR(j5(0), 0, 1e-8);
+    EXPECT_NEAR(j5(1), 0, 1e-8);
+    EXPECT_NEAR(j5(2), 1, 1e-8);
+    Eigen::Vector3d j6;
+    jaco2KDL.getRotationAxis("jaco_link_hand", j6);
+    EXPECT_NEAR(j6(0), 0, 1e-8);
+    EXPECT_NEAR(j6(1), 0, 1e-8);
+    EXPECT_NEAR(j6(2), 1, 1e-8);
+}
+
 TEST(Jaco2DynamicsTests,inverseDynamics)
 {
     std::vector<double> q = {0, M_PI, M_PI, 0, 0, M_PI};
