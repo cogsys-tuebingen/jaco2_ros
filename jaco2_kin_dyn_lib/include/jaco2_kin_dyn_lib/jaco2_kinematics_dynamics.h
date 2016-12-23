@@ -246,6 +246,10 @@ public:
                     const std::vector<double> &qDot,
                     Eigen::MatrixXd& res);
 
+    KDL::Vector getRotationAxis(const std::string &link);
+    Eigen::Vector3d getRotationAxis(const std::string &link);
+
+
     static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
     static Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);
     static Eigen::Matrix<double, 6, 6> kdlFrame2Spatial(const KDL::Frame& frame);
