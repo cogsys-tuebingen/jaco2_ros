@@ -100,9 +100,6 @@ public:
     void getRotationAxis(const std::string &link, KDL::Vector &rot_axis);
     void getRotationAxis(const std::string &link, Eigen::Vector3d& rot_axis);
 
-
-    static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
-
 protected:
     std::string urdf_param_;
     std::string root_;

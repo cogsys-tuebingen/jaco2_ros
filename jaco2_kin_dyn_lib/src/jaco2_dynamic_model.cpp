@@ -6,11 +6,6 @@
 #include <tf_conversions/tf_kdl.h>
 #include <ros/ros.h>
 
-
-
-
-
-
 Jaco2DynamicModel::Jaco2DynamicModel():
     gravity_(0,0,-9.81)//, solverID_(chain_,gravity_)
 {
@@ -20,6 +15,7 @@ Jaco2DynamicModel::Jaco2DynamicModel(const std::string &robot_model, const std::
      Jaco2KinematicModel(robot_model, chain_root, chain_tip),
      gravity_(0,0,-9.81)
 {
+    initialize();
 }
 
 void Jaco2DynamicModel::setTree(const std::string &robot_model)
@@ -785,6 +781,15 @@ void Jaco2DynamicModel::getMatrixC(const std::vector<double> &q,
     }
 }
 
+Eigen::Matrix3d Jaco2DynamicModel::skewSymMat(const KDL::Vector &vec)
+{
+    Eigen::Matrix3d res;
+    res << 0    , -vec(2)   , vec(1),
+            vec(2), 0         , -vec(0),
+            -vec(1), vec(0)    , 0;
+    return res;
+}
+
 Eigen::Matrix<double, 3, 6> Jaco2DynamicModel::inertiaProductMat(const KDL::Vector &vec)
 {
     Eigen::Matrix<double, 3, 6> res;
@@ -846,11 +851,6 @@ void Jaco2DynamicModel::getRotationAxis(const std::string &link, KDL::Vector& ro
 void Jaco2DynamicModel::getRotationAxis(const std::string &link, Eigen::Vector3d &rot_axis)
 {
     Jaco2KinematicModel::getRotationAxis(link, rot_axis);
-}
-
-Eigen::Matrix3d Jaco2DynamicModel::skewSymMat(const KDL::Vector &vec)
-{
-    Jaco2KinematicModel::skewSymMat(vec);
 }
 
 Eigen::Vector3d Jaco2DynamicModel::getLinkFixedTranslation(const std::string &link) const

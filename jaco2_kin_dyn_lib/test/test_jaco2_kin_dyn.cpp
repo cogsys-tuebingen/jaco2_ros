@@ -4,13 +4,13 @@
 #include <gtest/gtest.h>
 #include <ros/ros.h>
 #include <tf/tf.h>
-#include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
+#include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 #include <Eigen/Core>
 #include <Eigen/LU>
 #include <Eigen/SVD>
 
 
-Jaco2KinematicsDynamicsModel jaco2KDL;
+Jaco2DynamicModel jaco2KDL;
 
 TEST(Jaco2KinematicsDynamicsToolTests,converttest)
 {
@@ -19,12 +19,12 @@ TEST(Jaco2KinematicsDynamicsToolTests,converttest)
     for(int i = 0; i< 6; ++i){
         q(i) = i;
     }
-    Jaco2KinematicsDynamicsModel::convert(q,qvec);
+    Jaco2DynamicModel::convert(q,qvec);
     for(int i =0; i<6; ++i){
         EXPECT_EQ(q(i),qvec[i]);
     }
     KDL::JntArray q2;
-    Jaco2KinematicsDynamicsModel::convert(qvec,q2);
+    Jaco2DynamicModel::convert(qvec,q2);
     for(int i =0; i<6; ++i){
         EXPECT_EQ(q2(i),qvec[i]);
     }
@@ -283,7 +283,7 @@ TEST(Jaco2DynamicsToolsTests, kdlEigenConversion)
     KDL::Vector kdlcross = vec1*vec2;
 
     Eigen::Vector3d vec2_eigen(3,4,5);
-    Eigen::Matrix3d mat = Jaco2KinematicsDynamicsModel::skewSymMat(vec1);
+    Eigen::Matrix3d mat = Jaco2DynamicModel::skewSymMat(vec1);
     Eigen::Vector3d crossprod = mat * vec2_eigen;
 
     KDL::Rotation r(0.707107,0.707107,0,
@@ -292,7 +292,7 @@ TEST(Jaco2DynamicsToolsTests, kdlEigenConversion)
 
     KDL::Vector rot_vec2 = r * vec2;
 
-    Eigen::Vector3d rot_vec2_e= Jaco2KinematicsDynamicsModel::kdlMatrix2Eigen(r) * vec2_eigen;
+    Eigen::Vector3d rot_vec2_e= Jaco2DynamicModel::kdlMatrix2Eigen(r) * vec2_eigen;
 
     KDL::Vector t(0.1,0.2,0.3);
     KDL::Frame frame(r,t);
@@ -301,16 +301,16 @@ TEST(Jaco2DynamicsToolsTests, kdlEigenConversion)
 
     Eigen::Matrix<double, 6, 1> vec1_spatial;
     vec1_spatial << vec2(0), vec2(1), vec2(2), vec1(0), vec1(1), vec1(2);
-    Eigen::Matrix<double, 6, 6> eframe = Jaco2KinematicsDynamicsModel::kdlFrame2Spatial(frame);
+    Eigen::Matrix<double, 6, 6> eframe = Jaco2DynamicModel::kdlFrame2Spatial(frame);
     Eigen::Matrix<double, 6, 1> etrans = eframe *vec1_spatial;
 
     KDL::Wrench w_t = frame * KDL::Wrench(vec1,vec2);
     Eigen::Matrix<double, 6, 1> wrench;
     wrench << vec2(0), vec2(1), vec2(2), vec1(0), vec1(1), vec1(2);
     KDL::Frame i_frame = frame.Inverse();
-    Eigen::Matrix<double, 6, 1> wrench_t = Jaco2KinematicsDynamicsModel::kdlFrame2Spatial(i_frame).transpose() * wrench;
+    Eigen::Matrix<double, 6, 1> wrench_t = Jaco2DynamicModel::kdlFrame2Spatial(i_frame).transpose() * wrench;
 
-    Eigen::Matrix<double, 3, 6> in_prod =Jaco2KinematicsDynamicsModel::inertiaProductMat(KDL::Vector(1,2,3));
+    Eigen::Matrix<double, 3, 6> in_prod =Jaco2DynamicModel::inertiaProductMat(KDL::Vector(1,2,3));
 
 
     for(int i = 0; i < 3; ++i) {
@@ -567,7 +567,7 @@ int main(int argc, char *argv[])
     std::string robot_desc_string;
     //    node.getParam("/robot_description", robot_desc_string);//, std::string(""));
     std::string urdf_param("robot_description");
-    jaco2KDL = Jaco2KinematicsDynamicsModel(urdf_param,"jaco_link_base","jaco_link_hand");
+    jaco2KDL = Jaco2DynamicModel(urdf_param,"jaco_link_base","jaco_link_hand");
 
     return RUN_ALL_TESTS();
 }
