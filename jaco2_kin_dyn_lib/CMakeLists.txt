@@ -137,12 +137,16 @@ include_directories(
 
 ## Declare a C++ library
  add_library(jaco2_kin_dyn_lib
+   src/jaco2_dynamic_model.cpp
+   src/jaco2_kinematic_model.cpp
    src/jaco2_kinematics_dynamics.cpp
    src/yaml_to_kdl_tranform.cpp
    src/jaco2_residual_vector.cpp
    include/jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h
    include/jaco2_kin_dyn_lib/yaml_to_kdl_tranform.h
    include/jaco2_kin_dyn_lib/jaco2_residual_vector.h
+   include/jaco2_kin_dyn_lib/jaco2_kinematic_model.h
+   include/jaco2_kin_dyn_lib/jaco2_dynamic_model.h
 )
 
 ## Add cmake target dependencies of the library
