@@ -3,7 +3,7 @@
 
 #include <ceres/ceres.h>
 #include <tf/tf.h>
-#include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
+#include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 #include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
 
 namespace Jaco2Calibration {
@@ -12,7 +12,7 @@ typedef ceres::Jet<double,6> Vector6d;
 class ManipulatorDynamicResiduals
 {
 public:
-    ManipulatorDynamicResiduals(Jaco2KinematicsDynamicsModel* solver, DynamicCalibrationSample sample)
+    ManipulatorDynamicResiduals(Jaco2DynamicModel* solver, DynamicCalibrationSample sample)
         : solver_(solver),
           sample_(sample)
     {
@@ -98,14 +98,14 @@ public:
 
     }
 
-    static ceres::CostFunction* Create (Jaco2KinematicsDynamicsModel* solver, DynamicCalibrationSample sample)
+    static ceres::CostFunction* Create (Jaco2DynamicModel* solver, DynamicCalibrationSample sample)
     {
         return ( new ceres::NumericDiffCostFunction< ManipulatorDynamicResiduals, ceres::CENTRAL, 1, 9, 9, 9, 9, 9, 9 > (
                      new ManipulatorDynamicResiduals( solver, sample), ceres::TAKE_OWNERSHIP ) );
     }
 
 private:
-    Jaco2KinematicsDynamicsModel* solver_;
+    Jaco2DynamicModel* solver_;
     const DynamicCalibrationSample sample_;
     std::vector<std::string> links_;
     std::vector<double> masses_;

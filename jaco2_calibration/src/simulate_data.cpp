@@ -357,7 +357,7 @@ private:
     moveit::planning_interface::MoveGroup moveGroup_;
     moveit::planning_interface::PlanningSceneInterface planningSceneInterface_;
     planning_scene_monitor::PlanningSceneMonitorPtr  planningMonitor_;
-    Jaco2KinematicsDynamicsModel dynSolver_;
+    Jaco2DynamicModel dynSolver_;
     std::default_random_engine generator_;
     std::normal_distribution<double> distribution_;
     //    ros::Publisher display_publisher_;

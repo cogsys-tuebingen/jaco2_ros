@@ -2,7 +2,7 @@
 #define COM_INERTIA_RESIDUALS_HPP
 #include <ceres/ceres.h>
 #include <tf/tf.h>
-#include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
+#include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 #include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
 
 namespace Jaco2Calibration {
@@ -11,7 +11,7 @@ typedef ceres::Jet<double,6> Vector6d;
 class ComInetriaResiduals
 {
 public:
-    ComInetriaResiduals(Jaco2KinematicsDynamicsModel* solver, DynamicCalibrationSample sample, std::string& link)
+    ComInetriaResiduals(Jaco2DynamicModel* solver, DynamicCalibrationSample sample, std::string& link)
         : solver_(solver),
           sample_(sample),
           link_(link)//,
@@ -55,14 +55,14 @@ public:
 
     }
 
-    static ceres::CostFunction* Create (Jaco2KinematicsDynamicsModel* solver, DynamicCalibrationSample sample, std::string& link )
+    static ceres::CostFunction* Create (Jaco2DynamicModel* solver, DynamicCalibrationSample sample, std::string& link )
     {
         return ( new ceres::NumericDiffCostFunction< ComInetriaResiduals, ceres::CENTRAL, 1, 9 > (
                      new ComInetriaResiduals( solver, sample, link ), ceres::TAKE_OWNERSHIP ) );
     }
 
 private:
-    Jaco2KinematicsDynamicsModel* solver_;
+    Jaco2DynamicModel* solver_;
     const DynamicCalibrationSample sample_;
     const std::string link_;
 

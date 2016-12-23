@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <Eigen/SVD>
 #include <ros/ros.h>
-#include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
+#include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 #include <jaco2_calibration_utils/jaco2_calibration_io.h>
 #include <jaco2_calibration_utils/acceleration_samples.hpp>
 
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
         std::string urdf_param("/robot_description");
         std::string base("jaco_link_base");
         std::string tip("jaco_link_hand");
-        Jaco2KinematicsDynamicsModel model(urdf_param, base, tip);
+        Jaco2DynamicModel model(urdf_param, base, tip);
 
         //initial parameters
         std::vector<Jaco2Calibration::DynamicCalibratedParameters> init_param;

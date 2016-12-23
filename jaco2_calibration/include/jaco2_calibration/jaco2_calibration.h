@@ -8,7 +8,7 @@
 #include <imu_tk/calibration.h>
 //Jaco2 ROS
 #include <jaco2_driver/accelerometer_calibration.hpp>
-#include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
+#include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 #include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
 #include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
 #include <jaco2_calibration_utils/acceleration_samples.hpp>
@@ -41,7 +41,7 @@ public:
 
 
 private:
-    Jaco2KinematicsDynamicsModel model_;
+    Jaco2DynamicModel model_;
     std::vector<DynamicCalibratedParameters> dynParams_;
     int initAccSamples_;
     double gravityMag_;

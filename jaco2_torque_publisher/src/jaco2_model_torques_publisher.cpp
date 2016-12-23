@@ -3,7 +3,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 #include <jaco2_msgs/Jaco2JointState.h>
-#include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
+#include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 #include <jaco2_kin_dyn_lib/yaml_to_kdl_tranform.h>
 #include <jaco2_msgs/JointAngles.h>
 #include <jaco2_msgs/Jaco2Sensor.h>
@@ -180,7 +180,7 @@ private:
     bool initalSensor_;
     int counter_;
     ros::NodeHandle private_nh_;
-    Jaco2KinematicsDynamicsModel solver_;
+    Jaco2DynamicModel solver_;
     ros::Subscriber subJointState_;
     ros::Subscriber subSensorInfo_;
     ros::Publisher publisher_;

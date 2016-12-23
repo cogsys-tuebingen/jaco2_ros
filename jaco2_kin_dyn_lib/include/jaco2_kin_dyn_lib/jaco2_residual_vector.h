@@ -1,7 +1,7 @@
 #ifndef JACO2RESIDUALVECTOR_H
 #define JACO2RESIDUALVECTOR_H
 #include <string>
-#include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
+#include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 struct ResidualData
 {
     double dt;
@@ -41,7 +41,7 @@ private:
 
 
 private:
-    mutable Jaco2KinematicsDynamicsModel model_;
+    mutable Jaco2DynamicModel model_;
     double accuracy_;
     std::size_t max_iter_;
     Eigen::MatrixXd gains_;
