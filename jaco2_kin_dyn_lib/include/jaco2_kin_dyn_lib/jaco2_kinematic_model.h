@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <random>
 //ROS
 #include <ros/ros.h>
 #include <kdl_parser/kdl_parser.hpp>
