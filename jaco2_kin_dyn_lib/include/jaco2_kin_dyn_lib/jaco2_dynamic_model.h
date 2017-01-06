@@ -256,6 +256,9 @@ public:
     void getRotationAxis(const std::string &link, KDL::Vector &rot_axis);
     void getRotationAxis(const std::string &link, Eigen::Vector3d& rot_axis);
 
+    inline double getUpperJointLimit(const std::size_t id){return Jaco2KinematicModel::getUpperJointLimit(id);}
+    inline double getLowerJointLimit(const std::size_t id){return Jaco2KinematicModel::getLowerJointLimit(id);}
+
 
     static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
     static Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);
