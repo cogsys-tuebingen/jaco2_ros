@@ -60,16 +60,17 @@ public:
 
     void changeKineticParams(const std::string& link, const Eigen::Vector3d& trans, const Eigen::Matrix3d& rotation);
 
-
     void getRandomConfig(std::vector<double>& config);
     /**
      * @brief getKDLSegmentIndex gets the KDL segment index for a given segment/ link name
      * @param name the name of the segment/ link
      * @return returns index of segment -1 if name == root_ ; -2 if link name not found.
      */
-    void getRandomConfig(Eigen::VectorXd& config);
-    void useUrdfDynamicParams();
     int getKDLSegmentIndex(const std::string &name ) const;
+
+    void getRandomConfig(Eigen::VectorXd& config);
+
+    void useUrdfDynamicParams();
     /**
      * @brief getKDLSegmentIndexFK gets the index of a link as needed for forward kinematics. root = 0, ...
      * @param name name of the segment/link.
