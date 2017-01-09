@@ -289,7 +289,7 @@ public:
         collision_object.header.frame_id = group_.getPlanningFrame();
 
         /* The id of the object is used to identify it. */
-        collision_object.id = "ground_plan";
+        collision_object.id = "ground_plane";
 
         collision_object.primitives.push_back(primitive);
         collision_object.primitive_poses.push_back(box_pose);
