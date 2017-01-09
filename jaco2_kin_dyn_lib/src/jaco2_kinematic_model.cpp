@@ -285,6 +285,27 @@ std::vector<std::string> Jaco2KinematicModel::getLinkNames() const
     return result;
 }
 
+double  Jaco2KinematicModel::getUpperJointLimit(const std::size_t id)
+{
+    if(upperLimits_.rows() > id){
+        return upperLimits_(id);
+    }
+    else{
+        return 0;
+    }
+}
+
+double  Jaco2KinematicModel::getLowerJointLimit(const std::size_t id)
+{
+    if(lowerLimits_.rows() > id){
+        return lowerLimits_(id);
+    }
+    else{
+        return 0;
+    }
+}
+
+
 
 void Jaco2KinematicModel::convert(const KDL::JntArray &in, std::vector<double> &out)
 {
@@ -325,9 +346,7 @@ void Jaco2KinematicModel::getRotationAxis(const std::string &link, Eigen::Vector
 {
     KDL::Vector v;
     getRotationAxis(link, v);
-    Eigen::Vector3d res;
     rot_axis(0) = v(0);
     rot_axis(1) = v(1);
     rot_axis(2) = v(2);
-
 }

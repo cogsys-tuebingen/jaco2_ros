@@ -90,6 +90,53 @@ int Jaco2DynamicModel::getTorques(const std::vector<double> &q, const std::vecto
     return e_code;
 }
 
+int Jaco2DynamicModel::getTorques(const std::vector<double> &q,
+                                  const std::vector<double> &q_Dot,
+                                  const std::vector<double> &q_DotDot,
+                                  std::vector<double> &torques,
+                                  const std::vector<KDL::Wrench> &wrenches_ext)
+{
+    if(q.size() != q_Dot.size() || q.size() != q_DotDot.size() || q.size() != chain_.getNrOfJoints()){
+        ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is " << q.size() << ". While q_Dot has dimension " << q_Dot.size() << " and q_DotDot "
+                         << q_DotDot.size()<<". The KDL chain contains " <<  chain_.getNrOfJoints() << "  joints." << std::endl);
+        return KDL::SolverI::E_UNDEFINED;
+    }
+
+    KDL::JntArray qkdl(q.size());
+    KDL::JntArray qkdl_Dot(q.size());
+    KDL::JntArray qkdl_DotDot(q.size());
+    KDL::JntArray torques_kdl(chain_.getNrOfJoints());
+    KDL::Wrenches wrenches;
+    wrenches.resize(chain_.getNrOfSegments());
+    for(std::size_t i = 0; i < q.size(); ++i) {
+        qkdl(i) = q[i];
+        qkdl_Dot(i) = q_Dot[i];
+        qkdl_DotDot(i) = q_DotDot[i];
+    }
+
+    int e_code = -1;
+
+    if(wrenches_ext.size() == 0){
+        for(std::size_t i = 0; i < chain_.getNrOfSegments(); ++i)
+        {
+            wrenches[i] = KDL::Wrench::Zero();
+        }
+        e_code = solverID_->CartToJnt(qkdl,qkdl_Dot,qkdl_DotDot,wrenches,torques_kdl);
+    }
+    else if(wrenches_ext.size() != chain_.getNrOfSegments()){
+        ROS_ERROR_STREAM("Dimension mismatch: " << wrenches_ext.size() <<" wrenches are given as input, but kdl expects " << chain_.getNrOfSegments() << "wenches.");
+        return KDL::SolverI::E_UNDEFINED;
+    }
+    else{
+         e_code = solverID_->CartToJnt(qkdl,qkdl_Dot,qkdl_DotDot,wrenches_ext,torques_kdl);
+    }
+
+    convert(torques_kdl,torques);
+
+
+    return e_code;
+}
+
 void Jaco2DynamicModel::setGravity(double x, double y, double z)
 {
     gravity_ = KDL::Vector(x, y, z);

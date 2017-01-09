@@ -82,6 +82,22 @@ target_link_libraries(move_to_config
    ${catkin_LIBRARIES}
 )
 
+
+add_executable(distFunction src/distFunction.cpp)
+add_dependencies(distFunction ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(distFunction
+   ${catkin_LIBRARIES}
+)
+add_executable(comparePlanner src/comparePlanner.cpp)
+add_dependencies(comparePlanner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(comparePlanner
+   ${catkin_LIBRARIES}
+)
+
+
+
+
+
 #############
 ## Install ##
 #############

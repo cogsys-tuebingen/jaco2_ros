@@ -80,6 +80,9 @@ public:
     int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
                    std::vector<double>& torques, const std::vector<Wrench>& wrenches_ext = std::vector<Wrench>());
 
+    int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
+                   std::vector<double>& torques, const std::vector<KDL::Wrench>& wrenches_ext);
+
     /**
      * @brief getFKPose Given the joint variables q_in the world space coordinates are calculated. KDL wrapper
      * @param q_in  input: joint variables
@@ -255,6 +258,9 @@ public:
      */
     void getRotationAxis(const std::string &link, KDL::Vector &rot_axis);
     void getRotationAxis(const std::string &link, Eigen::Vector3d& rot_axis);
+
+    inline double getUpperJointLimit(const std::size_t id){return Jaco2KinematicModel::getUpperJointLimit(id);}
+    inline double getLowerJointLimit(const std::size_t id){return Jaco2KinematicModel::getLowerJointLimit(id);}
 
 
     static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);

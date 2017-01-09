@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <random>
 //ROS
 #include <ros/ros.h>
 #include <kdl_parser/kdl_parser.hpp>
@@ -59,16 +60,17 @@ public:
 
     void changeKineticParams(const std::string& link, const Eigen::Vector3d& trans, const Eigen::Matrix3d& rotation);
 
-
     void getRandomConfig(std::vector<double>& config);
     /**
      * @brief getKDLSegmentIndex gets the KDL segment index for a given segment/ link name
      * @param name the name of the segment/ link
      * @return returns index of segment -1 if name == root_ ; -2 if link name not found.
      */
-    void getRandomConfig(Eigen::VectorXd& config);
-    void useUrdfDynamicParams();
     int getKDLSegmentIndex(const std::string &name ) const;
+
+    void getRandomConfig(Eigen::VectorXd& config);
+
+    void useUrdfDynamicParams();
     /**
      * @brief getKDLSegmentIndexFK gets the index of a link as needed for forward kinematics. root = 0, ...
      * @param name name of the segment/link.
@@ -81,6 +83,9 @@ public:
     std::vector<std::string> getLinkNames() const;
     std::string getRootLink() const {return root_;}
     std::string getTipLink() const {return tip_;}
+
+    double getUpperJointLimit(const std::size_t id);
+    double getLowerJointLimit(const std::size_t id);
 
 
     Eigen::Vector3d getLinkFixedTranslation(const std::string &link) const;
