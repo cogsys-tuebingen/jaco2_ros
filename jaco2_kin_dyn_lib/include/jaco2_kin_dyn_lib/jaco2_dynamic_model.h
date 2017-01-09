@@ -80,6 +80,9 @@ public:
     int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
                    std::vector<double>& torques, const std::vector<Wrench>& wrenches_ext = std::vector<Wrench>());
 
+    int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
+                   std::vector<double>& torques, const std::vector<KDL::Wrench>& wrenches_ext);
+
     /**
      * @brief getFKPose Given the joint variables q_in the world space coordinates are calculated. KDL wrapper
      * @param q_in  input: joint variables
