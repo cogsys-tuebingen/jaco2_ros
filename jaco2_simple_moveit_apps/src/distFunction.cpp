@@ -47,8 +47,8 @@ int main(int argc, char** argv) {
     /* A pose for the box (specified relative to frame_id) */
     geometry_msgs::Pose box_pose;
     box_pose.orientation.w = 1.0;
-    box_pose.position.x =  0.5 + 0.5* primitive.dimensions[0];
-    box_pose.position.y =  0.5 + 0.5* primitive.dimensions[1];
+    box_pose.position.x =  1 + 0.5* primitive.dimensions[0];
+    box_pose.position.y =  1 + 0.5* primitive.dimensions[1];
     box_pose.position.z =  0 + 0.5* primitive.dimensions[2];
     moveit_msgs::CollisionObject collision_object;
     collision_object.id = "dice";
@@ -96,9 +96,14 @@ int main(int argc, char** argv) {
     ROS_INFO_STREAM("result.distance (current conf) " << collision_result.distance);
 
 
+    std::map<std::string, moveit_msgs::CollisionObject> c_objects_map = planning_scene_interface_.getObjects();
+    for(auto& kv : c_objects_map){
+        ROS_INFO_STREAM( kv.first << " has value " << kv.second );
+        scene->processCollisionObjectMsg(kv.second);
+    }
 
-    for(auto i : collision_objects)
-        scene->processCollisionObjectMsg(i);
+//    for(auto i : collision_objects)
+//        scene->processCollisionObjectMsg(i);
 
 
 
