@@ -31,7 +31,11 @@ public:
     void changeDynamicParams(const std::string& link, const double mass, const Eigen::Vector3d& com, const Eigen::Matrix3d& inertia);
     void getResidualVector(std::vector<ResidualData>& sequence, std::vector<Eigen::VectorXd>& residual_vec) const;
     void getResidualVector(std::vector<ResidualData>& sequence, std::vector<std::vector<double>>& residual_vec) const;
-    void getResidualVector(const ResidualData& last_data, const ResidualData& new_data, const Eigen::VectorXd last_residual);
+    void getResidualVector(const ResidualData &data,
+                           const Eigen::VectorXd& last_residual,
+                           const Eigen::VectorXd& last_integral,
+                           Eigen::VectorXd& new_integral,
+                           Eigen::VectorXd& new_residual);
 
     static void vector2EigenVector(const std::vector<double>& vec, Eigen::VectorXd& res);
     static void eigenVector2vector(const Eigen::VectorXd &vec, std::vector<double> &res);

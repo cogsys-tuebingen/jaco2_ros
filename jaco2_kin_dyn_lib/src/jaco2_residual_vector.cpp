@@ -108,9 +108,30 @@ void Jaco2ResidualVector::getResidualVector(std::vector<ResidualData> &sequence,
    }
 }
 
-void Jaco2ResidualVector::getResidualVector(const ResidualData &last_data, const ResidualData &new_data, const Eigen::VectorXd last_residual)
+void Jaco2ResidualVector::getResidualVector(const ResidualData &data,
+                                            const Eigen::VectorXd& last_residual,
+                                            const Eigen::VectorXd& last_integral,
+                                            Eigen::VectorXd& new_integral,
+                                            Eigen::VectorXd& new_residual)
 {
-    //TODO
+    Eigen::MatrixXd C;
+    model_.getMatrixC(data.joint_positions,data.joint_velocities, C);
+
+    Eigen::VectorXd omega;
+    Eigen::VectorXd tau;
+    vector2EigenVector(data.joint_velocities, omega);
+    vector2EigenVector(data.torques, tau);
+
+    Eigen::MatrixXd H;
+    Eigen::VectorXd G;
+    model_.getChainDynInertiaAndGravity(data.gx, data.gy, data.gz, data.joint_positions, H, G);
+    Eigen::VectorXd m = H * omega;
+    Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - G + last_residual;
+
+    new_integral = integration_step(data.dt, last_integral, to_integrate);
+
+    new_residual = gains_ * (m - new_integral);
+
 }
 
 Eigen::VectorXd Jaco2ResidualVector::integration_step(const double dt, const Eigen::VectorXd &last_integral, const Eigen::VectorXd &next_integrant) const
