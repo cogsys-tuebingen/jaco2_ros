@@ -90,7 +90,7 @@ public:
      * @param link  input: the link for which the pose should be calculated.
      * @return
      */
-    int getFKPose(const std::vector<double>& q_in, tf::Pose& out, const std::string link);
+    int getFKPose(const std::vector<double>& q_in, tf::Pose& out, const std::string link) const;
 
     /**
      * @brief getFKPose Given the joint variables q_in the world space coordinates are calculated. KDL wrapper
@@ -99,7 +99,7 @@ public:
      * @param link  input: the link for which the pose should be calculated.
      * @return
      */
-    int getFKPose(const std::vector<double>& q_in, KDL::Frame& out, const std::string link);
+    int getFKPose(const std::vector<double>& q_in, KDL::Frame& out, const std::string link) const;
 
     /**
      * @brief getIKSolution given a end effector pose a corresponding joint configuration is search. trac_ik wrapper
@@ -256,7 +256,7 @@ public:
      * @param link the name of the link
      * @param rot_axis the rotation axis normaly z-axis (DH connvention)
      */
-    void getRotationAxis(const std::string &link, KDL::Vector &rot_axis);
+    void getRotationAxis(const std::string &link, KDL::Vector &rot_axis) const;
     void getRotationAxis(const std::string &link, Eigen::Vector3d& rot_axis);
 
     inline double getUpperJointLimit(const std::size_t id){return Jaco2KinematicModel::getUpperJointLimit(id);}

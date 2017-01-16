@@ -890,7 +890,7 @@ void::Jaco2DynamicModel::setRootAndTip(const std::string &chain_root, const std:
    Jaco2KinematicModel::setRootAndTip(chain_root, chain_tip);
 }
 
-void Jaco2DynamicModel::getRotationAxis(const std::string &link, KDL::Vector& rot_axis)
+void Jaco2DynamicModel::getRotationAxis(const std::string &link, KDL::Vector& rot_axis) const
 {
     Jaco2KinematicModel::getRotationAxis(link, rot_axis);
 }
@@ -931,12 +931,12 @@ void Jaco2DynamicModel::PoseTFToKDL(const tf::Pose& t, KDL::Frame& k)
     Jaco2KinematicModel::PoseTFToKDL(t, k);
 }
 
-int Jaco2DynamicModel::getFKPose(const std::vector<double> &q_in, KDL::Frame &out, const std::string link)
+int Jaco2DynamicModel::getFKPose(const std::vector<double> &q_in, KDL::Frame &out, const std::string link) const
 {
    return Jaco2KinematicModel::getFKPose(q_in, out, link);
 }
 
-int Jaco2DynamicModel::getFKPose(const std::vector<double> &q_in, tf::Pose &out, const std::string link)
+int Jaco2DynamicModel::getFKPose(const std::vector<double> &q_in, tf::Pose &out, const std::string link) const
 {
     return Jaco2KinematicModel::getFKPose(q_in, out, link);
 

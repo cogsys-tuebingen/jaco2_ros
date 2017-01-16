@@ -84,7 +84,7 @@ void::Jaco2KinematicModel::setRootAndTip(const std::string &chain_root, const st
 }
 
 
-int Jaco2KinematicModel::getFKPose(const std::vector<double> &q_in, KDL::Frame &out, const std::string link)
+int Jaco2KinematicModel::getFKPose(const std::vector<double> &q_in, KDL::Frame &out, const std::string link) const
 {
     KDL::JntArray q;
     convert(q_in,q);
@@ -101,7 +101,7 @@ int Jaco2KinematicModel::getFKPose(const std::vector<double> &q_in, KDL::Frame &
     }
 }
 
-int Jaco2KinematicModel::getFKPose(const std::vector<double> &q_in, tf::Pose &out, const std::string link)
+int Jaco2KinematicModel::getFKPose(const std::vector<double> &q_in, tf::Pose &out, const std::string link) const
 {
     KDL::Frame pose;
 
@@ -335,14 +335,14 @@ void Jaco2KinematicModel::PoseTFToKDL(const tf::Pose& t, KDL::Frame& k)
     }
 }
 
-void Jaco2KinematicModel::getRotationAxis(const std::string &link, KDL::Vector& rot_axis)
+void Jaco2KinematicModel::getRotationAxis(const std::string &link, KDL::Vector& rot_axis) const
 {
     int id = getKDLSegmentIndex(link);
     KDL::Frame X = chain_.getSegment(id).pose(0);
     rot_axis = X.Inverse().M * chain_.getSegment(id).getJoint().JointAxis();
 }
 
-void Jaco2KinematicModel::getRotationAxis(const std::string &link, Eigen::Vector3d &rot_axis)
+void Jaco2KinematicModel::getRotationAxis(const std::string &link, Eigen::Vector3d &rot_axis) const
 {
     KDL::Vector v;
     getRotationAxis(link, v);
