@@ -37,6 +37,8 @@ public:
                            Eigen::VectorXd& new_integral,
                            Eigen::VectorXd& new_residual);
 
+    std::size_t getNrOfJoints() const;
+
     static void vector2EigenVector(const std::vector<double>& vec, Eigen::VectorXd& res);
     static void eigenVector2vector(const Eigen::VectorXd &vec, std::vector<double> &res);
 
@@ -46,8 +48,6 @@ private:
 
 private:
     mutable Jaco2DynamicModel model_;
-    double accuracy_;
-    std::size_t max_iter_;
     Eigen::MatrixXd gains_;
 };
 

@@ -1,24 +1,16 @@
 #include <jaco2_kin_dyn_lib/jaco2_residual_vector.h>
 Jaco2ResidualVector::Jaco2ResidualVector()
-    : model_(),
-      accuracy_(0.1),
-      max_iter_(10)
+    : model_()
 {
 
 }
 
 Jaco2ResidualVector::Jaco2ResidualVector(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip)
-    : model_(robot_model, chain_root, chain_tip),
-      accuracy_(0.1),
-      max_iter_(10)
+    : model_(robot_model, chain_root, chain_tip)
 {
 
 }
 
-void Jaco2ResidualVector::setAccuracy(double val)
-{
-    accuracy_ = val;
-}
 
 void Jaco2ResidualVector::setGains(std::vector<double> &gains)
 {
@@ -36,9 +28,9 @@ void Jaco2ResidualVector::setGravity(double x, double y, double z)
     model_.setGravity(x,y,z);
 }
 
-void Jaco2ResidualVector::setMaxIterations(std::size_t val)
+std::size_t Jaco2ResidualVector::getNrOfJoints()const
 {
-    max_iter_ = val;
+    model_.getNrOfJoints();
 }
 
 void Jaco2ResidualVector::setTree(const std::string &robot_model)
@@ -99,13 +91,13 @@ void Jaco2ResidualVector::getResidualVector(std::vector<ResidualData> &sequence,
 
 void Jaco2ResidualVector::getResidualVector(std::vector<ResidualData> &sequence, std::vector<std::vector<double> > &residual_vec) const
 {
-   std::vector<Eigen::VectorXd> res;
-   getResidualVector(sequence, res);
-   residual_vec.resize(sequence.size());
-   auto it_res_vec = residual_vec.begin();
-   for(auto data : res){
-       eigenVector2vector(data, *it_res_vec);
-   }
+    std::vector<Eigen::VectorXd> res;
+    getResidualVector(sequence, res);
+    residual_vec.resize(sequence.size());
+    auto it_res_vec = residual_vec.begin();
+    for(auto data : res){
+        eigenVector2vector(data, *it_res_vec);
+    }
 }
 
 void Jaco2ResidualVector::getResidualVector(const ResidualData &data,
