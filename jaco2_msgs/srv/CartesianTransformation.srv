@@ -1,4 +1,9 @@
-geometry_msgs/Pose request
+float32 x                   # translation in the group's planning frame (parent link) x-direction in meters
+float32 y                   # translation in the group's planning frame (parent link) y-direction in meters
+float32 z                   # translation in the group's planning frame (parent link) z-direction in meters
+float32 yaw                 # rotation around the end effector z-axis by an angle in degrees
+float32 pitch               # rotation around the end effector y-axis by an angle in degrees
+float32 roll                # rotation around the end effector x-axis by an angle in degrees
 ---
-geometry_msgs/Pose result
-bool success
+geometry_msgs/Pose result   # the resulting end effector pose in the group's planning frame
+int16 error_code            # moveit error code

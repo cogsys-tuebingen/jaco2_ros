@@ -15,7 +15,12 @@ public:
     {
         fk_client_ = nh.serviceClient<moveit_msgs::GetPositionFK>("/compute_fk");
 
-        move_cart_server_ = nh.advertiseService<jaco2_msgs::CartesianTransformation>("cartesian_diff", &CartesianTransformationServer::move_cb, this);
+        move_cart_server_ = nh.advertiseService("cartesian_diff", &CartesianTransformationServer::move_cb, this);
+    }
+
+    void tick()
+    {
+        ros::spinOnce();
     }
 
 private:
@@ -29,26 +34,34 @@ private:
         moveit_msgs::GetPositionFKRequest fk_request;
         moveit_msgs::GetPositionFKResponse fk_response;
         fk_request.header.frame_id = group_.getPlanningFrame();
+        ROS_INFO_STREAM("planning frame: " << group_.getPlanningFrame(););
         fk_request.fk_link_names.resize(1,group_.getEndEffectorLink());
         fk_request.robot_state.joint_state.name = group_.getActiveJoints();
 
         fk_client_.call(fk_request, fk_response);
 
-        ROS_INFO_STREAM(fk_response);
+        ROS_INFO_STREAM(fk_response);/**/
 
         geometry_msgs::PoseStamped current_pose = fk_response.pose_stamped.front();
 
         std::vector<geometry_msgs::Pose> waypoints;
 
-        tf::Pose trans,c_pose;
-        tf::poseMsgToTF(req.request,trans);
+        tf::Pose c_pose;
+        tf::Pose trans;
+        trans.setIdentity();
+        trans.setOrigin(tf::Vector3(req.x, req.y, req.z));
+        tf::Pose rot;
+        tf::Quaternion q;
+        q.setRPY(req.roll/180.0*M_PI, req.pitch/180.0*M_PI, req.yaw/180.0*M_PI );
+        rot.setRotation(q);
+
         tf::poseMsgToTF(current_pose.pose,c_pose);
 
-        tf::Pose target = c_pose * trans;
-        geometry_msgs::Pose target_pose;
-        tf::poseTFToMsg(target, target_pose);
+        tf::Pose target =  trans * c_pose * rot ;
 
-        waypoints.push_back(target_pose);  // up and out
+        tf::poseTFToMsg(target, res.result);
+
+        waypoints.push_back(res.result);  // up and out
 
         ros::Time start = ros::Time::now();
 
@@ -62,12 +75,17 @@ private:
         ROS_INFO("Visualizing plan 4 (cartesian path) (%.2f%% acheived)",
                  fraction * 100.0);
         /* Sleep to give Rviz time to visualize the plan. */
-        sleep(15.0);
+        sleep(5.0);
         my_plan_.trajectory_ = trajectory;
         my_plan_.planning_time_ = (end-start).toSec();
         moveit::core::robotStateToRobotStateMsg(start_state,my_plan_.start_state_);
 //        my_plan_.start_state_ = start_state;
-        group_.execute(my_plan_);
+        moveit_msgs::MoveItErrorCodes err  = group_.execute(my_plan_);
+        res.error_code = err.val;
+
+        bool success = (err.val == moveit_msgs::MoveItErrorCodes::SUCCESS);
+
+        return success;
 
     }
 
@@ -92,11 +110,15 @@ int main(int argc, char *argv[])
     sleep_time.sleep();
     sleep_time.sleep();
 
-
-
+    CartesianTransformationServer server("manipulator", node_handle);
+    ros::Rate r(20);
 
     sleep_time.sleep();
+    while(ros::ok()){
+        ros::spinOnce();
 
+        r.sleep();
+    }
 
 
 
