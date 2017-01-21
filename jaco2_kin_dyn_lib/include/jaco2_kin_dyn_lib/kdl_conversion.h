@@ -14,9 +14,10 @@ namespace Jaco2KinDynLib {
      void PoseTFToKDL(const tf::Pose& t, KDL::Frame& k);
      Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
      Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);
-     Eigen::Matrix<double, 6, 6> kdlFrame2Spatial(const KDL::Frame& frame);
-     Eigen::Matrix<double, 3, 3> kdlMatrix2Eigen(const KDL::Rotation& rot);
+     Eigen::Matrix<double, 6, 6> convert2Eigen(const KDL::Frame& frame);
+     Eigen::Matrix<double, 3, 3> convert2Eigen(const KDL::Rotation& rot);
+     Eigen::Matrix<double, 6, 1> convert2Eigen(const KDL::Wrench& wrench);
      void kdlJntArray2Eigen(const KDL::JntArray& q, Eigen::VectorXd &res);
-     void kdlMatrix2Eigen(const KDL::JntSpaceInertiaMatrix& mat, Eigen::MatrixXd &res);
+     void convert2Eigen(const KDL::JntSpaceInertiaMatrix& mat, Eigen::MatrixXd &res);
 }
 #endif // KDL_CONVERSION_H

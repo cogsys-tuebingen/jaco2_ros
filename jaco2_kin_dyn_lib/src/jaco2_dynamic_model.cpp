@@ -278,7 +278,7 @@ int Jaco2DynamicModel::getChainDynParam(const double gx, const double gy, const 
     kdlJntArray2Eigen(coriolis, C);
     kdlJntArray2Eigen(gravity, G);
 
-    kdlMatrix2Eigen(inertia, H);
+    convert2Eigen(inertia, H);
 
     return res;
 
@@ -313,7 +313,7 @@ int Jaco2DynamicModel::getChainDynInertiaAndGravity(const double gx, const doubl
 
     kdlJntArray2Eigen(gravity, G);
 
-    kdlMatrix2Eigen(inertia, H);
+    convert2Eigen(inertia, H);
 
     return res;
 
@@ -675,7 +675,7 @@ Eigen::MatrixXd Jaco2DynamicModel::getRigidBodyRegressionMatrix(const std::strin
                 double norm =rotAxis.Norm();
                 zi << rotAxis(0)/norm, rotAxis(1)/norm, rotAxis(2)/norm, 0, 0, 0;
                 KDL::Frame xi = Xij[tipId - row].Inverse() * Xij[tipId - col];
-                Eigen::Matrix<double, 6, 6> Xi = kdlFrame2Spatial(xi.Inverse()).transpose();
+                Eigen::Matrix<double, 6, 6> Xi = convert2Eigen(xi.Inverse()).transpose();
                 if(project) {
                     Eigen::Matrix<double, 1, 10> Kij = zi * Xi * An[tipId - col];
                     result.block<1,10>( nLinks -1 - row,(nLinks -1 - col) * 10) = Kij;

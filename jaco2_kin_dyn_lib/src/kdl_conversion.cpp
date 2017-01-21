@@ -47,10 +47,10 @@ Eigen::Matrix<double, 3, 6> Jaco2KinDynLib::inertiaProductMat(const KDL::Vector 
 
 }
 
-Eigen::Matrix<double, 6, 6> Jaco2KinDynLib::kdlFrame2Spatial(const KDL::Frame &frame)
+Eigen::Matrix<double, 6, 6> Jaco2KinDynLib::convert2Eigen(const KDL::Frame &frame)
 {
     Eigen::Matrix<double, 6, 6> result;
-    Eigen::Matrix<double, 3, 3> rot = kdlMatrix2Eigen(frame.M);
+    Eigen::Matrix<double, 3, 3> rot = convert2Eigen(frame.M);
     result.block<3,3>(0,0) = rot;
     result.block<3,3>(0,3).setZero();
     result.block<3,3>(3,0) = skewSymMat(frame.p) * rot;
@@ -58,7 +58,7 @@ Eigen::Matrix<double, 6, 6> Jaco2KinDynLib::kdlFrame2Spatial(const KDL::Frame &f
     return result;
 }
 
-Eigen::Matrix<double, 3, 3> Jaco2KinDynLib::kdlMatrix2Eigen(const KDL::Rotation &rot)
+Eigen::Matrix<double, 3, 3> Jaco2KinDynLib::convert2Eigen(const KDL::Rotation &rot)
 {
     Eigen::Matrix<double, 3, 3> result;
     result << rot.data[0], rot.data[1], rot.data[2],
@@ -75,7 +75,7 @@ void Jaco2KinDynLib::kdlJntArray2Eigen(const KDL::JntArray &q, Eigen::VectorXd& 
     }
 }
 
-void Jaco2KinDynLib::kdlMatrix2Eigen(const KDL::JntSpaceInertiaMatrix& mat, Eigen::MatrixXd & res)
+void Jaco2KinDynLib::convert2Eigen(const KDL::JntSpaceInertiaMatrix& mat, Eigen::MatrixXd & res)
 {
     res.setZero(mat.rows(), mat.columns());
     for(std::size_t i = 0; i < mat.rows(); ++i){
@@ -83,4 +83,13 @@ void Jaco2KinDynLib::kdlMatrix2Eigen(const KDL::JntSpaceInertiaMatrix& mat, Eige
             res(i,j) = mat(i,j);
         }
     }
+}
+
+Eigen::Matrix<double, 6, 1> Jaco2KinDynLib::convert2Eigen(const KDL::Wrench& wrench)
+{
+    Eigen::Matrix<double, 6, 1> result;
+    result << wrench.torque(0), wrench.torque(1), wrench.torque(2),
+              wrench.force(0), wrench.force(1), wrench.force(3);
+    return result;
+
 }

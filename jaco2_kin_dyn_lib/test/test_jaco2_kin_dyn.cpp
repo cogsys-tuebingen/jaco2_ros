@@ -295,7 +295,7 @@ TEST(Jaco2DynamicsToolsTests, kdlEigenConversion)
 
     KDL::Vector rot_vec2 = r * vec2;
 
-    Eigen::Vector3d rot_vec2_e= kdlMatrix2Eigen(r) * vec2_eigen;
+    Eigen::Vector3d rot_vec2_e= convert2Eigen(r) * vec2_eigen;
 
     KDL::Vector t(0.1,0.2,0.3);
     KDL::Frame frame(r,t);
@@ -304,14 +304,14 @@ TEST(Jaco2DynamicsToolsTests, kdlEigenConversion)
 
     Eigen::Matrix<double, 6, 1> vec1_spatial;
     vec1_spatial << vec2(0), vec2(1), vec2(2), vec1(0), vec1(1), vec1(2);
-    Eigen::Matrix<double, 6, 6> eframe = kdlFrame2Spatial(frame);
+    Eigen::Matrix<double, 6, 6> eframe = convert2Eigen(frame);
     Eigen::Matrix<double, 6, 1> etrans = eframe *vec1_spatial;
 
     KDL::Wrench w_t = frame * KDL::Wrench(vec1,vec2);
     Eigen::Matrix<double, 6, 1> wrench;
     wrench << vec2(0), vec2(1), vec2(2), vec1(0), vec1(1), vec1(2);
     KDL::Frame i_frame = frame.Inverse();
-    Eigen::Matrix<double, 6, 1> wrench_t = kdlFrame2Spatial(i_frame).transpose() * wrench;
+    Eigen::Matrix<double, 6, 1> wrench_t = convert2Eigen(i_frame).transpose() * wrench;
 
     Eigen::Matrix<double, 3, 6> in_prod = inertiaProductMat(KDL::Vector(1,2,3));
 
