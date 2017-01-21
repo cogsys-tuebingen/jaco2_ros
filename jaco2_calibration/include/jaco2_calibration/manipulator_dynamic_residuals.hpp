@@ -12,7 +12,7 @@ typedef ceres::Jet<double,6> Vector6d;
 class ManipulatorDynamicResiduals
 {
 public:
-    ManipulatorDynamicResiduals(Jaco2DynamicModel* solver, DynamicCalibrationSample sample)
+    ManipulatorDynamicResiduals(Jaco2KinDynLib::Jaco2DynamicModel* solver, DynamicCalibrationSample sample)
         : solver_(solver),
           sample_(sample)
     {
@@ -98,14 +98,14 @@ public:
 
     }
 
-    static ceres::CostFunction* Create (Jaco2DynamicModel* solver, DynamicCalibrationSample sample)
+    static ceres::CostFunction* Create (Jaco2KinDynLib::Jaco2DynamicModel* solver, DynamicCalibrationSample sample)
     {
         return ( new ceres::NumericDiffCostFunction< ManipulatorDynamicResiduals, ceres::CENTRAL, 1, 9, 9, 9, 9, 9, 9 > (
                      new ManipulatorDynamicResiduals( solver, sample), ceres::TAKE_OWNERSHIP ) );
     }
 
 private:
-    Jaco2DynamicModel* solver_;
+    Jaco2KinDynLib::Jaco2DynamicModel* solver_;
     const DynamicCalibrationSample sample_;
     std::vector<std::string> links_;
     std::vector<double> masses_;

@@ -38,7 +38,7 @@ public:
 
 
 
-        Jaco2Yaml2KDLTransform::load("/tmp/acc_transforms.yaml",staticAccTrans_);
+        Jaco2KinDynLib::load("/tmp/acc_transforms.yaml",staticAccTrans_);
         //        listener_.waitForTransform("jaco_link_base","jaco_link_hand",ros::Time(0),ros::Duration(3));  //or use tf and store transformations
         links_ = solver_.getLinkNames();
 
@@ -180,7 +180,7 @@ private:
     bool initalSensor_;
     int counter_;
     ros::NodeHandle private_nh_;
-    Jaco2DynamicModel solver_;
+    Jaco2KinDynLib::Jaco2DynamicModel solver_;
     ros::Subscriber subJointState_;
     ros::Subscriber subSensorInfo_;
     ros::Publisher publisher_;
@@ -198,7 +198,7 @@ private:
     double gravityMean_[3];
     int gravityCounter_;
     //    tf::TransformListener listener_;
-    std::vector<Jaco2Yaml2KDLTransform::KDLTransformation> staticAccTrans_;
+    std::vector<Jaco2KinDynLib::KDLTransformation> staticAccTrans_;
     std::vector<std::string> links_;
     std::vector<std::string> frameNames_;
     std::vector<Eigen::Vector3d> acceleration_;

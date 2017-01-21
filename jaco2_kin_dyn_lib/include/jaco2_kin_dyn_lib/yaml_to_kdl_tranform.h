@@ -5,7 +5,7 @@
 #include <tf_conversions/tf_kdl.h>
 #include <yaml-cpp/yaml.h>
 
-namespace Jaco2Yaml2KDLTransform {
+namespace Jaco2KinDynLib{
 
 struct KDLTransformation {
     KDLTransformation(){}

@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
         std::string urdf_param("/robot_description");
         std::string base("jaco_link_base");
         std::string tip("jaco_link_hand");
-        Jaco2DynamicModel model(urdf_param, base, tip);
+        Jaco2KinDynLib::Jaco2DynamicModel model(urdf_param, base, tip);
 
         //initial parameters
         std::vector<Jaco2Calibration::DynamicCalibratedParameters> init_param;

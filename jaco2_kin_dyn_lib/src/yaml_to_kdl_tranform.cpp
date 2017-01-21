@@ -4,7 +4,7 @@
 #include <yaml-cpp/yaml.h>
 
 
-namespace Jaco2Yaml2KDLTransform {
+namespace Jaco2KinDynLib{
 
 
 void save(std::string name, const std::vector<KDLTransformation>& transforms)

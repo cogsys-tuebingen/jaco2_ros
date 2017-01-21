@@ -47,7 +47,7 @@ private:
 
 
 private:
-    mutable Jaco2DynamicModel model_;
+    mutable Jaco2KinDynLib::Jaco2DynamicModel model_;
     Eigen::MatrixXd gains_;
 };
 

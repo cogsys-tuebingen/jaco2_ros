@@ -41,7 +41,7 @@ public:
 
 
 private:
-    Jaco2DynamicModel model_;
+    Jaco2KinDynLib::Jaco2DynamicModel model_;
     std::vector<DynamicCalibratedParameters> dynParams_;
     int initAccSamples_;
     double gravityMag_;

@@ -19,7 +19,7 @@
 #include <kdl/chaindynparam.hpp>
 
 #include <jaco2_kin_dyn_lib/jaco2_kinematic_model.h>
-
+namespace Jaco2KinDynLib {
 struct Wrench{
 
     Eigen::Vector3d force;
@@ -199,12 +199,12 @@ public:
                     Eigen::MatrixXd& res);
 
 
-    static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
-    static Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);
-    static Eigen::Matrix<double, 6, 6> kdlFrame2Spatial(const KDL::Frame& frame);
-    static Eigen::Matrix<double, 3, 3> kdlMatrix2Eigen(const KDL::Rotation& rot);
-    static void kdlJntArray2Eigen(const KDL::JntArray& q, Eigen::VectorXd &res);
-    static void kdlMatrix2Eigen(const KDL::JntSpaceInertiaMatrix& mat, Eigen::MatrixXd &res);
+//    static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
+//    static Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);
+//    static Eigen::Matrix<double, 6, 6> kdlFrame2Spatial(const KDL::Frame& frame);
+//    static Eigen::Matrix<double, 3, 3> kdlMatrix2Eigen(const KDL::Rotation& rot);
+//    static void kdlJntArray2Eigen(const KDL::JntArray& q, Eigen::VectorXd &res);
+//    static void kdlMatrix2Eigen(const KDL::JntSpaceInertiaMatrix& mat, Eigen::MatrixXd &res);
 
 private:
     KDL::Vector gravity_;
@@ -222,5 +222,6 @@ private:
 
 
 };
+}
 
 #endif // JACO2DYNAMICMODEL_H
