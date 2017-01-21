@@ -9,6 +9,7 @@
 #include <tf/tf.h>
 
 namespace Jaco2KinDynLib {
+
      void convert(const KDL::JntArray& in, std::vector<double>& out);
      void convert(const std::vector<double>& in, KDL::JntArray& out);
      void PoseTFToKDL(const tf::Pose& t, KDL::Frame& k);

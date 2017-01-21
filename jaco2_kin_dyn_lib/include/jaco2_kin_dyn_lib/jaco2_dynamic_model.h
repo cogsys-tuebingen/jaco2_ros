@@ -198,14 +198,6 @@ public:
                     const std::vector<double> &qDot,
                     Eigen::MatrixXd& res);
 
-
-//    static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
-//    static Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);
-//    static Eigen::Matrix<double, 6, 6> kdlFrame2Spatial(const KDL::Frame& frame);
-//    static Eigen::Matrix<double, 3, 3> kdlMatrix2Eigen(const KDL::Rotation& rot);
-//    static void kdlJntArray2Eigen(const KDL::JntArray& q, Eigen::VectorXd &res);
-//    static void kdlMatrix2Eigen(const KDL::JntSpaceInertiaMatrix& mat, Eigen::MatrixXd &res);
-
 private:
     KDL::Vector gravity_;
     std::shared_ptr<KDL::ChainIdSolver_RNE> solverID_;
