@@ -304,14 +304,15 @@ TEST(Jaco2DynamicsToolsTests, kdlEigenConversion)
 
     Eigen::Matrix<double, 6, 1> vec1_spatial;
     vec1_spatial << vec2(0), vec2(1), vec2(2), vec1(0), vec1(1), vec1(2);
-    Eigen::Matrix<double, 6, 6> eframe = convert2Eigen(frame);
+    Eigen::Matrix<double, 6, 6> eframe = convert2EigenTwistTransform(frame);
     Eigen::Matrix<double, 6, 1> etrans = eframe *vec1_spatial;
 
     KDL::Wrench w_t = frame * KDL::Wrench(vec1,vec2);
     Eigen::Matrix<double, 6, 1> wrench;
     wrench << vec2(0), vec2(1), vec2(2), vec1(0), vec1(1), vec1(2);
     KDL::Frame i_frame = frame.Inverse();
-    Eigen::Matrix<double, 6, 1> wrench_t = convert2Eigen(i_frame).transpose() * wrench;
+    Eigen::Matrix<double, 6, 1> wrench_t = convert2EigenTwistTransform(i_frame).transpose() * wrench;
+    Eigen::Matrix<double, 6, 1> wrench_t2 = convert2EigenWrenchTransform(frame) * wrench;
 
     Eigen::Matrix<double, 3, 6> in_prod = inertiaProductMat(KDL::Vector(1,2,3));
 
@@ -323,6 +324,8 @@ TEST(Jaco2DynamicsToolsTests, kdlEigenConversion)
         EXPECT_NEAR(twist_trans.vel(i), etrans(i+3), 1e-6);
         EXPECT_NEAR(w_t.torque(i), wrench_t(i), 1e-6);
         EXPECT_NEAR(w_t.force(i), wrench_t(i+3), 1e-6);
+        EXPECT_NEAR(w_t.torque(i), wrench_t2(i), 1e-6);
+        EXPECT_NEAR(w_t.force(i), wrench_t2(i+3), 1e-6);
         EXPECT_EQ(in_prod(0,i+3),0);
     }
     EXPECT_EQ(in_prod(0,0),1);

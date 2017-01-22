@@ -675,7 +675,7 @@ Eigen::MatrixXd Jaco2DynamicModel::getRigidBodyRegressionMatrix(const std::strin
                 double norm =rotAxis.Norm();
                 zi << rotAxis(0)/norm, rotAxis(1)/norm, rotAxis(2)/norm, 0, 0, 0;
                 KDL::Frame xi = Xij[tipId - row].Inverse() * Xij[tipId - col];
-                Eigen::Matrix<double, 6, 6> Xi = convert2Eigen(xi.Inverse()).transpose();
+                Eigen::Matrix<double, 6, 6> Xi = convert2EigenTwistTransform(xi.Inverse()).transpose();
                 if(project) {
                     Eigen::Matrix<double, 1, 10> Kij = zi * Xi * An[tipId - col];
                     result.block<1,10>( nLinks -1 - row,(nLinks -1 - col) * 10) = Kij;
