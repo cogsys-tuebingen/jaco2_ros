@@ -47,6 +47,11 @@ Jaco2KinematicModel::Jaco2KinematicModel(const std::string &robot_model, const s
     std::cout << "Number of Joints: " << chain_.getNrOfJoints() << " | Number of Segments: " << chain_.getNrOfSegments() << std::endl;
 }
 
+Jaco2KinematicModel::~Jaco2KinematicModel()
+{
+
+}
+
 void Jaco2KinematicModel::setTree(const std::string &robot_model)
 {
 

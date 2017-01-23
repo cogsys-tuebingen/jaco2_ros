@@ -26,8 +26,9 @@ public:
     Jaco2KinematicModel();
     Jaco2KinematicModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
 
+    virtual ~Jaco2KinematicModel();
 
-    void setTree(const std::string& robot_model);
+    virtual void setTree(const std::string& robot_model);
     void setRootAndTip(const std::string& chain_root, const std::string& chain_tip);
     void setGravity(double x, double y, double z);
     void getGravity(double& gx, double& gy, double& gz);
@@ -109,6 +110,9 @@ public:
     void getRotationAxis(const std::string &link, Eigen::Vector3d& rot_axis) const;
 
 protected:
+    virtual void initialize();
+
+protected:
     std::string urdf_param_;
     std::string root_;
     std::string tip_;
@@ -125,7 +129,6 @@ protected:
     KDL::JntArray lowerLimits_;
     KDL::JntArray upperLimits_;
 
-    void initialize();
 
 
 

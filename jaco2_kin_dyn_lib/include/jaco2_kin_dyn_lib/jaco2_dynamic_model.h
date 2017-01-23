@@ -62,7 +62,7 @@ public:
     Jaco2DynamicModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
 
 
-    void setTree(const std::string& robot_model);
+    void setTree(const std::string& robot_model) override;
     void setGravity(double x, double y, double z);
     void getGravity(double& gx, double& gy, double& gz);
 
@@ -202,7 +202,7 @@ private:
     KDL::Vector gravity_;
     std::shared_ptr<KDL::ChainIdSolver_RNE> solverID_;
 
-    void initialize();
+    void initialize() override;
 
     /**
      * @brief getLinkInertiaCoM gets the inertia moment matrix of a link with respect to the center of mass;
