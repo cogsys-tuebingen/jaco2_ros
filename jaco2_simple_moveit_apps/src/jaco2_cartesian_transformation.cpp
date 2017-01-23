@@ -15,7 +15,9 @@ public:
     {
         fk_client_ = nh.serviceClient<moveit_msgs::GetPositionFK>("/compute_fk");
 
-        move_cart_server_ = nh.advertiseService("cartesian_diff", &CartesianTransformationServer::move_cb, this);
+        boost::function<bool(jaco2_msgs::CartesianTransformation::Request&, jaco2_msgs::CartesianTransformation::Response&)> cb
+                = boost::bind(&CartesianTransformationServer::move_cb, this, _1, _2);
+        move_cart_server_ = nh.advertiseService("cartesian_diff", cb);
     }
 
     void tick()
@@ -67,7 +69,7 @@ private:
 
         moveit_msgs::RobotTrajectory trajectory;
         double fraction = group_.computeCartesianPath(waypoints,
-                                                     0.01,  // eef_step
+                                                     0.005,  // eef_step
                                                      0.0,   // jump_threshold
                                                      trajectory);
 
@@ -75,7 +77,7 @@ private:
         ROS_INFO("Visualizing plan 4 (cartesian path) (%.2f%% acheived)",
                  fraction * 100.0);
         /* Sleep to give Rviz time to visualize the plan. */
-        sleep(5.0);
+//        sleep(2.0);
         my_plan_.trajectory_ = trajectory;
         my_plan_.planning_time_ = (end-start).toSec();
         moveit::core::robotStateToRobotStateMsg(start_state,my_plan_.start_state_);

@@ -110,7 +110,7 @@ void Jaco2DriverNode::actionAngleGoalCb()
     AngularPosition currentPos = controller_.getAngularPosition();
 
     position.Fingers = currentPos.Fingers;
-//    DataConversion::shiftAngleDriver(position);
+    //    DataConversion::shiftAngleDriver(position);
     DataConversion::to_degrees(position);
     actionAngleServerRunning_ = true;
     controller_.setAngularPosition(position);
@@ -121,18 +121,36 @@ void Jaco2DriverNode::trajGoalCb()
     control_msgs::FollowJointTrajectoryGoalConstPtr goal = trajServer_.acceptNewGoal();
     trajectory_msgs::JointTrajectory traj_msgs = goal->trajectory;
 
-    for(std::size_t i = 0; i < traj_msgs.points.size(); ++ i)
+    JointTrajectory driver_trajectory;
+    bool input_ok = true;
+    auto it_traj_points = traj_msgs.points.begin();
+    for(; it_traj_points  < traj_msgs.points.end(); ++it_traj_points )
     {
-        DataConversion::to_degrees(traj_msgs.points[i].positions);
-        DataConversion::to_degrees(traj_msgs.points[i].velocities);
-        DataConversion::to_degrees(traj_msgs.points[i].accelerations);
+        input_ok &= ((*it_traj_points).positions.size() == Jaco2DriverConstants::n_Jaco2Joints);
+        input_ok &= ((*it_traj_points).velocities.size() == Jaco2DriverConstants::n_Jaco2Joints);
+        input_ok &= ((*it_traj_points).accelerations.size() == Jaco2DriverConstants::n_Jaco2Joints);
+
+        if(!input_ok){
+            break;
+        }
+
+        DataConversion::to_degrees((*it_traj_points).positions);
+        DataConversion::to_degrees((*it_traj_points).velocities);
+        DataConversion::to_degrees((*it_traj_points).accelerations);
+
     }
 
-    JointTrajectory driver_trajectory;
-    DataConversion::convert(traj_msgs,driver_trajectory);
+    if(input_ok){
+        DataConversion::convert(traj_msgs,driver_trajectory);
 
-    trajServerRunning_ = true;
-    controller_.setTrajectory(driver_trajectory);
+        trajServerRunning_ = true;
+        controller_.setTrajectory(driver_trajectory);
+    }
+    else{
+        control_msgs::FollowJointTrajectoryResult result;
+        result.error_code = control_msgs::FollowJointTrajectoryResult::INVALID_GOAL;
+        trajServer_.setAborted(result);
+    }
 }
 
 void Jaco2DriverNode::gripperGoalCb()
@@ -222,7 +240,7 @@ void Jaco2DriverNode::tick()
     }
     if(gripperServerRunning_)
     {
-//        jaco2_msgs::GripperControlFeedback feedback; // TODO
+        //        jaco2_msgs::GripperControlFeedback feedback; // TODO
         jaco2_msgs::GripperControlResult result;
         if(controller_.reachedGoal())
         {
@@ -435,7 +453,7 @@ void Jaco2DriverNode::publishJointAngles()
 
     AngularPosition pos = controller_.getAngularPosition();
 
-//    DataConversion::from_degrees(pos);
+    //    DataConversion::from_degrees(pos);
 
     jointAngleMsg_.joint1 = pos.Actuators.Actuator1;
     jointAngleMsg_.joint2 = pos.Actuators.Actuator2;
@@ -509,9 +527,9 @@ bool Jaco2DriverNode::stopServiceCallback(jaco2_msgs::Stop::Request &req, jaco2_
 bool Jaco2DriverNode::homeArmServiceCallback(jaco2_msgs::HomeArm::Request &req, jaco2_msgs::HomeArm::Response &res)
 {
 
-        controller_.homeArm();
-        res.homearm_result = "JACO ARM HAS BEEN RETURNED HOME";
-        return true;
+    controller_.homeArm();
+    res.homearm_result = "JACO ARM HAS BEEN RETURNED HOME";
+    return true;
 }
 
 bool Jaco2DriverNode::setTorqueZeroCallback(jaco2_msgs::SetTorqueZero::Request &req, jaco2_msgs::SetTorqueZero::Response &res)
