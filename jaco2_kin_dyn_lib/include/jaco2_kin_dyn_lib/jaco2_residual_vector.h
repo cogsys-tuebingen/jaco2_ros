@@ -38,6 +38,13 @@ public:
                            Eigen::VectorXd& new_residual);
 
     std::size_t getNrOfJoints() const;
+    int getAcceleration(const double gx, const double gy, const double gz,
+                        const std::vector<double>& q,
+                        const std::vector<double>& q_Dot,
+                        const std::vector<double>& q_DotDot, std::vector<std::string> &links,
+                        std::vector<KDL::Twist > &spatial_acc );
+
+    std::vector<std::string> getLinkNames() const;
 
     static void vector2EigenVector(const std::vector<double>& vec, Eigen::VectorXd& res);
     static void eigenVector2vector(const Eigen::VectorXd &vec, std::vector<double> &res);
