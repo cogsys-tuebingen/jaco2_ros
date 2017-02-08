@@ -56,10 +56,10 @@ bool ConfigurationList::getIndex(const Configuration& c, std::size_t& id) const{
         id = 0;
         for(auto elemets : configurations){
             test |= elemets.equal(c, offsets);
-            ++id;
             if(test){
                 return test;
             }
+            ++id;
         }
         return test;
 
