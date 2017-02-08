@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(jaco2_simple_moveit_apps)
+project(jaco2_utils)
 
 ## Enforce that we use C++11
 include(CheckCXXCompilerFlag)
@@ -13,22 +13,23 @@ else()
     message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  moveit_core
-  moveit_msgs
-  moveit_ros_planning
-  moveit_ros_planning_interface
   roscpp
-  jaco2_msgs
-  jaco2_utils
   tf
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+find_package(Eigen3 REQUIRED)
+
+## Uncomment this if the package has a setup.py. This macro ensures
+## modules and global scripts declared therein get installed
+## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
+# catkin_python_setup()
 
 
 ###################################
@@ -41,10 +42,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES simple_moveit_apps
-#  CATKIN_DEPENDS moveit_core moveit_msgs moveit_ros_planning moveit_ros_planning_interface roscpp
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  LIBRARIES jaco2_utils
+  CATKIN_DEPENDS roscpp tf
+  DEPENDS system_lib
 )
 
 ###########
@@ -55,66 +56,34 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
+file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/*.hpp include/*.h)
+
 ## Declare a C++ library
-# add_library(simple_moveit_apps
-#   src/${PROJECT_NAME}/simple_moveit_apps.cpp
-# )
+add_library(jaco2_utils
+   src/configuration_list.cpp
+   ${ALL_HEADERS}
+)
+
+## Add cmake target dependencies of the library
+## as an example, code may need to be generated before libraries
+## either from message generation or dynamic reconfigure
+# add_dependencies(jaco2_utils ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(home_arm src/home_arm.cpp)
-add_executable(move_to_new_rand_configuration src/move_to_new_rand_conf.cpp)
-add_executable(move_to_config src/move_to_config.cpp)
-add_executable(jaco2_cartesian_transformation src/jaco2_cartesian_transformation.cpp)
-add_executable(distFunction src/distFunction.cpp)
-add_executable(comparePlanner src/comparePlanner.cpp)
+# add_executable(jaco2_utils_node src/jaco2_utils_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(home_arm
-    ${${PROJECT_NAME}_EXPORTED_TARGETS}
-    ${catkin_EXPORTED_TARGETS}
-)
-add_dependencies(move_to_new_rand_configuration
-    ${${PROJECT_NAME}_EXPORTED_TARGETS}
-    ${catkin_EXPORTED_TARGETS}
-)
-add_dependencies(distFunction
-    ${${PROJECT_NAME}_EXPORTED_TARGETS}
-    ${catkin_EXPORTED_TARGETS}
-)
-add_dependencies(comparePlanner
-    ${${PROJECT_NAME}_EXPORTED_TARGETS}
-    ${catkin_EXPORTED_TARGETS}
-)
+add_dependencies(jaco2_utils ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(home_arm
+target_link_libraries(jaco2_utils
    ${catkin_LIBRARIES}
 )
-target_link_libraries(move_to_new_rand_configuration
-   ${catkin_LIBRARIES}
-)
-target_link_libraries(move_to_config
-   ${catkin_LIBRARIES}
-)
-
-target_link_libraries(jaco2_cartesian_transformation
-   ${catkin_LIBRARIES}
-)
-
-target_link_libraries(distFunction
-   ${catkin_LIBRARIES}
-)
-target_link_libraries(comparePlanner
-   ${catkin_LIBRARIES}
-)
-
-
-
-
 
 #############
 ## Install ##
@@ -131,7 +100,7 @@ target_link_libraries(comparePlanner
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS simple_moveit_apps simple_moveit_apps_node
+# install(TARGETS jaco2_utils jaco2_utils_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -156,7 +125,7 @@ target_link_libraries(comparePlanner
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_simple_moveit_apps.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_jaco2_utils.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

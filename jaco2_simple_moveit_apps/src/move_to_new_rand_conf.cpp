@@ -1,3 +1,4 @@
+#include <jaco2_utils/configuration_list.h>
 #include <ros/ros.h>
 #include <moveit/move_group_interface/move_group.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
@@ -7,128 +8,6 @@
 #include <std_srvs/Trigger.h>
 
 #include <signal.h>
-
-struct Configuration{
-
-    bool equal(Configuration& other, std::vector<double>& threshold)
-    {
-        if(other.angles.size() == angles.size()){
-            bool eq = true;
-            for(std::size_t i = 0; i < angles.size(); ++i){
-                double diff = std::abs(angles[i] - other.angles[i]);
-                eq &= diff < threshold[i];
-            }
-            return eq;
-        }
-        else{
-            return false;
-        }
-    }
-
-    std::string to_string()
-    {
-        std::string res;
-        for(auto val : angles){
-            res += std::to_string(val) + ";";
-        }
-        return res;
-    }
-
-    std::vector<double> angles;
-};
-
-struct ConfigurationList{
-
-    bool contains(Configuration& conf)
-    {
-        if(conf.angles.size() == jointNames.size()){
-            bool test = false;
-            for(auto elemets : configurations){
-                test |= elemets.equal(conf, offsets);
-                if(test){
-                    return test;
-                }
-            }
-            return test;
-
-        }
-        else{
-            return false;
-        }
-    }
-
-    void save(std::string filename)
-    {
-        std::ofstream file(filename);
-
-        for(auto name : jointNames){
-            file << name << ";";
-        }
-
-        file << std::endl;
-
-        for(auto conf : configurations){
-            file  << conf.to_string() << std::endl;
-        }
-    }
-
-    bool load(std::string filename)
-    {
-
-
-        std::string line;
-        std::ifstream infile;
-        char delimiter = ';';
-
-        jointNames.clear();
-//        configurations.clear();
-
-        infile.open ( filename );
-        if ( infile.is_open() )
-        {
-
-            char value[256];
-
-            std::getline ( infile,line );
-            std::stringstream ss;
-            ss << line ;
-
-            while( ss.getline( value, 256, delimiter )){
-                jointNames.push_back(value);
-            }
-
-
-            while ( std::getline ( infile,line ) ){
-
-                std::stringstream ss;
-                ss << line ;
-
-                Configuration cfg;
-                while( ss.getline( value, 256, delimiter ))
-                {
-                    double val = std::atof(value);
-                    cfg.angles.push_back(val);
-                }
-
-                configurations.push_back(cfg);
-
-            }
-            infile.close();
-            n_joints_ = jointNames.size();
-            return true;
-        }
-        else{
-            return false;
-        }
-
-
-    }
-
-    std::size_t n_joints_;
-    std::vector<double> offsets;
-    std::vector<std::string> jointNames;
-    std::vector<Configuration> configurations;
-};
 
 class NewRandomConfPlanner{
 public:
@@ -182,7 +61,7 @@ public:
         configurations_.offsets = threshold;
     }
 
-    Configuration& getLastConfiguration()
+    jaco2_utils::Configuration& getLastConfiguration()
     {
         return configurations_.configurations.back();
     }
@@ -196,7 +75,7 @@ public:
 
 
         while(!succeded){
-            Configuration rand;
+            jaco2_utils::Configuration rand;
 //            std::vector<double> jvalues(configurations_.n_joints_);
 //            rand.angles = group_.getRandomJointValues();
             rand.angles.resize(configurations_.n_joints_);
@@ -383,7 +262,7 @@ public:
     }
 
 public:
-    Configuration last_conf_;
+    jaco2_utils::Configuration last_conf_;
 private:
 
     std::vector<std::string> jointNames_;
@@ -392,7 +271,7 @@ private:
 
     planning_scene_monitor::PlanningSceneMonitorPtr planningMonitor_;
 
-    ConfigurationList configurations_;
+    jaco2_utils::ConfigurationList configurations_;
 };
 
 std::shared_ptr<NewRandomConfPlanner> planner;
