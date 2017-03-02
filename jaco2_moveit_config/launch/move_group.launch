@@ -2,6 +2,8 @@
 
   <include file="$(find jaco2_moveit_config)/launch/planning_context.launch" />
 
+  <arg name="planner" default="ompl" />
+
   <!-- GDB Debug Option -->
   <arg name="debug" default="false" />
   <arg unless="$(arg debug)" name="launch_prefix" value="" />
@@ -22,7 +24,7 @@
 
   <!-- Planning Functionality -->
   <include ns="move_group" file="$(find jaco2_moveit_config)/launch/planning_pipeline.launch.xml">
-    <arg name="pipeline" value="ompl" />
+    <arg name="pipeline" value="$(arg planner)" />
   </include>
 
   <!-- Trajectory Execution Functionality -->
@@ -59,6 +61,7 @@
 				      move_group/ApplyPlanningSceneService
 				      move_group/ClearOctomapService
 				      " />
+
 
     <!-- Publish the planning scene of the physical robot so that rviz plugin can know actual robot -->
     <param name="planning_scene_monitor/publish_planning_scene" value="$(arg publish_monitored_planning_scene)" />
