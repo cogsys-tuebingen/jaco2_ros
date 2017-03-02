@@ -140,7 +140,7 @@ int Jaco2KinematicModel::getIKSolution(const tf::Pose& pose, std::vector<double>
     }
     Jaco2KinDynLib::convert(seed,q);
     //convert tf pose to kdl frame
-    Jaco2KinDynLib::PoseTFToKDL(pose,frame);
+    Jaco2KinDynLib::poseTFToKDL(pose,frame);
     int error_code = solverIK_->CartToJnt(q,frame,solution);
     Jaco2KinDynLib::convert(solution,result);
     return error_code;

@@ -76,6 +76,7 @@ add_service_files(
    CalibAcc.srv
    SetTorqueZero.srv
    CartesianTransformation.srv
+   SetSampledConfigService.srv
 )
 
 ## Generate actions in the 'action' folder

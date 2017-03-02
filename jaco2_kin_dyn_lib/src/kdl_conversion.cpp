@@ -18,7 +18,7 @@ void Jaco2KinDynLib::convert(const std::vector<double> &in, KDL::JntArray &out)
     }
 }
 
-void Jaco2KinDynLib::PoseTFToKDL(const tf::Pose& t, KDL::Frame& k)
+void Jaco2KinDynLib::poseTFToKDL(const tf::Pose& t, KDL::Frame& k)
 {
     for (unsigned int i = 0; i < 3; ++i){
         k.p[i] = t.getOrigin()[i];
@@ -114,3 +114,16 @@ Eigen::Matrix<double, 6, 1> Jaco2KinDynLib::convert2Eigen(const KDL::Wrench& wre
 
 }
 
+void Jaco2KinDynLib::vectorKDLToEigen(const KDL::Vector &in, Eigen::Vector3d &out)
+{
+    out(0) = in(0);
+    out(1) = in(1);
+    out(2) = in(2);
+}
+
+void Jaco2KinDynLib::rotationKDLToEigen(const KDL::Rotation &in, Eigen::Quaterniond &out)
+{
+    double x,y,z,w;
+    in.GetQuaternion(x,y,z,w);
+    out = Eigen::Quaterniond(w,x,y,z);
+}

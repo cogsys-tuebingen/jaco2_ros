@@ -70,6 +70,7 @@ add_executable(move_to_config src/move_to_config.cpp)
 add_executable(jaco2_cartesian_transformation src/jaco2_cartesian_transformation.cpp)
 add_executable(distFunction src/distFunction.cpp)
 add_executable(comparePlanner src/comparePlanner.cpp)
+add_executable(move_to_sampled_config src/move_to_sampled_config.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -86,6 +87,10 @@ add_dependencies(distFunction
     ${catkin_EXPORTED_TARGETS}
 )
 add_dependencies(comparePlanner
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+)
+add_dependencies(move_to_sampled_config
     ${${PROJECT_NAME}_EXPORTED_TARGETS}
     ${catkin_EXPORTED_TARGETS}
 )
@@ -108,9 +113,15 @@ target_link_libraries(jaco2_cartesian_transformation
 target_link_libraries(distFunction
    ${catkin_LIBRARIES}
 )
+
 target_link_libraries(comparePlanner
    ${catkin_LIBRARIES}
 )
+
+target_link_libraries(move_to_sampled_config
+   ${catkin_LIBRARIES}
+)
+
 
 
 
