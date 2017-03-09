@@ -30,6 +30,7 @@ public:
 
     bool reachedGoal() const;
     bool serviceDone() const;
+    bool initialize(std::string serial = std::string(""), bool right = true);
     // GET
     AngularPosition getAngularPosition() const;
     AngularPosition getAngularVelocity() const;
@@ -81,8 +82,11 @@ public:
     static const int U_SlEEP_TIME = 5000;
 
 private:
+    bool initialized_;
     Jaco2API jaco_api_;
 
+    std::string serial_;
+    bool right_arm_;
     Jaco2Controller* active_controller_;
 
     VelocityController velocity_controller_;

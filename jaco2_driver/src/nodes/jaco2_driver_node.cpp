@@ -28,7 +28,9 @@ Jaco2DriverNode::Jaco2DriverNode()
       actionAngleServerRunning_(false),
       trajServerRunning_(false),
       gripperServerRunning_(false),
-      fingerServerRunning_(false)
+      fingerServerRunning_(false),
+      rightArm_(true),
+      ok_(true)
 {
     pubJointState_ = private_nh_.advertise<sensor_msgs::JointState>("out/joint_states", 2);
     pubJointAngles_ = private_nh_.advertise<jaco2_msgs::JointAngles>("out/joint_angles",2);
@@ -36,6 +38,10 @@ Jaco2DriverNode::Jaco2DriverNode()
     pubSensorInfo_ = private_nh_.advertise<jaco2_msgs::Jaco2Sensor>("out/sensor_info",2);
     pubJaco2JointState_ = private_nh_.advertise<jaco2_msgs::Jaco2JointState>("out/joint_state_acc", 2);
     pubJaco2LinAcc_ = private_nh_.advertise<jaco2_msgs::Jaco2Accelerometers>("out/accelerometers",2);
+
+    private_nh_.param<bool>("right_arm", rightArm_, true);
+    private_nh_.param<std::string>("jaco_serial", serial_,std::string(""));
+    private_nh_.param<std::string>("tf_prefix", tf_prefix_, "jaco_");
 
     boost::function<void(const jaco2_msgs::JointVelocityConstPtr&)> cb = boost::bind(&Jaco2DriverNode::jointVelocityCb, this, _1);
     boost::function<void(const jaco2_msgs::FingerPositionConstPtr&)> cb_finger = boost::bind(&Jaco2DriverNode::fingerVelocityCb, this, _1);
@@ -55,7 +61,6 @@ Jaco2DriverNode::Jaco2DriverNode()
     f_ = boost::bind(&Jaco2DriverNode::dynamicReconfigureCb, this, _1, _2);
     paramServer_.setCallback(f_);
 
-    private_nh_.param<std::string>("tf_prefix", tf_prefix_, "jaco_");
 
     jointStateMsg_.name.resize(JACO_JOINTS_COUNT);
     jointStateMsg_.position.resize(JACO_JOINTS_COUNT);
@@ -82,6 +87,13 @@ Jaco2DriverNode::Jaco2DriverNode()
     sensorMsg_.name[3] = tf_prefix_ + "joint_4";
     sensorMsg_.name[4] = tf_prefix_ + "joint_5";
     sensorMsg_.name[5] = tf_prefix_ + "joint_6";
+
+
+    bool init = controller_.initialize(serial_, rightArm_);
+    if(!init){
+        ROS_ERROR_STREAM("Jaco 2 cloud not be initialized for device: " << serial_);
+    }
+    ok_ = init;
 
     bool use_accel_calib;
     private_nh_.param<bool>("jaco_use_accelerometer_calib", use_accel_calib, false);
@@ -180,7 +192,7 @@ void Jaco2DriverNode::fingerGoalCb()
     controller_.setFingerPosition(pos);
 }
 
-void Jaco2DriverNode::tick()
+bool Jaco2DriverNode::tick()
 {
     if(!g_running_) {
         stop();
@@ -281,6 +293,7 @@ void Jaco2DriverNode::tick()
             controller_.finish();
         }
     }
+    return ok_;
 }
 
 void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureConfig &config, uint32_t level)
@@ -553,10 +566,10 @@ int main(int argc, char *argv[])
 
     Jaco2DriverNode node;
     ros::Rate r(65);
-
-    while(ros::ok())
+    bool driver_ok = true;
+    while(ros::ok() && driver_ok)
     {
-        node.tick();
+        driver_ok = node.tick();
         ros::spinOnce();
         r.sleep();
     }

@@ -32,7 +32,7 @@ public:
 public:
     Jaco2DriverNode();
     void stop();
-    void tick();
+    bool tick();
 
 private:
     void jointVelocityCb(const jaco2_msgs::JointVelocityConstPtr& msg);
@@ -91,7 +91,9 @@ private:
     bool trajServerRunning_;
     bool gripperServerRunning_;
     bool fingerServerRunning_;
-
+    bool rightArm_;
+    bool ok_;
+    std::string serial_;
     dynamic_reconfigure::Server<jaco2_driver::jaco2_driver_configureConfig> paramServer_;
     dynamic_reconfigure::Server<jaco2_driver::jaco2_driver_configureConfig>::CallbackType f_;
 

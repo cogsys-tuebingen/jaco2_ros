@@ -29,6 +29,9 @@ Jaco2API::Jaco2API():
     SetCartesianControl = (int (*)()) dlsym(commandLayer_handle,"SetCartesianControl");
     GetSensorsInfo = (int (*)(SensorsInfo &)) dlsym(commandLayer_handle,"GetSensorsInfo");
     SetTorqueZero = (int (*)(int)) dlsym(commandLayer_handle,"SetTorqueZero");
+    SendAdvanceTrajectory = (int (*)(TrajectoryPoint)) dlsym(commandLayer_handle,"SendAdvanceTrajectory");
+    StopCurrentLimitation = (int (*)()) dlsym(commandLayer_handle,"StopCurrentLimitation");
+    GetCartesianPosition = (int (*)(CartesianPosition &)) dlsym(commandLayer_handle,"GetCartesianPosition");
 
 }
 
@@ -41,9 +44,10 @@ Jaco2API::~Jaco2API()
 }
 
 
-int Jaco2API::init()
+int Jaco2API::init(std::string serial, bool right)
 {
-    int result;
+    right_arm_ = right;
+    int result = -1;
     if((InitAPI == NULL) || (CloseAPI == NULL) || (SendBasicTrajectory == NULL) ||
             (SendBasicTrajectory == NULL) || (MoveHome == NULL) || (InitFingers == NULL))
     {
@@ -63,37 +67,46 @@ int Jaco2API::init()
         }
         stopedAPI_ = false;
 
-//        result = 1015;
-//        int count = 1;
-//        while(result != 1 && count < 4 && result == 1015)
-//        {
-//            result = (*InitAPI)();
-//            std::cout << "Initialization's result : " << result << " attempt : " << count << std::endl;
-//            if(result != 1){
-//                sleep(10);
-//            }
-//            ++count;
-//        }
+        //        result = 1015;
+        //        int count = 1;
+        //        while(result != 1 && count < 4 && result == 1015)
+        //        {
+        //            result = (*InitAPI)();
+        //            std::cout << "Initialization's result : " << result << " attempt : " << count << std::endl;
+        //            if(result != 1){
+        //                sleep(10);
+        //            }
+        //            ++count;
+        //        }
 
 
 
         KinovaDevice list[MAX_KINOVA_DEVICE];
 
         int devicesCount = GetDevices(list, result);
+        std::size_t length = serial.length();
 
         for(int i = 0; i < devicesCount; i++)
         {
-            std::cout << "Found a robot on the USB bus (" << std::string(list[i].SerialNumber) << ")" << std::endl;
+            std::string serial_i = std::string(list[i].SerialNumber);
 
-            //Setting the current device as the active device.
-            result = SetActiveDevice(list[i]);
+            std::cout << "Found a robot on the USB bus (" << serial_i << ")" << std::endl;
+            if(serial_i.compare(0,length,serial) == 0 || serial == std::string("")){
+                //Setting the current device as the active device.
+                result = SetActiveDevice(list[i]);
 
-            std::cout << "Send the robot to HOME position" << std::endl;
-            result = MoveHome();
+                std::cout << "Send the robot to HOME position" << std::endl;
+                if(right){
+                    result = MoveHome();
+                }
+                else{
+                    moveHomeLeft();
+                }
 
-            std::cout << "Initializing the fingers" << std::endl;
-            result = InitFingers();
-            std::cout << std::endl << "D R I V E R   R E A D Y" << std::endl << std::endl;
+                std::cout << "Initializing the fingers" << std::endl;
+                result = InitFingers();
+                std::cout << std::endl << "D R I V E R   R E A D Y" << std::endl << std::endl;
+            }
         }
     }
     return result;
@@ -221,7 +234,11 @@ bool Jaco2API::isStopped() const
 void Jaco2API::moveHome()
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
-    MoveHome();
+    if(!stopedAPI_){
+        if(right_arm_){
+            MoveHome();
+        }
+    }
 }
 
 void Jaco2API::initFingers()
@@ -258,4 +275,55 @@ int Jaco2API::setTorqueZero(int actuator)
     }
     usleep(100000);
     return result;
+}
+
+void Jaco2API::moveHomeLeft()
+{
+    AngularPosition p =getAngularPosition();
+
+    AngularPosition ps;
+    ps.InitStruct();
+    ps.Actuators.Actuator1 =  89.93475342;
+    ps.Actuators.Actuator2 = 209.94900513;
+    ps.Actuators.Actuator3 = 333.11074257;
+    ps.Actuators.Actuator4 = 92.1072998;
+    ps.Actuators.Actuator5 = 354.7420435;
+    ps.Actuators.Actuator6 = 260.12473297;
+
+    bool test = std::abs(p.Actuators.Actuator1 - ps.Actuators.Actuator1 ) < 3.0;
+    test &= std::abs(p.Actuators.Actuator2 - ps.Actuators.Actuator2 ) < 3.0;
+    test = std::abs(p.Actuators.Actuator3 - ps.Actuators.Actuator3 ) < 3.0;
+    test = std::abs(p.Actuators.Actuator4 - ps.Actuators.Actuator4 ) < 3.0;
+    test = std::abs(p.Actuators.Actuator5 - ps.Actuators.Actuator5 ) < 3.0;
+    test = std::abs(p.Actuators.Actuator6 - ps.Actuators.Actuator6 ) < 3.0;
+
+
+
+    if(test){
+        TrajectoryPoint homeLeft;
+        homeLeft.InitStruct();
+        homeLeft.Position.HandMode = HAND_NOMOVEMENT;
+
+        homeLeft.Limitations.speedParameter1 = 10.0f;
+        homeLeft.Limitations.speedParameter2 = 10.0f;
+        homeLeft.Limitations.speedParameter3 = 13.0f;
+        homeLeft.LimitationsActive = 1;
+
+
+        homeLeft.Position.Type = ANGULAR_POSITION;
+        homeLeft.Position.Actuators.Actuator1 = 84.58526611f;
+        homeLeft.Position.Actuators.Actuator2 = 192.55497742f;
+        homeLeft.Position.Actuators.Actuator3 = 302.53701019f;
+        homeLeft.Position.Actuators.Actuator4 = 119.17248535f;
+        homeLeft.Position.Actuators.Actuator5 = 277.21775818f;
+        homeLeft.Position.Actuators.Actuator6 = 284.33439636f;
+
+//        SendBasicTrajectory(homeLeft);
+        SendAdvanceTrajectory(homeLeft);
+        StopCurrentLimitation();
+    }
+    else{
+        MoveHome();
+    }
+
 }
