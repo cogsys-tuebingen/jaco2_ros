@@ -7,7 +7,7 @@
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit_msgs/DisplayTrajectory.h>
 
-#include <jaco2_msgs/Jaco2Sensor.h>
+#include <jaco2_msgs/Jaco2Accelerometers.h>
 #include <jaco2_msgs/CalibAcc.h>
 #include <jaco2_msgs/JointAngles.h>
 #include <jaco2_msgs/Jaco2JointState.h>
@@ -36,8 +36,8 @@ public:
     {
         boost::function<void(const jaco2_msgs::Jaco2JointStateConstPtr&)> cb = boost::bind(&CalibNode::jointStateCb, this, _1);
         subJointState_ = private_nh_.subscribe("/jaco_arm_driver/out/joint_state_acc", 10, cb);
-        boost::function<void(const jaco2_msgs::Jaco2SensorConstPtr&)> cbS = boost::bind(&CalibNode::sensorCb, this, _1);
-        subSensors_ = private_nh_.subscribe("/jaco_arm_driver/out/sensor_info", 10, cbS);
+        boost::function<void(const jaco2_msgs::Jaco2AccelerometersConstPtr&)> cbS = boost::bind(&CalibNode::sensorCb, this, _1);
+        subaccs_ = private_nh_.subscribe("/jaco_arm_driver/out/accelerometers", 10, cbS);
 
         calibration_.setGravityMagnitude(1.0);
         calibration_.setInitAccSamples(500);
@@ -102,14 +102,14 @@ public:
             //            if(test){
             for(std::size_t i = 0; i <6;++i)
             {
-                geometry_msgs::Vector3Stamped acc = jacoSensorMsg_.acceleration[i];
+                geometry_msgs::Vector3Stamped acc = jacoAccMsg_.lin_acc[i];
 
                 Jaco2Calibration::AccelerationData data(acc.header.stamp.toSec(), acc.vector.x, acc.vector.y, acc.vector.z);
                 accSamples_.push_back(i,data);
             }
 
             //estimate jaco's base acceleration
-            Eigen::Vector3d g(jacoSensorMsg_.acceleration[0].vector.y, jacoSensorMsg_.acceleration[0].vector.x, jacoSensorMsg_.acceleration[0].vector.z );
+            Eigen::Vector3d g(jacoAccMsg_.lin_acc[0].vector.y, jacoAccMsg_.lin_acc[0].vector.x, jacoAccMsg_.lin_acc[0].vector.z );
             g *= -9.81;
             gsum_.push_back(g);
             Eigen::Vector3d mean(0,0,0);
@@ -137,13 +137,10 @@ public:
 //        ROS_INFO_STREAM("Recoding_Data");
     }
 
-    void sensorCb(const jaco2_msgs::Jaco2SensorConstPtr& msg)
+    void sensorCb(const jaco2_msgs::Jaco2AccelerometersConstPtr& msg)
     {
-        jacoSensorMsg_.acceleration = msg->acceleration;
-        jacoSensorMsg_.temperature = msg->temperature;
-        jacoSensorMsg_.torque = msg->torque;
-        jacoSensorMsg_.temperature_time = msg->temperature_time;
-        jacoSensorMsg_.torque_time = msg->torque_time;
+        jacoAccMsg_ = *msg;
+
         if(initialSensor_)
         {
             initialSensor_ = false;
@@ -235,7 +232,7 @@ public:
         }
          done = currentSamples_ >= numberOfSamples_;
 
-//        std::cout << "recording data ... samples: " << currentSamples_  << std::endl;
+        std::cout << "recording data ... samples: " << currentSamples_  << std::endl;
 
     }
 
@@ -388,14 +385,14 @@ private:
     int currentSamples_;
     int g_counter_;
     ros::Subscriber subJointState_;
-    ros::Subscriber subSensors_;
+    ros::Subscriber subaccs_;
     ros::Subscriber subJointAcc_;
     std::vector<Jaco2Calibration::DynamicCalibrationSample> samples_;
     std::vector<Eigen::Vector3d> gravity_;
     Jaco2Calibration::AccelerationSamples accSamples_;
     ros::Time lastTime_;
     double dt_;
-    jaco2_msgs::Jaco2Sensor jacoSensorMsg_;
+    jaco2_msgs::Jaco2Accelerometers jacoAccMsg_;
     ros::ServiceServer calibServiceServer_;
     std::vector<Eigen::Vector3d> gsum_;
     std::vector<std::string> jointGroupNames_;
@@ -409,7 +406,14 @@ private:
 int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "jaco2_calibration_node");
-    CalibNode node(true,"/robot_description","jaco_link_base","jaco_link_hand",20000);
+
+    ros::NodeHandle nh("~");
+    bool genData, calib_acc, calib_dyn;
+    nh.param<bool>("generate_data", genData, false);
+    nh.param<bool>("calibrate_acc", calib_acc, true);
+    nh.param<bool>("calibrate_dyn", calib_dyn, false);
+
+    CalibNode node(genData,"/robot_description","jaco_link_base","jaco_link_hand",20000);
     ros::Rate r(25);
 
     ros::AsyncSpinner spinner(1);
@@ -425,8 +429,12 @@ int main(int argc, char *argv[])
 
     spinner.stop();
 
-    node.calibrate(false);
-    node.calibrate(true);
+    if(calib_dyn){
+        node.calibrate(false);
+    }
+    if(calib_acc){
+        node.calibrate(true);
+    }
     return 0;
 }
 
