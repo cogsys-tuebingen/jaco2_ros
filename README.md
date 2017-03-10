@@ -54,7 +54,9 @@ iv. Finally, copy the udev rule from the jaco2_driver folder to your system:
 Now you can use the Jaco 2 with ROS!
 
 ## jaco2_driver
+
 ###Start
+
 Currently, there are 2 launch files for our 2 Jaco 2s. To bring up one Jaco2 with calibrated accelerometers launch the launch file of your Jaco2:
 ```
 	roslaunch jaco2_driver jaco2-1_calib.launch
