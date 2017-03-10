@@ -3,12 +3,11 @@
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
 
-#include <jaco2_msgs/Jaco2Sensor.h>
+#include <jaco2_msgs/Jaco2Accelerometers.h>
 #include <jaco2_msgs/CalibAcc.h>
 #include <jaco2_msgs/JointAngles.h>
 #include <jaco2_msgs/Jaco2JointState.h>
 #include <geometry_msgs/Vector3Stamped.h>
-//#include <jaco2_calibration/jaco2_calibration.h>
 #include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
 #include <jaco2_calibration_utils/acceleration_samples.hpp>
 #include <jaco2_calibration_utils/jaco2_calibration_io.h>
@@ -17,22 +16,18 @@
 class CalibRecordNode
 {
 public:
-    CalibRecordNode(bool genData, std::string urdf_param, std::string root, std::string tip, int numberOfSamples)
+    CalibRecordNode()
         : private_nh_("~"),
-          genData_(genData),
           initial_(true),
           initialSensor_(true),
           calibAcc_(false),
-          numberOfSamples_(numberOfSamples),
           currentSamples_(0),
           g_counter_(0)
     {
         boost::function<void(const jaco2_msgs::Jaco2JointStateConstPtr&)> cb = boost::bind(&CalibRecordNode::jointStateCb, this, _1);
         subJointState_ = private_nh_.subscribe("/jaco_arm_driver/out/joint_state_acc", 10, cb);
-        boost::function<void(const jaco2_msgs::Jaco2SensorConstPtr&)> cbS = boost::bind(&CalibRecordNode::sensorCb, this, _1);
-        subSensors_ = private_nh_.subscribe("/jaco_arm_driver/out/sensor_info", 10, cbS);
-
-
+        boost::function<void(const jaco2_msgs::Jaco2AccelerometersConstPtr&)> cbA = boost::bind(&CalibRecordNode::accsCb, this, _1);
+        subAccs_ = private_nh_.subscribe("/jaco_arm_driver/out/accelerometers", 10, cbA);
 
     }
 
@@ -43,11 +38,13 @@ public:
             initial_ = false;
         }
 
-        ros::Time now = ros::Time::now();
-        ros::Duration dt = now-lastTime_;
-        lastTime_ = now;
-        dt_ = dt.toSec();
+
+//        ros::Time now = ros::Time::now();
+//        ros::Duration dt = now-lastTime_;
+//        lastTime_ = now;
+//        dt_ = dt.toSec();
         Jaco2Calibration::DynamicCalibrationSample sample;
+        sample.time = msg->header.stamp.toSec();
         for(std::size_t i = 0; i < 6; ++i){
             sample.jointPos[i] = msg->position[i];
             sample.jointVel[i] = msg->velocity[i];
@@ -60,14 +57,14 @@ public:
 
             for(std::size_t i = 0; i <6;++i)
             {
-                geometry_msgs::Vector3Stamped acc = jacoSensorMsg_.acceleration[i];
+                geometry_msgs::Vector3Stamped acc = jacoAccMsg_.lin_acc[i];
 
                 Jaco2Calibration::AccelerationData data(acc.header.stamp.toSec(), acc.vector.x, acc.vector.y, acc.vector.z);
                 accSamples_.push_back(i,data);
             }
 
             //estimate jaco's base acceleration
-            Eigen::Vector3d g(jacoSensorMsg_.acceleration[0].vector.y, jacoSensorMsg_.acceleration[0].vector.x, jacoSensorMsg_.acceleration[0].vector.z );
+            Eigen::Vector3d g(jacoAccMsg_.lin_acc[0].vector.x, jacoAccMsg_.lin_acc[0].vector.y, jacoAccMsg_.lin_acc[0].vector.z );
             g *= 9.81;
             gsum_.push_back(g);
             Eigen::Vector3d mean(0,0,0);
@@ -95,13 +92,10 @@ public:
 //        ROS_INFO_STREAM("Recoding_Data");
     }
 
-    void sensorCb(const jaco2_msgs::Jaco2SensorConstPtr& msg)
+    void accsCb(const jaco2_msgs::Jaco2AccelerometersConstPtr& msg)
     {
-        jacoSensorMsg_.acceleration = msg->acceleration;
-        jacoSensorMsg_.temperature = msg->temperature;
-        jacoSensorMsg_.torque = msg->torque;
-        jacoSensorMsg_.temperature_time = msg->temperature_time;
-        jacoSensorMsg_.torque_time = msg->torque_time;
+        jacoAccMsg_ = *msg;
+
         if(initialSensor_)
         {
             initialSensor_ = false;
@@ -112,7 +106,9 @@ public:
     void tick()
     {
         ros::spinOnce();
-        ROS_INFO_STREAM("Recorded Samples: " << currentSamples_);
+        if(currentSamples_ % 100 == 0){
+            ROS_INFO_STREAM("Recorded Samples: " << currentSamples_);
+        }
 
     }
 
@@ -122,9 +118,9 @@ public:
     }
 
 
+
 private:
     ros::NodeHandle private_nh_;
-    bool genData_;
     bool initial_;
     bool initialSensor_;
     bool done_;
@@ -133,42 +129,56 @@ private:
     int currentSamples_;
     int g_counter_;
     ros::Subscriber subJointState_;
-    ros::Subscriber subSensors_;
+    ros::Subscriber subAccs_;
     ros::Subscriber subJointAcc_;
     std::vector<Jaco2Calibration::DynamicCalibrationSample> samples_;
     std::vector<Eigen::Vector3d> gravity_;
     Jaco2Calibration::AccelerationSamples accSamples_;
     ros::Time lastTime_;
     double dt_;
-    jaco2_msgs::Jaco2Sensor jacoSensorMsg_;
+    jaco2_msgs::Jaco2Accelerometers jacoAccMsg_;
     ros::ServiceServer calibServiceServer_;
     std::vector<Eigen::Vector3d> gsum_;
     std::vector<std::string> jointGroupNames_;
 
 };
 
+bool done = false;
+void doneCb(const std_msgs::BoolConstPtr& msg)
+{
+    done = msg->data;
+}
+
 int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "jaco2_calibration_data_record_node");
-    CalibRecordNode node(true,"/robot_description","jaco_link_base","jaco_link_hand",20000);
+
+    ros::NodeHandle nh("~");
+
+    std::string acc_data_path, dyn_data_path;
+    nh.param<std::string>("acc_data_path", acc_data_path, "/tmp");
+    nh.param<std::string>("dyn_data_path", dyn_data_path, "/tmp");
+
+
+    CalibRecordNode node;
     ros::Rate r(25);
 
-    std::string acc_file = "/tmp/acc_data.txt";
-    std::string dyn_file = "/tmp/dyn_data.txt";
+    ros::Time now = ros::Time::now();
+    std::string acc_file = acc_data_path + "/acc_data_" + std::to_string(now.toSec()) + ".txt";
+    std::string dyn_file = dyn_data_path + "/dyn_data_" + std::to_string(now.toSec()) + ".txt";
+
+    ROS_INFO_STREAM("data files: " << acc_file << " and " << dyn_file);
+
+    ros::Subscriber subDone = nh.subscribe("/dyn_calib_create_data/create_data_done", 1, doneCb);
 
     ros::AsyncSpinner spinner(1);
     spinner.start();
 
-    std::string stop;
-    bool done = false;
+
+    done = false;
     while (ros::ok() && !done) {
         node.tick();
-        //        ros::spinOnce();
-        std::cin >> stop;
-        if(stop == "stop")
-        {
-            done = true;
-        }
+        ros::spinOnce();
         r.sleep();
     }
 

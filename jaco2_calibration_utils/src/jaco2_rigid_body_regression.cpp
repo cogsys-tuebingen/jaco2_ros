@@ -62,64 +62,16 @@ int main(int argc, char *argv[])
 
 
         for(Jaco2Calibration::DynamicCalibrationSample sample : samples_org) {
-//            if(sample.jointPos.size() == 6 /*&& samples.size() < 300*/) {
-//                double vel_sum = 0;
-//                for( auto vel : sample.jointAcc) {
-//                    vel_sum += vel;
-//                }
-//                if(vel_sum < 0.1) {
+
                     samples.push_back(sample);
-//                }
-//            }
         }
-//        std::vector<Jaco2Calibration::DynamicCalibrationSample> second_samples;
-//        Jaco2Calibration::importAsciiDataWithGravity("/tmp/dyn_data_better_results.txt", second_samples);
-
-//        for( auto sample : second_samples) {
-//            samples.push_back(sample);
-//        }
 
 
 
-
-//        std::default_random_engine generator;
-//        std::uniform_int_distribution<int> uniform_dist(0, samples_org.size());
-//        std::vector<int> used_indeces;
-
-//        while(used_indeces.size() != 8000){
-//            int id = uniform_dist(generator);
-//            if(std::find(used_indeces.begin(), used_indeces.end(), id) == used_indeces.end()) {
-//                // used_indeces does not contain x
-//                used_indeces.push_back(id);
-//                Jaco2Calibration::DynamicCalibrationSample tmp = samples_org[id];
-//                samples.push_back(tmp);
-//            }
-//        }
 
         std::cout << "samples size " << samples.size() << std::endl;
-        //        std::vector<std::vector<Jaco2Calibration::DynamicCalibrationSample> >  samples_dc;
-        //        if(samples.size() > 10000)
-        //        {
-        //            std::vector<Jaco2Calibration::DynamicCalibrationSample> tmp;
-        //            while(used_indeces.size() != samples.size()){
-        //                int id = uniform_dist(generator);
-        //                if(std::find(used_indeces.begin(), used_indeces.end(), id) == used_indeces.end()) {
-        //                    // used_indeces does not contain x
-        //                    used_indeces.push_back(id);
-        //                    tmp.push_back(samples[id]);
-        //                }
-        //                if(tmp.size() == 1000) {
-        //                    samples_dc.push_back(tmp);
-        //                    tmp.clear();
-        //                }
-        //            }
-        //        }
-        //        else {
-        //            samples_dc.push_back(samples);
-        //        }
 
-        std::vector<Eigen::Matrix<double, num_cols, 1> > param_dc;
-        Eigen::Matrix<double, num_cols, 1> mean_param = Eigen::Matrix<double, num_cols, 1>::Zero();
+
 
         Eigen::MatrixXd full_matrix;
         Eigen::MatrixXd tau;
@@ -134,25 +86,11 @@ int main(int argc, char *argv[])
 //        }
         Eigen::MatrixXd scale_init_param = lambda* Eigen::MatrixXd::Identity(num_cols, num_cols);
 
-
-        //        int iterations = samples_dc.size();// =3;
-
-        //        for(std::size_t part = 0; part < iterations; ++part) {
-
-        //            std::cout << samples_dc[part].size() << std::endl;
-
-        //            full_matrix = Eigen::MatrixXd::Zero(num_links*samples_dc[part].size()+num_cols,num_cols);
-        //            tau = Eigen::MatrixXd::Zero(num_links*samples_dc[part].size()+num_cols,1);
-
         full_matrix = Eigen::MatrixXd::Zero(num_links*samples.size()+num_cols,num_cols);
         tau = Eigen::MatrixXd::Zero(num_links*samples.size()+num_cols,1);
 
-        //            full_matrix = Eigen::MatrixXd::Zero(num_links*samples.size(),num_cols);
-        //            tau = Eigen::MatrixXd::Zero(num_links*samples.size(),1);
-        //            Eigen::MatrixXd scale = Eigen::MatrixXd::Identity(num_links * samples_dc[part].size(),num_links * samples_dc[part].size());
-
         int sample_counter = 0;
-        //            for(Jaco2Calibration::DynamicCalibrationSample sample : samples_dc[part]) {
+
         for(std::size_t n = 0; n <samples.size(); ++ n) {
 
             Jaco2Calibration::DynamicCalibrationSample sample = samples[n];
@@ -161,8 +99,8 @@ int main(int argc, char *argv[])
                                                                                                             sample.jointPos,
                                                                                                             sample.jointVel,
                                                                                                             sample.jointAcc,
-                                                                                                            sample.gravity(0),
                                                                                                             sample.gravity(1),
+                                                                                                            sample.gravity(0),
                                                                                                             sample.gravity(2));
 
                 Eigen::Matrix<double, num_links, 1> sample_tau;
@@ -186,14 +124,13 @@ int main(int argc, char *argv[])
         full_matrix.block<num_cols,num_cols>(num_links*samples.size(),0) = scale_init_param;
 
         Eigen::JacobiSVD<Eigen::MatrixXd> svd(full_matrix, Eigen::ComputeThinU | Eigen::ComputeThinV | Eigen::FullPivHouseholderQRPreconditioner);
-        std::cout << Eigen::FullPivHouseholderQRPreconditioner << std::endl;
+//        std::cout << Eigen::FullPivHouseholderQRPreconditioner << std::endl;
         //            svd.setThreshold()
         Eigen::Matrix<double, num_cols, 1> param = svd.solve(tau);
         param += initial_param;
 
-        param_dc.push_back(param);
 
-        mean_param = mean_param + param;
+
 
         Eigen::MatrixXd tau_param = full_matrix * param;
 
@@ -201,17 +138,11 @@ int main(int argc, char *argv[])
 
         double mean_diff = diff.array().abs().mean();
 
-        std::cout << mean_diff << std::endl;
-        //        }
-        //        mean_param *= 1.0/((double) iterations);
-        //        Eigen::MatrixXd tau_param = full_matrix * mean_param;
-
-        //        Eigen::MatrixXd diff = tau_param - tau;
-
-        //        double mean_diff = diff.array().abs().mean();
+        std::cout <<"Mean difference between model and sensor: " << mean_diff << std::endl;
 
 
-        Eigen::MatrixXd intitial_diff = full_matrix *initial_param + tau;
+
+        Eigen::MatrixXd intitial_diff = full_matrix *initial_param - tau;
         std::cout << "mean per diff per joint: \n " << jointMeanfromList(diff, samples.size(), num_links) << std::endl;
         std::cout << "mean per diff per joint initial param: \n " << jointMeanfromList(intitial_diff, samples.size(), num_links) << std::endl;
 
@@ -219,12 +150,12 @@ int main(int argc, char *argv[])
         std::cout << "mean initial diffrence between measured torques: " << (intitial_diff).array().abs().mean() << std::endl;
 
         std::cout << "chi square: " << (tau - full_matrix* param).transpose() * (tau - full_matrix* param) << std::endl;
-        std::cout << "mean difference between initial parameters: " << (mean_param - initial_param).array().abs().mean() << std::endl;
+        std::cout << "mean difference between initial parameters: " << (param - initial_param).array().abs().mean() << std::endl;
 
         if(mean_diff < 3.5)
         {
             Jaco2Calibration::Jaco2ManipulatorDynParams params;
-            Jaco2Calibration::to_Jaco2ManipulatorDynParams(mean_param, model.getLinkNames(),params);
+            Jaco2Calibration::to_Jaco2ManipulatorDynParams(param, model.getLinkNames(),params);
             Jaco2Calibration::Jaco2CalibrationIO::save(output,params);
             Jaco2Calibration::Jaco2CalibrationIO::save("/tmp/cad_params.txt",init_param);
         }

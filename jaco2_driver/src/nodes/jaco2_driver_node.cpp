@@ -442,6 +442,7 @@ void Jaco2DriverNode::publishJointState()
     DataConversion::convert(controller_.getAngularForce(), jointStateMsg_.effort);
 
     DataConversion::from_degrees(jointStateMsg_.position);
+//    DataConversion::normalize(jointStateMsg_.position);
     DataConversion::from_degrees(jointStateMsg_.velocity);
 
     jointStateMsg_.header.stamp = ros::Time::now();
@@ -466,7 +467,7 @@ void Jaco2DriverNode::publishJointAngles()
 
     AngularPosition pos = controller_.getAngularPosition();
 
-    //    DataConversion::from_degrees(pos);
+//        DataConversion::from_degrees(pos);
 
     jointAngleMsg_.joint1 = pos.Actuators.Actuator1;
     jointAngleMsg_.joint2 = pos.Actuators.Actuator2;

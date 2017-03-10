@@ -92,7 +92,7 @@ Performs a power grip. Closes the gripper untill the finger do not move anymore.
 - **follow_joint_trajectory**:
 Trajectory tracking controller using PID velocity control.
 
-###Services
+### Services
 There are 4 services available:
 
 - **/jaco_arm_driver/in/home_arm**:
@@ -123,11 +123,11 @@ Now you can plan and execute trajectories. For a simulation run:
 roslaunch jaco2_moveit_config demo.launch
 ```
 
-##jaco2_calibration
+## jaco2_calibration
 TODO
-##jaco2_simple_moveit_apps
+## jaco2_simple_moveit_apps
 TODO
-##jaco2_description
+## jaco2_description
 The robot model which holds  all parameters needed for the kinematic and the dynamic model. Additionally, meshes are included for visualization and collision checking.
 
 
