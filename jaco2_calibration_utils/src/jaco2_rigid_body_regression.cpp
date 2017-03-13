@@ -1,6 +1,7 @@
 #include <string>
 #include <random>
 #include <algorithm>
+#include <Eigen/Dense>
 #include <Eigen/SVD>
 #include <ros/ros.h>
 #include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
@@ -34,7 +35,7 @@ int main(int argc, char *argv[])
 
         ros::init(argc, argv, "jaco2_rigid_body_regression_node");
 
-        double lambda = 0.001;
+        double lambda = 10;
         double u_scale = 1;
 
         ros::NodeHandle nh("~");
@@ -76,6 +77,10 @@ int main(int argc, char *argv[])
 
 
         std::size_t num_samples = samples.size();
+        if(num_samples == 0){
+            std::cerr << "No data loaded. Does the provided file exist?."  << std::endl;
+            return 42;
+        }
         std::size_t num_points = num_links * num_samples;
         std::size_t num_rows = num_points + num_cols;
 
@@ -88,7 +93,10 @@ int main(int argc, char *argv[])
 
         //        int us_size = num_links*samples.size()+num_cols;
 
-        Eigen::MatrixXd uncertainty_scale = u_scale * Eigen::MatrixXd::Identity(num_links, num_links);
+        Eigen::MatrixXd uncertainty_scale =  Eigen::MatrixXd::Identity(num_links, num_links);
+        uncertainty_scale(1,1) = 1.0;
+        uncertainty_scale(2,2) = 1.0;
+        Eigen::MatrixXd inv_unsc = uncertainty_scale.inverse();
 
         Eigen::MatrixXd scale_init_param = lambda* Eigen::MatrixXd::Identity(num_cols, num_cols);
 
@@ -139,13 +147,13 @@ int main(int argc, char *argv[])
         Eigen::MatrixXd sol = full_matrix * param;
         Eigen::MatrixXd sample_tau = tau.block(0, 0, num_points, 1);
         Eigen::MatrixXd tau_param = sol.block(0, 0,  num_points, 1);
-        Eigen::MatrixXd diff = (tau_param.array().abs() - sample_tau.array().abs()).abs();
+        Eigen::MatrixXd diff = (tau_param.array().abs() - sample_tau.array().abs()).abs().matrix();
         double mean_diff = diff.array().mean();
 
 
         Eigen::MatrixXd inital_sol = full_matrix *initial_param;
         Eigen::MatrixXd inital_tau = inital_sol.block(0, 0, num_points, 1);
-        Eigen::MatrixXd intitial_diff = (sample_tau.array().abs() - inital_tau.array().abs()).abs().matrix();
+        Eigen::MatrixXd intitial_diff =  (sample_tau.array().abs() - inital_tau.array().abs()).abs().matrix();
 
         std::cout <<"Mean difference between calib. model and sensor: " << mean_diff << std::endl;
         std::cout <<"Mean difference between initial model and sensor: " << intitial_diff.array().mean() << std::endl;
