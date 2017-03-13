@@ -140,7 +140,7 @@ TEST(Jaco2DynamicsTests,inverseDynamics)
     for(int i = 0; i <6; ++i)
     {
         EXPECT_NEAR(torques[i], 0, 1e-4);
-//        std::cout << "torques(" << i <<") = " << torques[i] <<  std::endl;
+        //        std::cout << "torques(" << i <<") = " << torques[i] <<  std::endl;
     }
     std::vector<double> q2 = {4.776098185246001, 2.9779051856135985, 1.0370221453036228, -2.089493953881068, 1.3567380962770526, 1.3811624792663872};
     std::vector<double> qDot2;
@@ -151,7 +151,7 @@ TEST(Jaco2DynamicsTests,inverseDynamics)
         if(i>0){
             EXPECT_TRUE(fabs(torques[i]) > 1e-4);
         }
-//        std::cout << "torques(" << i <<") = " << torques[i] <<  std::endl;
+        //        std::cout << "torques(" << i <<") = " << torques[i] <<  std::endl;
     }
 }
 
@@ -367,6 +367,7 @@ TEST(Jaco2DynamicsTests, getRigidBodyRegressionMatrix)
     Eigen::Matrix<double, 6, 60> full_matrix;
     Eigen::Matrix<double, 6, 1> tau_full;
 
+    jaco2KDL.useUrdfDynamicParams();
     int id = 0;
     for(auto link : jaco2KDL.getLinkNames()) {
         param_vec(id) = jaco2KDL.getLinkMass(link);
@@ -433,33 +434,51 @@ TEST(Jaco2DynamicsTests, getRigidBodyRegressionMatrix)
 
     //Somehow this test does not work
     // test if we can solve the parameters torque =  getRigidBodyRegressionMatrix * parameters
-    // parameres = svd(getRigidBodyRegressionMatrix).solve(torque)
-    //    Eigen::Matrix<double, 120, 60> samples_mat;
-    //    Eigen::Matrix<double,  120,1> samples_tau;
-    //    for(int i = 0; i < 20; ++i) {
-    //        jaco2KDL.getRandomConfig(q);
-    //        jaco2KDL.setGravity(gx,gy,gz);
-    //        jaco2KDL.getTorques(q, qDot, qDotDot, torque);
+    //     parameres = svd(getRigidBodyRegressionMatrix).solve(torque)
 
-    //        Eigen::Matrix<double, 6, 60> mat = jaco2KDL.getRigidBodyRegressionMatrix("jaco_link_1", "jaco_link_hand",q, qDot, qDotDot, gx, gy, gz);
+    std::size_t n_samples = 2000;
+    std::size_t n_links = 6;
+    std::size_t n_params = 10 * n_links;
+    std::size_t rows = n_samples * n_links + n_params;
+    Eigen::MatrixXd reg_mat = Eigen::MatrixXd::Zero(rows, n_params);
+    Eigen::MatrixXd samples_tau = Eigen::MatrixXd::Zero(rows, 1);
+    Eigen::MatrixXd reg_tau = Eigen::MatrixXd::Zero(rows, 1);
 
-    //        Eigen::Matrix<double, 6, 1> torque_mat;
-    //        torque_mat << torque[0], torque[1], torque[2], torque[3], torque[4], torque[5];
+    double scale = 0.0001;
+    Eigen::MatrixXd identity = Eigen::MatrixXd::Identity(n_params, n_params);
+    for(int i = 0; i < n_samples; ++i) {
+        jaco2KDL.getRandomConfig(q);
+        jaco2KDL.setGravity(gx,gy,gz);
+        jaco2KDL.getTorques(q, qDot, qDotDot, torque);
 
-    //        samples_mat.block<6, 60>(i * 6,0) = mat;
-    ////        samples_tau.block<6,1>(i * 6,0) = torque_mat;
-    //        samples_tau.block<6,1>(i * 6,0) = torque_mat - mat * param_vec;
-    //    }
+        Eigen::MatrixXd mat =
+                jaco2KDL.getRigidBodyRegressionMatrix("jaco_link_1", "jaco_link_hand",q, qDot, qDotDot, gx, gy, gz);
 
-    //    Eigen::JacobiSVD<Eigen::MatrixXd> svd(samples_mat, Eigen::ComputeThinU | Eigen::ComputeThinV | Eigen::FullPivHouseholderQRPreconditioner);
-    //    Eigen::MatrixXd param = svd.solve(samples_tau);
+        Eigen::Matrix<double, 6, 1> torque_mat;
+        torque_mat << torque[0], torque[1], torque[2], torque[3], torque[4], torque[5];
+        Eigen::MatrixXd tau_test = mat * param_vec;
 
-    //    Eigen::MatrixXd tau2 = samples_mat * param;
+        for(int i = 0; i < n_links; ++i) {
+            EXPECT_NEAR(tau_test(i), torque_mat(i), accuracy);
+        }
 
-    ////    std::cout << tau2 << std::endl;
-    //    for(int i = 0; i < tau2.size(); ++i) {
-    //        EXPECT_NEAR(samples_tau(i), tau2(i), accuracy);
-    //    }
+        reg_mat.block(i * n_links, 0, n_links, n_params) = mat;
+        //        samples_tau.block<6,1>(i * 6,0) = torque_mat;
+        samples_tau.block<6,1>(i * 6,0) = torque_mat;
+        reg_tau.block<6,1>(i * 6,0) = torque_mat - mat * param_vec;
+    }
+    reg_mat.block(n_samples * n_links, 0, n_params, n_params) = scale * identity;
+
+    Eigen::JacobiSVD<Eigen::MatrixXd> svd(reg_mat, Eigen::ComputeThinU | Eigen::ComputeThinV | Eigen::FullPivHouseholderQRPreconditioner);
+    Eigen::MatrixXd param = svd.solve(reg_tau);
+    param += param_vec;
+
+    Eigen::MatrixXd tau2 = reg_mat * param;
+
+//        std::cout << tau2 << std::endl;
+    for(int i = 0; i < tau2.size(); ++i) {
+        EXPECT_NEAR(samples_tau(i), tau2(i), scale);
+    }
 
 }
 
@@ -506,12 +525,12 @@ TEST(Jaco2DynamicsTests, modifiedRNE)
 
     std::vector<double> torques;
     Eigen::MatrixXd mrne_res(6,1);
-//    std::vector<double> mod_torques;
+    //    std::vector<double> mod_torques;
 
     for(std::size_t i = 0; i <50 ; ++ i){
 
         jaco2KDL.modifiedRNE(0,0,-9.81,q,qDot,qDot,qDotDot,mrne_res);
-//        jaco2KDL.modifiedRNE(0,0,-9.81,q,qDot,qDot,qDotDot, mod_torques);
+        //        jaco2KDL.modifiedRNE(0,0,-9.81,q,qDot,qDot,qDotDot, mod_torques);
         jaco2KDL.getTorques(q, qDot,qDotDot,torques);
         jaco2KDL.getRandomConfig(q);
         jaco2KDL.getRandomConfig(qDot);
@@ -519,7 +538,7 @@ TEST(Jaco2DynamicsTests, modifiedRNE)
 
         for(int i = 0; i < torques.size(); ++i) {
             EXPECT_NEAR(torques[i], mrne_res(i), 1e-10);
-//            EXPECT_NEAR(torques[i], mod_torques[i], 1e-10);
+            //            EXPECT_NEAR(torques[i], mod_torques[i], 1e-10);
         }
 
     }

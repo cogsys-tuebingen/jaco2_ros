@@ -29,9 +29,17 @@ int main(int argc, char *argv[])
         const int num_param = 10;
 
         const int num_cols = 60;
+        const int num_params = 60;
 
 
         ros::init(argc, argv, "jaco2_rigid_body_regression_node");
+
+        double lambda = 0.001;
+        double u_scale = 1;
+
+        ros::NodeHandle nh("~");
+        nh.param<double>("lambda",lambda,lambda);
+        nh.param<double>("u_scale",u_scale,u_scale);
 
         std::string urdf_param("/robot_description");
         std::string base("jaco_link_base");
@@ -63,31 +71,27 @@ int main(int argc, char *argv[])
 
         for(Jaco2Calibration::DynamicCalibrationSample sample : samples_org) {
 
-                    samples.push_back(sample);
+            samples.push_back(sample);
         }
 
 
+        std::size_t num_samples = samples.size();
+        std::size_t num_points = num_links * num_samples;
+        std::size_t num_rows = num_points + num_cols;
 
 
-        std::cout << "samples size " << samples.size() << std::endl;
+        Eigen::MatrixXd full_matrix = Eigen::MatrixXd::Zero(num_rows, num_cols);
+        Eigen::MatrixXd tau = Eigen::MatrixXd::Zero(num_rows, 1);
+
+        std::cout << "samples size " << num_samples<< std::endl;
 
 
+        //        int us_size = num_links*samples.size()+num_cols;
 
-        Eigen::MatrixXd full_matrix;
-        Eigen::MatrixXd tau;
-        double lambda = 0.05;
-//        int us_size = num_links*samples.size()+num_cols;
-//        Eigen::MatrixXd uncertainty_scale(us_size, us_size);
+        Eigen::MatrixXd uncertainty_scale = u_scale * Eigen::MatrixXd::Identity(num_links, num_links);
 
-//        uncertainty_scale.setZero(us_size, us_size);
-
-//        for(std::size_t n = 0; n < num_links*samples.size(); ++n) {
-//            uncertainty_scale(n,n) = 1.0;///0.4/0.4;
-//        }
         Eigen::MatrixXd scale_init_param = lambda* Eigen::MatrixXd::Identity(num_cols, num_cols);
 
-        full_matrix = Eigen::MatrixXd::Zero(num_links*samples.size()+num_cols,num_cols);
-        tau = Eigen::MatrixXd::Zero(num_links*samples.size()+num_cols,1);
 
         int sample_counter = 0;
 
@@ -95,22 +99,23 @@ int main(int argc, char *argv[])
 
             Jaco2Calibration::DynamicCalibrationSample sample = samples[n];
             if(sample.jointPos.size() == 6) {
-                Eigen::Matrix<double, num_links, num_cols> sample_mat  = model.getRigidBodyRegressionMatrix("jaco_link_1", "jaco_link_hand",
-                                                                                                            sample.jointPos,
-                                                                                                            sample.jointVel,
-                                                                                                            sample.jointAcc,
-                                                                                                            sample.gravity(1),
-                                                                                                            sample.gravity(0),
-                                                                                                            sample.gravity(2));
+                Eigen::Matrix<double, num_links, num_cols> sample_mat  =
+                        model.getRigidBodyRegressionMatrix("jaco_link_1", "jaco_link_hand",
+                                                           sample.jointPos,
+                                                           sample.jointVel,
+                                                           sample.jointAcc,
+                                                           sample.gravity(1),
+                                                           sample.gravity(0),
+                                                           sample.gravity(2));
 
                 Eigen::Matrix<double, num_links, 1> sample_tau;
                 for(std::size_t i = 0; i < num_links; ++i) {
                     sample_tau(i) = sample.jointTorque[i];
                 }
 
-//                full_matrix.block<num_links, num_cols>(sample_counter * num_links,0) = uncertainty_scale * sample_mat;
-                full_matrix.block<num_links, num_cols>(sample_counter * num_links,0) =  sample_mat;
-                tau.block<num_links,1>(sample_counter * num_links,0) = sample_tau - sample_mat * initial_param;
+                //                full_matrix.block<num_links, num_cols>(sample_counter * num_links,0) = uncertainty_scale * sample_mat;
+                full_matrix.block<num_links, num_cols>(sample_counter * num_links,0) =  uncertainty_scale * sample_mat;
+                tau.block<num_links,1>(sample_counter * num_links,0) = uncertainty_scale * (sample_tau - sample_mat * initial_param);
 
                 //                    full_matrix.block<num_links, num_cols>(sample_counter * num_links,0) = sample_mat;
                 //                    tau.block<num_links,1>(sample_counter * num_links,0) = sample_tau - sample_mat * initial_param;
@@ -121,36 +126,38 @@ int main(int argc, char *argv[])
                           << ", sample counter: " << sample_counter << std::endl;
             }
         }
-        full_matrix.block<num_cols,num_cols>(num_links*samples.size(),0) = scale_init_param;
+
+        full_matrix.block<num_cols,num_cols>(num_samples, 0) = scale_init_param;
+
 
         Eigen::JacobiSVD<Eigen::MatrixXd> svd(full_matrix, Eigen::ComputeThinU | Eigen::ComputeThinV | Eigen::FullPivHouseholderQRPreconditioner);
-//        std::cout << Eigen::FullPivHouseholderQRPreconditioner << std::endl;
+        //        std::cout << Eigen::FullPivHouseholderQRPreconditioner << std::endl;
         //            svd.setThreshold()
         Eigen::Matrix<double, num_cols, 1> param = svd.solve(tau);
         param += initial_param;
 
+        Eigen::MatrixXd sol = full_matrix * param;
+        Eigen::MatrixXd sample_tau = tau.block(0, 0, num_points, 1);
+        Eigen::MatrixXd tau_param = sol.block(0, 0,  num_points, 1);
+        Eigen::MatrixXd diff = (tau_param.array().abs() - sample_tau.array().abs()).abs();
+        double mean_diff = diff.array().mean();
 
 
+        Eigen::MatrixXd inital_sol = full_matrix *initial_param;
+        Eigen::MatrixXd inital_tau = inital_sol.block(0, 0, num_points, 1);
+        Eigen::MatrixXd intitial_diff = (sample_tau.array().abs() - inital_tau.array().abs()).abs().matrix();
 
-        Eigen::MatrixXd tau_param = full_matrix * param;
+        std::cout <<"Mean difference between calib. model and sensor: " << mean_diff << std::endl;
+        std::cout <<"Mean difference between initial model and sensor: " << intitial_diff.array().mean() << std::endl;
 
-        Eigen::MatrixXd diff = tau_param - tau;
+        std::cout << "mean diff per joint calib model: \n " << jointMeanfromList(diff, num_samples, num_links) << std::endl;
+        std::cout << "mean diff per joint initial model: \n " << jointMeanfromList(intitial_diff, num_samples, num_links) << std::endl;
 
-        double mean_diff = diff.array().abs().mean();
-
-        std::cout <<"Mean difference between model and sensor: " << mean_diff << std::endl;
-
-
-
-        Eigen::MatrixXd intitial_diff = full_matrix *initial_param - tau;
-        std::cout << "mean per diff per joint: \n " << jointMeanfromList(diff, samples.size(), num_links) << std::endl;
-        std::cout << "mean per diff per joint initial param: \n " << jointMeanfromList(intitial_diff, samples.size(), num_links) << std::endl;
-
-        std::cout << "mean difference between measured torques: " << mean_diff << std::endl;
-        std::cout << "mean initial diffrence between measured torques: " << (intitial_diff).array().abs().mean() << std::endl;
-
-        std::cout << "chi square: " << (tau - full_matrix* param).transpose() * (tau - full_matrix* param) << std::endl;
+        Eigen::MatrixXd chi_sq = (tau - full_matrix* param).transpose() * (tau - full_matrix* param);
+        std::cout << "chi square: " << chi_sq << std::endl;
+        std::cout << "standard deviation: " << std::sqrt(chi_sq(0))/(samples.size() - num_params) << std::endl;
         std::cout << "mean difference between initial parameters: " << (param - initial_param).array().abs().mean() << std::endl;
+
 
         if(mean_diff < 3.5)
         {
