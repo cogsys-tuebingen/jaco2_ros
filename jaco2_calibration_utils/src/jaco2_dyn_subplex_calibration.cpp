@@ -3,11 +3,6 @@
 #include <jaco2_calibration_utils/jaco2_calibration_io.h>
 #include <nlopt.hpp>
 
-struct SubplexData{
-    Eigen::MatrixXd reg_mat;
-    Eigen::MatrixXd torques;
-};
-
 
 Eigen::MatrixXd arrayResidual(const Eigen::MatrixXd& reg_mat, const Eigen::MatrixXd& params, const Eigen::MatrixXd& torques)
 {
@@ -28,67 +23,40 @@ double residual(const Eigen::MatrixXd& reg_mat, const Eigen::MatrixXd& params, c
 
 }
 
-double minfunc(const std::vector<double>& x, std::vector<double>& grad, void* data)
+enum ParamType
 {
-    Eigen::MatrixXd params(x.size(),1);
-    std::size_t id = 0;
-    for(auto val : x){
-        params(id) = val;
-        ++id;
-    }
-    SubplexData * opt_data = (SubplexData*) data;
+    MASS = 0,
+    MASS_TIMES_COM_X = 1,
+    MASS_TIMES_COM_Y = 2,
+    MASS_TIMES_COM_Z = 3,
+    INERTIA_XX = 4,
+    INERTIA_XY = 5,
+    INERTIA_XZ = 6,
+    INERTIA_YY = 7,
+    INERTIA_YZ = 8,
+    INERTIA_ZZ = 9
+};
 
-    Eigen::MatrixXd diff = opt_data->torques - opt_data->reg_mat * params;
-    Eigen::MatrixXd diffT = diff.transpose();
-    Eigen::MatrixXd scalar = diffT * diff;
 
-    double cost = scalar.array().sum();
-
-    //    double cost = residual(opt_data->reg_mat, params, opt_data->torques);
-    //    Eigen::MatrixXd diff = opti_vec.transpose() * opti_vec;
-    if (!grad.empty())  {
-        Eigen::MatrixXd  e_grad = -2.0 * diffT * opt_data->reg_mat;
-        std::size_t id_grad = 0;
-        for(double& grad_i : grad){
-            grad_i = e_grad(id_grad);
-            ++id_grad;
-        }
-    }
-    std::cout << cost << std::endl;
-    return cost;
-}
 struct RbCalibrationBounds{
 
-    enum ParamType
-    {
-        MASS = 0,
-        MASS_TIMES_COM_X = 1,
-        MASS_TIMES_COM_Y = 2,
-        MASS_TIMES_COM_Z = 3,
-        INERTIA_XX = 4,
-        INERTIA_XY = 5,
-        INERTIA_XZ = 6,
-        INERTIA_YY = 7,
-        INERTIA_YZ = 8,
-        INERTIA_ZZ = 9
-    };
 
-    RbCalibrationBounds(Eigen::MatrixXd& init_param, double fac)
+    RbCalibrationBounds(Eigen::MatrixXd& init_param, double fac, std::vector<int> types)
     {
         for(std::size_t i = 0; i < init_param.rows(); ++i){
             int type = i % 10;
             double value =  init_param(i,0);
-            if( type == MASS){
+            bool contains  = std::find(types.begin(),types.end(), type)!= types.end();
+            if( type == MASS && contains){
                 lower_bounds.push_back(0);
                 upper_bounds.push_back(fac * value);
             }
-            else{
+            else if(contains){
                 if(value == 0){
-                    lower_bounds.push_back(-1.0);
-                    upper_bounds.push_back(1.0);
+                    lower_bounds.push_back(-0.2);
+                    upper_bounds.push_back(0.2);
                 }
                 else{
-//                    double bound = fac * std::abs(value);
                     if(value < 0)
                     {
                         lower_bounds.push_back(fac*value);
@@ -98,8 +66,6 @@ struct RbCalibrationBounds{
                         lower_bounds.push_back((1-fac)*value);
                         upper_bounds.push_back(fac*value);
                     }
-//                    lower_bounds.push_back(-bound);
-//                    upper_bounds.push_back(bound);
                 }
             }
         }
@@ -109,14 +75,17 @@ struct RbCalibrationBounds{
     std::vector<double> upper_bounds;
 };
 
-void eigen2vector(const Eigen::MatrixXd& mat, std::vector<double>& result)
+void eigen2vector(const Eigen::MatrixXd& mat, std::vector<double>& result, std::vector<int> types)
 {
     result.clear();
     for(std::size_t i = 0; i < mat.rows(); ++i){
-        for(std::size_t j = 0; j < mat.cols(); ++j){
-            result.push_back(mat(i,j));
+        int type = i % 10;
+        bool contains  = std::find(types.begin(),types.end(), type)!= types.end();
+        if(contains){
+            result.push_back(mat(i,0));
         }
     }
+
 }
 
 void vector2eigen(const std::vector<double>& data, Eigen::MatrixXd& result)
@@ -163,26 +132,46 @@ int main(int argc, char *argv[])
         DynamicResidual model(urdf_param, base, tip);
 
         model.loadData(input);
-        bool suc = model.calculteMatrix();
-        if(suc){
-            std::size_t problem_size = model.getProblemSize();
-            nlopt::opt optimizer(nlopt::LD_SLSQP, problem_size);
-            SubplexData sdata;
-            sdata.reg_mat = model.getRegressionMatrix();
-            sdata.torques = model.getTorques();
+        model.setResidualType(STATIC);
+        model.setStaticAccThreshold(0.01 * sqrt(6));
+        model.setStaticVelThreshold(0.01 * sqrt(6));
 
-            Eigen::MatrixXd init_params = model.getInitialParams();
-            RbCalibrationBounds bounds(init_params, 1.2);
+        Eigen::MatrixXd init_params = model.getInitialParams();
+        Eigen::MatrixXd final_param;
+        bool suc = model.calculteMatrix();
+
+        if(suc){
+//            for(std::size_t mode = 0; mode < 2; ++mode){
+            std::size_t problem_size;
+            std::vector<int> tooptimize;
+
+//            if(mode == 0){
+//                problem_size = 24;
+//                tooptimize = {MASS, MASS_TIMES_COM_X,  MASS_TIMES_COM_Y, MASS_TIMES_COM_Z};
+//            }
+//            else{
+                problem_size = 36;
+                model.setResidualType(DYNAMIC);
+                model.calculteMatrix();
+                tooptimize = {INERTIA_XX, INERTIA_XY, INERTIA_XZ, INERTIA_YY, INERTIA_YZ, INERTIA_ZZ};
+//            }
+            nlopt::opt optimizer(nlopt::LD_SLSQP, problem_size);
+
+
+
+            RbCalibrationBounds bounds(init_params, 1.2, tooptimize);
+
 
             optimizer.set_lower_bounds(bounds.lower_bounds);
             optimizer.set_upper_bounds(bounds.upper_bounds);
             optimizer.set_xtol_rel(0.01);
-            optimizer.set_min_objective(minfunc, &sdata);
+            optimizer.set_min_objective(DynamicResidual::residual, &model);
 
-            double f0 = residual(sdata.reg_mat, init_params, sdata.torques);
+            std::vector<double> grad(problem_size);
+            double f0 = model.getResidual(init_params, grad);
             double f = f0;
             std::vector<double> x;
-            eigen2vector(init_params, x);
+            eigen2vector(init_params, x, tooptimize);
             ROS_INFO_STREAM("Start Optimization");
             ros::Time start = ros::Time::now();
 
@@ -198,18 +187,24 @@ int main(int argc, char *argv[])
             std::size_t n_params = model.getNumOfParams();
             std::size_t n_links = model.getNumOfLinks();
             std::size_t n_samples = model.getNumOfSamples();
-            Eigen::MatrixXd final_param = Eigen::MatrixXd::Zero(n_params, 1);
-            vector2eigen(x, final_param);
+            final_param = Eigen::MatrixXd::Zero(n_params, 1);
+            model.paramVector2Eigen(x, final_param);
 
-            Eigen::MatrixXd mean_diff_inital = getMeanJointList(arrayResidual(sdata.reg_mat,init_params,sdata.torques),n_samples,n_links);
-            Eigen::MatrixXd mean_diff_final = getMeanJointList(arrayResidual(sdata.reg_mat,final_param,sdata.torques),n_samples,n_links);
+
+            const Eigen::MatrixXd& reg_mat = model.getRegressionMatrix();
+            const Eigen::MatrixXd& torques = model.getTorques();
+            Eigen::MatrixXd mean_diff_inital = getMeanJointList(arrayResidual(reg_mat, init_params, torques), n_samples, n_links);
+            Eigen::MatrixXd mean_diff_final = getMeanJointList(arrayResidual(reg_mat, final_param, torques), n_samples, n_links);
 
             ROS_INFO_STREAM("Initial mean resiudal per joint: " << mean_diff_inital);
             ROS_INFO_STREAM("Final  mean resiudal per joint: " << mean_diff_final);
 
+            init_params = final_param;
+//        }
+
 
             Jaco2Calibration::Jaco2ManipulatorDynParams optimized_params;
-            Jaco2Calibration::to_Jaco2ManipulatorDynParams(x,model.getLinkNames(),optimized_params);
+            Jaco2Calibration::to_Jaco2ManipulatorDynParams(final_param, model.getLinkNames(), optimized_params);
             Jaco2Calibration::Jaco2CalibrationIO::save(output,optimized_params);
 
 

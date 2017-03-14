@@ -23,10 +23,8 @@ public:
     void setScaleMatrix(Eigen::MatrixXd& scale);
     bool calculteMatrix();
 
-    Eigen::MatrixXd getRegressionMatrix();
-    Eigen::MatrixXd getTorques();
-
-
+    const Eigen::MatrixXd& getRegressionMatrix();
+    const Eigen::MatrixXd& getTorques();
 
     inline std::size_t getProblemSize() const {return n_cols_;}
     inline Eigen::MatrixXd getInitialParams() const {return initial_params_;}
@@ -37,7 +35,16 @@ public:
     inline std::size_t getNumOfRows() const {return n_rows_;}
     inline void setStaticVelThreshold(double val){static_vel_thresold_ = val;}
     inline void setStaticAccThreshold(double val){static_acc_thresold_ = val;}
+    inline void setResidualType(int type){ residual_type_ = type; }
 
+
+    double getResidual(const std::vector<double> &x, std::vector<double> &grad);
+    double getResidual(const Eigen::MatrixXd &params, std::vector<double> &grad);
+
+    static double residual(const std::vector<double>& x, std::vector<double>& grad, void* data);
+
+
+    void paramVector2Eigen(const std::vector<double>& x, Eigen::MatrixXd& res);
 private:
     bool staticSample(const Jaco2Calibration::DynamicCalibrationSample& sample) const;
     void selectData(std::vector<Jaco2Calibration::DynamicCalibrationSample>& selected);

@@ -57,7 +57,7 @@ void DynamicResidual::setScaleMatrix(Eigen::MatrixXd &scale)
     }
 }
 
-Eigen::MatrixXd DynamicResidual::getRegressionMatrix()
+const Eigen::MatrixXd& DynamicResidual::getRegressionMatrix()
 {
     if(!calculated_matrix_){
         calculteMatrix();
@@ -65,7 +65,7 @@ Eigen::MatrixXd DynamicResidual::getRegressionMatrix()
     return reg_mat_;
 }
 
-Eigen::MatrixXd DynamicResidual::getTorques()
+const Eigen::MatrixXd &DynamicResidual::getTorques()
 {
     if(!calculated_matrix_){
         calculteMatrix();
@@ -90,6 +90,9 @@ bool DynamicResidual::calculteMatrix()
     }
 
     n_samples_ = used_samples->size();
+    if(n_samples_ == 0){
+        throw std::logic_error("Samples used for optimization are empty! Forgot to set data path or thresholds?");
+    }
 
 
     std::size_t n_points = n_links_ * n_samples_;
@@ -102,7 +105,7 @@ bool DynamicResidual::calculteMatrix()
     torques_ = Eigen::MatrixXd::Zero(n_rows_, 1);
 
     auto it = used_samples->begin();
-    for(std::size_t n = 0; n <samples_.size(); ++ n) {
+    for(std::size_t n = 0; n < n_samples_; ++ n) {
 
         Jaco2Calibration::DynamicCalibrationSample sample = *it;
         ++it;
@@ -110,12 +113,12 @@ bool DynamicResidual::calculteMatrix()
         if(sample.jointPos.size() == n_links_) {
             Eigen::MatrixXd sample_mat  =
                     model_.getRigidBodyRegressionMatrix(first_link, last_link,
-                                                       sample.jointPos,
-                                                       sample.jointVel,
-                                                       sample.jointAcc,
-                                                       sample.gravity(0),
-                                                       sample.gravity(1),
-                                                       sample.gravity(2));
+                                                        sample.jointPos,
+                                                        sample.jointVel,
+                                                        sample.jointAcc,
+                                                        sample.gravity(0),
+                                                        sample.gravity(1),
+                                                        sample.gravity(2));
 
             Eigen::MatrixXd sample_tau = Eigen::MatrixXd::Zero(n_links_, 1);
             for(std::size_t i = 0; i < n_links_; ++i) {
@@ -142,6 +145,7 @@ bool DynamicResidual::calculteMatrix()
         reg_mat_.block(n_samples_, 0, n_cols_, n_cols_) = init_scale_;
 
     }
+    calculated_matrix_ = true;
     return true;
 }
 
@@ -176,5 +180,98 @@ void DynamicResidual::selectData(std::vector<Jaco2Calibration::DynamicCalibratio
                 selected.push_back(data);
             }
         }
+    }
+}
+
+double DynamicResidual::getResidual(const std::vector<double> &x, std::vector<double> &grad)
+{
+    Eigen::MatrixXd params;
+    paramVector2Eigen(x, params);
+
+    return getResidual(params, grad);
+}
+
+double DynamicResidual::getResidual(const Eigen::MatrixXd &params, std::vector<double> &grad)
+{
+    if(!calculated_matrix_){
+        calculteMatrix();
+    }
+
+    Eigen::MatrixXd diff = torques_ - reg_mat_ * params;
+    Eigen::MatrixXd diffT = diff.transpose();
+    Eigen::MatrixXd scalar = diffT * diff;
+
+    double cost = scalar.array().sum();
+
+    if (!grad.empty())  {
+        Eigen::MatrixXd  e_grad = -2.0 * diffT * reg_mat_;
+        std::size_t id_grad = 0;
+        for(double& grad_i : grad){ // dimension missmatch !!!
+            grad_i = e_grad(id_grad);
+            ++id_grad;
+        }
+    }
+    std::cout << cost << std::endl;
+    return cost;
+}
+
+
+double DynamicResidual::residual(const std::vector<double> &x, std::vector<double> &grad, void *data)
+{
+
+    DynamicResidual * object = (DynamicResidual*) data;
+
+    double fitness = object->getResidual(x, grad);
+    if(fitness > 1e9){
+        std::cout << "autsch" << std::endl;
+    }
+    return fitness;
+}
+
+void DynamicResidual::paramVector2Eigen(const std::vector<double> &x, Eigen::MatrixXd &res)
+{
+    std::size_t nparam = x.size();
+    switch(residual_type_){
+    case ALL:
+    {
+        if(nparam != n_cols_){
+            throw std::logic_error("Expected in total (number of links * 10 ) paramters.");
+        }
+        res = Eigen::MatrixXd::Zero(x.size(),1);
+        std::size_t id = 0;
+        for(auto val : x){
+            res(id) = val;
+            ++id;
+        }
+        break;
+    }
+    case STATIC:
+    {
+        if(nparam != n_links_ * 4){
+            throw std::logic_error("Expected in total (number of links * 4) paramters.");
+        }
+        res = initial_params_;
+        std::size_t i = 0;
+        for(auto value : x){
+            std::size_t id = i / 4 * n_param_ + i % 4;
+            res(id) = value;
+            ++i;
+        }
+        break;
+    }
+    case DYNAMIC:
+    {
+        if(nparam != n_links_ * 4){
+            throw std::logic_error("Expected in total (number of links * 6) paramters.");
+        }
+        res = initial_params_;
+        std::size_t i = 0;
+        for(auto value : x){
+            std::size_t id = i / 6 * n_param_ + i % 6 + 4;
+            res(id) = value;
+            ++i;
+        }
+        break;
+    }
     }
 }
