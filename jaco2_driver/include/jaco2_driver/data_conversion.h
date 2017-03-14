@@ -123,8 +123,12 @@ void normalize(std::vector<double>& angles)
 {
     auto it = angles.begin();
     for(std::size_t i = 0; i < 6; ++i){
-        *it = angles::normalize_angle(*it);
-        ++it;
+        while(*it > 2*M_PI){
+            *it -= 2.0*M_PI;
+        }
+        while(*it < -2*M_PI){
+            *it += 2.0 *M_PI;
+        }
     }
 }
 
