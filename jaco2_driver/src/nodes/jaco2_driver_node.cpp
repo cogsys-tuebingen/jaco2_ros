@@ -442,7 +442,7 @@ void Jaco2DriverNode::publishJointState()
     DataConversion::convert(controller_.getAngularForce(), jointStateMsg_.effort);
 
     DataConversion::from_degrees(jointStateMsg_.position);
-//    DataConversion::normalize(jointStateMsg_.position);
+    DataConversion::normalize(jointStateMsg_.position);
     DataConversion::from_degrees(jointStateMsg_.velocity);
 
     jointStateMsg_.header.stamp = ros::Time::now();
