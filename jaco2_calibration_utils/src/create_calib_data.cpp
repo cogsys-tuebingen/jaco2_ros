@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
             double pos0 = samples_.back().jointPos[0];
 
             jaco2_msgs::ArmJointAnglesGoal goal;
-
+            goal.type = jaco2_msgs::ArmJointAnglesGoal::RADIAN;
             goal.angles.joint1 = pos0 + 2*M_PI;
             goal.angles.joint2 = samples_.back().jointPos[1];
             goal.angles.joint3 = samples_.back().jointPos[2];
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 
             d.sleep();
             jaco2_msgs::ArmJointAnglesGoal goal1;
-
+            goal1.type = jaco2_msgs::ArmJointAnglesGoal::RADIAN;
             goal1.angles.joint1 = pos0;
             goal1.angles.joint2 = goal.angles.joint2;
             goal1.angles.joint3 = goal.angles.joint3;

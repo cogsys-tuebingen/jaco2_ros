@@ -71,6 +71,7 @@ add_library(jaco2_calibration_utils
     include/jaco2_calibration_utils/dynamic_calibration_sample.hpp
     include/jaco2_calibration_utils/acceleration_samples.hpp
     include/jaco2_calibration_utils/dynamic_calibrated_parameters.hpp
+#    include/jaco2_calibration_utils/torque_offset_lut.hpp
     src/dynamic_residual.cpp
     src/jaco2_calibration_io.cpp
     ${ALL_HEADERS}
@@ -80,6 +81,7 @@ add_executable(jaco2_create_calib_data_node src/create_calib_data.cpp)
 add_executable(jaco2_rigid_body_regression src/jaco2_rigid_body_regression.cpp)
 add_executable(record_calibration_data src/record_calibration_data.cpp)
 add_executable(jaco2_rigid_body_subplex src/jaco2_dyn_subplex_calibration.cpp)
+add_executable(record_static_data src/record_static_data.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -115,12 +117,19 @@ target_link_libraries(record_calibration_data
    ${Boost_LIBRARIES}
    jaco2_calibration_utils
 )
+
 target_link_libraries(jaco2_rigid_body_subplex
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
     jaco2_calibration_utils
     ${NLOPT_LIBRARIES}
- )
+)
+
+target_link_libraries(record_static_data
+   ${catkin_LIBRARIES}
+   ${Boost_LIBRARIES}
+   jaco2_calibration_utils
+)
 
 #############
 ## Install ##

@@ -4,13 +4,16 @@
 
 
 const std::size_t DynamicResidual::n_param_ = 10;
+const std::size_t DynamicResidual::n_param_static_ = 4;
+const std::size_t DynamicResidual::n_param_dynamic_ = 6;
 
 DynamicResidual::DynamicResidual(const std::string &robot_model, const std::string &chain_root, const std::string &chain_tip):
     model_(robot_model, chain_root, chain_tip),
     calculated_matrix_(false),
     use_initial_(false),
     set_scale_mat_(false),
-    residual_type_(ALL)
+    residual_type_(ALL),
+    n_opt_(n_param_)
 {
     //initial parameters
     std::vector<Jaco2Calibration::DynamicCalibratedParameters> init_param;
@@ -71,6 +74,28 @@ const Eigen::MatrixXd &DynamicResidual::getTorques()
         calculteMatrix();
     }
     return torques_;
+}
+
+void DynamicResidual::setResidualType(int type)
+{
+    switch (type) {
+    case ALL:
+        residual_type_ = type;
+        n_opt_ = n_param_;
+        break;
+    case STATIC:
+        residual_type_ = type;
+        n_opt_ = n_param_static_;
+        break;
+    case DYNAMIC:
+        residual_type_ = type;
+        n_opt_ = n_param_dynamic_;
+        break;
+    default:
+        residual_type_ = ALL;
+        n_opt_ = n_param_;
+        break;
+    }
 }
 
 bool DynamicResidual::calculteMatrix()
@@ -205,13 +230,11 @@ double DynamicResidual::getResidual(const Eigen::MatrixXd &params, std::vector<d
 
     if (!grad.empty())  {
         Eigen::MatrixXd  e_grad = -2.0 * diffT * reg_mat_;
-        std::size_t id_grad = 0;
-        for(double& grad_i : grad){ // dimension missmatch !!!
-            grad_i = e_grad(id_grad);
-            ++id_grad;
-        }
+        paramEigen2Vector(e_grad, grad);
+//        std::cout << "grad" << std::endl;
     }
-    std::cout << cost << std::endl;
+
+//    std::cout << cost << std::endl;
     return cost;
 }
 
@@ -222,13 +245,10 @@ double DynamicResidual::residual(const std::vector<double> &x, std::vector<doubl
     DynamicResidual * object = (DynamicResidual*) data;
 
     double fitness = object->getResidual(x, grad);
-    if(fitness > 1e9){
-        std::cout << "autsch" << std::endl;
-    }
     return fitness;
 }
 
-void DynamicResidual::paramVector2Eigen(const std::vector<double> &x, Eigen::MatrixXd &res)
+void DynamicResidual::paramVector2Eigen(const std::vector<double> &x, Eigen::MatrixXd &res) const
 {
     std::size_t nparam = x.size();
     switch(residual_type_){
@@ -247,7 +267,7 @@ void DynamicResidual::paramVector2Eigen(const std::vector<double> &x, Eigen::Mat
     }
     case STATIC:
     {
-        if(nparam != n_links_ * 4){
+        if(nparam != n_links_ * n_param_static_){
             throw std::logic_error("Expected in total (number of links * 4) paramters.");
         }
         res = initial_params_;
@@ -261,17 +281,52 @@ void DynamicResidual::paramVector2Eigen(const std::vector<double> &x, Eigen::Mat
     }
     case DYNAMIC:
     {
-        if(nparam != n_links_ * 4){
+        if(nparam != n_links_ * n_param_dynamic_){
             throw std::logic_error("Expected in total (number of links * 6) paramters.");
         }
         res = initial_params_;
         std::size_t i = 0;
         for(auto value : x){
-            std::size_t id = i / 6 * n_param_ + i % 6 + 4;
+            std::size_t id = i / n_param_dynamic_ * n_param_ + i % n_param_dynamic_ + n_param_static_;
             res(id) = value;
             ++i;
         }
         break;
     }
+    }
+}
+
+void DynamicResidual::paramEigen2Vector(const Eigen::MatrixXd &mat, std::vector<double> &result)
+{
+    if(result.size() != n_links_ * n_opt_){
+        result.resize(n_links_ * n_opt_);
+    }
+    paramEigen2Vector(mat, result, residual_type_);
+}
+
+void DynamicResidual::paramEigen2Vector(const Eigen::MatrixXd &mat, std::vector<double> &result, int type)
+{
+    auto it = result.begin();
+    int lower_limit = 0;
+    int limit = 9;
+
+    switch(type){
+    case STATIC:
+        limit = STATIC_PARAMS;
+        break;
+    case DYNAMIC:
+        lower_limit = DYNAMIC_PARAMS;
+        break;
+    default:
+        break;
+    }
+    std::size_t max = std::max(mat.cols(), mat.rows());
+
+    for(std::size_t i = 0; i < max; ++ i){
+        std::size_t ptype = i % n_param_;
+        if(ptype >= lower_limit && ptype <= limit){
+            *it = mat(i);
+            ++it;
+        }
     }
 }

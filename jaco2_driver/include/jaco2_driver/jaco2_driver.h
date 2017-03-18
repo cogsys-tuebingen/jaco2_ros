@@ -14,6 +14,8 @@
 #include <jaco2_driver/jaco2_controller.h>
 #include <jaco2_driver/angular_position_controller.h>
 #include <jaco2_driver/joint_trajectory.h>
+#include <jaco2_driver/accelerometer_calibration.hpp>
+#include <jaco2_driver/torque_offset_lut.hpp>
 //Jaco2 Controller
 #include <jaco2_driver/jaco2_controller.h>
 #include <jaco2_driver/empty_controller.h>
@@ -44,6 +46,7 @@ public:
     SensorsInfo getSensorInfo() const;
     std::chrono::time_point<std::chrono::high_resolution_clock> getLastReadUpdate(int read_data) const;
     std::vector<Jaco2Calibration::AccelerometerCalibrationParam> getAccerlerometerCalibration() const;
+
     int getSetTorqueZeroResult() const;
 
     //SET

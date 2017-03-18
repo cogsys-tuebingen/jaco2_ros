@@ -75,27 +75,15 @@ struct RbCalibrationBounds{
     std::vector<double> upper_bounds;
 };
 
-void eigen2vector(const Eigen::MatrixXd& mat, std::vector<double>& result, std::vector<int> types)
-{
-    result.clear();
-    for(std::size_t i = 0; i < mat.rows(); ++i){
-        int type = i % 10;
-        bool contains  = std::find(types.begin(),types.end(), type)!= types.end();
-        if(contains){
-            result.push_back(mat(i,0));
-        }
-    }
 
-}
-
-void vector2eigen(const std::vector<double>& data, Eigen::MatrixXd& result)
-{
-    for(std::size_t i = 0; i < result.rows(); ++i){
-        for(std::size_t j = 0; j < result.cols(); ++j){
-            result(i,j) = data.at(i*result.cols() + j);
-        }
-    }
-}
+//void vector2eigen(const std::vector<double>& data, Eigen::MatrixXd& result)
+//{
+//    for(std::size_t i = 0; i < result.rows(); ++i){
+//        for(std::size_t j = 0; j < result.cols(); ++j){
+//            result(i,j) = data.at(i*result.cols() + j);
+//        }
+//    }
+//}
 
 Eigen::MatrixXd getMeanJointList(Eigen::MatrixXd list, int sample_size, int num_joints)
 {
@@ -141,25 +129,25 @@ int main(int argc, char *argv[])
         bool suc = model.calculteMatrix();
 
         if(suc){
-//            for(std::size_t mode = 0; mode < 2; ++mode){
+            for(std::size_t mode = 0; mode < 1; ++mode){
             std::size_t problem_size;
             std::vector<int> tooptimize;
 
-//            if(mode == 0){
-//                problem_size = 24;
-//                tooptimize = {MASS, MASS_TIMES_COM_X,  MASS_TIMES_COM_Y, MASS_TIMES_COM_Z};
-//            }
-//            else{
+            if(mode == 0){
+                problem_size = 24;
+                tooptimize = {MASS, MASS_TIMES_COM_X,  MASS_TIMES_COM_Y, MASS_TIMES_COM_Z};
+            }
+            else{
                 problem_size = 36;
                 model.setResidualType(DYNAMIC);
                 model.calculteMatrix();
                 tooptimize = {INERTIA_XX, INERTIA_XY, INERTIA_XZ, INERTIA_YY, INERTIA_YZ, INERTIA_ZZ};
-//            }
+            }
             nlopt::opt optimizer(nlopt::LD_SLSQP, problem_size);
 
 
 
-            RbCalibrationBounds bounds(init_params, 1.2, tooptimize);
+            RbCalibrationBounds bounds(init_params, 1.5, tooptimize);
 
 
             optimizer.set_lower_bounds(bounds.lower_bounds);
@@ -171,8 +159,8 @@ int main(int argc, char *argv[])
             double f0 = model.getResidual(init_params, grad);
             double f = f0;
             std::vector<double> x;
-            eigen2vector(init_params, x, tooptimize);
-            ROS_INFO_STREAM("Start Optimization");
+            model.paramEigen2Vector(init_params, x);
+            ROS_INFO_STREAM("Start Optimization " << mode);
             ros::Time start = ros::Time::now();
 
             optimizer.optimize(x, f);
@@ -200,7 +188,8 @@ int main(int argc, char *argv[])
             ROS_INFO_STREAM("Final  mean resiudal per joint: " << mean_diff_final);
 
             init_params = final_param;
-//        }
+            model.setInitalParams(init_params);
+        }
 
 
             Jaco2Calibration::Jaco2ManipulatorDynParams optimized_params;

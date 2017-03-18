@@ -64,7 +64,7 @@ public:
             }
 
             //estimate jaco's base acceleration
-            Eigen::Vector3d g(jacoAccMsg_.lin_acc[0].vector.x, jacoAccMsg_.lin_acc[0].vector.y, jacoAccMsg_.lin_acc[0].vector.z );
+            Eigen::Vector3d g(-jacoAccMsg_.lin_acc[0].vector.y, -jacoAccMsg_.lin_acc[0].vector.x, -jacoAccMsg_.lin_acc[0].vector.z );
             g *= 9.81;
             gsum_.push_back(g);
             Eigen::Vector3d mean(0,0,0);

@@ -25,6 +25,7 @@ Jaco2DriverNode::Jaco2DriverNode()
       trajServer_(private_nh_,"follow_joint_trajectory/manipulator",false),
       graspServer_(private_nh_, "gripper_command", false),
       fingerServer_(private_nh_,"finger_joint_angles",false),
+      blockingAngleServer_(private_nh_, "arm_joint_angles_blocking", false),
       actionAngleServerRunning_(false),
       trajServerRunning_(false),
       gripperServerRunning_(false),
@@ -57,6 +58,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     trajServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::trajGoalCb, this));
     graspServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::gripperGoalCb, this));
     fingerServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::fingerGoalCb,this));
+    blockingAngleServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::blockingAngleGoalCb, this));
 
     f_ = boost::bind(&Jaco2DriverNode::dynamicReconfigureCb, this, _1, _2);
     paramServer_.setCallback(f_);
@@ -109,6 +111,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     trajServer_.start();
     graspServer_.start();
     fingerServer_.start();
+    blockingAngleServer_.start();
 
     lastTimeAccPublished_ = std::chrono::high_resolution_clock ::now();
 }
@@ -116,16 +119,28 @@ Jaco2DriverNode::Jaco2DriverNode()
 
 void Jaco2DriverNode::actionAngleGoalCb()
 {
+    if(actionAngleServer_.isActive()){
+        actionAngleServer_.setPreempted();
+        controller_.finish();
+    }
+//    if(!controller_.reachedGoal()){
+//        controller_.finish();
+//    }
+
     jaco2_msgs::ArmJointAnglesGoalConstPtr goal = actionAngleServer_.acceptNewGoal();
+
     AngularPosition position;
     DataConversion::convert(goal->angles,position);
     AngularPosition currentPos = controller_.getAngularPosition();
 
     position.Fingers = currentPos.Fingers;
-    //    DataConversion::shiftAngleDriver(position);
-    DataConversion::to_degrees(position);
+    if(goal->type == jaco2_msgs::ArmJointAnglesGoal::RADIAN){
+        DataConversion::to_degrees(position);
+    }
+
     actionAngleServerRunning_ = true;
     controller_.setAngularPosition(position);
+
 }
 
 void Jaco2DriverNode::trajGoalCb()
@@ -192,6 +207,28 @@ void Jaco2DriverNode::fingerGoalCb()
     controller_.setFingerPosition(pos);
 }
 
+void Jaco2DriverNode::blockingAngleGoalCb()
+{
+    if(blockingAngleServer_.isActive()){
+        ROS_DEBUG_STREAM("Controller was busy");
+        return;
+    }
+
+    jaco2_msgs::ArmJointAnglesGoalConstPtr goal = blockingAngleServer_.acceptNewGoal();
+    blockingAngleServer_.isPreemptRequested();
+
+    AngularPosition position;
+    DataConversion::convert(goal->angles,position);
+    AngularPosition currentPos = controller_.getAngularPosition();
+
+    position.Fingers = currentPos.Fingers;
+    if(goal->type == jaco2_msgs::ArmJointAnglesGoal::RADIAN){
+        DataConversion::to_degrees(position);
+    }
+
+    controller_.setAngularPosition(position);
+}
+
 bool Jaco2DriverNode::tick()
 {
     if(!g_running_) {
@@ -212,7 +249,6 @@ bool Jaco2DriverNode::tick()
             actionAngleServerRunning_ = false;
             result.val = jaco2_msgs::ArmJointAnglesResult::SUCCESSFUL;
             actionAngleServer_.setSucceeded(result);
-
             controller_.finish();
 
         } else if(actionAngleServer_.isPreemptRequested() )
@@ -220,6 +256,27 @@ bool Jaco2DriverNode::tick()
             result.val = jaco2_msgs::ArmJointAnglesResult::PREEMPT;
             actionAngleServerRunning_ = false;
             actionAngleServer_.setPreempted();
+
+            controller_.finish();
+        }
+    }
+    if(blockingAngleServer_.isActive())
+    {
+        jaco2_msgs::ArmJointAnglesFeedback feedback;
+        jaco2_msgs::ArmJointAnglesResult result;
+        AngularPosition angles = controller_.getAngularPosition();
+        DataConversion::convert(angles,feedback.angles);
+        blockingAngleServer_.publishFeedback(feedback);
+        if(controller_.reachedGoal())
+        {
+            result.val = jaco2_msgs::ArmJointAnglesResult::SUCCESSFUL;
+            blockingAngleServer_.setSucceeded(result);
+            controller_.finish();
+
+        } else if(blockingAngleServer_.isPreemptRequested() )
+        {
+            result.val = jaco2_msgs::ArmJointAnglesResult::PREEMPT;
+            blockingAngleServer_.setPreempted();
 
             controller_.finish();
         }

@@ -24,6 +24,7 @@ public:
         tp_ = tp;
         tp_.Position.Type = ANGULAR_POSITION;
         tp_.Position.HandMode = HAND_NOMOVEMENT;
+        reachedAngularPos_ = false;
     }
 
     void setFingerPosition(const TrajectoryPoint& tp)
@@ -33,6 +34,7 @@ public:
         tp_.Position.Fingers = tp.Position.Fingers;
         tp_.Position.Type = ANGULAR_POSITION;
         tp_.Position.HandMode = POSITION_MODE;
+        reachedAngularPos_ = false;
     }
 
     virtual void write() override

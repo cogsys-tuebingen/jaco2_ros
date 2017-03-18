@@ -2,6 +2,7 @@
 #define JACO2_DRIVER_NODE_H
 //System
 #include <signal.h>
+#include <atomic>
 //ROS
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
@@ -44,6 +45,7 @@ private:
     void trajGoalCb();
     void gripperGoalCb();
     void fingerGoalCb();
+    void blockingAngleGoalCb();
 
     bool stopServiceCallback(jaco2_msgs::Stop::Request &req, jaco2_msgs::Stop::Response &res);
     bool startServiceCallback(jaco2_msgs::Start::Request &req, jaco2_msgs::Start::Response &res);
@@ -78,6 +80,7 @@ private:
     actionlib::SimpleActionServer<control_msgs::FollowJointTrajectoryAction> trajServer_;
     actionlib::SimpleActionServer<jaco2_msgs::GripperControlAction> graspServer_;
     actionlib::SimpleActionServer<jaco2_msgs::SetFingersPositionAction> fingerServer_;
+    actionlib::SimpleActionServer<jaco2_msgs::ArmJointAnglesAction> blockingAngleServer_;
 
 
     ros::Time last_command_;
@@ -87,7 +90,7 @@ private:
     jaco2_msgs::JointAngles jointAngleMsg_;
     jaco2_msgs::Jaco2Sensor sensorMsg_;
 
-    bool actionAngleServerRunning_;
+    std::atomic_bool actionAngleServerRunning_;
     bool trajServerRunning_;
     bool gripperServerRunning_;
     bool fingerServerRunning_;
