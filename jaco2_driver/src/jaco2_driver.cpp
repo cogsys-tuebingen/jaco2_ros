@@ -231,6 +231,12 @@ std::vector<Jaco2Calibration::AccelerometerCalibrationParam> Jaco2Driver::getAcc
 {
     return state_.getAccelerometerCalibration();
 }
+
+Jaco2Calibration::TorqueOffsetLut Jaco2Driver::getTorqueCalibration() const
+{
+    return state_.getTorqueCalibration();
+}
+
 void Jaco2Driver::setTrajectoryPGains(const ManipulatorInfo &gains)
 {
     p2p_velocity_controller_.setGainP(gains);
@@ -345,6 +351,11 @@ SensorsInfo Jaco2Driver::getSensorInfo() const
 void Jaco2Driver::setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam> &params)
 {
     state_.setAccelerometerCalibration(params);
+}
+
+void Jaco2Driver::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut &lut)
+{
+    state_.setTorqueCalibration(lut);
 }
 
 int Jaco2Driver::getSetTorqueZeroResult() const

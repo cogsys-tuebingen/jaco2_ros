@@ -22,7 +22,12 @@ struct TorqueOffsetLut
                 }
                 id = index(link, angle);
             }
-            return lut(id.first, id.second);
+            if(id.second >= steps(id.first)){
+                return lut(id.first, steps(id.first) -1);
+            }
+            else{
+               return lut(id.first, id.second);
+            }
         }
         else{
             throw std::logic_error("link index should be between 1 and 6.");
@@ -63,7 +68,7 @@ struct TorqueOffsetLut
 
     /**
      * @brief index returns the index for given link and angle
-     * @param link link index from 0 to 6
+     * @param link link index from 1 to 6
      * @param angle the joint angle
      * @return pair of link index and joint angle index
      */

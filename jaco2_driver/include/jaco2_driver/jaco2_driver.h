@@ -24,6 +24,7 @@
 #include <jaco2_driver/point_2_point_velocity_controller.h>
 #include <jaco2_driver/gripper_controller.h>
 
+
 class Jaco2Driver
 {
 public:
@@ -46,6 +47,7 @@ public:
     SensorsInfo getSensorInfo() const;
     std::chrono::time_point<std::chrono::high_resolution_clock> getLastReadUpdate(int read_data) const;
     std::vector<Jaco2Calibration::AccelerometerCalibrationParam> getAccerlerometerCalibration() const;
+    Jaco2Calibration::TorqueOffsetLut getTorqueCalibration() const;
 
     int getSetTorqueZeroResult() const;
 
@@ -72,6 +74,7 @@ public:
     void grabObj(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3);
     void grabObjSetUnusedFingerPos(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3, const int posFinger1, const int posFinger2, const int posFinger3);
     void setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam>& params);
+    void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut& lut);
 
     void startArm();
     void stopArm();
