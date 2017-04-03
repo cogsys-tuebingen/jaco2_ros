@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<launch>
+
+	<node pkg="tf" type="static_transform_publisher" name="tf_finger_tip_1_marker_bc" args="0.0094 -0.0122 0.0 0.5635 -0.5008 0.4249 0.5008  /jaco_link_finger_tip_1 /jaco_finger_marker_1 100" />
+
+
+	<node pkg="tf" type="static_transform_publisher" name="tf_finger_tip_2_marker_bc" args="0.0094 -0.0122 0.0 0.5635 -0.5008 0.4249 0.5008  /jaco_link_finger_tip_2 /jaco_finger_marker_2 100" />
+	
+	<node pkg="tf" type="static_transform_publisher" name="tf_finger_tip_3_marker_bc" args="0.0094 -0.0122 0.0 0.5635 -0.5008 0.4249 0.5008  /jaco_link_finger_tip_3 /jaco_finger_marker_3 100" />
+
+
+
+</launch>
+
