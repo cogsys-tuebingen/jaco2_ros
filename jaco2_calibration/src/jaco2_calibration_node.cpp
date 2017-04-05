@@ -49,7 +49,11 @@ public:
         moveGroup_.setGoalPositionTolerance(0.01);
         moveGroup_.setGoalOrientationTolerance(0.05);
 
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+        planningMonitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+#else
         planningMonitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+#endif
 
         jointGroupNames_ =  planningMonitor_->getRobotModel()->getJointModelGroup("manipulator")->getActiveJointModelNames();
 
@@ -134,7 +138,7 @@ public:
 
         }
         ++currentSamples_;
-//        ROS_INFO_STREAM("Recoding_Data");
+        //        ROS_INFO_STREAM("Recoding_Data");
     }
 
     void sensorCb(const jaco2_msgs::Jaco2AccelerometersConstPtr& msg)
@@ -213,15 +217,15 @@ public:
 
                     moveit::planning_interface::MoveGroup::Plan my_plan;
                     moveGroup_.setJointValueTarget(jvalues);
-//                    moveGroup_.setStartStateToCurrentState();
+                    //                    moveGroup_.setStartStateToCurrentState();
                     moveGroup_.setPlanningTime(3.0);
                     moveit_msgs::MoveItErrorCodes success = moveGroup_.plan(my_plan);
 
-//                    std::cout << "Test 4: Planning successfull:  "
-//                              << "error code: " << success.val << std::endl;
+                    //                    std::cout << "Test 4: Planning successfull:  "
+                    //                              << "error code: " << success.val << std::endl;
                     if(success.val == moveit_msgs::MoveItErrorCodes::SUCCESS) {
-//                        Group.execute(my_plan);
-                       success = moveGroup_.move();
+                        //                        Group.execute(my_plan);
+                        success = moveGroup_.move();
                     }
                     if(success.val != moveit_msgs::MoveItErrorCodes::SUCCESS) {
                         collision = true;
@@ -230,7 +234,7 @@ public:
             }
 
         }
-         done = currentSamples_ >= numberOfSamples_;
+        done = currentSamples_ >= numberOfSamples_;
 
         std::cout << "recording data ... samples: " << currentSamples_  << std::endl;
 

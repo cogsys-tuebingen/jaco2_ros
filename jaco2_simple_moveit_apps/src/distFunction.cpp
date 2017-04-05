@@ -20,7 +20,12 @@ int main(int argc, char** argv) {
     moveit::planning_interface::MoveGroup group_("manipulator");
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
     planning_scene_monitor::PlanningSceneMonitorPtr planningMonitor_;
+
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+    planningMonitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+#else
     planningMonitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+#endif
     std::vector<std::string> jointNames_;
     jointNames_ =  planningMonitor_->getRobotModel()->getJointModelGroup("manipulator")->getActiveJointModelNames();
 
@@ -95,24 +100,24 @@ int main(int argc, char** argv) {
     for(int i = 0; i < 2; ++i)
     {
         if(i==1){
-//            state.setToRandomPositions(); // works as well
+            //            state.setToRandomPositions(); // works as well
             auto it_q = q.begin();
             for(auto lname : names){
                 state.setVariablePosition(lname, *it_q);
                 ++it_q;
             }
-//            state.update();
+            //            state.update();
         }
 
-            for(auto lname : names){
-                ROS_INFO_STREAM(lname << " position " << *state.getJointPositions(lname));
-            }
+        for(auto lname : names){
+            ROS_INFO_STREAM(lname << " position " << *state.getJointPositions(lname));
+        }
         scene->setCurrentState(state);
 
 
         std::map<std::string, moveit_msgs::CollisionObject> c_objects_map = planning_scene_interface_.getObjects();
         for(auto& kv : c_objects_map){
-//            ROS_INFO_STREAM( kv.first << " has value " << kv.second );
+            //            ROS_INFO_STREAM( kv.first << " has value " << kv.second );
             scene->processCollisionObjectMsg(kv.second);
         }
 

@@ -15,7 +15,11 @@ public:
     MoveToSampledConfPlanner(std::string group, std::string description, std::string planner) :
         group_(group)
     {
-        planningMonitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>(description);
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+        planningMonitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+#else
+        planningMonitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+#endif
         jointNames_ =  planningMonitor_->getRobotModel()->getJointModelGroup("manipulator")->getActiveJointModelNames();
 
         group_.setPlannerId(planner);
@@ -51,16 +55,16 @@ public:
     {
 
         if(id < configurations_.configurations.size()){
-        group_.setJointValueTarget(configurations_.configurations[id].angles);
-        moveit::planning_interface::MoveGroup::Plan my_plan;
-             moveit_msgs::MoveItErrorCodes success = group_.plan(my_plan);
-             if(success.val == moveit_msgs::MoveItErrorCodes::SUCCESS) {
-                 ROS_INFO("Success! Now move");
-                 //        group.execute(my_plan);
-                 success = group_.move();
-             }
-             result = success.val;
-             return (success.val == moveit_msgs::MoveItErrorCodes::SUCCESS);
+            group_.setJointValueTarget(configurations_.configurations[id].angles);
+            moveit::planning_interface::MoveGroup::Plan my_plan;
+            moveit_msgs::MoveItErrorCodes success = group_.plan(my_plan);
+            if(success.val == moveit_msgs::MoveItErrorCodes::SUCCESS) {
+                ROS_INFO("Success! Now move");
+                //        group.execute(my_plan);
+                success = group_.move();
+            }
+            result = success.val;
+            return (success.val == moveit_msgs::MoveItErrorCodes::SUCCESS);
         }
         else
         {
@@ -177,8 +181,8 @@ public:
 
         collision_objects.push_back(collision_object);
         planning_scene_interface_.addCollisionObjects(collision_objects);
-//        bool suc =  group_.attachObject("ground_plan","root");
-//        std::cout << suc << std::endl;
+        //        bool suc =  group_.attachObject("ground_plan","root");
+        //        std::cout << suc << std::endl;
     }
 
     std::size_t getConfigurationSize()
@@ -205,7 +209,7 @@ std::string conf_list = "/tmp/used_configurations.conf";
 bool gotoConfCb(jaco2_msgs::SetSampledConfigServiceRequest &req, jaco2_msgs::SetSampledConfigServiceResponse & res)
 {
 
-   return planner->move2NewConf(req.config,res.result);
+    return planner->move2NewConf(req.config,res.result);
 }
 
 void mySigintHandler(int sig)

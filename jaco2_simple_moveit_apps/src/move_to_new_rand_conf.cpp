@@ -14,7 +14,11 @@ public:
     NewRandomConfPlanner(std::string group, std::string description, std::string planner) :
         group_(group)
     {
-        planningMonitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>(description);
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+        planningMonitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+#else
+        planningMonitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+#endif
         jointNames_ =  planningMonitor_->getRobotModel()->getJointModelGroup("manipulator")->getActiveJointModelNames();
 
         group_.setPlannerId(planner);
@@ -76,16 +80,16 @@ public:
 
         while(!succeded){
             jaco2_utils::Configuration rand;
-//            std::vector<double> jvalues(configurations_.n_joints_);
-//            rand.angles = group_.getRandomJointValues();
+            //            std::vector<double> jvalues(configurations_.n_joints_);
+            //            rand.angles = group_.getRandomJointValues();
             rand.angles.resize(configurations_.n_joints_);
 
-//            planningMonitor_->updatesScene();
+            //            planningMonitor_->updatesScene();
             robot_state::RobotState& random_state = planningMonitor_->getPlanningScene()->getCurrentStateNonConst();
 
             random_state.setToRandomPositions();
             for(std::size_t i = 0; i < configurations_.n_joints_; ++i){
-//                random_state.setJointPositions(jointNames_[i], &(jvalues[i]));
+                //                random_state.setJointPositions(jointNames_[i], &(jvalues[i]));
                 rand.angles[i] = *random_state.getJointPositions(jointNames_[i]);
             }
 
@@ -108,15 +112,15 @@ public:
                 group_.setPlanningTime(3.0);
                 moveit_msgs::MoveItErrorCodes success = group_.plan(my_plan);
 
-//                std::cout << "Test 4: Planning successfull:  "
-//                          << "error code: " << success.val << std::endl;
+                //                std::cout << "Test 4: Planning successfull:  "
+                //                          << "error code: " << success.val << std::endl;
                 if(success.val == moveit_msgs::MoveItErrorCodes::SUCCESS) {
                     success = group_.execute(my_plan);
-//                    success = group_.move();
+                    //                    success = group_.move();
                     succeded = true;
                     std::cout << success << std::endl;
                     last_conf_ = rand;
-//                    configurations_.configurations.push_back(rand);
+                    //                    configurations_.configurations.push_back(rand);
                 }
                 if(success.val != moveit_msgs::MoveItErrorCodes::SUCCESS) {
                     succeded = false;
@@ -252,8 +256,8 @@ public:
 
         collision_objects.push_back(collision_object);
         planning_scene_interface_.addCollisionObjects(collision_objects);
-//        bool suc =  group_.attachObject("ground_plan","root");
-//        std::cout << suc << std::endl;
+        //        bool suc =  group_.attachObject("ground_plan","root");
+        //        std::cout << suc << std::endl;
     }
 
     std::size_t getConfigurationSize()
