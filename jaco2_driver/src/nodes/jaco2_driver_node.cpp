@@ -107,7 +107,7 @@ Jaco2DriverNode::Jaco2DriverNode()
         Jaco2Calibration::loadAccCalib(acc_calib_file, acc_params);
         controller_.setAccelerometerCalibration(acc_params);
     }
-    private_nh_.param<bool>("jaco_use_torque_calib", use_torque_calib, true);
+    private_nh_.param<bool>("jaco_use_torque_calib", use_torque_calib, false);
     if(use_torque_calib){
         std::string torque_calib_file;
         private_nh_.param<std::string>("jaco_torque_calibration_file", torque_calib_file, "/home/zwiener/workspace/jaco_ws/src/jaco2_ros/jaco2_driver/config/torque_offset_lut_jaco2-2.yaml");

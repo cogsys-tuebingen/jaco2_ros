@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <kinova/KinovaTypes.h>
 //#include <kinova/Kinova.API.CommLayerUbuntu.h>
-#include <Kinova.API.UsbCommandLayerUbuntu.h>
+#include <kinova/Kinova.API.UsbCommandLayerUbuntu.h>
 #include <mutex>
 
 class Jaco2API
