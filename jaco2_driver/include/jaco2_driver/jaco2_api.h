@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <kinova/KinovaTypes.h>
-#include <kinova/Kinova.API.CommLayerUbuntu.h>
+//#include <kinova/Kinova.API.CommLayerUbuntu.h>
+#include <Kinova.API.UsbCommandLayerUbuntu.h>
 #include <mutex>
 
 class Jaco2API
@@ -64,9 +65,24 @@ private:
     int (*SetCartesianControl)();
     int (*GetSensorsInfo)(SensorsInfo &);
     int (*SetTorqueZero)(int);
-    int (*SendAdvanceTrajectory)(TrajectoryPoint command);          /// Send Cartesian Trajectory wit Limits
+    int (*SendAdvanceTrajectory)(TrajectoryPoint command);          /// Send Trajectory with Limits
     int (*StopCurrentLimitation)();
     int (*GetCartesianPosition)(CartesianPosition &);
+//    int (*GetAPIVersion)(int Response[API_VERSION_COUNT]);
+//    int(*RunGravityZEstimationSequence)(ROBOT_TYPE type, double OptimalzParam[OPTIMAL_Z_PARAM_SIZE]);
+//    int(*SwitchTrajectoryTorque)(GENERALCONTROL_TYPE);
+//    int(*SetTorqueSafetyFactor)(float factor);
+//    int(*SendAngularTorqueCommand)(float Command[COMMAND_SIZE]);
+//    int(*SendCartesianForceCommand)(float Command[COMMAND_SIZE]);
+//    int(*SetGravityVector)(float Command[3]);
+//    int(*SetGravityPayload)(float Command[GRAVITY_PAYLOAD_SIZE]);
+//    int(*SetGravityOptimalZParam)(float Command[GRAVITY_PARAM_SIZE]);
+//    int(*SetGravityType)(GRAVITY_TYPE Type);
+//    int(*SetTorqueVibrationController)(float value);
+//    int(*GetAngularForceGravityFree)(AngularPosition &);
+//    int(*GetCartesianForce)(CartesianPosition &);
+//    int(*SetTorqueControlType)(TORQUECONTROL_TYPE type);
+
 
     void moveHomeLeft();
 private:

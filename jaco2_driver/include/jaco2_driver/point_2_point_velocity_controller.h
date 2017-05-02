@@ -22,7 +22,7 @@ public:
 
     virtual bool isDone() const;
 
-private:
+protected:
     JointTrajectory trajectory_;
     std::size_t  current_point_;
     ManipulatorInfo gainP_;

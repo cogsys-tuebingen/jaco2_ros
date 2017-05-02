@@ -75,6 +75,7 @@ void Point2PointVelocityController::write()
         {
             std::cout << "done " << std::endl;
             done_ = true;
+            // publish zero velocity
             tp_.InitStruct();
             tp_.Position.Type = ANGULAR_VELOCITY;
             api_.setAngularVelocity(tp_);
