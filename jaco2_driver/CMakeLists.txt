@@ -31,6 +31,7 @@ find_package(catkin REQUIRED COMPONENTS
   trajectory_msgs
   jaco2_msgs
   dynamic_reconfigure
+  jaco2_kin_dyn_lib
 )
 
 ## System dependencies are found with CMake's conventions
@@ -101,6 +102,7 @@ include_directories(
    src/jaco2_api.cpp
    src/point_2_point_velocity_controller.cpp
    src/gripper_controller.cpp
+   src/collision_repelling_p2p_controller.cpp
    src/jaco2_state.cpp
    include/jaco2_driver/data_conversion.h
    include/jaco2_driver/joint_trajectory.h
@@ -109,6 +111,7 @@ include_directories(
    include/jaco2_driver/jaco2_controller.h
    include/jaco2_driver/velocity_controller.h
    include/jaco2_driver/point_2_point_velocity_controller.h
+   include/jaco2_driver/collision_repelling_p2p_controller.h
    include/jaco2_driver/accelerometer_calibration.hpp
    include/jaco2_driver/torque_offset_lut.hpp
  )
