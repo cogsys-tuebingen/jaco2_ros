@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>  
-  <node pkg="jaco2_driver" type="jaco2_driver_node" name="jaco_arm_driver">
+  <node pkg="jaco2_driver" type="jaco2_driver_node" name="jaco_21_driver" output="screen">
     <param name="/jaco_serial" type="string" value="PJ00900006160400002"/>
     <param name="/jaco_use_accelerometer_calib" type="bool" value="true" />
     <param name="/jaco_accelerometer_calibration_file" type="string" value="$(find jaco2_driver)/config/acc_calib_jaco2-1.yaml"/>

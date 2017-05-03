@@ -23,6 +23,7 @@
 #include <jaco2_driver/velocity_controller.h>
 #include <jaco2_driver/point_2_point_velocity_controller.h>
 #include <jaco2_driver/gripper_controller.h>
+#include <jaco2_driver/gravity_compensation_controller.hpp>
 
 
 class Jaco2Driver
@@ -65,6 +66,8 @@ public:
     void setStatePriorityRatio(const int r);
     void setStateHighPriorityQue(const std::vector<int> &que);
     void setStateLowPriorityQue(const std::vector<int> &que);
+    void enableGravityCompensation();
+    void disableGravityCompensation();
 
     void setGripperPGain(const double finger1, const double finger2, const double finger3);
     void setGripperIGain(const double finger1, const double finger2, const double finger3);
@@ -88,6 +91,9 @@ public:
     static const int U_SlEEP_TIME = 5000;
 
 private:
+    void setActiveController(Jaco2Controller* controller);
+
+private:
     bool initialized_;
     Jaco2API jaco_api_;
 
@@ -100,6 +106,7 @@ private:
     Point2PointVelocityController p2p_velocity_controller_;
     EmptyController empty_controller_;
     GripperController gripper_controller_;
+    GravityCompensationController gravity_comp_controller_;
 
     std::vector<double> jointAngles_;
     std::vector<double> jointVelocities_;

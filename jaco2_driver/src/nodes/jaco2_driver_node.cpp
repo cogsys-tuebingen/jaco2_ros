@@ -10,16 +10,6 @@
 #include <jaco2_driver/torque_offset_lut.hpp>
 
 
-namespace {
-bool g_running_ = true;
-/// \brief Proper shutdown using control c.
-void siginthandler(int)
-{
-    g_running_ = false;
-    std::exit(0);
-}
-}
-
 Jaco2DriverNode::Jaco2DriverNode()
     : private_nh_("~"),
       actionAngleServer_(private_nh_, "arm_joint_angles",false),
@@ -54,6 +44,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     startService_ = private_nh_.advertiseService("in/start", &Jaco2DriverNode::startServiceCallback, this);
     homingService_ = private_nh_.advertiseService("in/home_arm", &Jaco2DriverNode::homeArmServiceCallback, this);
     zeroTorqueService_ = private_nh_.advertiseService("in/set_torque_zero", &Jaco2DriverNode::setTorqueZeroCallback, this);
+    gravityCompensationService_ = private_nh_.advertiseService("in/enabel_gravity_compensation_mode", &Jaco2DriverNode::gravityCompCallback, this);
 
     actionAngleServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::actionAngleGoalCb, this));
     trajServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::trajGoalCb, this));
@@ -92,7 +83,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     sensorMsg_.name[5] = tf_prefix_ + "joint_6";
 
 
-    bool init = controller_.initialize(serial_, rightArm_);
+    bool init = driver_.initialize(serial_, rightArm_);
     if(!init){
         ROS_ERROR_STREAM("Jaco 2 cloud not be initialized for device: " << serial_);
     }
@@ -105,15 +96,15 @@ Jaco2DriverNode::Jaco2DriverNode()
         private_nh_.param<std::string>("jaco_accelerometer_calibration_file", acc_calib_file, "");
         std::vector<Jaco2Calibration::AccelerometerCalibrationParam> acc_params;
         Jaco2Calibration::loadAccCalib(acc_calib_file, acc_params);
-        controller_.setAccelerometerCalibration(acc_params);
+        driver_.setAccelerometerCalibration(acc_params);
     }
     private_nh_.param<bool>("jaco_use_torque_calib", use_torque_calib, false);
     if(use_torque_calib){
         std::string torque_calib_file;
-        private_nh_.param<std::string>("jaco_torque_calibration_file", torque_calib_file, "/home/zwiener/workspace/jaco_ws/src/jaco2_ros/jaco2_driver/config/torque_offset_lut_jaco2-2.yaml");
+        private_nh_.param<std::string>("jaco_torque_calibration_file", torque_calib_file, "");
         Jaco2Calibration::TorqueOffsetLut lut;
         lut.load(torque_calib_file);
-        controller_.setTorqueCalibration(lut);
+        driver_.setTorqueCalibration(lut);
     }
 
     actionAngleServer_.start();
@@ -129,18 +120,17 @@ Jaco2DriverNode::Jaco2DriverNode()
 void Jaco2DriverNode::actionAngleGoalCb()
 {
     if(actionAngleServer_.isActive()){
-        actionAngleServer_.setPreempted();
-        controller_.finish();
+//        actionAngleServer_.setPreempted();
+        driver_.finish();
     }
 //    if(!controller_.reachedGoal()){
 //        controller_.finish();
 //    }
 
     jaco2_msgs::ArmJointAnglesGoalConstPtr goal = actionAngleServer_.acceptNewGoal();
-
     AngularPosition position;
     DataConversion::convert(goal->angles,position);
-    AngularPosition currentPos = controller_.getAngularPosition();
+    AngularPosition currentPos = driver_.getAngularPosition();
 
     position.Fingers = currentPos.Fingers;
     if(goal->type == jaco2_msgs::ArmJointAnglesGoal::RADIAN){
@@ -148,7 +138,7 @@ void Jaco2DriverNode::actionAngleGoalCb()
     }
 
     actionAngleServerRunning_ = true;
-    controller_.setAngularPosition(position);
+    driver_.setAngularPosition(position);
 
 }
 
@@ -180,7 +170,7 @@ void Jaco2DriverNode::trajGoalCb()
         DataConversion::convert(traj_msgs,driver_trajectory);
 
         trajServerRunning_ = true;
-        controller_.setTrajectory(driver_trajectory);
+        driver_.setTrajectory(driver_trajectory);
     }
     else{
         control_msgs::FollowJointTrajectoryResult result;
@@ -195,11 +185,11 @@ void Jaco2DriverNode::gripperGoalCb()
     gripperServerRunning_ = true;
     if(goal->useFinger1 && goal->useFinger2 && goal->useFinger3 || !goal->usePos)
     {
-        controller_.grabObj(goal->useFinger1, goal->useFinger2, goal->useFinger3);
+        driver_.grabObj(goal->useFinger1, goal->useFinger2, goal->useFinger3);
     }
     else
     {
-        controller_.grabObjSetUnusedFingerPos(goal->useFinger1, goal->useFinger2, goal->useFinger3,
+        driver_.grabObjSetUnusedFingerPos(goal->useFinger1, goal->useFinger2, goal->useFinger3,
                                               goal->posFinger1, goal->posFinger2, goal->posFinger3);
     }
 }
@@ -213,7 +203,7 @@ void Jaco2DriverNode::fingerGoalCb()
     pos.Fingers.Finger2 = goal->fingers.finger2;
     pos.Fingers.Finger3 = goal->fingers.finger3;
     fingerServerRunning_ = true;
-    controller_.setFingerPosition(pos);
+    driver_.setFingerPosition(pos);
 }
 
 void Jaco2DriverNode::blockingAngleGoalCb()
@@ -228,21 +218,31 @@ void Jaco2DriverNode::blockingAngleGoalCb()
 
     AngularPosition position;
     DataConversion::convert(goal->angles,position);
-    AngularPosition currentPos = controller_.getAngularPosition();
+    AngularPosition currentPos = driver_.getAngularPosition();
 
     position.Fingers = currentPos.Fingers;
     if(goal->type == jaco2_msgs::ArmJointAnglesGoal::RADIAN){
         DataConversion::to_degrees(position);
     }
 
-    controller_.setAngularPosition(position);
+    driver_.setAngularPosition(position);
+}
+
+bool Jaco2DriverNode::gravityCompCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
+{
+    if(req.data){
+        driver_.enableGravityCompensation();
+    }
+    else{
+        driver_.disableGravityCompensation();
+    }
+
+    res.success = true;
+    return true;
 }
 
 bool Jaco2DriverNode::tick()
 {
-    if(!g_running_) {
-        stop();
-    }
     publishJointState();
     publishJointAngles();
     publishSensorInfo();
@@ -250,62 +250,62 @@ bool Jaco2DriverNode::tick()
     {
         jaco2_msgs::ArmJointAnglesFeedback feedback;
         jaco2_msgs::ArmJointAnglesResult result;
-        AngularPosition angles = controller_.getAngularPosition();
+        AngularPosition angles = driver_.getAngularPosition();
         DataConversion::convert(angles,feedback.angles);
         actionAngleServer_.publishFeedback(feedback);
-        if(controller_.reachedGoal())
+        if(driver_.reachedGoal())
         {
             actionAngleServerRunning_ = false;
             result.val = jaco2_msgs::ArmJointAnglesResult::SUCCESSFUL;
             actionAngleServer_.setSucceeded(result);
-            controller_.finish();
+            driver_.finish();
 
         } else if(actionAngleServer_.isPreemptRequested() )
         {
             result.val = jaco2_msgs::ArmJointAnglesResult::PREEMPT;
             actionAngleServerRunning_ = false;
             actionAngleServer_.setPreempted();
-
-            controller_.finish();
+            ROS_INFO_STREAM("Preempt!!!");
+            driver_.finish();
         }
     }
     if(blockingAngleServer_.isActive())
     {
         jaco2_msgs::ArmJointAnglesFeedback feedback;
         jaco2_msgs::ArmJointAnglesResult result;
-        AngularPosition angles = controller_.getAngularPosition();
+        AngularPosition angles = driver_.getAngularPosition();
         DataConversion::convert(angles,feedback.angles);
         blockingAngleServer_.publishFeedback(feedback);
-        if(controller_.reachedGoal())
+        if(driver_.reachedGoal())
         {
             result.val = jaco2_msgs::ArmJointAnglesResult::SUCCESSFUL;
             blockingAngleServer_.setSucceeded(result);
-            controller_.finish();
+            driver_.finish();
 
         } else if(blockingAngleServer_.isPreemptRequested() )
         {
             result.val = jaco2_msgs::ArmJointAnglesResult::PREEMPT;
             blockingAngleServer_.setPreempted();
 
-            controller_.finish();
+            driver_.finish();
         }
     }
     if(trajServerRunning_)
     {
         control_msgs::FollowJointTrajectoryFeedback feedback;
         control_msgs::FollowJointTrajectoryResult result;
-        AngularPosition angles = controller_.getAngularPosition();
+        AngularPosition angles = driver_.getAngularPosition();
         DataConversion::convert(angles,feedback.actual.positions);
-        angles = controller_.getCurrentTrajError();
+        angles = driver_.getCurrentTrajError();
         DataConversion::convert(angles,feedback.error.positions);
         trajServer_.publishFeedback(feedback);
-        if(controller_.reachedGoal())
+        if(driver_.reachedGoal())
         {
             result.error_code = control_msgs::FollowJointTrajectoryResult::SUCCESSFUL;
             trajServerRunning_ = false;
             trajServer_.setSucceeded(result);
 
-            controller_.finish();
+            driver_.finish();
 
         } else if(actionAngleServer_.isPreemptRequested() )
         {
@@ -313,50 +313,50 @@ bool Jaco2DriverNode::tick()
             trajServerRunning_ = false;
             trajServer_.setPreempted();
 
-            controller_.finish();
+            driver_.finish();
         }
     }
     if(gripperServerRunning_)
     {
         //        jaco2_msgs::GripperControlFeedback feedback; // TODO
         jaco2_msgs::GripperControlResult result;
-        if(controller_.reachedGoal())
+        if(driver_.reachedGoal())
         {
             result.val = jaco2_msgs::GripperControlResult::SUCCESSFUL;
             gripperServerRunning_ = false;
             graspServer_.setSucceeded(result);
-            controller_.finish();
+            driver_.finish();
         }
         else if(graspServer_.isPreemptRequested())
         {
             result.val = jaco2_msgs::GripperControlResult::PREEMPT;
             gripperServerRunning_ = false;
             graspServer_.setPreempted(result);
-            controller_.finish();
+            driver_.finish();
         }
     }
     if(fingerServerRunning_)
     {
         jaco2_msgs::SetFingersPositionFeedback feedback;
         jaco2_msgs::SetFingersPositionResult result;
-        AngularPosition pos = controller_.getAngularPosition();
+        AngularPosition pos = driver_.getAngularPosition();
         feedback.fingers.finger1 = pos.Fingers.Finger1;
         feedback.fingers.finger2 = pos.Fingers.Finger2;
         feedback.fingers.finger3 = pos.Fingers.Finger3;
         fingerServer_.publishFeedback(feedback);
-        if(controller_.reachedGoal())
+        if(driver_.reachedGoal())
         {
             result.error_code = jaco2_msgs::SetFingersPositionResult::SUCCESS;
             fingerServerRunning_ = false;
             fingerServer_.setSucceeded(result);
-            controller_.finish();
+            driver_.finish();
         }
         else if(fingerServer_.isPreemptRequested())
         {
             result.error_code = jaco2_msgs::SetFingersPositionResult::PREMPTED;
             fingerServerRunning_ = false;
             fingerServer_.setSucceeded(result);
-            controller_.finish();
+            driver_.finish();
         }
     }
     return ok_;
@@ -386,13 +386,13 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
     trajectoryGainsD[4] = config.trajectory_i_gain_joint_4;
     trajectoryGainsD[5] = config.trajectory_i_gain_joint_5;
 
-    controller_.setTrajectoryPGains(trajectoryGainsP);
-    controller_.setTrajectoryIGains(trajectoryGainsI);
-    controller_.setTrajectoryDGains(trajectoryGainsD);
-    controller_.setGripperPGain(config.gripper_p_gain_finger_1,
+    driver_.setTrajectoryPGains(trajectoryGainsP);
+    driver_.setTrajectoryIGains(trajectoryGainsI);
+    driver_.setTrajectoryDGains(trajectoryGainsD);
+    driver_.setGripperPGain(config.gripper_p_gain_finger_1,
                                 config.gripper_p_gain_finger_2,
                                 config.gripper_p_gain_finger_3);
-    controller_.setGripperFingerVelocity(config.gipper_controller_finger_vel_1,
+    driver_.setGripperFingerVelocity(config.gipper_controller_finger_vel_1,
                                          config.gipper_controller_finger_vel_2,
                                          config.gipper_controller_finger_vel_3);
     std::vector<int> highPriQue;
@@ -446,8 +446,8 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
     if(config.state_low_pri_status){
         lowPriQue.push_back(READ_QUICK_STATUS);
     }
-    controller_.setStateHighPriorityQue(highPriQue);
-    controller_.setStateLowPriorityQue(lowPriQue);
+    driver_.setStateHighPriorityQue(highPriQue);
+    driver_.setStateLowPriorityQue(lowPriQue);
 
 }
 
@@ -469,7 +469,7 @@ void Jaco2DriverNode::jointVelocityCb(const jaco2_msgs::JointVelocityConstPtr& m
 
     DataConversion::to_degrees(velocity);
 
-    controller_.setAngularVelocity(velocity);
+    driver_.setAngularVelocity(velocity);
 
     last_command_ = ros::Time::now();
 }
@@ -490,22 +490,22 @@ void Jaco2DriverNode::fingerVelocityCb(const jaco2_msgs::FingerPositionConstPtr 
     velocity.Fingers.Finger2 = msg->finger2;
     velocity.Fingers.Finger3 = msg->finger3;
 
-    controller_.setFingerVelocity(velocity);
+    driver_.setFingerVelocity(velocity);
 
     last_command_ = ros::Time::now();
 }
 
 void Jaco2DriverNode::stop()
 {
-    controller_.stop();
+    driver_.stop();
     ros::shutdown();
 }
 
 void Jaco2DriverNode::publishJointState()
 {
-    DataConversion::convert(controller_.getAngularVelocity(),jointStateMsg_.velocity);
-    DataConversion::convert(controller_.getAngularPosition(),jointStateMsg_.position);
-    DataConversion::convert(controller_.getAngularForce(), jointStateMsg_.effort);
+    DataConversion::convert(driver_.getAngularVelocity(),jointStateMsg_.velocity);
+    DataConversion::convert(driver_.getAngularPosition(),jointStateMsg_.position);
+    DataConversion::convert(driver_.getAngularForce(), jointStateMsg_.effort);
 
     DataConversion::from_degrees(jointStateMsg_.position);
     DataConversion::normalize(jointStateMsg_.position);
@@ -522,7 +522,7 @@ void Jaco2DriverNode::publishJointState()
     jaco2JointStateMsg.velocity = jointStateMsg_.velocity;
     jaco2JointStateMsg.effort = jointStateMsg_.effort;
 
-    DataConversion::convert(controller_.getAngularAcceleration(), jaco2JointStateMsg.acceleration);
+    DataConversion::convert(driver_.getAngularAcceleration(), jaco2JointStateMsg.acceleration);
     DataConversion::from_degrees(jaco2JointStateMsg.acceleration);
 
     pubJaco2JointState_.publish(jaco2JointStateMsg);
@@ -531,7 +531,7 @@ void Jaco2DriverNode::publishJointState()
 void Jaco2DriverNode::publishJointAngles()
 {
 
-    AngularPosition pos = controller_.getAngularPosition();
+    AngularPosition pos = driver_.getAngularPosition();
 
 //        DataConversion::from_degrees(pos);
 
@@ -544,7 +544,7 @@ void Jaco2DriverNode::publishJointAngles()
 
     pubJointAngles_.publish(jointAngleMsg_);
 
-    AngularPosition posFing = controller_.getAngularPosition();
+    AngularPosition posFing = driver_.getAngularPosition();
     jaco2_msgs::FingerPosition finger_msg;
     finger_msg.finger1 = posFing.Fingers.Finger1;
     finger_msg.finger2 = posFing.Fingers.Finger2;
@@ -555,8 +555,8 @@ void Jaco2DriverNode::publishJointAngles()
 
 void Jaco2DriverNode::publishSensorInfo()
 {
-    AngularAcceleration acc = controller_.getActuatorAcceleration(); // TODO remove acc from sensor
-    std::chrono::time_point<std::chrono::high_resolution_clock>  stamp = controller_.getLastReadUpdate(READ_ACCELRATION);
+    AngularAcceleration acc = driver_.getActuatorAcceleration(); // TODO remove acc from sensor
+    std::chrono::time_point<std::chrono::high_resolution_clock>  stamp = driver_.getLastReadUpdate(READ_ACCELRATION);
     DataConversion::convert(acc,stamp,sensorMsg_.acceleration);
     if(stamp != lastTimeAccPublished_) {
         std::vector<geometry_msgs::Vector3Stamped> acc_msg(Jaco2DriverConstants::n_Jaco2Joints);
@@ -567,12 +567,12 @@ void Jaco2DriverNode::publishSensorInfo()
         lastTimeAccPublished_ = stamp;
 
     }
-    stamp = controller_.getLastReadUpdate(READ_TORQUE_GRAVITY_FREE);
-    AngularPosition torque = controller_.getAngularForceGravityFree();
+    stamp = driver_.getLastReadUpdate(READ_TORQUE_GRAVITY_FREE);
+    AngularPosition torque = driver_.getAngularForceGravityFree();
     DataConversion::convert(torque.Actuators,sensorMsg_.torque);
     DataConversion::convert(stamp,sensorMsg_.torque_time);
-    SensorsInfo info = controller_.getSensorInfo();
-    stamp = controller_.getLastReadUpdate(READ_SENSOR_INFO);
+    SensorsInfo info = driver_.getSensorInfo();
+    stamp = driver_.getLastReadUpdate(READ_SENSOR_INFO);
     DataConversion::convert(stamp,sensorMsg_.temperature_time);
     sensorMsg_.temperature[0] = info.ActuatorTemp1;
     sensorMsg_.temperature[1] = info.ActuatorTemp2;
@@ -580,8 +580,8 @@ void Jaco2DriverNode::publishSensorInfo()
     sensorMsg_.temperature[3] = info.ActuatorTemp4;
     sensorMsg_.temperature[4] = info.ActuatorTemp5;
     sensorMsg_.temperature[5] = info.ActuatorTemp6;
-    AngularPosition current = controller_.getCurrent();
-    stamp = controller_.getLastReadUpdate(READ_CURRENT);
+    AngularPosition current = driver_.getCurrent();
+    stamp = driver_.getLastReadUpdate(READ_CURRENT);
     DataConversion::convert(stamp,sensorMsg_.current_time);
     DataConversion::convert(current.Actuators,sensorMsg_.current);
 
@@ -590,7 +590,7 @@ void Jaco2DriverNode::publishSensorInfo()
 
 bool Jaco2DriverNode::startServiceCallback(jaco2_msgs::Start::Request &req, jaco2_msgs::Start::Response &res)
 {
-    controller_.startArm();
+    driver_.startArm();
     res.start_result = "Arm started";
     ROS_DEBUG("Arm stop requested");
     return true;
@@ -598,7 +598,7 @@ bool Jaco2DriverNode::startServiceCallback(jaco2_msgs::Start::Request &req, jaco
 
 bool Jaco2DriverNode::stopServiceCallback(jaco2_msgs::Stop::Request &req, jaco2_msgs::Stop::Response &res)
 {
-    controller_.stopArm();
+    driver_.stopArm();
     res.stop_result = "Arm stopped";
     ROS_DEBUG("Arm stop requested");
     return true;
@@ -607,32 +607,51 @@ bool Jaco2DriverNode::stopServiceCallback(jaco2_msgs::Stop::Request &req, jaco2_
 bool Jaco2DriverNode::homeArmServiceCallback(jaco2_msgs::HomeArm::Request &req, jaco2_msgs::HomeArm::Response &res)
 {
 
-    controller_.homeArm();
+    driver_.homeArm();
     res.homearm_result = "JACO ARM HAS BEEN RETURNED HOME";
     return true;
 }
 
 bool Jaco2DriverNode::setTorqueZeroCallback(jaco2_msgs::SetTorqueZero::Request &req, jaco2_msgs::SetTorqueZero::Response &res)
 {
-    controller_.setTorqueZero(req.actuator);
+    driver_.setTorqueZero(req.actuator);
     sleep(2.0);
-    while(!controller_.serviceDone())
+    while(!driver_.serviceDone())
     {
         usleep(10000);
         ROS_INFO("Waiting");
     }
-    res.result = controller_.getSetTorqueZeroResult();
+    res.result = driver_.getSetTorqueZeroResult();
     return true;
+}
+
+namespace {
+Jaco2DriverNode* g_driver = nullptr;
+void siginthandler(int){
+    std::terminate();
+}
 }
 
 int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "jaco_arm_driver", ros::init_options::NoSigintHandler);
 
-    signal(SIGINT, siginthandler);
-
     Jaco2DriverNode node;
+    g_driver = &node;
+
+    for(int i = 1; i <= 17; ++i){
+        signal(i, siginthandler);
+    }
+
+    std::set_terminate([](){
+        g_driver->stop();
+        std::cout << "DONE" << std::endl;
+        ROS_INFO_STREAM("All your base belong to us now!");
+        std::exit(0);
+    });
+
     ros::Rate r(65);
+
     bool driver_ok = true;
     while(ros::ok() && driver_ok)
     {

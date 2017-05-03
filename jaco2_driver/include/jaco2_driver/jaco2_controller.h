@@ -23,6 +23,16 @@ public:
         state_.read();
     }
 
+    virtual void start()
+    {
+
+    }
+
+    virtual void stop()
+    {
+
+    }
+
 protected:
     virtual void write() = 0;
 

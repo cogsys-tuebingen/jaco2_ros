@@ -32,6 +32,21 @@ Jaco2API::Jaco2API():
     SendAdvanceTrajectory = (int (*)(TrajectoryPoint)) dlsym(commandLayer_handle,"SendAdvanceTrajectory");
     StopCurrentLimitation = (int (*)()) dlsym(commandLayer_handle,"StopCurrentLimitation");
     GetCartesianPosition = (int (*)(CartesianPosition &)) dlsym(commandLayer_handle,"GetCartesianPosition");
+    GetAPIVersion = (int (*)(int Response[API_VERSION_COUNT])) dlsym(commandLayer_handle,"GetAPIVersion");
+    // untested functions since available  5.2.0
+    RunGravityZEstimationSequence = (int(*)(ROBOT_TYPE, double OptimalzParam[OPTIMAL_Z_PARAM_SIZE])) dlsym(commandLayer_handle, "RunGravityZEstimationSequence");
+    SwitchTrajectoryTorque = (int(*)(GENERALCONTROL_TYPE)) dlsym(commandLayer_handle, "SwitchTrajectoryTorque");
+    SetTorqueSafetyFactor = (int(*)(float)) dlsym(commandLayer_handle, "SetTorqueSafetyFactor");
+    SendAngularTorqueCommand = (int(*)(float Command[COMMAND_SIZE])) dlsym(commandLayer_handle, "SendAngularTorqueCommand");
+    SendCartesianForceCommand = (int(*)(float Command[COMMAND_SIZE])) dlsym(commandLayer_handle, "SendCartesianForceCommand");
+    SetGravityVector = (int(*)(float Command[3])) dlsym(commandLayer_handle, "SetGravityVector");
+    SetGravityPayload = (int(*)(float Command[GRAVITY_PAYLOAD_SIZE])) dlsym(commandLayer_handle, "SetGravityPayload");
+    SetGravityOptimalZParam = (int(*)(float Command[GRAVITY_PARAM_SIZE])) dlsym(commandLayer_handle, "SetGravityOptimalZParam");
+    SetGravityType = (int(*)(GRAVITY_TYPE Type)) dlsym(commandLayer_handle, "SetGravityType");
+    GetCartesianForce = (int(*)(CartesianPosition &)) dlsym(commandLayer_handle, "GetCartesianForce");
+    SetTorqueVibrationController = (int(*)(float)) dlsym(commandLayer_handle, "SetTorqueVibrationController");
+    SetTorqueControlType = (int(*)(TORQUECONTROL_TYPE)) dlsym(commandLayer_handle, "SetTorqueControlType");
+    GetTrajectoryTorqueMode = (int(*)(int &)) dlsym(commandLayer_handle, "GetTrajectoryTorqueMode");
 
 }
 
@@ -97,10 +112,10 @@ int Jaco2API::init(std::string serial, bool right)
 
                 std::cout << "Send the robot to HOME position" << std::endl;
                 if(right){
-                    result = MoveHome();
+//                    result = MoveHome();
                 }
                 else{
-                    moveHomeLeft();
+//                    moveHomeLeft();
                 }
 
                 std::cout << "Initializing the fingers" << std::endl;
@@ -108,6 +123,7 @@ int Jaco2API::init(std::string serial, bool right)
                 std::cout << std::endl << "D R I V E R   R E A D Y" << std::endl << std::endl;
             }
         }
+
     }
     return result;
 }
@@ -136,6 +152,13 @@ void Jaco2API::stopAPI()
     EraseAllTrajectories();
     StopControlAPI();
 
+}
+
+void Jaco2API::exitAPI()
+{
+    stopAPI();
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    CloseAPI();
 }
 
 QuickStatus Jaco2API::getQuickStatus() const
@@ -204,6 +227,7 @@ void Jaco2API::setAngularVelocity(const TrajectoryPoint &target_velocity)
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     if(!stopedAPI_){
+        SwitchTrajectoryTorque(POSITION);
         SendBasicTrajectory(target_velocity);
     }
 }
@@ -213,8 +237,24 @@ void Jaco2API::setAngularPosition(const TrajectoryPoint &position)
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     if(!stopedAPI_){
+        SwitchTrajectoryTorque(POSITION);
         SendBasicTrajectory(position);
     }
+}
+
+void Jaco2API::setAngularTorque(const AngularPosition& torque)
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    //    SetTorqueControlType(DIRECTTORQUE);
+    float cmd[COMMAND_SIZE];
+    memset(cmd,0.0,sizeof(float)*COMMAND_SIZE);
+    cmd[0] = torque.Actuators.Actuator1;
+    cmd[1] = torque.Actuators.Actuator2;
+    cmd[2] = torque.Actuators.Actuator3;
+    cmd[3] = torque.Actuators.Actuator4;
+    cmd[4] = torque.Actuators.Actuator5;
+    cmd[5] = torque.Actuators.Actuator6;
+    SendAngularTorqueCommand(cmd);
 }
 
 AngularPosition Jaco2API::getAngularCurrent() const
@@ -236,6 +276,7 @@ void Jaco2API::moveHome()
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     if(!stopedAPI_){
         if(right_arm_){
+            SwitchTrajectoryTorque(POSITION);
             MoveHome();
         }
     }
@@ -244,7 +285,22 @@ void Jaco2API::moveHome()
 void Jaco2API::initFingers()
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
+    SwitchTrajectoryTorque(POSITION);
     InitFingers();
+}
+void Jaco2API::enableDirectTorqueMode(double torque_saftey_factor, double vibration_controller)
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    SetTorqueControlType(DIRECTTORQUE);
+    SetTorqueSafetyFactor(torque_saftey_factor);
+    SetTorqueVibrationController(vibration_controller);
+    SwitchTrajectoryTorque(TORQUE);
+}
+
+void Jaco2API::disableTorque()
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    SwitchTrajectoryTorque(POSITION);
 }
 
 int Jaco2API::setTorqueZero(int actuator)
@@ -277,6 +333,26 @@ int Jaco2API::setTorqueZero(int actuator)
     return result;
 }
 
+void Jaco2API::getApiVersion(int &v_major, int &v_minor, int &version)
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    int data[API_VERSION_COUNT];
+    GetAPIVersion(data);
+    v_major = data[0];
+    v_minor = data[1];
+    version = data[2];
+
+}
+
+bool Jaco2API::inTrajectoryMode()
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    int mode;
+    GetTrajectoryTorqueMode(mode);
+    bool res  = mode == 0;
+    return res;
+}
+
 void Jaco2API::moveHomeLeft()
 {
     AngularPosition p =getAngularPosition();
@@ -297,7 +373,7 @@ void Jaco2API::moveHomeLeft()
     test = std::abs(p.Actuators.Actuator5 - ps.Actuators.Actuator5 ) < 3.0;
     test = std::abs(p.Actuators.Actuator6 - ps.Actuators.Actuator6 ) < 3.0;
 
-
+    SwitchTrajectoryTorque(POSITION);
 
     if(test){
         TrajectoryPoint homeLeft;
@@ -318,7 +394,7 @@ void Jaco2API::moveHomeLeft()
         homeLeft.Position.Actuators.Actuator5 = 277.21775818f;
         homeLeft.Position.Actuators.Actuator6 = 284.33439636f;
 
-//        SendBasicTrajectory(homeLeft);
+        //        SendBasicTrajectory(homeLeft);
         SendAdvanceTrajectory(homeLeft);
         StopCurrentLimitation();
     }
@@ -327,3 +403,4 @@ void Jaco2API::moveHomeLeft()
     }
 
 }
+

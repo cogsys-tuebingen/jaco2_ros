@@ -9,6 +9,7 @@
 #include <control_msgs/FollowJointTrajectoryAction.h>
 #include <control_msgs/GripperCommandAction.h>
 #include <dynamic_reconfigure/server.h>
+#include <std_srvs/SetBool.h>
 // JACO2 DRIVER
 #include <kinova/KinovaTypes.h>
 #include <jaco2_driver/jaco2_driver.h>
@@ -51,6 +52,7 @@ private:
     bool startServiceCallback(jaco2_msgs::Start::Request &req, jaco2_msgs::Start::Response &res);
     bool homeArmServiceCallback(jaco2_msgs::HomeArm::Request &req, jaco2_msgs::HomeArm::Response &res);
     bool setTorqueZeroCallback(jaco2_msgs::SetTorqueZero::Request &req, jaco2_msgs::SetTorqueZero::Response & res);
+    bool gravityCompCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
 
     void dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureConfig &config, uint32_t level);
 
@@ -59,7 +61,7 @@ private:
 
     ros::NodeHandle private_nh_;
 
-    Jaco2Driver controller_;
+    Jaco2Driver driver_;
 
     ros::Subscriber subJointVelocity_;
     ros::Subscriber subFingerVelocity_;
@@ -75,6 +77,7 @@ private:
     ros::ServiceServer startService_;
     ros::ServiceServer homingService_;
     ros::ServiceServer zeroTorqueService_;
+    ros::ServiceServer gravityCompensationService_;
 
     actionlib::SimpleActionServer<jaco2_msgs::ArmJointAnglesAction> actionAngleServer_;
     actionlib::SimpleActionServer<control_msgs::FollowJointTrajectoryAction> trajServer_;

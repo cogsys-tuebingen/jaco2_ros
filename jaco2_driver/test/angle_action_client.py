@@ -12,7 +12,7 @@ import sys
 
 
 def pose_client():
-    client = actionlib.SimpleActionClient('/jaco_arm_driver/arm_joint_angles', jaco2_msgs.msg.ArmJointAnglesAction)
+    client = actionlib.SimpleActionClient('/jaco_21_driver/arm_joint_angles', jaco2_msgs.msg.ArmJointAnglesAction)
 
     goal = jaco2_msgs.msg.ArmJointAnglesGoal()
 

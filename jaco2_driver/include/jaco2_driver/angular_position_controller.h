@@ -25,6 +25,7 @@ public:
         tp_.Position.Type = ANGULAR_POSITION;
         tp_.Position.HandMode = HAND_NOMOVEMENT;
         reachedAngularPos_ = false;
+        moveToAngularPos_ = false;
     }
 
     void setFingerPosition(const TrajectoryPoint& tp)
@@ -39,9 +40,11 @@ public:
 
     virtual void write() override
     {
+
         //oddly we have to re publish finger position commands?!
         if((!moveToAngularPos_ && !reachedAngularPos_) || (handMode_ && counter_ == 0) )
         {
+
             moveToAngularPos_ = true;
             api_.setAngularPosition(tp_);
         }

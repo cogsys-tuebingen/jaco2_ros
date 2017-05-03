@@ -11,6 +11,7 @@ Jaco2Driver::Jaco2Driver():
     p2p_velocity_controller_(state_,jaco_api_),
     empty_controller_(state_,jaco_api_),
     gripper_controller_(state_,jaco_api_),
+    gravity_comp_controller_(state_, jaco_api_),
     paused_(false),
     serviceDone_(true)
 {
@@ -24,6 +25,9 @@ bool Jaco2Driver::initialize(std::string serial, bool right)
     ROS_INFO_STREAM("initialize jaco 2 driver for device: " << serial_);
     int result = jaco_api_.init(serial_, right_arm_);
     ROS_INFO_STREAM("Jaco API result: "<< result);
+    int api_major, api_minor, api_version;
+    jaco_api_.getApiVersion(api_major, api_minor, api_version);
+    ROS_INFO_STREAM("Jaco API VERSION: " << api_major << "." << api_minor << "." << api_version );
 
     state_.readQuickStatus();
     usleep(U_SlEEP_TIME);
@@ -75,6 +79,20 @@ AngularPosition Jaco2Driver::getAngularForce() const
 {
     return state_.getAngularForce();
 }
+
+void Jaco2Driver::setActiveController(Jaco2Controller* controller)
+{
+    if(active_controller_){
+        active_controller_->stop();
+    }
+
+    active_controller_ = controller;
+    if(active_controller_){
+        active_controller_->start();
+    }
+
+}
+
 void Jaco2Driver::setAngularVelocity(const AngularPosition &velocity)
 {
     TrajectoryPoint tp;
@@ -84,7 +102,7 @@ void Jaco2Driver::setAngularVelocity(const AngularPosition &velocity)
     tp.Position.Type = ANGULAR_VELOCITY;
 
     velocity_controller_.setVelocity(tp);
-    active_controller_ = &velocity_controller_;
+    setActiveController(&velocity_controller_);
 }
 
 void Jaco2Driver::setAngularPosition(const AngularPosition &position)
@@ -96,24 +114,37 @@ void Jaco2Driver::setAngularPosition(const AngularPosition &position)
     tp.Position.Type = ANGULAR_POSITION;
 
     position_controller_.setPosition(tp);
-    active_controller_ = &position_controller_;
+    setActiveController(&position_controller_);
 }
 
 void Jaco2Driver::setTrajectory(const JointTrajectory &trajectory)
 {
     p2p_velocity_controller_.setTrajectory(trajectory);
-    active_controller_ = &p2p_velocity_controller_;
+    setActiveController(&p2p_velocity_controller_);
 }
 
 void Jaco2Driver::stop()
 {
     //    target_velocity_.Position.Type = ANGULAR_VELOCITY;
     running_ = false;
+    stopMovement();
+    jaco_api_.exitAPI();
+
+}
+
+void Jaco2Driver::enableGravityCompensation()
+{
+    setActiveController(&gravity_comp_controller_);
+}
+
+void Jaco2Driver::disableGravityCompensation()
+{
+    setActiveController(nullptr);
 }
 
 void Jaco2Driver::finish()
 {
-    active_controller_ = nullptr;
+    setActiveController(nullptr);
 }
 
 void Jaco2Driver::stopMovement()
@@ -123,7 +154,7 @@ void Jaco2Driver::stopMovement()
     tp.Position.Type = ANGULAR_VELOCITY;
 
     velocity_controller_.setVelocity(tp);
-    active_controller_ = &velocity_controller_;
+    setActiveController(&velocity_controller_);
 }
 void Jaco2Driver::stopArm()
 {
@@ -188,7 +219,6 @@ void Jaco2Driver::tick()
 {
     if(active_controller_ && !paused_) {
         active_controller_->read();
-//        usleep(2000);
         if(active_controller_)
         {
             active_controller_->execute();
@@ -198,7 +228,6 @@ void Jaco2Driver::tick()
     else
     {
         empty_controller_.read();
-//        usleep(5000);
     }
 
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
@@ -274,7 +303,7 @@ void Jaco2Driver::setFingerPosition(const AngularPosition &position)
     tp.Position.Fingers = position.Fingers;
 
     position_controller_.setFingerPosition(tp);
-    active_controller_ = &position_controller_;
+    setActiveController(&position_controller_);
 }
 
 void Jaco2Driver::setFingerVelocity(const AngularPosition &finger_velocity)
@@ -283,7 +312,7 @@ void Jaco2Driver::setFingerVelocity(const AngularPosition &finger_velocity)
     tp.InitStruct();
     tp.Position.Fingers = finger_velocity.Fingers;
     velocity_controller_.setFingerPosition(tp);
-    active_controller_ = &velocity_controller_;
+    setActiveController(&velocity_controller_);
 }
 
 void Jaco2Driver::setGripperFingerVelocity(const int finger1, const int finger2, const int finger3)
@@ -294,13 +323,13 @@ void Jaco2Driver::setGripperFingerVelocity(const int finger1, const int finger2,
 void Jaco2Driver::grabObj(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3)
 {
     gripper_controller_.grabObj(useFinger1, useFinger2, useFinger3);
-    active_controller_ = &gripper_controller_;
+    setActiveController(&gripper_controller_);
 }
 
 void Jaco2Driver::grabObjSetUnusedFingerPos(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3, const int posFinger1, const int posFinger2, const int posFinger3)
 {
     gripper_controller_.grabObjSetUnusedFingerPos(useFinger1, useFinger2, useFinger3, posFinger1, posFinger2, posFinger3);
-    active_controller_ = &gripper_controller_;
+    setActiveController(&gripper_controller_);
 }
 
 void Jaco2Driver::setStatePriorityRatio(const int r)
