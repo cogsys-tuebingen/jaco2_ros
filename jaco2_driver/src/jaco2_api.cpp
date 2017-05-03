@@ -227,7 +227,6 @@ void Jaco2API::setAngularVelocity(const TrajectoryPoint &target_velocity)
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     if(!stopedAPI_){
-        SwitchTrajectoryTorque(POSITION);
         SendBasicTrajectory(target_velocity);
     }
 }
@@ -237,7 +236,6 @@ void Jaco2API::setAngularPosition(const TrajectoryPoint &position)
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     if(!stopedAPI_){
-        SwitchTrajectoryTorque(POSITION);
         SendBasicTrajectory(position);
     }
 }
@@ -276,7 +274,6 @@ void Jaco2API::moveHome()
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     if(!stopedAPI_){
         if(right_arm_){
-            SwitchTrajectoryTorque(POSITION);
             MoveHome();
         }
     }

@@ -19,6 +19,7 @@ public:
     AngularInfo getJointError() const;
 
     virtual void write() override;
+    virtual void start() override;
 
     virtual bool isDone() const;
 

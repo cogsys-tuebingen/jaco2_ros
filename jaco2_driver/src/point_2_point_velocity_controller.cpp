@@ -17,6 +17,11 @@ Point2PointVelocityController::Point2PointVelocityController(Jaco2State &state, 
     gainP_[5] = 11.29063216;
 }
 
+void Point2PointVelocityController::start()
+{
+    api_.disableTorque();
+}
+
 void Point2PointVelocityController::setTrajectory(const JointTrajectory& trajectory)
 {
     trajectory_ = trajectory;

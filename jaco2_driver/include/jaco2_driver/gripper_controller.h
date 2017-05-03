@@ -16,6 +16,8 @@ public:
 
     virtual bool isDone() const;
 
+    virtual void start() override;
+
     void grabObj(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3);
     void grabObjSetUnusedFingerPos(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3, const int posFinger1, const int posFinger2, const int posFinger3);
 

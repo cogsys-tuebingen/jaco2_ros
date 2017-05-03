@@ -18,6 +18,11 @@ public:
         tp_.Position.Type = ANGULAR_POSITION;
     }
 
+    virtual void start() override
+    {
+        api_.disableTorque();
+    }
+
     void setPosition(const TrajectoryPoint& tp)
     {
         handMode_ = false;

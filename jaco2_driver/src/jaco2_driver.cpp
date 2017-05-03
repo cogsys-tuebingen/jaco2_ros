@@ -82,6 +82,10 @@ AngularPosition Jaco2Driver::getAngularForce() const
 
 void Jaco2Driver::setActiveController(Jaco2Controller* controller)
 {
+    if(active_controller_ == controller)
+    {
+        return;
+    }
     if(active_controller_){
         active_controller_->stop();
     }

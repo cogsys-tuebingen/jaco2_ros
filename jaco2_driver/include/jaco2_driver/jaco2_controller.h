@@ -23,10 +23,7 @@ public:
         state_.read();
     }
 
-    virtual void start()
-    {
-
-    }
+    virtual void start() = 0;
 
     virtual void stop()
     {

@@ -20,6 +20,11 @@ public:
 
     }
 
+    virtual void start() override
+    {
+        api_.disableTorque();
+    }
+
 
     virtual bool isDone() const override
     {

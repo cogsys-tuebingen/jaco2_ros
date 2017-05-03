@@ -15,6 +15,11 @@ public:
         tp_.Position.Type = ANGULAR_VELOCITY;
     }
 
+    virtual void start() override
+    {
+        api_.disableTorque();
+    }
+
     void setVelocity(const TrajectoryPoint& tp)
     {
         tp_ = tp;
