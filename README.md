@@ -75,9 +75,10 @@ You can publish commands to the Jaco 2 on topics with:
 ```
 <node_name>/in/x
 
+
+```
 - joint_velocity Topic
 -- to publish joint velocities to the controller publish our velocity with at least a rate of 20 Hz. Otherwise your comands will be ignored. Be carfull while publishing velocities, collisions are currently not avoided!
-```
 ### Action Server
 Currently, we have 3 action servers to control the arm:
 
