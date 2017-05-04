@@ -112,10 +112,10 @@ int Jaco2API::init(std::string serial, bool right)
 
                 std::cout << "Send the robot to HOME position" << std::endl;
                 if(right){
-//                    result = MoveHome();
+                    result = MoveHome();
                 }
                 else{
-//                    moveHomeLeft();
+                    moveHomeLeft();
                 }
 
                 std::cout << "Initializing the fingers" << std::endl;

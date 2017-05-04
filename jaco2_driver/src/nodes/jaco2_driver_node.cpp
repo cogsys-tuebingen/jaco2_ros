@@ -85,7 +85,7 @@ Jaco2DriverNode::Jaco2DriverNode()
 
     bool init = driver_.initialize(serial_, rightArm_);
     if(!init){
-        ROS_ERROR_STREAM("Jaco 2 cloud not be initialized for device: " << serial_);
+        ROS_ERROR_STREAM("Jaco 2 could not be initialized for device: " << serial_);
     }
     ok_ = init;
 
@@ -392,9 +392,15 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
     driver_.setGripperPGain(config.gripper_p_gain_finger_1,
                                 config.gripper_p_gain_finger_2,
                                 config.gripper_p_gain_finger_3);
+
     driver_.setGripperFingerVelocity(config.gipper_controller_finger_vel_1,
                                          config.gipper_controller_finger_vel_2,
                                          config.gipper_controller_finger_vel_3);
+
+    driver_.setVelocityControllerGains(config.velocity_controller_p_gain,
+                                       config.velocity_controller_i_gain,
+                                       config.velocity_controller_d_gain);
+
     std::vector<int> highPriQue;
     std::vector<int> lowPriQue;
     if(config.state_high_pri_pos){

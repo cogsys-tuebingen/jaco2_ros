@@ -269,6 +269,11 @@ Jaco2Calibration::TorqueOffsetLut Jaco2Driver::getTorqueCalibration() const
 {
     return state_.getTorqueCalibration();
 }
+void Jaco2Driver::setVelocityControllerGains(double p, double i, double d)
+{
+    std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
+    velocity_controller_.setGains(p, i, d);
+}
 
 void Jaco2Driver::setTrajectoryPGains(const ManipulatorInfo &gains)
 {

@@ -3,72 +3,176 @@
 #include <ctime>
 #include "jaco2_controller.h"
 #include <kinova/KinovaTypes.h>
+#include <kinova/KinovaArithmetics.hpp>
+using namespace KinovaArithmetics;
+
 class VelocityController : public Jaco2Controller
 {
 public:
     VelocityController(Jaco2State &state, Jaco2API &api)
         : Jaco2Controller(state, api),
-          last_command_(std::time(nullptr)),
-          done_(false)
+          //          last_command_(std::time(nullptr)),
+          last_command_(std::chrono::high_resolution_clock::now()),
+          done_(false),
+          kp_(1.2),
+          ki_(0.0),
+          kd_(0.0),
+          samplingPeriod_(1.0/65.0),
+          counter_(0)
     {
-        tp_.InitStruct();
-        tp_.Position.Type = ANGULAR_VELOCITY;
+        cmd_.InitStruct();
+        cmd_.Position.Type = ANGULAR_VELOCITY;
+        desired_.InitStruct();
+        desired_.Position.Type = ANGULAR_VELOCITY;
     }
 
     virtual void start() override
     {
         api_.disableTorque();
+        last_diff_.InitStruct();
     }
 
     void setVelocity(const TrajectoryPoint& tp)
     {
-        tp_ = tp;
-        tp_.Position.Type = ANGULAR_VELOCITY;
-        tp_.Position.HandMode = HAND_NOMOVEMENT;
+        desired_ = tp;
+        desired_.Position.Type = ANGULAR_VELOCITY;
+        desired_.Position.HandMode = HAND_NOMOVEMENT;
 
-        last_command_ = std::time(nullptr);
+        //        last_command_ = std::time(nullptr);
+        last_command_ = std::chrono::high_resolution_clock::now();
         done_ = false;
+    }
+
+    void setGains(double p, double i, double d)
+    {
+        kp_ = p;
+        ki_ = i;
+        kd_ = d;
     }
 
     void setFingerPosition(const TrajectoryPoint& tp)
     {
 
-        tp_.Position.Actuators.Actuator1 = 0;
-        tp_.Position.Actuators.Actuator2 = 0;
-        tp_.Position.Actuators.Actuator3 = 0;
-        tp_.Position.Actuators.Actuator4 = 0;
-        tp_.Position.Actuators.Actuator5 = 0;
-        tp_.Position.Actuators.Actuator6 = 0;
+        desired_.Position.Actuators.Actuator1 = 0;
+        desired_.Position.Actuators.Actuator2 = 0;
+        desired_.Position.Actuators.Actuator3 = 0;
+        desired_.Position.Actuators.Actuator4 = 0;
+        desired_.Position.Actuators.Actuator5 = 0;
+        desired_.Position.Actuators.Actuator6 = 0;
 
-        tp_.Position.Fingers = tp.Position.Fingers;
-        tp_.Position.Type = ANGULAR_VELOCITY;
-        tp_.Position.HandMode = VELOCITY_MODE;
-//        std::cout << tp_.Position .Fingers.Finger1 << ", " << tp_.Position.Fingers.Finger2 << ", " << tp_.Position.Fingers.Finger3 << std::endl;
-        last_command_ = std::time(nullptr);
+        desired_.Position.Fingers = tp.Position.Fingers;
+        desired_.Position.Type = ANGULAR_VELOCITY;
+        desired_.Position.HandMode = VELOCITY_MODE;
+        //        last_command_ = std::time(nullptr);
+        last_command_ = std::chrono::high_resolution_clock::now();
         done_ = false;
     }
 
     virtual void write() override
     {
-        if(std::time(nullptr) - last_command_ > 0.1)
+        auto now = std::chrono::high_resolution_clock::now();
+
+        auto durationLast = now - last_command_;
+
+        samplingPeriod_ = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
+
+        double sum = absSum(desired_.Position.Actuators);
+
+        if(samplingPeriod_ > 0.05)
         {
-            tp_.InitStruct();
-            tp_.Position.Type = ANGULAR_VELOCITY;
+            cmd_.InitStruct();
+            cmd_.Position.Type = ANGULAR_VELOCITY;
+            esum_.InitStruct();
+            last_diff_.InitStruct();
+            counter_ = 0;
             done_ = true;
+            desired_.Position.InitStruct();
+            desired_.Position.Type = ANGULAR_VELOCITY;
         }
-        api_.setAngularVelocity(tp_);
+        else if(desired_.Position.HandMode == HAND_NOMOVEMENT && sum > 0.1){
+            auto vel = pdControl();
+            cmd_.Position.Actuators = vel;
+        }
+
+        api_.setAngularVelocity(cmd_);
+
     }
 
     virtual bool isDone() const override
     {
         return done_;
     }
+private:
+    AngularInfo pdControl()
+    {
+        auto new_vel = state_.getAngularVelocity();
+
+        vel_buffer_.push_back(new_vel.Actuators);
+        if(vel_buffer_.size() > 5){
+            vel_buffer_.pop_front();
+        }
+        auto vel = meanOfVelBuffer();
+
+        AngularInfo res;
+        res.InitStruct();
+        AngularInfo diff = desired_.Position.Actuators - vel;
+
+        calculateEsum(diff);
+
+        double kd = kd_/samplingPeriod_;
+        if(std::isnan(kd)){
+            kd = 0;
+        }
+        else if( std::abs(kd)> 1e8){
+            kd = 0;
+        }
+
+        res = 1.6 * desired_.Position.Actuators
+                + kp_ * diff
+                + ki_ * esum_
+                + kd * (diff - last_diff_) ;
+        last_diff_ = diff;
+
+
+        return res;
+    }
+
+    AngularInfo meanOfVelBuffer()
+    {
+        AngularInfo res;
+        res.InitStruct();
+        for(auto d : vel_buffer_){
+            res += d;
+        }
+        res *= 1.0 / ((double) vel_buffer_.size());
+        return res;
+    }
+    void calculateEsum(const AngularInfo& diff)
+    {
+        e_buffer_.push_back(diff);
+        if(e_buffer_.size() > 130){
+            e_buffer_.pop_front();
+        }
+        esum_.InitStruct();
+        for(auto val : e_buffer_){
+            esum_ = esum_ + samplingPeriod_ * val ;
+        }
+    }
 
 private:
-    TrajectoryPoint tp_;
+    TrajectoryPoint desired_;
+    TrajectoryPoint cmd_;
 
-    std::time_t last_command_;
-
+    std::chrono::time_point<std::chrono::high_resolution_clock> last_command_;
     bool done_;
+    double kp_;
+    double ki_;
+    double kd_;
+    double samplingPeriod_;
+    AngularInfo last_diff_;
+    AngularInfo esum_;
+    int counter_;
+    std::deque<AngularInfo> vel_buffer_;
+    std::deque<AngularInfo> e_buffer_;
 };
 #endif // VELOCITYCONTROLLER_H

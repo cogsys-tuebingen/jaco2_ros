@@ -114,6 +114,7 @@ include_directories(
    include/jaco2_driver/collision_repelling_p2p_controller.h
    include/jaco2_driver/accelerometer_calibration.hpp
    include/jaco2_driver/torque_offset_lut.hpp
+   include/kinova/KinovaArithmetics.hpp
  )
 
 ## Add cmake target dependencies of the library

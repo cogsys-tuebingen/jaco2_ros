@@ -66,6 +66,7 @@ public:
     void setStatePriorityRatio(const int r);
     void setStateHighPriorityQue(const std::vector<int> &que);
     void setStateLowPriorityQue(const std::vector<int> &que);
+    void setVelocityControllerGains(double p, double i, double d);
     void enableGravityCompensation();
     void disableGravityCompensation();
 
