@@ -74,11 +74,9 @@ The Jaco 2 Node publishes information on topics marked with:
 You can publish commands to the Jaco 2 on topics with:
 ```
 <node_name>/in/x
-
-
 ```
-- joint_velocity Topic
--- to publish joint velocities to the controller publish our velocity with at least a rate of 20 Hz. Otherwise your comands will be ignored. Be carfull while publishing velocities, collisions are currently not avoided!
+- **joint_velocity topic:**
+To publish joint velocities to the controller publish our velocity with at least a rate of 20 Hz. Otherwise your comands will be ignored. Be carfull while publishing velocities, collisions are currently not avoided!
 ### Action Server
 Currently, we have 3 action servers to control the arm:
 
@@ -97,20 +95,23 @@ Performs a power grip. Closes the gripper untill the finger do not move anymore.
 Trajectory tracking controller using PID velocity control.
 
 ### Services
-There are 4 services available:
+There are 5 services available:
 
-- **/jaco_arm_driver/in/home_arm**:
+- **/in/home_arm**:
 Brings the arm to its home position.== Only use this if you are sure that the Jaco 2 will not collide with its enviroment. Currently, this service is not available if you want to use a "left" Jaco  2 arm.==
 
-- **/jaco_arm_driver/in/set_torque_zero**:
+- **/in/set_torque_zero**:
 Sets a torque sensor to zero. Only use this command in torque zero position:
- [ *, 180° 180°, 0, 0, 180°]
+ [ 0, 180° 180°, 0, 0, 180°]
 
-- **/jaco_arm_driver/in/stop**:
+- **/in/stop**:
 Stops the API any command will be ignored.
 
 - **/jaco_arm_driver/in/start**:
 Releases the API if it was stopped previously.
+
+- **in/enable_gravity_compensation_mode**
+If true is send the Jaco 2 is in torque control mode an will only compensete torques due to gravity. Therefore, you can push the Jaco 2 into any configuration you like. This mode is deactivated if links are to close to each other. To activated the gravity compensation mode send false to the service, change the configuration to a more extended one e.g. via the controller, and finally enable the compensation mode by sending ture once again.
 
 
 ## jaco2_kin_dyn_lib

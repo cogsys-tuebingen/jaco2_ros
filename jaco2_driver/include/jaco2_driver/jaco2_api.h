@@ -51,6 +51,10 @@ public:
 
     void disableTorque();
 
+    bool setGravityOptimalZParam(const std::vector<double>& params);
+
+    void runGravityEstimationSequnce(std::vector<double>& res, ROBOT_TYPE type = JACOV2_6DOF_SERVICE);
+
 
 private:
     void * commandLayer_handle;
@@ -94,7 +98,6 @@ private:
     int(*GetCartesianForce)(CartesianPosition &);
     int(*SetTorqueControlType)(TORQUECONTROL_TYPE type);
     int(*GetTrajectoryTorqueMode)(int &);
-
 
 
     void moveHomeLeft();

@@ -47,6 +47,8 @@ Jaco2API::Jaco2API():
     SetTorqueVibrationController = (int(*)(float)) dlsym(commandLayer_handle, "SetTorqueVibrationController");
     SetTorqueControlType = (int(*)(TORQUECONTROL_TYPE)) dlsym(commandLayer_handle, "SetTorqueControlType");
     GetTrajectoryTorqueMode = (int(*)(int &)) dlsym(commandLayer_handle, "GetTrajectoryTorqueMode");
+    SetGravityType = (int(*)(GRAVITY_TYPE Type)) dlsym(commandLayer_handle, "SetGravityType");
+    SetGravityOptimalZParam = (int(*)(float Command[GRAVITY_PARAM_SIZE])) dlsym(commandLayer_handle, "SetGravityOptimalZParam");
 
 }
 
@@ -348,6 +350,34 @@ bool Jaco2API::inTrajectoryMode()
     GetTrajectoryTorqueMode(mode);
     bool res  = mode == 0;
     return res;
+}
+
+bool Jaco2API::setGravityOptimalZParam(const std::vector<double> &params)
+{
+    std::unique_lock<std::recursive_mutex>lock(mutex_);
+    bool ok = params.size() == OPTIMAL_Z_PARAM_SIZE;
+    if(ok){
+
+        float optimalParams [OPTIMAL_Z_PARAM_SIZE];
+        std::size_t i = 0;
+        for( auto val : params){
+            optimalParams[i] = val;
+        }
+        SetGravityOptimalZParam(optimalParams);
+        SetGravityType(OPTIMAL);
+        usleep(30000);
+    }
+    return ok;
+}
+
+void Jaco2API::runGravityEstimationSequnce(std::vector<double> &res, ROBOT_TYPE type)
+{
+    double optimalParams[OPTIMAL_Z_PARAM_SIZE];
+    RunGravityZEstimationSequence(type, optimalParams);
+    res.resize(OPTIMAL_Z_PARAM_SIZE);
+    for(std::size_t i = 0; i < OPTIMAL_Z_PARAM_SIZE; ++i){
+        res[i] = optimalParams[i];
+    }
 }
 
 void Jaco2API::moveHomeLeft()

@@ -114,6 +114,7 @@ include_directories(
    include/jaco2_driver/collision_repelling_p2p_controller.h
    include/jaco2_driver/accelerometer_calibration.hpp
    include/jaco2_driver/torque_offset_lut.hpp
+   include/jaco2_driver/gravity_params.hpp
    include/kinova/KinovaArithmetics.hpp
  )
 
@@ -130,6 +131,7 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(jaco2_driver_node src/nodes/jaco2_driver_node.cpp)
+add_executable(gravity_parameter_estimation src/nodes/gravity_parameter_estimation)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -137,6 +139,12 @@ add_dependencies(jaco2_driver_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(jaco2_driver_node
+   ${catkin_LIBRARIES}
+   ${Boost_LIBRARIES}
+   jaco2_driver
+)
+
+target_link_libraries(gravity_parameter_estimation
    ${catkin_LIBRARIES}
    ${Boost_LIBRARIES}
    jaco2_driver

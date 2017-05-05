@@ -44,7 +44,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     startService_ = private_nh_.advertiseService("in/start", &Jaco2DriverNode::startServiceCallback, this);
     homingService_ = private_nh_.advertiseService("in/home_arm", &Jaco2DriverNode::homeArmServiceCallback, this);
     zeroTorqueService_ = private_nh_.advertiseService("in/set_torque_zero", &Jaco2DriverNode::setTorqueZeroCallback, this);
-    gravityCompensationService_ = private_nh_.advertiseService("in/enabel_gravity_compensation_mode", &Jaco2DriverNode::gravityCompCallback, this);
+    gravityCompensationService_ = private_nh_.advertiseService("in/enable_gravity_compensation_mode", &Jaco2DriverNode::gravityCompCallback, this);
 
     actionAngleServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::actionAngleGoalCb, this));
     trajServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::trajGoalCb, this));
