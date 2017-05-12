@@ -8,6 +8,8 @@
 #include <jaco2_msgs/Jaco2Accelerometers.h>
 #include <jaco2_driver/jaco2_driver_constants.h>
 #include <jaco2_driver/torque_offset_lut.hpp>
+#include <jaco2_driver/gravity_params.hpp>
+#include <jaco2_driver/velocity_calibration.hpp>
 
 
 Jaco2DriverNode::Jaco2DriverNode()
@@ -35,10 +37,11 @@ Jaco2DriverNode::Jaco2DriverNode()
     private_nh_.param<std::string>("jaco_serial", serial_,std::string(""));
     private_nh_.param<std::string>("tf_prefix", tf_prefix_, "jaco_");
 
-    boost::function<void(const jaco2_msgs::JointVelocityConstPtr&)> cb = boost::bind(&Jaco2DriverNode::jointVelocityCb, this, _1);
-    boost::function<void(const jaco2_msgs::FingerPositionConstPtr&)> cb_finger = boost::bind(&Jaco2DriverNode::fingerVelocityCb, this, _1);
-    subJointVelocity_ = private_nh_.subscribe("in/joint_velocity", 10, cb);
-    subFingerVelocity_ = private_nh_.subscribe("in/finger_velocity", 10, cb_finger);
+//    boost::function<void(const jaco2_msgs::JointVelocityConstPtr&)> cb = boost::bind(&Jaco2DriverNode::jointVelocityCb, this, _1);
+//    boost::function<void(const jaco2_msgs::FingerPositionConstPtr&)> cb_finger = boost::bind(&Jaco2DriverNode::fingerVelocityCb, this, _1);
+    subJointVelocity_ = private_nh_.subscribe("in/joint_velocity", 10, &Jaco2DriverNode::jointVelocityCb, this);
+    subFingerVelocity_ = private_nh_.subscribe("in/finger_velocity", 10, &Jaco2DriverNode::fingerVelocityCb, this);
+    subJointTorque_ = private_nh_.subscribe("in/joint_torques", 1, &Jaco2DriverNode::jointTorqueCb, this);
 
     stopService_ = private_nh_.advertiseService("in/stop", &Jaco2DriverNode::stopServiceCallback, this);
     startService_ = private_nh_.advertiseService("in/start", &Jaco2DriverNode::startServiceCallback, this);
@@ -92,6 +95,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     bool use_accel_calib, use_torque_calib;
     private_nh_.param<bool>("jaco_use_accelerometer_calib", use_accel_calib, false);
     if(use_accel_calib) {
+        ROS_INFO_STREAM("Using accelerometer calibration.");
         std::string acc_calib_file;
         private_nh_.param<std::string>("jaco_accelerometer_calibration_file", acc_calib_file, "");
         std::vector<Jaco2Calibration::AccelerometerCalibrationParam> acc_params;
@@ -100,11 +104,35 @@ Jaco2DriverNode::Jaco2DriverNode()
     }
     private_nh_.param<bool>("jaco_use_torque_calib", use_torque_calib, false);
     if(use_torque_calib){
+        ROS_INFO_STREAM("Using torque calibration.");
         std::string torque_calib_file;
         private_nh_.param<std::string>("jaco_torque_calibration_file", torque_calib_file, "");
         Jaco2Calibration::TorqueOffsetLut lut;
         lut.load(torque_calib_file);
         driver_.setTorqueCalibration(lut);
+    }
+
+    std::string velocity_calib_file;
+    private_nh_.param<std::string>("jaco_velocity_calibration_file", velocity_calib_file, "");
+    if(velocity_calib_file != ""){
+        ROS_INFO_STREAM("Using velocity calibration");
+        Jaco2Calibration::VelocityCalibrationParams v_params;
+        Jaco2Calibration::load(velocity_calib_file,v_params);
+        driver_.setVelocitySensorCalibration(v_params.parameter);
+    }
+
+    std::string gravity_calib_file;
+    private_nh_.param<std::string>("jaco_gravity_calibration_file", gravity_calib_file, "");
+    if(gravity_calib_file != ""){
+        ROS_INFO_STREAM("Using optimal gravity parameters.");
+        Jaco2Calibration::ApiGravitationalParams g_params;
+        Jaco2Calibration::load(gravity_calib_file, g_params);
+        bool success = driver_.setGravityParams(g_params);
+        if(!success){
+            ROS_ERROR_STREAM("Wrong number of gravity parameters in file " << gravity_calib_file
+                             <<". Or setting the parameters failed. Using default parameters instead.");
+
+        }
     }
 
     actionAngleServer_.start();
@@ -232,9 +260,11 @@ bool Jaco2DriverNode::gravityCompCallback(std_srvs::SetBool::Request &req, std_s
 {
     if(req.data){
         driver_.enableGravityCompensation();
+        res.message = "Switched to torque control.";
     }
     else{
         driver_.disableGravityCompensation();
+        res.message = "Switched to position control.";
     }
 
     res.success = true;
@@ -401,6 +431,14 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
                                        config.velocity_controller_i_gain,
                                        config.velocity_controller_d_gain);
 
+    std::cout << config.torque_controller_p_gain <<" , " <<
+                 config.torque_controller_i_gain <<" , " <<
+                 config.torque_controller_d_gain << std::endl;
+
+    driver_.setTorqueControllerGains(config.torque_controller_p_gain,
+                                     config.torque_controller_i_gain,
+                                     config.torque_controller_d_gain);
+
     std::vector<int> highPriQue;
     std::vector<int> lowPriQue;
     if(config.state_high_pri_pos){
@@ -476,6 +514,28 @@ void Jaco2DriverNode::jointVelocityCb(const jaco2_msgs::JointVelocityConstPtr& m
     DataConversion::to_degrees(velocity);
 
     driver_.setAngularVelocity(velocity);
+
+    last_command_ = ros::Time::now();
+}
+
+void Jaco2DriverNode::jointTorqueCb(const jaco2_msgs::JointAnglesConstPtr& msg)
+{
+    AngularPosition torque;
+    torque.InitStruct();
+
+    torque.Actuators.Actuator1 = msg->joint1;
+    torque.Actuators.Actuator2 = msg->joint2;
+    torque.Actuators.Actuator3 = msg->joint3;
+    torque.Actuators.Actuator4 = msg->joint4;
+    torque.Actuators.Actuator5 = msg->joint5;
+    torque.Actuators.Actuator6 = msg->joint6;
+
+    torque.Fingers.Finger1 = 0;
+    torque.Fingers.Finger2 = 0;
+    torque.Fingers.Finger3 = 0;
+
+
+    driver_.setTorque(torque);
 
     last_command_ = ros::Time::now();
 }

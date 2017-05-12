@@ -65,6 +65,7 @@ public:
     void setPriorityRate(int rate);
     void setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam>& params);
     void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut& lut);
+    void setVelocitySensorCalibration(const std::vector<double>& factors);
 
     ///
     /// \brief readQuickStatus reads the arms status over command layer
@@ -134,6 +135,7 @@ private:
     std::deque<AngularPosition> lastVelocity_;
     std::deque<double> dt_;
     int acc_counter_;
+    std::vector<double> velocityFactors_;
 
    private:
     void readPosition();

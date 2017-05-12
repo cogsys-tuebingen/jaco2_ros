@@ -54,6 +54,15 @@ public:
     bool setGravityOptimalZParam(const std::vector<double>& params);
 
     void runGravityEstimationSequnce(std::vector<double>& res, ROBOT_TYPE type = JACOV2_6DOF_SERVICE);
+    void setGravityType(GRAVITY_TYPE type);
+    /**
+     * @brief setActuatorPID sets the PID values of a controller of an acctuator
+     * @param actuator number of an actuator between 1 and 6
+     * @param p porotional controller gain
+     * @param i integrative controller gain
+     * @param d derivative controller gain
+     */
+    void setActuatorPID(unsigned int actuator, double p, double i, double d);
 
 
 private:
@@ -98,6 +107,7 @@ private:
     int(*GetCartesianForce)(CartesianPosition &);
     int(*SetTorqueControlType)(TORQUECONTROL_TYPE type);
     int(*GetTrajectoryTorqueMode)(int &);
+    int(*SetActuatorPID)(unsigned int address, float P, float I, float D);
 
 
     void moveHomeLeft();

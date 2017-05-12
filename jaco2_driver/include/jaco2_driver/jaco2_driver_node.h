@@ -39,6 +39,8 @@ public:
 private:
     void jointVelocityCb(const jaco2_msgs::JointVelocityConstPtr& msg);
     void fingerVelocityCb(const jaco2_msgs::FingerPositionConstPtr &msg);
+    void jointTorqueCb(const jaco2_msgs::JointAnglesConstPtr& msg);
+
     void publishJointState();
     void publishJointAngles();
     void publishSensorInfo();
@@ -65,6 +67,7 @@ private:
 
     ros::Subscriber subJointVelocity_;
     ros::Subscriber subFingerVelocity_;
+    ros::Subscriber subJointTorque_;
 
     ros::Publisher pubJointState_;
     ros::Publisher pubJointAngles_;

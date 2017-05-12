@@ -2,7 +2,8 @@
 <launch>
 
   <arg name="planner_in" default="ompl" />
-  <remap from="/joint_states" to="/jaco_arm_driver/out/joint_states"/>
+  <arg name="joint_state_topic" default="/jaco_arm_driver/out/joint_states" />
+  <remap from="/joint_states" to="$(arg joint_state_topic)"/>
  <!--# The planning and execution components of MoveIt! configured to 
  # publish the current configuration of the robot (simulated or real)
  # and the current state of the world as seen by the planner-->

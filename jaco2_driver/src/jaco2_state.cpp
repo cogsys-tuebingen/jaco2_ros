@@ -28,6 +28,7 @@ Jaco2State::Jaco2State(Jaco2API &api)
     current_torque_gravity_free_.InitStruct();
 
     calibrate_acc_ = {false, false, false, false, false, false};
+    velocityFactors_ = {2.0, 2.0, 2.0, 2.0, 2.0, 2.0};
     acc_counter_ =0;
 }
 
@@ -256,6 +257,13 @@ void Jaco2State::readVelocity()
     lastVelocity_.push_back(current_velocity_);
     current_velocity_ = api_.getAngularVelocity();
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
+    current_velocity_.Actuators.Actuator1 *= velocityFactors_[0];
+    current_velocity_.Actuators.Actuator2 *= velocityFactors_[1];
+    current_velocity_.Actuators.Actuator3 *= velocityFactors_[2];
+    current_velocity_.Actuators.Actuator4 *= velocityFactors_[3];
+    current_velocity_.Actuators.Actuator5 *= velocityFactors_[4];
+    current_velocity_.Actuators.Actuator6 *= velocityFactors_[5];
+
     auto now = std::chrono::high_resolution_clock::now();
     auto duration = now - time_velocity_ ;
     time_velocity_ = now;
@@ -340,6 +348,12 @@ void Jaco2State::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut &l
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     torque_offset_ = lut;
     calibrate_torque_ = true;
+}
+
+void Jaco2State::setVelocitySensorCalibration(const std::vector<double> &factors)
+{
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
+    velocityFactors_ = factors;
 }
 
 void Jaco2State::calculateJointAcceleration()

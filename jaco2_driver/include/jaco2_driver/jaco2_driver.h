@@ -16,6 +16,7 @@
 #include <jaco2_driver/joint_trajectory.h>
 #include <jaco2_driver/accelerometer_calibration.hpp>
 #include <jaco2_driver/torque_offset_lut.hpp>
+#include <jaco2_driver/gravity_params.hpp>
 //Jaco2 Controller
 #include <jaco2_driver/jaco2_controller.h>
 #include <jaco2_driver/empty_controller.h>
@@ -24,6 +25,7 @@
 #include <jaco2_driver/point_2_point_velocity_controller.h>
 #include <jaco2_driver/gripper_controller.h>
 #include <jaco2_driver/gravity_compensation_controller.hpp>
+#include <jaco2_driver/torque_controller.h>
 
 
 class Jaco2Driver
@@ -67,6 +69,8 @@ public:
     void setStateHighPriorityQue(const std::vector<int> &que);
     void setStateLowPriorityQue(const std::vector<int> &que);
     void setVelocityControllerGains(double p, double i, double d);
+    void setTorque(const AngularPosition& torque);
+    void setTorqueControllerGains(double p, double i, double d);
     void enableGravityCompensation();
     void disableGravityCompensation();
 
@@ -79,6 +83,8 @@ public:
     void grabObjSetUnusedFingerPos(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3, const int posFinger1, const int posFinger2, const int posFinger3);
     void setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam>& params);
     void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut& lut);
+    bool setGravityParams(const Jaco2Calibration::ApiGravitationalParams &params);
+    void setVelocitySensorCalibration(const std::vector<double>& factors);
 
     void startArm();
     void stopArm();
@@ -108,6 +114,7 @@ private:
     EmptyController empty_controller_;
     GripperController gripper_controller_;
     GravityCompensationController gravity_comp_controller_;
+    TorqueController torque_controller_;
 
     std::vector<double> jointAngles_;
     std::vector<double> jointVelocities_;

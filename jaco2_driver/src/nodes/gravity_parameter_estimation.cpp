@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 
         ROS_INFO_STREAM("DONE!");
 
-
+        api.setGravityType(MANUAL_INPUT);
         api.exitAPI();
 
         return 0;

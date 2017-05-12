@@ -38,7 +38,7 @@ struct OffsetData{
 class RecordStaticDataNode
 {
 public:
-    RecordStaticDataNode()
+    RecordStaticDataNode(std::string driver_name = std::string("/jaco_arm_driver"))
         : private_nh_("~"),
           initial_(true),
           initialAngles_(true),
@@ -47,11 +47,11 @@ public:
           numberOfSamples_(10),
           link_counter_(0),
           steps_(6),
-          ac_("/jaco_arm_driver/arm_joint_angles_blocking")
+          ac_(driver_name + "/arm_joint_angles_blocking")
     {
-        subJointAngles_ = private_nh_.subscribe("/jaco_arm_driver/out/joint_angles",10, &RecordStaticDataNode::jointAngleCb, this);
-        subSensorInfo_ = private_nh_.subscribe("/jaco_arm_driver/out/sensor_info",10, &RecordStaticDataNode::sensorInfoCb, this);
-        zero_client_ = private_nh_.serviceClient<jaco2_msgs::SetTorqueZero>("/jaco_arm_driver/in/set_torque_zero");
+        subJointAngles_ = private_nh_.subscribe(driver_name + "/out/joint_angles",10, &RecordStaticDataNode::jointAngleCb, this);
+        subSensorInfo_ = private_nh_.subscribe(driver_name + "/out/sensor_info",10, &RecordStaticDataNode::sensorInfoCb, this);
+        zero_client_ = private_nh_.serviceClient<jaco2_msgs::SetTorqueZero>(driver_name + "/in/set_torque_zero");
         ac_.waitForServer(ros::Duration(10));
     }
 
@@ -316,6 +316,8 @@ int main(int argc, char *argv[])
     ros::NodeHandle nh("~");
 
     nh.param<std::string>("file", save_file, "/tmp/torque_offset_lut_jaco2-2.yaml");
+    std::string driver_name;
+    nh.param<std::string>("driver_name", driver_name, "/jaco_21_driver");
 
     Eigen::VectorXd upper_limits(6);
     Eigen::VectorXd lower_limits(6);
@@ -368,25 +370,7 @@ int main(int argc, char *argv[])
     lut.resolution = resolution;
     lut.lower_limits = lower_limits;
 
-    //    LutIndex li = lut.index(2,46.803495407104492);
-
-    //    std::cout << li.first << "  " << li.second << std::endl;
-
-
-    //    lut.save("/tmp/torque_lut.yaml");
-
-    //    TorqueOffsetLut lutl;
-
-    //    lutl.load("/tmp/torque_lut.yaml");
-
-    //    std::cout << "n_links: " << lutl.n_links << std::endl;
-    //    std::cout << "steps: \n" << lutl.steps << std::endl;
-    //    std::cout << "resolution: \n" << lutl.resolution << std::endl;
-    //    std::cout << "lower_limits: \n" << lutl.lower_limits << std::endl;
-    //    std::cout << "data: \n" << lutl.lut << std::endl;
-
-
-    RecordStaticDataNode node;
+    RecordStaticDataNode node(driver_name);
 
     node.setLUT(lut);
     node.setSweepAngles(zero_angle);

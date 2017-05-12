@@ -41,7 +41,7 @@ Jaco2API::Jaco2API():
     SendCartesianForceCommand = (int(*)(float Command[COMMAND_SIZE])) dlsym(commandLayer_handle, "SendCartesianForceCommand");
     SetGravityVector = (int(*)(float Command[3])) dlsym(commandLayer_handle, "SetGravityVector");
     SetGravityPayload = (int(*)(float Command[GRAVITY_PAYLOAD_SIZE])) dlsym(commandLayer_handle, "SetGravityPayload");
-    SetGravityOptimalZParam = (int(*)(float Command[GRAVITY_PARAM_SIZE])) dlsym(commandLayer_handle, "SetGravityOptimalZParam");
+    SetGravityOptimalZParam =  (int(*)(float Command[GRAVITY_PARAM_SIZE])) dlsym(commandLayer_handle, "SetGravityOptimalZParam");
     SetGravityType = (int(*)(GRAVITY_TYPE Type)) dlsym(commandLayer_handle, "SetGravityType");
     GetCartesianForce = (int(*)(CartesianPosition &)) dlsym(commandLayer_handle, "GetCartesianForce");
     SetTorqueVibrationController = (int(*)(float)) dlsym(commandLayer_handle, "SetTorqueVibrationController");
@@ -49,6 +49,7 @@ Jaco2API::Jaco2API():
     GetTrajectoryTorqueMode = (int(*)(int &)) dlsym(commandLayer_handle, "GetTrajectoryTorqueMode");
     SetGravityType = (int(*)(GRAVITY_TYPE Type)) dlsym(commandLayer_handle, "SetGravityType");
     SetGravityOptimalZParam = (int(*)(float Command[GRAVITY_PARAM_SIZE])) dlsym(commandLayer_handle, "SetGravityOptimalZParam");
+    SetActuatorPID = (int (*)(unsigned int, float, float, float )) dlsym(commandLayer_handle,"SetActuatorPID");
 
 }
 
@@ -126,6 +127,8 @@ int Jaco2API::init(std::string serial, bool right)
             }
         }
 
+        SetGravityType(MANUAL_INPUT);
+
     }
     return result;
 }
@@ -158,6 +161,7 @@ void Jaco2API::stopAPI()
 
 void Jaco2API::exitAPI()
 {
+    SetGravityType(MANUAL_INPUT);
     stopAPI();
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     CloseAPI();
@@ -254,6 +258,7 @@ void Jaco2API::setAngularTorque(const AngularPosition& torque)
     cmd[3] = torque.Actuators.Actuator4;
     cmd[4] = torque.Actuators.Actuator5;
     cmd[5] = torque.Actuators.Actuator6;
+
     SendAngularTorqueCommand(cmd);
 }
 
@@ -290,10 +295,12 @@ void Jaco2API::initFingers()
 void Jaco2API::enableDirectTorqueMode(double torque_saftey_factor, double vibration_controller)
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
-    SetTorqueControlType(DIRECTTORQUE);
+    int res1 = SetTorqueControlType(DIRECTTORQUE);
+    std::cout << "torque control type: " << res1 << std::endl;
     SetTorqueSafetyFactor(torque_saftey_factor);
     SetTorqueVibrationController(vibration_controller);
-    SwitchTrajectoryTorque(TORQUE);
+    int res2 = SwitchTrajectoryTorque(TORQUE);
+    std::cout << "switching result: " << res2 << std::endl;
 }
 
 void Jaco2API::disableTorque()
@@ -355,23 +362,43 @@ bool Jaco2API::inTrajectoryMode()
 bool Jaco2API::setGravityOptimalZParam(const std::vector<double> &params)
 {
     std::unique_lock<std::recursive_mutex>lock(mutex_);
+    SwitchTrajectoryTorque(POSITION);
+    SetGravityType(MANUAL_INPUT);
+    usleep(30000);
     bool ok = params.size() == OPTIMAL_Z_PARAM_SIZE;
+    int res = 0;
     if(ok){
 
         float optimalParams [OPTIMAL_Z_PARAM_SIZE];
-        std::size_t i = 0;
-        for( auto val : params){
-            optimalParams[i] = val;
+//        std::size_t i = 0;
+        for(std::size_t i = 0; i < OPTIMAL_Z_PARAM_SIZE; ++i){
+            optimalParams[i] = (float) params[i];
+            std::cout << i << " | " << optimalParams[i] << std::endl;
         }
-        SetGravityOptimalZParam(optimalParams);
-        SetGravityType(OPTIMAL);
+        res = SetGravityOptimalZParam(optimalParams);
         usleep(30000);
+        std::cout << "setting parameter result:  " << res<< std::endl;
+        int res2 = SetGravityType(OPTIMAL);
+        res +=res2;
+        std::cout << "changing gravity type result:  " << res2<< std::endl;
+        usleep(30000);
+        if(res != 2){
+            setGravityType(MANUAL_INPUT);
+        }
     }
-    return ok;
+    return ok && (res == 2);
+}
+
+void Jaco2API::setGravityType(GRAVITY_TYPE type)
+{
+    std::unique_lock<std::recursive_mutex>lock(mutex_);
+    SetGravityType(type);
+    usleep(30000);
 }
 
 void Jaco2API::runGravityEstimationSequnce(std::vector<double> &res, ROBOT_TYPE type)
 {
+    SwitchTrajectoryTorque(POSITION);
     double optimalParams[OPTIMAL_Z_PARAM_SIZE];
     RunGravityZEstimationSequence(type, optimalParams);
     res.resize(OPTIMAL_Z_PARAM_SIZE);
@@ -431,3 +458,17 @@ void Jaco2API::moveHomeLeft()
 
 }
 
+
+void Jaco2API::setActuatorPID(unsigned int actuator, double p, double i, double d)
+{
+    std::unique_lock<std::recursive_mutex>lock(mutex_);
+    if(actuator > 0 && actuator < 7){
+        unsigned int address = 0;
+        address = 16 + actuator -1;
+        SetActuatorPID(address, p, i, d);
+    }
+    else{
+        std::cerr << "Wrong actuator number. Given "<< actuator <<". But supported are only 1 to 6.";
+    }
+
+}

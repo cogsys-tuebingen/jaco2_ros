@@ -104,6 +104,7 @@ include_directories(
    src/gripper_controller.cpp
    src/collision_repelling_p2p_controller.cpp
    src/jaco2_state.cpp
+   src/torque_controller.cpp
    include/jaco2_driver/data_conversion.h
    include/jaco2_driver/joint_trajectory.h
    include/jaco2_driver/angular_position_controller.h
@@ -112,9 +113,11 @@ include_directories(
    include/jaco2_driver/velocity_controller.h
    include/jaco2_driver/point_2_point_velocity_controller.h
    include/jaco2_driver/collision_repelling_p2p_controller.h
+   include/jaco2_driver/gravity_compensation_controller.hpp
    include/jaco2_driver/accelerometer_calibration.hpp
    include/jaco2_driver/torque_offset_lut.hpp
    include/jaco2_driver/gravity_params.hpp
+   include/jaco2_driver/torque_controller.h
    include/kinova/KinovaArithmetics.hpp
  )
 

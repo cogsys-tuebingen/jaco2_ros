@@ -14,8 +14,8 @@ import math
 vel = [0 for i in range(6)]
 pos = None
 last_posl = [ 0 for i in range(6)]
-kp = 5.0
-kd = 10.0 
+kp = 2.0
+kd = 0.1
 
 def cb_master(state):
 	global pos

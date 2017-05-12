@@ -22,6 +22,7 @@ private:
 
 private:
     double threshold_;
+    std::vector<double> fac_;
     Jaco2ResidualVector resiudals_;
     Eigen::VectorXd last_integral_;
     Eigen::VectorXd last_residual_;

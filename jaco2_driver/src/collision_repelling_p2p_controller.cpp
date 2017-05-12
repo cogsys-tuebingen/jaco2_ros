@@ -5,7 +5,7 @@ CollisionReplellingP2PController::CollisionReplellingP2PController(Jaco2State &s
     Point2PointVelocityController(state, api),
     resiudals_("robot_description", "jaco_link_base", "jaco_link_hand")
 {
-
+    fac_ = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
 }
 
 void CollisionReplellingP2PController::write()
@@ -22,6 +22,16 @@ void CollisionReplellingP2PController::write()
 
     if(residual > threshold_){
         // repell
+       AngularPosition cmd;
+       cmd.InitStruct();
+       cmd.Actuators.Actuator1 = fac_[0] * last_residual_(0);
+       cmd.Actuators.Actuator2 = fac_[1] * last_residual_(1);
+       cmd.Actuators.Actuator3 = fac_[2] * last_residual_(2);
+       cmd.Actuators.Actuator4 = fac_[3] * last_residual_(3);
+       cmd.Actuators.Actuator5 = fac_[4] * last_residual_(4);
+       cmd.Actuators.Actuator6 = fac_[5] * last_residual_(5);
+       api_.enableDirectTorqueMode(1.0, 0.5);
+       api_.setAngularTorque(cmd);
     }
     else{
         Point2PointVelocityController::write();
@@ -114,7 +124,7 @@ void CollisionReplellingP2PController::estimateGravity(double& gx, double &gy, d
 
     filter_g_.emplace_back(g_vec);
 
-    while(filter_g_.size() > 10){
+    while(filter_g_.size() > 30){
         filter_g_.pop_front();
     }
     Eigen::Vector3d res;

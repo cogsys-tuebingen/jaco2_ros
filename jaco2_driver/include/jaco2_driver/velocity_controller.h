@@ -48,6 +48,10 @@ public:
         kp_ = p;
         ki_ = i;
         kd_ = d;
+//        std::cout << "velocity PID: " << p << ", " << i <<", "<< d<<std::endl;
+//        for(unsigned int i = 1; i < 7; ++i){
+//            api_.setActuatorPID(i, kp_,ki_, kd_);
+//        }
     }
 
     void setFingerPosition(const TrajectoryPoint& tp)
@@ -90,10 +94,13 @@ public:
             desired_.Position.Type = ANGULAR_VELOCITY;
         }
         else if(desired_.Position.HandMode == HAND_NOMOVEMENT && sum > 0.1){
-            auto vel = pdControl();
+            auto vel = pidControl();
             cmd_.Position.Actuators = vel;
-        }
+//            cmd_.Position.Actuators = desired_.Position.Actuators;
 
+        }
+//        std::cout << "desired vel: "<< desired_.Position.Actuators.Actuator6 <<std::endl;
+//        std::cout << "cmd vel: "<< cmd_.Position.Actuators.Actuator6 <<std::endl;
         api_.setAngularVelocity(cmd_);
 
     }
@@ -103,7 +110,7 @@ public:
         return done_;
     }
 private:
-    AngularInfo pdControl()
+    AngularInfo pidControl()
     {
         auto new_vel = state_.getAngularVelocity();
 
@@ -127,7 +134,7 @@ private:
             kd = 0;
         }
 
-        res = 1.6 * desired_.Position.Actuators
+        res = 1.0 * desired_.Position.Actuators
                 + kp_ * diff
                 + ki_ * esum_
                 + kd * (diff - last_diff_) ;

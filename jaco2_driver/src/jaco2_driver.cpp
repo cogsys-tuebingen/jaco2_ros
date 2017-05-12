@@ -12,6 +12,7 @@ Jaco2Driver::Jaco2Driver():
     empty_controller_(state_,jaco_api_),
     gripper_controller_(state_,jaco_api_),
     gravity_comp_controller_(state_, jaco_api_),
+    torque_controller_(state_, jaco_api_),
     paused_(false),
     serviceDone_(true)
 {
@@ -275,6 +276,12 @@ void Jaco2Driver::setVelocityControllerGains(double p, double i, double d)
     velocity_controller_.setGains(p, i, d);
 }
 
+void Jaco2Driver::setTorqueControllerGains(double p, double i, double d)
+{
+    std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
+    std::cout << p<<", " << i <<", " << d <<std::endl;
+    torque_controller_.setGains(p, i, d);
+}
 void Jaco2Driver::setTrajectoryPGains(const ManipulatorInfo &gains)
 {
     p2p_velocity_controller_.setGainP(gains);
@@ -324,9 +331,20 @@ void Jaco2Driver::setFingerVelocity(const AngularPosition &finger_velocity)
     setActiveController(&velocity_controller_);
 }
 
+void Jaco2Driver::setTorque(const AngularPosition &torque)
+{
+    torque_controller_.setTorque(torque);
+    setActiveController(&torque_controller_);
+}
+
 void Jaco2Driver::setGripperFingerVelocity(const int finger1, const int finger2, const int finger3)
 {
     gripper_controller_.setFingerVelocity(finger1, finger2, finger3);
+}
+
+void Jaco2Driver::setVelocitySensorCalibration(const std::vector<double> &factors)
+{
+    state_.setVelocitySensorCalibration(factors);
 }
 
 void Jaco2Driver::grabObj(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3)
@@ -394,6 +412,11 @@ void Jaco2Driver::setAccelerometerCalibration(const std::vector<Jaco2Calibration
 void Jaco2Driver::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut &lut)
 {
     state_.setTorqueCalibration(lut);
+}
+
+bool Jaco2Driver::setGravityParams(const Jaco2Calibration::ApiGravitationalParams& params)
+{
+    return jaco_api_.setGravityOptimalZParam(params.parameter);
 }
 
 int Jaco2Driver::getSetTorqueZeroResult() const
