@@ -354,21 +354,8 @@ int main(int argc, char *argv[])
     nh.param<double>("joint_6_resolution", resolution(5), 1.5);
 
 
-    Eigen::VectorXi steps(6);
-    for(std::size_t i = 0; i < 6; ++i){
-        std::size_t step = std::floor((upper_limits(i) - lower_limits(i))/ resolution(i));
-        steps(i) = step;
-    }
-
-    std::size_t sz = steps.maxCoeff();
-
-    std::cout <<" Max. steps " << sz << std::endl;
-
     Jaco2Calibration::TorqueOffsetLut lut;
-    lut.lut = Eigen::MatrixXd::Zero(6, sz);
-    lut.steps = steps;
-    lut.resolution = resolution;
-    lut.lower_limits = lower_limits;
+    lut.initialize(lower_limits, upper_limits, resolution);
 
     RecordStaticDataNode node(driver_name);
 

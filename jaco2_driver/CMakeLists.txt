@@ -32,6 +32,8 @@ find_package(catkin REQUIRED COMPONENTS
   jaco2_msgs
   dynamic_reconfigure
   jaco2_kin_dyn_lib
+  rostest
+
 )
 
 ## System dependencies are found with CMake's conventions
@@ -135,6 +137,7 @@ include_directories(
 ## Declare a C++ executable
 add_executable(jaco2_driver_node src/nodes/jaco2_driver_node.cpp)
 add_executable(gravity_parameter_estimation src/nodes/gravity_parameter_estimation)
+add_executable(test_torque_lut test/test_torque_offset_lut.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -151,6 +154,13 @@ target_link_libraries(gravity_parameter_estimation
    ${catkin_LIBRARIES}
    ${Boost_LIBRARIES}
    jaco2_driver
+)
+
+target_link_libraries(test_torque_lut
+    jaco2_driver
+   ${catkin_LIBRARIES}
+   ${Boost_LIBRARIES}
+   ${GTEST_LIBRARIES}
 )
 
 #############

@@ -2,7 +2,8 @@
 #define TORQUE_OFFSET_LUT_HPP
 #include <Eigen/Core>
 #include <yaml-cpp/yaml.h>
-
+#include <ostream>
+#include <fstream>
 namespace Jaco2Calibration {
 
 typedef std::pair<std::size_t, std::size_t> LutIndex;
@@ -53,6 +54,22 @@ struct TorqueOffsetLut
         else{
             throw std::logic_error("link index should be between 1 and 6.");
         }
+
+    }
+
+    void initialize(const Eigen::VectorXd& lowerLimit, const Eigen::VectorXd& upper_limit, const Eigen::VectorXd& res)
+    {
+        lower_limits = lowerLimit;
+
+        n_links = lowerLimit.size();
+        steps.setZero(n_links);
+
+        for(std::size_t i = 0; i < 6; ++i){
+            std::size_t step = std::floor((upper_limit(i) - lower_limits(i))/ res(i));
+            steps(i) = step;
+        }
+
+        lut.setZero(n_links, steps.maxCoeff());
 
     }
 
