@@ -3,6 +3,7 @@
   <include file="$(find jaco2_moveit_config)/launch/planning_context.launch" />
 
   <arg name="planner" default="ompl" />
+  <arg name="controller" default="jaco" />
 
   <!-- GDB Debug Option -->
   <arg name="debug" default="false" />
@@ -30,7 +31,7 @@
   <!-- Trajectory Execution Functionality -->
   <include ns="move_group" file="$(find jaco2_moveit_config)/launch/trajectory_execution.launch.xml" if="$(arg allow_trajectory_execution)">
     <arg name="moveit_manage_controllers" value="true" />
-    <arg name="moveit_controller_manager" value="jaco" unless="$(arg fake_execution)"/>
+    <arg name="moveit_controller_manager" value="$(arg controller)" unless="$(arg fake_execution)"/>
     <arg name="moveit_controller_manager" value="fake" if="$(arg fake_execution)"/>
   </include>
 

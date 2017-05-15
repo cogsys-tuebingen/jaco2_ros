@@ -3,6 +3,7 @@
 
   <arg name="planner_in" default="ompl" />
   <arg name="joint_state_topic" default="/jaco_arm_driver/out/joint_states" />
+  <arg name="controller_in" default="jaco" />
   <remap from="/joint_states" to="$(arg joint_state_topic)"/>
  <!--# The planning and execution components of MoveIt! configured to 
  # publish the current configuration of the robot (simulated or real)
@@ -23,5 +24,6 @@
     <arg name="info" value="true"/>
     <arg name="debug" value="false" />
     <arg name="planner" value="$(arg planner_in)" />
+    <arg name="controller" value="$(arg controller_in)"/>
  </include>
 </launch>

@@ -68,7 +68,26 @@ void TorqueController::write()
     }
     else{
         auto cmd = pidControl();
-        cmd_.Actuators = cmd;
+        cmd_.Actuators.InitStruct();
+
+        if(desired_.Actuators.Actuator1 > 0.1){
+            cmd_.Actuators.Actuator1 = cmd.Actuator1;
+        }
+        if(desired_.Actuators.Actuator2 > 0.1){
+            cmd_.Actuators.Actuator2 = cmd.Actuator2;
+        }
+        if(desired_.Actuators.Actuator3 > 0.1){
+            cmd_.Actuators.Actuator3 = cmd.Actuator3;
+        }
+        if(desired_.Actuators.Actuator4 > 0.1){
+            cmd_.Actuators.Actuator4 = cmd.Actuator4;
+        }
+        if(desired_.Actuators.Actuator5 > 0.1){
+            cmd_.Actuators.Actuator5 = cmd.Actuator5;
+        }
+        if(desired_.Actuators.Actuator6 > 0.1){
+            cmd_.Actuators.Actuator6 = cmd.Actuator6;
+        }
         std::cout << "cmd: joint 1: " << cmd_.Actuators.Actuator1 << std::endl;
         std::cout << "cmd: joint 2: " << cmd_.Actuators.Actuator2 << std::endl;
         std::cout << "cmd: joint 3: " << cmd_.Actuators.Actuator3 << std::endl;

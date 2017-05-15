@@ -26,6 +26,7 @@
 #include <jaco2_driver/gripper_controller.h>
 #include <jaco2_driver/gravity_compensation_controller.hpp>
 #include <jaco2_driver/torque_controller.h>
+#include <jaco2_driver/collision_repelling_p2p_controller.h>
 
 
 class Jaco2Driver
@@ -110,7 +111,7 @@ private:
 
     VelocityController velocity_controller_;
     AngularPositionController position_controller_;
-    Point2PointVelocityController p2p_velocity_controller_;
+    CollisionReplellingP2PController p2p_velocity_controller_;
     EmptyController empty_controller_;
     GripperController gripper_controller_;
     GravityCompensationController gravity_comp_controller_;

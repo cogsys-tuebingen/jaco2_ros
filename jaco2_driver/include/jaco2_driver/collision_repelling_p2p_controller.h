@@ -5,6 +5,7 @@
 
 class CollisionReplellingP2PController : public Point2PointVelocityController
 {
+public:
     CollisionReplellingP2PController(Jaco2State &state, Jaco2API &api);
 
     virtual void write() override;

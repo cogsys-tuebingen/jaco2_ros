@@ -6,6 +6,8 @@ CollisionReplellingP2PController::CollisionReplellingP2PController(Jaco2State &s
     resiudals_("robot_description", "jaco_link_base", "jaco_link_hand")
 {
     fac_ = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+    threshold_ = 1.0;
+    setRobotModel("robot_description", "jaco_link_base", "jaco_link_hand");
 }
 
 void CollisionReplellingP2PController::write()
@@ -17,6 +19,7 @@ void CollisionReplellingP2PController::write()
     last_command_ = now;
 //    double timeDiff = std::chrono::duration_cast<std::chrono::microseconds>(duration).count()*1e-6;
     samplingPeriod_ = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
+
 
     double residual = getResiduals();
 
@@ -32,6 +35,7 @@ void CollisionReplellingP2PController::write()
        cmd.Actuators.Actuator6 = fac_[5] * last_residual_(5);
        api_.enableDirectTorqueMode(1.0, 0.5);
        api_.setAngularTorque(cmd);
+       ROS_INFO_STREAM("Repelling! collision detected: "<< residual);
     }
     else{
         Point2PointVelocityController::write();
@@ -53,6 +57,7 @@ void CollisionReplellingP2PController::setThreshold(double threshold)
 void CollisionReplellingP2PController::setRobotModel(const std::string &robot_model, const std::string &chain_root, const std::string &chain_tip)
 {
      resiudals_ = Jaco2ResidualVector(robot_model, chain_root, chain_tip);
+     resiudals_.setGravity(0,0,0);
 }
 
 
