@@ -169,7 +169,7 @@ public:
                     }
 
 
-                    ros::Rate r(40);
+                    ros::Rate r(20);
                     for(std::size_t i = 0; i < 2* numberOfSamples_; ++i){
                         ros::spinOnce();
                         r.sleep();

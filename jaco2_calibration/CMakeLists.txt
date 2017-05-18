@@ -83,6 +83,8 @@ if(${Ceres_FOUND} AND ${imu_tk_FOUND})
     add_executable(jaco2_file_calibration_node src/calibrate_from_file.cpp)
     add_executable(jaco2_simulate_calibration src/simulate_data.cpp)
 
+    add_executable(jaco2_torque_offset_ceres src/jaco2_torque_offset_sine_ceres_fit.cpp)
+
 
     add_dependencies(jaco2_calibration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
     add_dependencies(jaco2_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_calibration)
@@ -120,6 +122,13 @@ if(${Ceres_FOUND} AND ${imu_tk_FOUND})
       ${imu_tk_LIBRARIES}
       jaco2_calibration
     )
+
+    target_link_libraries(jaco2_torque_offset_ceres
+        ${catkin_LIBRARIES}
+        ${CERES_LIBRARIES}
+        ${Boost_LIBRARIES}
+    )
+
 else(${CERES_FOUND} AND ${imu_tk_FOUND})
     message("Optional package jaco2_calibration is not going to be build, since ceres and imu_tk is not found.")
 

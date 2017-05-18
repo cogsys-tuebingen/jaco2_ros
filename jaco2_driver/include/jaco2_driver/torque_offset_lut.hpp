@@ -9,7 +9,7 @@ namespace Jaco2Calibration {
 typedef std::pair<std::size_t, std::size_t> LutIndex;
 struct TorqueOffsetLut
 {
-    double at(std::size_t link, double angle)
+    double at(std::size_t link, double angle) const
     {
         std::pair<std::size_t, std::size_t> id = index(link, angle);
         if(id.first < n_links){
@@ -73,7 +73,7 @@ struct TorqueOffsetLut
 
     }
 
-    double getAngle(std::size_t link, std::size_t n)
+    double getAngle(std::size_t link, std::size_t n) const
     {
         if(link > 0 && link < n_links){
             return lower_limits(link -1) + n * resolution(link -1);
@@ -89,7 +89,7 @@ struct TorqueOffsetLut
      * @param angle the joint angle
      * @return pair of link index and joint angle index
      */
-    std::pair<std::size_t, std::size_t> index(std::size_t link, double angle)
+    std::pair<std::size_t, std::size_t> index(std::size_t link, double angle) const
     {
         std::pair<std::size_t, std::size_t> res;
 

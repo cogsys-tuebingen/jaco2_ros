@@ -83,6 +83,7 @@ add_executable(record_calibration_data src/record_calibration_data.cpp)
 add_executable(jaco2_rigid_body_subplex src/jaco2_dyn_subplex_calibration.cpp)
 add_executable(record_static_data src/record_static_data.cpp)
 add_executable(calib_joint_velocity src/calib_joint_velocity.cpp)
+add_executable(jaco2_torque_offset_calibration src/jaco2_torque_offsets_sinus_fit.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(jaco2_calibration_utils ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -132,6 +133,12 @@ target_link_libraries(record_static_data
 )
 
 target_link_libraries(calib_joint_velocity
+   ${catkin_LIBRARIES}
+   ${Boost_LIBRARIES}
+   jaco2_calibration_utils
+)
+
+target_link_libraries(jaco2_torque_offset_calibration
    ${catkin_LIBRARIES}
    ${Boost_LIBRARIES}
    jaco2_calibration_utils
