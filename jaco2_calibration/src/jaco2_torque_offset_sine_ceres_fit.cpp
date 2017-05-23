@@ -120,7 +120,7 @@ struct FFTAnalyzation
 
         FFTAnalysis ana;
 
-        return ana.getSineParams(x, y, n_sine);
+        return ana.getSineParams2(x, y, n_sine);
 
 
     }
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
     Jaco2Calibration::TorqueOffsetCalibration result;
 
     FFTAnalyzation fft;
-    auto start = fft.getStartingValues(f.lut_, 0, 2);
+    auto start = fft.getStartingValues(f.lut_, 0, 1);
     std::cout << "start vals: ";
     for(auto s : start){
         std::cout << s << ", ";
@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
     std::cout <<";" << std::endl;
 
 
-    std::vector<std::size_t> problem_sizes = {6, 9, 9, 6, 6, 6};
+    std::vector<std::size_t> problem_sizes = {3, 9, 9, 6, 6, 6};
     for(std::size_t i = 0; i < 1; ++i){
         double min_cost = 2e10;
         Jaco2Calibration::ActuatorTorqueOffset min_func;

@@ -10,6 +10,8 @@
 #include <geometry_msgs/Vector3Stamped.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
+#include <sensor_msgs/JointState.h>
+//#include <rosbag/bag.h>
 /// Jaco 2
 #include <jaco2_msgs/Jaco2Accelerometers.h>
 #include <jaco2_msgs/CalibAcc.h>
@@ -51,14 +53,21 @@ public:
     {
         subJointAngles_ = private_nh_.subscribe(driver_name + "/out/joint_angles",10, &RecordStaticDataNode::jointAngleCb, this);
         subSensorInfo_ = private_nh_.subscribe(driver_name + "/out/sensor_info",10, &RecordStaticDataNode::sensorInfoCb, this);
+        subJointState_ = private_nh_.subscribe(driver_name + "/out/joint_states",10, &RecordStaticDataNode::jointStateCb, this);
         zero_client_ = private_nh_.serviceClient<jaco2_msgs::SetTorqueZero>(driver_name + "/in/set_torque_zero");
         ac_.waitForServer(ros::Duration(10));
+//        std::ostringstream o;
+//        o << "/tmp/static_torque_calib_" << ros::Time::now().toNSec()  << ".bag" ;
+//        std::string bagName = o.str();
+//        std::string bagName =  std::string("/tmp/static_torque_calib_") + std::string() + std::string(".bag");
+//        bag_.open(bagName, rosbag::bagmode::Write);
     }
 
     void jointAngleCb(const jaco2_msgs::JointAnglesConstPtr& msg)
     {
         last_angles_ = *msg;
         initialAngles_ = false;
+//        bag_.write("/joint_angles", ros::Time::now(), *msg);
     }
 
     void sensorInfoCb(const jaco2_msgs::Jaco2SensorConstPtr& msg)
@@ -86,6 +95,14 @@ public:
         while(buffer_.size() > numberOfSamples_){
             buffer_.pop_front();
         }
+
+//        bag_.write("/sensor_info", ros::Time::now(), *msg);
+    }
+
+    void jointStateCb(const sensor_msgs::JointStateConstPtr& msg)
+    {
+//        try{
+//         bag_.write("/joint_states", ros::Time::now(), *msg);
     }
 
 
@@ -106,7 +123,7 @@ public:
             //            ac_.sendGoalAndWait(goal,ros::Duration(180),ros::Duration(2));
 
             ac_.sendGoal(goal);
-            ac_.waitForResult(ros::Duration(180));
+            ac_.waitForResult(ros::Duration(90));
             std::cout << "Go to zero position done." << std::endl;
             jaco2_msgs::SetTorqueZero srv;
             for(std::size_t i = 1; i < 7; ++i){
@@ -168,7 +185,8 @@ public:
                         bool finished = ac_.waitForResult(ros::Duration(20));
                     }
 
-
+                    ros::Duration p(0.5);
+                    p.sleep();
                     ros::Rate r(20);
                     for(std::size_t i = 0; i < 2* numberOfSamples_; ++i){
                         ros::spinOnce();
@@ -282,12 +300,15 @@ private:
     //    ros::Subscriber subJointState_;
     ros::Subscriber subJointAngles_;
     ros::Subscriber subSensorInfo_;
+    ros::Subscriber subJointState_;
     ros::ServiceClient zero_client_;
 
     jaco2_msgs::JointAngles last_angles_;
     std::deque<OffsetData> buffer_;
     Jaco2Calibration::TorqueOffsetLut lut_;
     std::vector<double> sweep_angles_;
+public:
+//    rosbag::Bag bag_;
 
 
 
@@ -305,6 +326,7 @@ std::string save_file = "/tmp/lut.yaml";
 void mySigintHandler(int sig)
 {
     node->saveLUT(save_file);
+//    node->bag_.close();
     ros::shutdown();
 }
 
@@ -315,9 +337,10 @@ int main(int argc, char *argv[])
 
     ros::NodeHandle nh("~");
 
-    nh.param<std::string>("file", save_file, "/tmp/torque_offset_lut_jaco2-2.yaml");
+    nh.param<std::string>("file", save_file, "/tmp/torque_offset_lut_jaco2-2");
+    save_file += std::to_string(ros::Time::now().toNSec()) +".yaml";
     std::string driver_name;
-    nh.param<std::string>("driver_name", driver_name, "/jaco_21_driver");
+    nh.param<std::string>("driver_name", driver_name, "/jaco_22_driver");
 
     Eigen::VectorXd upper_limits(6);
     Eigen::VectorXd lower_limits(6);
@@ -380,6 +403,7 @@ int main(int argc, char *argv[])
     spin_thread.join();
     //    spinner.stop();
     node.saveLUT(save_file);
+//    node.bag_.close();
 
 
     return 0;

@@ -14,7 +14,7 @@ struct TorqueOffsetLut
         std::pair<std::size_t, std::size_t> id = index(link, angle);
         if(id.first < n_links){
 
-            if(id.second > steps(id.first) || angle < lower_limits(id.first)){
+            if(id.second > (std::size_t) steps(id.first) || angle < lower_limits(id.first)){
                 while(angle > 720){
                     angle -= 360;
                 }
@@ -23,7 +23,7 @@ struct TorqueOffsetLut
                 }
                 id = index(link, angle);
             }
-            if(id.second >= steps(id.first)){
+            if(id.second >= (std::size_t) steps(id.first)){
                 return lut(id.first, steps(id.first) -1);
             }
             else{
@@ -40,7 +40,7 @@ struct TorqueOffsetLut
         std::pair<std::size_t, std::size_t> id = index(link, angle);
         if(id.first < n_links){
 
-            if(id.second > steps(id.first) || angle < lower_limits(id.first)){
+            if(id.second > (std::size_t) steps(id.first) || angle < lower_limits(id.first)){
                 while(angle > 720){
                     angle -= 360;
                 }
@@ -60,6 +60,7 @@ struct TorqueOffsetLut
     void initialize(const Eigen::VectorXd& lowerLimit, const Eigen::VectorXd& upper_limit, const Eigen::VectorXd& res)
     {
         lower_limits = lowerLimit;
+        resolution = res;
 
         n_links = lowerLimit.size();
         steps.setZero(n_links);
@@ -157,8 +158,8 @@ struct convert<Eigen::MatrixXd> {
         Node node;
         node["rows"] = rhs.rows();
         node["cols"] = rhs.cols();
-        for(std::size_t i = 0; i < rhs.rows(); ++i){
-            for(std::size_t j = 0; j < rhs.cols(); ++j){
+        for(std::size_t i = 0; i < (std::size_t) rhs.rows(); ++i){
+            for(std::size_t j = 0; j < (std::size_t) rhs.cols(); ++j){
                 node["data"].push_back(rhs(i,j));
             }
         }
@@ -188,8 +189,8 @@ struct convert<Eigen::MatrixXd> {
         if(!data.IsSequence() || data.size() != rows*cols) {
             return false;
         }
-        for(std::size_t i = 0; i < rhs.rows(); ++i){
-            for(std::size_t j = 0; j < rhs.cols(); ++j){
+        for(std::size_t i = 0; i < (std::size_t) rhs.rows(); ++i){
+            for(std::size_t j = 0; j < (std::size_t) rhs.cols(); ++j){
                 std::size_t id = i*cols + j;
                 rhs(i,j) = data[id].as<double>();
             }
@@ -205,8 +206,8 @@ struct convert<Eigen::VectorXd> {
         Node node;
         node["rows"] = rhs.rows();
         node["cols"] = rhs.cols();
-        for(std::size_t i = 0; i < rhs.rows(); ++i){
-            for(std::size_t j = 0; j < rhs.cols(); ++j){
+        for(std::size_t i = 0; i < (std::size_t) rhs.rows(); ++i){
+            for(std::size_t j = 0; j < (std::size_t) rhs.cols(); ++j){
                 node["data"].push_back(rhs(i,j));
             }
         }
@@ -236,8 +237,8 @@ struct convert<Eigen::VectorXd> {
         if(!data.IsSequence() || data.size() != rows*cols) {
             return false;
         }
-        for(std::size_t i = 0; i < rhs.rows(); ++i){
-            for(std::size_t j = 0; j < rhs.cols(); ++j){
+        for(std::size_t i = 0; i < (std::size_t) rhs.rows(); ++i){
+            for(std::size_t j = 0; j < (std::size_t) rhs.cols(); ++j){
                 std::size_t id = i*cols + j;
                 rhs(i,j) = data[id].as<double>();
             }
@@ -253,8 +254,8 @@ struct convert<Eigen::VectorXi> {
         Node node;
         node["rows"] = rhs.rows();
         node["cols"] = rhs.cols();
-        for(std::size_t i = 0; i < rhs.rows(); ++i){
-            for(std::size_t j = 0; j < rhs.cols(); ++j){
+        for(std::size_t i = 0; i < (std::size_t) rhs.rows(); ++i){
+            for(std::size_t j = 0; j < (std::size_t) rhs.cols(); ++j){
                 node["data"].push_back(rhs(i,j));
             }
         }
@@ -284,8 +285,8 @@ struct convert<Eigen::VectorXi> {
         if(!data.IsSequence() || data.size() != rows*cols) {
             return false;
         }
-        for(std::size_t i = 0; i < rhs.rows(); ++i){
-            for(std::size_t j = 0; j < rhs.cols(); ++j){
+        for(std::size_t i = 0; i < (std::size_t) rhs.rows(); ++i){
+            for(std::size_t j = 0; j < (std::size_t) rhs.cols(); ++j){
                 std::size_t id = i*cols + j;
                 rhs(i,j) = data[id].as<int>();
             }

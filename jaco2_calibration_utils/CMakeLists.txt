@@ -28,6 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   tf
+  rosbag
 )
 
 ## System dependencies are found with CMake's conventions
@@ -66,6 +67,7 @@ include_directories(
   ${NLOPT_INCLUDE_DIRS}
 )
 
+file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/*.hpp include/*.h)
 ## Declare a C++ library
 add_library(jaco2_calibration_utils
     include/jaco2_calibration_utils/dynamic_calibration_sample.hpp
@@ -94,6 +96,7 @@ add_dependencies(jaco2_create_calib_data_node ${${PROJECT_NAME}_EXPORTED_TARGETS
 target_link_libraries(jaco2_calibration_utils
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
+  ${NLOPT_LIBRARIES}
   yaml-cpp
 )
 
