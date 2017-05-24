@@ -103,6 +103,43 @@ public:
 
 };
 
+struct MeanOfTorqueLuts{
+
+    MeanOfTorqueLuts():
+        calculated(false)
+    {}
+
+    void loadLuts(std::vector<std::string> files)
+    {
+        luts.resize(files.size());
+        auto it_lut = luts.begin();
+        for(auto p : files){
+            it_lut->load(p);
+        }
+    }
+
+    Jaco2Calibration::TorqueOffsetLut getMean()
+    {
+        if(!calculated){
+
+            mean = luts.front();
+
+            for(auto l = luts.begin() +1; l < luts.end(); ++l){
+                mean.lut = l->lut;
+            }
+
+            mean.lut /= luts.size();
+            calculated = true;
+        }
+        return mean;
+    }
+
+    bool calculated;
+    std::vector<Jaco2Calibration::TorqueOffsetLut> luts;
+    Jaco2Calibration::TorqueOffsetLut mean;
+
+};
+
 struct FFTAnalyzation
 {
     std::vector<double> getStartingValues(const Jaco2Calibration::TorqueOffsetLut& lut, std::size_t comp, std::size_t n_sine)
@@ -186,19 +223,18 @@ int main(int argc, char *argv[])
     Jaco2Calibration::TorqueOffsetCalibration result;
 
     FFTAnalyzation fft;
-    auto start = fft.getStartingValues(f.lut_, 0, 1);
-    std::cout << "start vals: ";
-    for(auto s : start){
-        std::cout << s << ", ";
-    }
-    std::cout <<";" << std::endl;
+//    auto start = fft.getStartingValues(f.lut_, 0, 1);
+//    std::cout << "start vals: ";
+//    for(auto s : start){
+//        std::cout << s << ", ";
+//    }
+//    std::cout <<";" << std::endl;
+    ceres::Problem problem;
 
-
-    std::vector<std::size_t> problem_sizes = {3, 9, 9, 6, 6, 6};
-    for(std::size_t i = 0; i < 1; ++i){
+    std::vector<std::size_t> problem_sizes = {3*1, 3*5, 3*1, 3*2, 3*2, 3*2};
+    for(std::size_t i = 0; i < 6; ++i){
         double min_cost = 2e10;
         Jaco2Calibration::ActuatorTorqueOffset min_func;
-//        for(std::size_t k = 0; k < 2; ++k){
             f.func_ = Jaco2Calibration::ActuatorTorqueOffset(problem_sizes[i]/3);
             f.active_actuator_ = i;
 
@@ -206,25 +242,19 @@ int main(int argc, char *argv[])
             fu.active_actuator_ = i;
 
             f.setParameterBlockSizes(1, problem_sizes[i]);
-            std::vector<double> x = start;
-//            for(std::size_t para = 0; para < problem_sizes[i]; ++para){
-//                if(para % 3 == 0){
-//                    x[para] *= 1.1;
-//                }
-//            }
+            std::vector<double> x = fft.getStartingValues(f.lut_, i, problem_sizes[i]/3 );
 
 
 //            double sumsine = fu.func_(0.5);
 
-            //        std::vector<double> x = {0.6246, 0.1396, 2.934 , 0.2004, 0.0741, -1.573}  ;
-//            x = {0.6246, 0.1396, 3.108, 0.2004, 0.07466, -1.48 };
             fu.func_.setParams(x);
             //        x.resize( problem_sizes[i], 1);
 
             // Set up the only cost function (also known as residual).
-//            ceres::CostFunction* cost_function = &f;
+            ceres::CostFunction* cost_function = &f;
 
-            ceres::CostFunction* cost_function = new ceres::NumericDiffCostFunction<MyScalarCostFunctor, ceres::CENTRAL, 1, 6>(&fu);
+
+//            ceres::CostFunction* cost_function = new ceres::NumericDiffCostFunction<MyScalarCostFunctor, ceres::CENTRAL, 1, 6>(&fu);
 
             //        auto pb = cost_function->parameter_block_sizes();
             //        std::cout << pb.size() << std::endl;
@@ -232,7 +262,7 @@ int main(int argc, char *argv[])
             //            std::cout << p << std::endl;
             //        }
 
-            ceres::Problem problem;
+
             ceres::CauchyLoss loss(0.2);
             problem.AddResidualBlock(cost_function, NULL/*&loss*/, x.data());
 //                    problem.SetParameterLowerBound(x.data(), 1, 0);
@@ -259,13 +289,11 @@ int main(int argc, char *argv[])
             ros::Time end = ros::Time::now();
             ros::Duration dur = end - start;
 //            problem.getc
-//            problem.getc
+
 
             ROS_INFO_STREAM("Optimization took " << dur.toSec() << " s" );
 
-//            if(){
-//                min_func = fu.func_;
-//            }
+
 
             std::cout << summary.BriefReport() << "\n";
             int iter = 0;
@@ -273,7 +301,7 @@ int main(int argc, char *argv[])
                 std::cout << " a_" << iter << "=" << val << "\n";
                 ++iter;
             }
-//        }
+
 
 
 

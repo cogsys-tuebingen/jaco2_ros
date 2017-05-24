@@ -1,4 +1,4 @@
-#include <moveit/move_group_interface/move_group.h>
+#include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit_msgs/GetPositionFK.h>
@@ -96,7 +96,7 @@ private:
 
     bool move_cb_gripper(jaco2_msgs::CartesianTransformation::Request& req, jaco2_msgs::CartesianTransformation::Response & res)
     {
-        robot_state::RobotState start_state(*group_.getCurrentState());
+        moveit::core::RobotStatePtr start_state = group_.getCurrentState();
 //        geometry_msgs::Pose start_pose2;
 //        for(auto name : group.getJointNames()){
 //            ROS_INFO_STREAM(name <<": "<< start_state.getVariablePosition(name));
@@ -107,6 +107,7 @@ private:
         ROS_INFO_STREAM("planning frame: " << group_.getPlanningFrame(););
         fk_request.fk_link_names.resize(1,group_.getEndEffectorLink());
         fk_request.robot_state.joint_state.name = group_.getActiveJoints();
+        fk_request.robot_state.joint_state.position = group_.getCurrentJointValues();
 
         fk_client_.call(fk_request, fk_response);
 
@@ -149,7 +150,9 @@ private:
         ROS_INFO_STREAM("Planning took " << (end-start).toSec() << " seconds");
         my_plan_.trajectory_ = trajectory;
         my_plan_.planning_time_ = (end-start).toSec();
-        moveit::core::robotStateToRobotStateMsg(start_state,my_plan_.start_state_);
+
+
+//        moveit::core::robotStateToRobotStateMsg(*start_state,my_plan_.start_state_);
 //        my_plan_.start_state_ = start_state;
         moveit_msgs::MoveItErrorCodes err  = group_.execute(my_plan_);
         res.error_code = err.val;
@@ -162,8 +165,8 @@ private:
 
 private:
 
-    moveit::planning_interface::MoveGroup::Plan my_plan_;
-    moveit::planning_interface::MoveGroup group_;
+    moveit::planning_interface::MoveGroupInterface::Plan my_plan_;
+    moveit::planning_interface::MoveGroupInterface group_;
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
     ros::ServiceClient fk_client_;
     ros::ServiceServer move_cart_server_;
@@ -191,11 +194,6 @@ int main(int argc, char *argv[])
 
         r.sleep();
     }
-
-
-
-
-
 
 
     return 0;

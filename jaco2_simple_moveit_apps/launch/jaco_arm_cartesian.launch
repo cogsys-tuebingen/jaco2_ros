@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="jaco2_simple_moveit_apps" type="jaco2_cartesian_transformation" name="jaco_arm_cartesian">
+    <remap from="/joint_states" to="/jaco_arm_driver/out/joint_states"/>
+  </node>
+</launch>
+           
