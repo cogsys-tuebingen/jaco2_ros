@@ -76,7 +76,7 @@ struct TorqueOffsetLut
 
     double getAngle(std::size_t link, std::size_t n) const
     {
-        if(link > 0 && link < n_links){
+        if(link > 0 && link <= n_links){
             return lower_limits(link -1) + n * resolution(link -1);
         }
         else{

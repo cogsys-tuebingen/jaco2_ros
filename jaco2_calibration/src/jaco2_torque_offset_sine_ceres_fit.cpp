@@ -1,10 +1,9 @@
 
+#include <ros/ros.h>
 #include <ceres/ceres.h>
 
-#include <ros/ros.h>
-
-#include <jaco2_driver/torque_offset_calibration.hpp>
 #include <jaco2_driver/torque_offset_lut.hpp>
+#include <jaco2_driver/torque_offset_calibration.hpp>
 #include <jaco2_calibration_utils/fft_analysis.hpp>
 
 class QuadraticCostFunction
@@ -25,6 +24,19 @@ public:
         func_(func)
     {
         set_num_residuals(1);
+    }
+
+    QuadraticCostFunction(std::size_t active_actuator,
+                          Jaco2Calibration::TorqueOffsetLut& lut,
+                          Jaco2Calibration::ActuatorTorqueOffset& func,
+                          int i,
+                          int j):
+        active_actuator_(active_actuator),
+        lut_(lut),
+        func_(func)
+    {
+        set_num_residuals(1);
+        setParameterBlockSizes(i,j);
     }
 
     virtual ~QuadraticCostFunction() {}
@@ -115,6 +127,7 @@ struct MeanOfTorqueLuts{
         auto it_lut = luts.begin();
         for(auto p : files){
             it_lut->load(p);
+            ++it_lut;
         }
     }
 
@@ -125,7 +138,7 @@ struct MeanOfTorqueLuts{
             mean = luts.front();
 
             for(auto l = luts.begin() +1; l < luts.end(); ++l){
-                mean.lut = l->lut;
+                mean.lut += l->lut;
             }
 
             mean.lut /= luts.size();
@@ -209,103 +222,90 @@ int main(int argc, char *argv[])
     google::InitGoogleLogging(argv[0]);
     ros::init(argc, argv, "jaco2_torque_offset_sine_fit");
     ros::NodeHandle nh("~");
-    std::string file, out_file;
-    nh.param<std::string>("input_file", file, "/home/zwiener/workspace/jaco_ws/src/jaco2_ros/jaco2_driver/config/torque_offset_lut_jaco2-2.yaml");
-    nh.param<std::string>("output_path", out_file, "/tmp/torque_offset_sine.yaml");
 
-    QuadraticCostFunction f;
-    f.lut_.load(file);
+    std::string file        = nh.param<std::string>("input_file", "/home/zwiener/workspace/jaco_ws/src/jaco2_ros/jaco2_driver/config/torque_offset_lut_jaco2-2.yaml");
+    std::string out_file    = nh.param<std::string>("output_path", "/tmp/torque_offset_sine.yaml");
+    std::string input_files = nh.param<std::string>("input_files", "/home/zwiener/workspace/jaco_ws/src/data/jaco2-2_torque_static_data.yaml");
 
-    MyScalarCostFunctor fu;
-    fu.lut_ = f.lut_;
+    Jaco2Calibration::TorqueOffsetLut data;
+    std::vector<std::string> lut_paths;
 
+    if(input_files == ""){
+        data.load(file);
+
+    }
+    else{
+        YAML::Node doc = YAML::LoadFile(input_files);
+        auto data_f = doc["files"];
+        if(!data_f.IsDefined() || !data_f.IsSequence()){
+            return 42;
+        }
+
+        lut_paths = data_f.as<std::vector<std::string>>();
+        MeanOfTorqueLuts m;
+        m.loadLuts(lut_paths);
+        data = m.getMean();
+        data.save("/tmp/mean_lut.yaml");
+
+    }
 
     Jaco2Calibration::TorqueOffsetCalibration result;
 
     FFTAnalyzation fft;
-//    auto start = fft.getStartingValues(f.lut_, 0, 1);
-//    std::cout << "start vals: ";
-//    for(auto s : start){
-//        std::cout << s << ", ";
-//    }
-//    std::cout <<";" << std::endl;
-    ceres::Problem problem;
+
 
     std::vector<std::size_t> problem_sizes = {3*1, 3*5, 3*1, 3*2, 3*2, 3*2};
+
     for(std::size_t i = 0; i < 6; ++i){
         double min_cost = 2e10;
-        Jaco2Calibration::ActuatorTorqueOffset min_func;
-            f.func_ = Jaco2Calibration::ActuatorTorqueOffset(problem_sizes[i]/3);
-            f.active_actuator_ = i;
+        ceres::Problem problem;
 
-            fu.func_ = Jaco2Calibration::ActuatorTorqueOffset(problem_sizes[i]/3);
-            fu.active_actuator_ = i;
+        Jaco2Calibration::ActuatorTorqueOffset func(problem_sizes[i]/3);
+        func.id = i;
 
-            f.setParameterBlockSizes(1, problem_sizes[i]);
-            std::vector<double> x = fft.getStartingValues(f.lut_, i, problem_sizes[i]/3 );
+        std::vector<double> x = fft.getStartingValues(data, i, problem_sizes[i]/3 );
+        func.setParams(x);
 
-
-//            double sumsine = fu.func_(0.5);
-
-            fu.func_.setParams(x);
-            //        x.resize( problem_sizes[i], 1);
-
-            // Set up the only cost function (also known as residual).
-            ceres::CostFunction* cost_function = &f;
+        ceres::CostFunction* cost_function = new QuadraticCostFunction(i, data, func, 1, problem_sizes[i]);
 
 
-//            ceres::CostFunction* cost_function = new ceres::NumericDiffCostFunction<MyScalarCostFunctor, ceres::CENTRAL, 1, 6>(&fu);
-
-            //        auto pb = cost_function->parameter_block_sizes();
-            //        std::cout << pb.size() << std::endl;
-            //        for(auto p : pb){
-            //            std::cout << p << std::endl;
-            //        }
+        problem.AddResidualBlock(cost_function, NULL, x.data());
 
 
-            ceres::CauchyLoss loss(0.2);
-            problem.AddResidualBlock(cost_function, NULL/*&loss*/, x.data());
-//                    problem.SetParameterLowerBound(x.data(), 1, 0);
-//                    problem.SetParameterLowerBound(x.data(), 4, 0);
-            //        problem.SetParameterUpperBound(x.data(), 0, 2);
+        // Run the solver!
+        ceres::Solver::Options options;
+        options.max_num_line_search_direction_restarts = 10;
+        options.max_num_line_search_step_size_iterations = 1000;
+        options.line_search_direction_type = ceres::NONLINEAR_CONJUGATE_GRADIENT;
+        options.linear_solver_type = ceres::DENSE_QR;
+        options.max_num_iterations = 400;
+        //            options.minimizer_progress_to_stdout = true;
+        //        options.
+        ceres::Solver::Summary summary;
 
-            // Run the solver!
-            ceres::Solver::Options options;
-            options.max_num_line_search_direction_restarts = 10;
-            options.max_num_line_search_step_size_iterations = 1000;
-            options.line_search_direction_type = ceres::NONLINEAR_CONJUGATE_GRADIENT;
-            options.linear_solver_type = ceres::DENSE_QR;
-            options.max_num_iterations = 400;
-//            options.minimizer_progress_to_stdout = true;
-            //        options.
-            ceres::Solver::Summary summary;
-            ROS_INFO_STREAM("Start Optimization joint " << i);
-            ros::Time start = ros::Time::now();
+        ROS_INFO_STREAM("Start Optimization joint " << i + 1 );
+        ros::Time start = ros::Time::now();
 
-            ceres::Solve(options, &problem, &summary);
+        ceres::Solve(options, &problem, &summary);
+
+        ros::Time end = ros::Time::now();
+        ros::Duration dur = end - start;
+
+        ROS_INFO_STREAM("Optimization took " << dur.toSec() << " s" );
 
 
 
-            ros::Time end = ros::Time::now();
-            ros::Duration dur = end - start;
-//            problem.getc
-
-
-            ROS_INFO_STREAM("Optimization took " << dur.toSec() << " s" );
-
-
-
-            std::cout << summary.BriefReport() << "\n";
-            int iter = 0;
-            for(auto val : x){
-                std::cout << " a_" << iter << "=" << val << "\n";
-                ++iter;
-            }
+        std::cout << summary.BriefReport() << "\n";
+        int iter = 0;
+        for(auto val : x){
+            std::cout << " a_" << iter << "=" << val << "\n";
+            ++iter;
+        }
 
 
 
 
-        result.calibration.emplace_back(fu.func_);
+        result.calibration.emplace_back(func);
 
 
     }

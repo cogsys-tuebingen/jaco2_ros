@@ -1,0 +1,46 @@
+torque_calibration:
+  - parameters:
+      - amplitude: 0.6119811942559886
+        frequency: 0.1394810474018361
+        phase: -3.021276047663666
+  - parameters:
+      - frequency: 0.02379994434537722
+        phase: -1.183019296497318
+        amplitude: 1.098413575386597
+      - amplitude: 0.3363494364549324
+        frequency: 0.07139983303613166
+        phase: 2.496685538020259
+      - frequency: 0.04759988869075444
+        amplitude: 0.3145362084754681
+        phase: -2.464907975460334
+      - frequency: 0
+        amplitude: 0.1476971965936618
+        phase: 1.570796326794897
+      - amplitude: 0.1377910407537283
+        frequency: 0.1427996660722633
+        phase: 3.092426625121439
+  - parameters:
+      - amplitude: 0.3898172406077222
+        frequency: 0.1376597719882851
+        phase: -3.037394873079073
+  - parameters:
+      - amplitude: 0.0528470677186508
+        frequency: 0
+        phase: -1.570796326794897
+      - amplitude: 0.09802541645379928
+        frequency: 0.03487026185045903
+        phase: 0.999855031983899
+  - parameters:
+      - amplitude: 0.05622603033024031
+        frequency: 0
+        phase: 1.570796326794897
+      - amplitude: 0.08932180015206717
+        frequency: 0.03487026185045903
+        phase: -2.121846838667894
+  - parameters:
+      - amplitude: 0.1243945767354689
+        frequency: 0
+        phase: 1.570796326794897
+      - amplitude: 0.1317794881529615
+        frequency: 0.03487026185045903
+        phase: -0.6755675405352911
