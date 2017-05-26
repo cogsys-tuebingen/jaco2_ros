@@ -38,8 +38,8 @@ Jaco2DriverNode::Jaco2DriverNode()
     private_nh_.param<std::string>("jaco_serial", serial_,std::string(""));
     private_nh_.param<std::string>("tf_prefix", tf_prefix_, "jaco_");
 
-//    boost::function<void(const jaco2_msgs::JointVelocityConstPtr&)> cb = boost::bind(&Jaco2DriverNode::jointVelocityCb, this, _1);
-//    boost::function<void(const jaco2_msgs::FingerPositionConstPtr&)> cb_finger = boost::bind(&Jaco2DriverNode::fingerVelocityCb, this, _1);
+    //    boost::function<void(const jaco2_msgs::JointVelocityConstPtr&)> cb = boost::bind(&Jaco2DriverNode::jointVelocityCb, this, _1);
+    //    boost::function<void(const jaco2_msgs::FingerPositionConstPtr&)> cb_finger = boost::bind(&Jaco2DriverNode::fingerVelocityCb, this, _1);
     subJointVelocity_ = private_nh_.subscribe("in/joint_velocity", 10, &Jaco2DriverNode::jointVelocityCb, this);
     subFingerVelocity_ = private_nh_.subscribe("in/finger_velocity", 10, &Jaco2DriverNode::fingerVelocityCb, this);
     subJointTorque_ = private_nh_.subscribe("in/joint_torques", 1, &Jaco2DriverNode::jointTorqueCb, this);
@@ -104,15 +104,24 @@ Jaco2DriverNode::Jaco2DriverNode()
     }
     bool use_torque_calib = private_nh_.param<bool>("jaco_use_torque_calib", false);
     if(use_torque_calib){
-        ROS_INFO_STREAM("Using torque calibration.");
-        std::string torque_calib_file = private_nh_.param<std::string>("jaco_torque_calibration_file", "");
-//        Jaco2Calibration::TorqueOffsetLut lut;
-//        lut.load(torque_calib_file);
-//        driver_.setTorqueCalibration(lut);
 
-        Jaco2Calibration::TorqueOffsetCalibration sine_calib;
-        sine_calib.load(torque_calib_file);
-        driver_.setTorqueCalibration(sine_calib);
+        std::string torque_calib_file = private_nh_.param<std::string>("jaco_torque_calibration_file", "");
+        try{
+            Jaco2Calibration::TorqueOffsetLut lut;
+            lut.load(torque_calib_file);
+            driver_.setTorqueCalibration(lut);
+            ROS_INFO_STREAM("Using torque LUT calibration.");
+        }
+        catch(const std::runtime_error& e){
+            Jaco2Calibration::TorqueOffsetCalibration sine_calib;
+            sine_calib.load(torque_calib_file);
+            driver_.setTorqueCalibration(sine_calib);
+            ROS_INFO_STREAM("Using torque SINE calibration.");
+        }
+        catch(...){
+            ROS_ERROR_STREAM("Unkown failure!!!");
+            throw;
+        }
     }
 
     std::string velocity_calib_file = private_nh_.param<std::string>("jaco_velocity_calibration_file", "");
@@ -150,12 +159,12 @@ Jaco2DriverNode::Jaco2DriverNode()
 void Jaco2DriverNode::actionAngleGoalCb()
 {
     if(actionAngleServer_.isActive()){
-//        actionAngleServer_.setPreempted();
+        //        actionAngleServer_.setPreempted();
         driver_.finish();
     }
-//    if(!controller_.reachedGoal()){
-//        controller_.finish();
-//    }
+    //    if(!controller_.reachedGoal()){
+    //        controller_.finish();
+    //    }
 
     jaco2_msgs::ArmJointAnglesGoalConstPtr goal = actionAngleServer_.acceptNewGoal();
     AngularPosition position;
@@ -220,7 +229,7 @@ void Jaco2DriverNode::gripperGoalCb()
     else
     {
         driver_.grabObjSetUnusedFingerPos(goal->useFinger1, goal->useFinger2, goal->useFinger3,
-                                              goal->posFinger1, goal->posFinger2, goal->posFinger3);
+                                          goal->posFinger1, goal->posFinger2, goal->posFinger3);
     }
 }
 
@@ -422,12 +431,12 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
     driver_.setTrajectoryIGains(trajectoryGainsI);
     driver_.setTrajectoryDGains(trajectoryGainsD);
     driver_.setGripperPGain(config.gripper_p_gain_finger_1,
-                                config.gripper_p_gain_finger_2,
-                                config.gripper_p_gain_finger_3);
+                            config.gripper_p_gain_finger_2,
+                            config.gripper_p_gain_finger_3);
 
     driver_.setGripperFingerVelocity(config.gipper_controller_finger_vel_1,
-                                         config.gipper_controller_finger_vel_2,
-                                         config.gipper_controller_finger_vel_3);
+                                     config.gipper_controller_finger_vel_2,
+                                     config.gipper_controller_finger_vel_3);
 
     driver_.setVelocityControllerGains(config.velocity_controller_p_gain,
                                        config.velocity_controller_i_gain,
@@ -601,7 +610,7 @@ void Jaco2DriverNode::publishJointAngles()
 
     AngularPosition pos = driver_.getAngularPosition();
 
-//        DataConversion::from_degrees(pos);
+    //        DataConversion::from_degrees(pos);
 
     jointAngleMsg_.joint1 = pos.Actuators.Actuator1;
     jointAngleMsg_.joint2 = pos.Actuators.Actuator2;
