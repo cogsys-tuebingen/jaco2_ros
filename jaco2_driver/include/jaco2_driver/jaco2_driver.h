@@ -17,6 +17,7 @@
 #include <jaco2_driver/accelerometer_calibration.hpp>
 #include <jaco2_driver/torque_offset_lut.hpp>
 #include <jaco2_driver/gravity_params.hpp>
+#include <jaco2_driver/torque_offset_calibration.hpp>
 //Jaco2 Controller
 #include <jaco2_driver/jaco2_controller.h>
 #include <jaco2_driver/empty_controller.h>
@@ -84,6 +85,7 @@ public:
     void grabObjSetUnusedFingerPos(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3, const int posFinger1, const int posFinger2, const int posFinger3);
     void setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam>& params);
     void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut& lut);
+    void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetCalibration& lut);
     bool setGravityParams(const Jaco2Calibration::ApiGravitationalParams &params);
     void setVelocitySensorCalibration(const std::vector<double>& factors);
 

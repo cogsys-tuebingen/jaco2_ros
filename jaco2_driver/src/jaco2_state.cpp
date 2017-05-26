@@ -8,7 +8,8 @@ Jaco2State::Jaco2State(Jaco2API &api)
       readCmdHighPri_(0),
       priortyThreshold_(2),
       priortyRate_(priortyThreshold_ + 1),
-      calibrate_torque_(false)
+      calibrate_torque_(false),
+      calibrate_torque_fkt_(false)
 {
     lowPriority_.push_back(READ_QUICK_STATUS);
     lowPriority_.push_back(READ_CURRENT);
@@ -348,7 +349,17 @@ void Jaco2State::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut &l
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     torque_offset_ = lut;
     calibrate_torque_ = true;
+    calibrate_torque_fkt_ = false;
 }
+
+void Jaco2State::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetCalibration &fkt)
+{
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
+    torque_offest_fkt_ = fkt;
+    calibrate_torque_ = false;
+    calibrate_torque_fkt_  = true;
+}
+
 
 void Jaco2State::setVelocitySensorCalibration(const std::vector<double> &factors)
 {
@@ -402,8 +413,7 @@ void Jaco2State::applyAccelerationCalibration()
 void Jaco2State::applyTorqueOffsets()
 {
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-    if(calibrate_torque_){
-
+    if(calibrate_torque_ && ! calibrate_torque_fkt_){
         current_torque_.Actuators.Actuator1 -= torque_offset_.at(1, current_position_.Actuators.Actuator1);
         current_torque_.Actuators.Actuator2 -= torque_offset_.at(2, current_position_.Actuators.Actuator2);
         current_torque_.Actuators.Actuator3 -= torque_offset_.at(3, current_position_.Actuators.Actuator3);
@@ -411,18 +421,35 @@ void Jaco2State::applyTorqueOffsets()
         current_torque_.Actuators.Actuator5 -= torque_offset_.at(5, current_position_.Actuators.Actuator5);
         current_torque_.Actuators.Actuator6 -= torque_offset_.at(6, current_position_.Actuators.Actuator6);
     }
+    if(calibrate_torque_fkt_ && !calibrate_torque_){
+        current_torque_.Actuators.Actuator1 -= torque_offest_fkt_(0, current_position_.Actuators.Actuator1);
+        current_torque_.Actuators.Actuator2 -= torque_offest_fkt_(1, current_position_.Actuators.Actuator2);
+        current_torque_.Actuators.Actuator3 -= torque_offest_fkt_(2, current_position_.Actuators.Actuator3);
+        current_torque_.Actuators.Actuator4 -= torque_offest_fkt_(3, current_position_.Actuators.Actuator4);
+        current_torque_.Actuators.Actuator5 -= torque_offest_fkt_(4, current_position_.Actuators.Actuator5);
+        current_torque_.Actuators.Actuator6 -= torque_offest_fkt_(5, current_position_.Actuators.Actuator6);
+    }
+
 }
 
 void Jaco2State::applyTorqueOffsets2TorqueGFree()
 {
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-    if(calibrate_torque_){
+    if(calibrate_torque_ && ! calibrate_torque_fkt_){
         current_torque_gravity_free_.Actuators.Actuator1 -= torque_offset_.at(1, current_position_.Actuators.Actuator1);
         current_torque_gravity_free_.Actuators.Actuator2 -= torque_offset_.at(2, current_position_.Actuators.Actuator2);
         current_torque_gravity_free_.Actuators.Actuator3 -= torque_offset_.at(3, current_position_.Actuators.Actuator3);
         current_torque_gravity_free_.Actuators.Actuator4 -= torque_offset_.at(4, current_position_.Actuators.Actuator4);
         current_torque_gravity_free_.Actuators.Actuator5 -= torque_offset_.at(5, current_position_.Actuators.Actuator5);
         current_torque_gravity_free_.Actuators.Actuator6 -= torque_offset_.at(6, current_position_.Actuators.Actuator6);
+    }
+    if(calibrate_torque_fkt_ && !calibrate_torque_){
+        current_torque_gravity_free_.Actuators.Actuator1 -= torque_offest_fkt_(0, current_position_.Actuators.Actuator1);
+        current_torque_gravity_free_.Actuators.Actuator2 -= torque_offest_fkt_(1, current_position_.Actuators.Actuator2);
+        current_torque_gravity_free_.Actuators.Actuator3 -= torque_offest_fkt_(2, current_position_.Actuators.Actuator3);
+        current_torque_gravity_free_.Actuators.Actuator4 -= torque_offest_fkt_(3, current_position_.Actuators.Actuator4);
+        current_torque_gravity_free_.Actuators.Actuator5 -= torque_offest_fkt_(4, current_position_.Actuators.Actuator5);
+        current_torque_gravity_free_.Actuators.Actuator6 -= torque_offest_fkt_(5, current_position_.Actuators.Actuator6);
     }
 }
 

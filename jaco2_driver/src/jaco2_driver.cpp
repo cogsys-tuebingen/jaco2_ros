@@ -414,6 +414,11 @@ void Jaco2Driver::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut &
     state_.setTorqueCalibration(lut);
 }
 
+void Jaco2Driver::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetCalibration &calib)
+{
+    state_.setTorqueCalibration(calib);
+}
+
 bool Jaco2Driver::setGravityParams(const Jaco2Calibration::ApiGravitationalParams& params)
 {
     return jaco_api_.setGravityOptimalZParam(params.parameter);

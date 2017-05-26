@@ -5,6 +5,7 @@
 #include <kinova/KinovaTypes.h>
 #include <jaco2_driver/accelerometer_calibration.hpp>
 #include <jaco2_driver/torque_offset_lut.hpp>
+#include <jaco2_driver/torque_offset_calibration.hpp>
 
 #include <deque>
 
@@ -34,22 +35,13 @@ public:
     Jaco2State(Jaco2API &api);
 
     AngularPosition getAngularPosition() const;
-
     AngularPosition getAngularVelocity() const;
-
     AngularPosition getAngularAcceleration() const;
-
     AngularPosition getAngularForce() const;
-
     AngularPosition getAngularCurrent() const;
-
     AngularPosition getTorqueGFree() const;
-
-
     AngularAcceleration getLinearAcceleration() const;
-
     QuickStatus getQuickStatus() const;
-
     SensorsInfo getSensorInfo() const;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> getLastUpdate(int read_data) const;
@@ -65,6 +57,7 @@ public:
     void setPriorityRate(int rate);
     void setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam>& params);
     void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut& lut);
+    void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetCalibration& calib);
     void setVelocitySensorCalibration(const std::vector<double>& factors);
 
     ///
@@ -95,6 +88,20 @@ public:
     static void getAcceleration(const std::size_t& index, const AngularAcceleration& acc, Eigen::Vector3d& vec);
     static void setAcceleration(const std::size_t& index, const Eigen::Vector3d vec, AngularAcceleration& acc);
 
+private:
+    void readPosition();
+    void readVelocity();
+    void readTorque();
+    void readCurrent();
+    void readTorqueGravityFree();
+    void readAcceleration();
+    void readSensorInfo();
+    void read(int dataID);
+
+    void calculateJointAcceleration();
+    void applyAccelerationCalibration();
+    void applyTorqueOffsets();
+    void applyTorqueOffsets2TorqueGFree();
 
 
 private:
@@ -130,27 +137,16 @@ private:
     std::chrono::time_point<std::chrono::high_resolution_clock> time_sensor_info_;
     std::vector<Jaco2Calibration::AccelerometerCalibrationParam> accCalibParam_;
     Jaco2Calibration::TorqueOffsetLut torque_offset_;
+    Jaco2Calibration::TorqueOffsetCalibration torque_offest_fkt_;
     std::vector<bool> calibrate_acc_;
     bool calibrate_torque_;
+    bool calibrate_torque_fkt_;
     std::deque<AngularPosition> lastVelocity_;
     std::deque<double> dt_;
     int acc_counter_;
     std::vector<double> velocityFactors_;
 
-   private:
-    void readPosition();
-    void readVelocity();
-    void readTorque();
-    void readCurrent();
-    void readTorqueGravityFree();
-    void readAcceleration();
-    void readSensorInfo();
-    void read(int dataID);
 
-    void calculateJointAcceleration();
-    void applyAccelerationCalibration();
-    void applyTorqueOffsets();
-    void applyTorqueOffsets2TorqueGFree();
 
 };
 

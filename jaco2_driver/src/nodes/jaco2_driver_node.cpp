@@ -10,6 +10,7 @@
 #include <jaco2_driver/torque_offset_lut.hpp>
 #include <jaco2_driver/gravity_params.hpp>
 #include <jaco2_driver/velocity_calibration.hpp>
+#include <jaco2_driver/torque_offset_calibration.hpp>
 
 
 Jaco2DriverNode::Jaco2DriverNode()
@@ -92,8 +93,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     }
     ok_ = init;
 
-    bool use_accel_calib, use_torque_calib;
-    private_nh_.param<bool>("jaco_use_accelerometer_calib", use_accel_calib, false);
+    bool use_accel_calib = private_nh_.param<bool>("jaco_use_accelerometer_calib", false);
     if(use_accel_calib) {
         ROS_INFO_STREAM("Using accelerometer calibration.");
         std::string acc_calib_file;
@@ -102,18 +102,20 @@ Jaco2DriverNode::Jaco2DriverNode()
         Jaco2Calibration::loadAccCalib(acc_calib_file, acc_params);
         driver_.setAccelerometerCalibration(acc_params);
     }
-    private_nh_.param<bool>("jaco_use_torque_calib", use_torque_calib, false);
+    bool use_torque_calib = private_nh_.param<bool>("jaco_use_torque_calib", false);
     if(use_torque_calib){
         ROS_INFO_STREAM("Using torque calibration.");
-        std::string torque_calib_file;
-        private_nh_.param<std::string>("jaco_torque_calibration_file", torque_calib_file, "");
-        Jaco2Calibration::TorqueOffsetLut lut;
-        lut.load(torque_calib_file);
-        driver_.setTorqueCalibration(lut);
+        std::string torque_calib_file = private_nh_.param<std::string>("jaco_torque_calibration_file", "");
+//        Jaco2Calibration::TorqueOffsetLut lut;
+//        lut.load(torque_calib_file);
+//        driver_.setTorqueCalibration(lut);
+
+        Jaco2Calibration::TorqueOffsetCalibration sine_calib;
+        sine_calib.load(torque_calib_file);
+        driver_.setTorqueCalibration(sine_calib);
     }
 
-    std::string velocity_calib_file;
-    private_nh_.param<std::string>("jaco_velocity_calibration_file", velocity_calib_file, "");
+    std::string velocity_calib_file = private_nh_.param<std::string>("jaco_velocity_calibration_file", "");
     if(velocity_calib_file != ""){
         ROS_INFO_STREAM("Using velocity calibration");
         Jaco2Calibration::VelocityCalibrationParams v_params;
@@ -121,8 +123,7 @@ Jaco2DriverNode::Jaco2DriverNode()
         driver_.setVelocitySensorCalibration(v_params.parameter);
     }
 
-    std::string gravity_calib_file;
-    private_nh_.param<std::string>("jaco_gravity_calibration_file", gravity_calib_file, "");
+    std::string gravity_calib_file = private_nh_.param<std::string>("jaco_gravity_calibration_file", "");
     if(gravity_calib_file != ""){
         ROS_INFO_STREAM("Using optimal gravity parameters.");
         Jaco2Calibration::ApiGravitationalParams g_params;
@@ -134,6 +135,7 @@ Jaco2DriverNode::Jaco2DriverNode()
 
         }
     }
+
 
     actionAngleServer_.start();
     trajServer_.start();
