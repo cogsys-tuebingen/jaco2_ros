@@ -41,16 +41,20 @@ public:
 
         calibration_.setGravityMagnitude(1.0);
         calibration_.setInitAccSamples(500);
-//        calibServiceServer_ = private_nh_.advertiseService("calibrate_acc", &SimCalibNode::changeCalibCallback, this);
+        //        calibServiceServer_ = private_nh_.advertiseService("calibrate_acc", &SimCalibNode::changeCalibCallback, this);
 
         moveGroup_.setPlannerId("RRTkConfigDefault");
-//        moveGroup_.set
-//        moveGroup_.setStartStateToCurrentState();
+        //        moveGroup_.set
+        //        moveGroup_.setStartStateToCurrentState();
         moveGroup_.setPlanningTime(2.0);
-//        moveGroup_.setGoalPositionTolerance(0.01);
-//        moveGroup_.setGoalOrientationTolerance(0.05);
+        //        moveGroup_.setGoalPositionTolerance(0.01);
+        //        moveGroup_.setGoalOrientationTolerance(0.05);
 
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+        planningMonitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+#else
         planningMonitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+#endif
 
         jointGroupNames_ =  planningMonitor_->getRobotModel()->getJointModelGroup("manipulator")->getActiveJointModelNames();
 
@@ -80,8 +84,8 @@ public:
         for(std::size_t i = 0; i < 6; ++i){
             sample.jointPos[i] = msg->position[i];
             sample.jointVel[i] = msg->velocity[i];
-//            sample.jointTorque[i] = msg->effort[i];
-//            sample.jointAcc[i] = msg->acceleration[i];
+            //            sample.jointTorque[i] = msg->effort[i];
+            //            sample.jointAcc[i] = msg->acceleration[i];
             if(samples_.size() > 2 && dt_ !=0)
             {
                 sample.jointAcc[i] = (sample.jointVel[i] - samples_.at(samples_.size() -2).jointVel[i])/(tdiff);
@@ -105,18 +109,18 @@ public:
     }
 
 
-//    bool changeCalibCallback(jaco2_msgs::CalibAcc::Request & req, jaco2_msgs::CalibAcc::Response& res)
-//    {
-//        calibAcc_ = req.calib_acc;
-//        if(calibAcc_){
-//            res.calib_acc_result = "Starting Accelerometer Calibration.";
-//        }
-//        else{
-//            res.calib_acc_result = "Starting Dynamic Parameter Calibration.";
-//        }
-//        notCalib_ = true;
-//        return true;
-//    }
+    //    bool changeCalibCallback(jaco2_msgs::CalibAcc::Request & req, jaco2_msgs::CalibAcc::Response& res)
+    //    {
+    //        calibAcc_ = req.calib_acc;
+    //        if(calibAcc_){
+    //            res.calib_acc_result = "Starting Accelerometer Calibration.";
+    //        }
+    //        else{
+    //            res.calib_acc_result = "Starting Dynamic Parameter Calibration.";
+    //        }
+    //        notCalib_ = true;
+    //        return true;
+    //    }
 
 
     bool checkCollision(const planning_scene_monitor::PlanningSceneMonitorPtr& plm, const robot_state::RobotState& rstate )
@@ -198,15 +202,15 @@ public:
     {
         if(currentSamples_ > numberOfSamples_ && notCalib_)
         {
-//            std::cout << "calibrating ... " << std::endl;
-//            notCalib_ = false;
-//            accSamples_.save("/tmp/acc_samples.txt");
-//            Jaco2Calibration::save("/tmp/data.txt",samples_);
+            //            std::cout << "calibrating ... " << std::endl;
+            //            notCalib_ = false;
+            //            accSamples_.save("/tmp/acc_samples.txt");
+            //            Jaco2Calibration::save("/tmp/data.txt",samples_);
             if(calibAcc_ || calib_acc){
-//                bool succ = calibration_.calibrateAcc(accSamples_);
-//                if(succ){
-//                    Jaco2Calibration::save("/tmp/acc_calib.txt",calibration_.getAccCalibration());
-//                }
+                //                bool succ = calibration_.calibrateAcc(accSamples_);
+                //                if(succ){
+                //                    Jaco2Calibration::save("/tmp/acc_calib.txt",calibration_.getAccCalibration());
+                //                }
                 ROS_WARN_STREAM(" Simulated Accelerometer Calibration not implemented, yet.");
 
             }
@@ -347,7 +351,7 @@ private:
     ros::Subscriber subJointAcc_;
     std::vector<Jaco2Calibration::DynamicCalibrationSample> samples_;
     std::vector<Eigen::Vector3d> gravity_;
-//    Jaco2Calibration::AccelerationSamples accSamples_;
+    //    Jaco2Calibration::AccelerationSamples accSamples_;
     ros::Time lastTime_;
     double dt_;
     jaco2_msgs::Jaco2Sensor jacoSensorMsg_;
@@ -357,7 +361,7 @@ private:
     moveit::planning_interface::MoveGroup moveGroup_;
     moveit::planning_interface::PlanningSceneInterface planningSceneInterface_;
     planning_scene_monitor::PlanningSceneMonitorPtr  planningMonitor_;
-    Jaco2KinematicsDynamicsModel dynSolver_;
+    Jaco2KinDynLib::Jaco2DynamicModel dynSolver_;
     std::default_random_engine generator_;
     std::normal_distribution<double> distribution_;
     //    ros::Publisher display_publisher_;
@@ -373,7 +377,7 @@ int main(int argc, char *argv[])
     ros::AsyncSpinner spinner(1);
     spinner.start();
 
-//    node.saftyBox(0, -1.5,1.5, -1.5, 1.5 );
+    //    node.saftyBox(0, -1.5,1.5, -1.5, 1.5 );
     bool done = false;
     while (ros::ok() && !done) {
         node.tick(done);
@@ -384,7 +388,7 @@ int main(int argc, char *argv[])
     spinner.stop();
 
     node.calibrate(false);
-//    node.calibrate(true);
+    //    node.calibrate(true);
     return 0;
 }
 

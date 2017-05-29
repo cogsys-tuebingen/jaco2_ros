@@ -19,7 +19,7 @@
 #include <kdl/chaindynparam.hpp>
 
 #include <jaco2_kin_dyn_lib/jaco2_kinematic_model.h>
-
+namespace Jaco2KinDynLib {
 struct Wrench{
 
     Eigen::Vector3d force;
@@ -55,15 +55,14 @@ struct Wrench{
     }
 };
 
-class Jaco2DynamicModel : Jaco2KinematicModel
+class Jaco2DynamicModel : public Jaco2KinematicModel
 {
 public:
     Jaco2DynamicModel();
     Jaco2DynamicModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
 
 
-    void setTree(const std::string& robot_model);
-    void setRootAndTip(const std::string& chain_root, const std::string& chain_tip);
+    void setTree(const std::string& robot_model) override;
     void setGravity(double x, double y, double z);
     void getGravity(double& gx, double& gy, double& gz);
 
@@ -80,32 +79,8 @@ public:
     int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
                    std::vector<double>& torques, const std::vector<Wrench>& wrenches_ext = std::vector<Wrench>());
 
-    /**
-     * @brief getFKPose Given the joint variables q_in the world space coordinates are calculated. KDL wrapper
-     * @param q_in  input: joint variables
-     * @param out   output: pose (position and orientation)
-     * @param link  input: the link for which the pose should be calculated.
-     * @return
-     */
-    int getFKPose(const std::vector<double>& q_in, tf::Pose& out, const std::string link);
-
-    /**
-     * @brief getFKPose Given the joint variables q_in the world space coordinates are calculated. KDL wrapper
-     * @param q_in  input: joint variables
-     * @param out   output: pose (position and orientation)
-     * @param link  input: the link for which the pose should be calculated.
-     * @return
-     */
-    int getFKPose(const std::vector<double>& q_in, KDL::Frame& out, const std::string link);
-
-    /**
-     * @brief getIKSolution given a end effector pose a corresponding joint configuration is search. trac_ik wrapper
-     * @param pose      input: the pose (position, orientation) of the end-effector
-     * @param result    output: the joint variables.
-     * @param seed      optional input: seed for joint value search. if not given a random seed is choosen.
-     * @return
-     */
-    int getIKSolution(const tf::Pose &pose, std::vector<double> &result, const std::vector<double>& seed = std::vector<double>());
+    int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
+                   std::vector<double>& torques, const std::vector<KDL::Wrench>& wrenches_ext);
 
     /**
      * @brief getAcceleration gets the accerlaration for all moving frames
@@ -174,27 +149,9 @@ public:
                                      Eigen::VectorXd& G);
 
     void useUrdfDynamicParams();
-    void getRandomConfig(std::vector<double>& config);
-    /**
-     * @brief getKDLSegmentIndex gets the KDL segment index for a given segment/ link name
-     * @param name the name of the segment/ link
-     * @return returns index of segment -1 if name == root_ ; -2 if link name not found.
-     */
-    void getRandomConfig(Eigen::VectorXd& config);
-    int getKDLSegmentIndex(const std::string &name ) const;
-    /**
-     * @brief getKDLSegmentIndexFK gets the index of a link as needed for forward kinematics. root = 0, ...
-     * @param name name of the segment/link.
-     * @return the index of the segment/link.
-     */
-    int getKDLSegmentIndexFK(const std::string &name) const;
-    int getNrOfJoints() const {return chain_.getNrOfJoints();}
-    int getNrOfSegments() const {return chain_.getNrOfJoints();}
+
     double getLinkMass(const std::string &link) const;
 
-    std::vector<std::string> getLinkNames() const;
-    std::string getRootLink() const {return root_;}
-    std::string getTipLink() const {return tip_;}
     /**
      * @brief getLinkCoM returns the displacemant from link center of mass to origin
      * @param link the name of the link
@@ -219,13 +176,6 @@ public:
     Eigen::Matrix3d getURDFLinkInertiaCoM(const std::string &link) const;
     double getURDFLinkMass(const std::string &link) const;
 
-    Eigen::Vector3d getLinkFixedTranslation(const std::string &link) const;
-    Eigen::Matrix3d getLinkFixedRotation(const std::string &link) const;
-
-    static void convert(const KDL::JntArray& in, std::vector<double>& out);
-    static void convert(const std::vector<double>& in, KDL::JntArray& out);
-    static void PoseTFToKDL(const tf::Pose& t, KDL::Frame& k);
-
     Eigen::MatrixXd getRigidBodyRegressionMatrix(const std::string& root, const std::string& tip,
                                                  const std::vector<double>& q,
                                                  const std::vector<double>& q_Dot,
@@ -248,27 +198,11 @@ public:
                     const std::vector<double> &qDot,
                     Eigen::MatrixXd& res);
 
-    /**
-     * @brief getRotationAxis gets the rotation axis of the link in the link frame
-     * @param link the name of the link
-     * @param rot_axis the rotation axis normaly z-axis (DH connvention)
-     */
-    void getRotationAxis(const std::string &link, KDL::Vector &rot_axis);
-    void getRotationAxis(const std::string &link, Eigen::Vector3d& rot_axis);
-
-
-    static Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
-    static Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);
-    static Eigen::Matrix<double, 6, 6> kdlFrame2Spatial(const KDL::Frame& frame);
-    static Eigen::Matrix<double, 3, 3> kdlMatrix2Eigen(const KDL::Rotation& rot);
-    static void kdlJntArray2Eigen(const KDL::JntArray& q, Eigen::VectorXd &res);
-    static void kdlMatrix2Eigen(const KDL::JntSpaceInertiaMatrix& mat, Eigen::MatrixXd &res);
-
 private:
     KDL::Vector gravity_;
     std::shared_ptr<KDL::ChainIdSolver_RNE> solverID_;
 
-    void initialize();
+    void initialize() override;
 
     /**
      * @brief getLinkInertiaCoM gets the inertia moment matrix of a link with respect to the center of mass;
@@ -280,5 +214,6 @@ private:
 
 
 };
+}
 
 #endif // JACO2DYNAMICMODEL_H

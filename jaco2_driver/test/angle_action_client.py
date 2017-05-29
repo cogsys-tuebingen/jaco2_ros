@@ -6,6 +6,7 @@ import rospy
 import actionlib
 
 import jaco2_msgs.msg
+import sensor_msgs.msg
 
 import sys
 
@@ -15,22 +16,24 @@ def pose_client():
 
     goal = jaco2_msgs.msg.ArmJointAnglesGoal()
 
-    if len(sys.argv) < 7:
-        goal.angles.joint1 = 1.5285271406173706 
-        goal.angles.joint2 = -1.3800612688064575
-        goal.angles.joint3 = -0.1439174860715866
-        goal.angles.joint4 = 0.15510250627994537
-        goal.angles.joint5 = 0.6960597634315491
-        goal.angles.joint6 = 3.3098342418670654
+    if len(sys.argv) < 8:
+        goal.angles.joint1 = 4.8089
+        goal.angles.joint2 = 2.9226
+        goal.angles.joint3 = 1.0028
+        goal.angles.joint4 = 4.2031
+        goal.angles.joint5 = 1.4448
+        goal.angles.joint6 = 1.3206
+        goal.type = jaco2_msgs.msg.ArmJointAnglesGoal.RADIAN
 
         rospy.logwarn("Using test goal: \n%s", goal)
     else:
-        goal.angles.joint1 = float(sys.argv[1])
-        goal.angles.joint2 = float(sys.argv[2])
-        goal.angles.joint3 = float(sys.argv[3])
-        goal.angles.joint4 = float(sys.argv[4])
-        goal.angles.joint5 = float(sys.argv[5])
-        goal.angles.joint6 = float(sys.argv[6])
+        goal.type   = float(sys.argv[1])
+        goal.angles.joint1 = float(sys.argv[2])
+        goal.angles.joint2 = float(sys.argv[3])
+        goal.angles.joint3 = float(sys.argv[4])
+        goal.angles.joint4 = float(sys.argv[5])
+        goal.angles.joint5 = float(sys.argv[6])
+        goal.angles.joint6 = float(sys.argv[7])
 
 
     client.wait_for_server()
@@ -48,7 +51,7 @@ def pose_client():
 
 if __name__ == '__main__':
     try:
-        rospy.init_node('arm_pose_client')
+        rospy.init_node('arm_pose_client', anonymous=True)
         result = pose_client()
         rospy.loginfo("Result: %s", result)
     except rospy.ROSInterruptException: 

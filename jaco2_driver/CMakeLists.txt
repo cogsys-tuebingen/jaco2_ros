@@ -15,7 +15,7 @@ else()
     message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
-
+#add_definitions(-DCalib)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -110,6 +110,7 @@ include_directories(
    include/jaco2_driver/velocity_controller.h
    include/jaco2_driver/point_2_point_velocity_controller.h
    include/jaco2_driver/accelerometer_calibration.hpp
+   include/jaco2_driver/torque_offset_lut.hpp
  )
 
 ## Add cmake target dependencies of the library

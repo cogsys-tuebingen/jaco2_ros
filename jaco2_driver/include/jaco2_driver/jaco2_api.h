@@ -16,7 +16,7 @@ public:
     Jaco2API();
     ~Jaco2API();
 
-    int init();
+    int init(std::string serial = "", bool right = true);
 
     bool  isStopped() const;
     QuickStatus getQuickStatus() const;
@@ -64,12 +64,15 @@ private:
     int (*SetCartesianControl)();
     int (*GetSensorsInfo)(SensorsInfo &);
     int (*SetTorqueZero)(int);
+    int (*SendAdvanceTrajectory)(TrajectoryPoint command);          /// Send Cartesian Trajectory wit Limits
+    int (*StopCurrentLimitation)();
+    int (*GetCartesianPosition)(CartesianPosition &);
 
-
-
+    void moveHomeLeft();
 private:
     mutable std::recursive_mutex mutex_;
     bool stopedAPI_;
+    bool right_arm_;
 };
 
 #endif // JACO2API_H

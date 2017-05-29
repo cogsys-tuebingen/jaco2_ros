@@ -1,6 +1,7 @@
 #include <jaco2_driver/jaco2_driver.h>
 
 Jaco2Driver::Jaco2Driver():
+    initialized_(false),
     state_(jaco_api_),
 
     active_controller_(nullptr),
@@ -13,8 +14,15 @@ Jaco2Driver::Jaco2Driver():
     paused_(false),
     serviceDone_(true)
 {
-    ROS_INFO_STREAM("create jaco 2 driver");
-    int result = jaco_api_.init();
+
+}
+
+bool Jaco2Driver::initialize(std::string serial, bool right)
+{
+    serial_ = serial;
+    right_arm_ = right;
+    ROS_INFO_STREAM("initialize jaco 2 driver for device: " << serial_);
+    int result = jaco_api_.init(serial_, right_arm_);
     ROS_INFO_STREAM("Jaco API result: "<< result);
 
     state_.readQuickStatus();
@@ -38,6 +46,9 @@ Jaco2Driver::Jaco2Driver():
         }
         ROS_WARN_STREAM("stop thread");
     });
+
+    initialized_ = true;
+    return (result == 1);
 }
 
 Jaco2Driver::~Jaco2Driver()
@@ -220,6 +231,12 @@ std::vector<Jaco2Calibration::AccelerometerCalibrationParam> Jaco2Driver::getAcc
 {
     return state_.getAccelerometerCalibration();
 }
+
+Jaco2Calibration::TorqueOffsetLut Jaco2Driver::getTorqueCalibration() const
+{
+    return state_.getTorqueCalibration();
+}
+
 void Jaco2Driver::setTrajectoryPGains(const ManipulatorInfo &gains)
 {
     p2p_velocity_controller_.setGainP(gains);
@@ -334,6 +351,11 @@ SensorsInfo Jaco2Driver::getSensorInfo() const
 void Jaco2Driver::setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam> &params)
 {
     state_.setAccelerometerCalibration(params);
+}
+
+void Jaco2Driver::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut &lut)
+{
+    state_.setTorqueCalibration(lut);
 }
 
 int Jaco2Driver::getSetTorqueZeroResult() const

@@ -22,7 +22,12 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_ros_planning
   moveit_ros_planning_interface
   roscpp
+  jaco2_msgs
+  jaco2_utils
+  tf
 )
+
+message("################################### ROS VERSION: ${roscpp_VERSION_MAJOR}.${roscpp_VERSION_MINOR}.${roscpp_VERSION_PATCH}")
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -40,7 +45,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES simple_moveit_apps
-#  CATKIN_DEPENDS moveit_core moveit_msgs moveit_ros_planning moveit_ros_planning_interface roscpp
+  CATKIN_DEPENDS moveit_core moveit_msgs moveit_ros_planning moveit_ros_planning_interface roscpp jaco2_msgs jaco2_utils
 #  DEPENDS system_lib
 )
 
@@ -64,12 +69,33 @@ include_directories(
 add_executable(home_arm src/home_arm.cpp)
 add_executable(move_to_new_rand_configuration src/move_to_new_rand_conf.cpp)
 add_executable(move_to_config src/move_to_config.cpp)
+add_executable(jaco2_cartesian_transformation src/jaco2_cartesian_transformation.cpp)
+add_executable(distFunction src/distFunction.cpp)
+add_executable(comparePlanner src/comparePlanner.cpp)
+add_executable(move_to_sampled_config src/move_to_sampled_config.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(home_arm ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(move_to_new_rand_configuration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(move_to_config ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(home_arm
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+)
+add_dependencies(move_to_new_rand_configuration
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+)
+add_dependencies(distFunction
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+)
+add_dependencies(comparePlanner
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+)
+add_dependencies(move_to_sampled_config
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(home_arm
@@ -81,6 +107,27 @@ target_link_libraries(move_to_new_rand_configuration
 target_link_libraries(move_to_config
    ${catkin_LIBRARIES}
 )
+
+target_link_libraries(jaco2_cartesian_transformation
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(distFunction
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(comparePlanner
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(move_to_sampled_config
+   ${catkin_LIBRARIES}
+)
+
+
+
+
+
 
 #############
 ## Install ##

@@ -71,8 +71,7 @@ include_directories(
 )
 
 
-
-if(${CERES_FOUND} AND ${imu_tk_FOUND})
+if(${Ceres_FOUND} AND ${imu_tk_FOUND})
 
     add_library(jaco2_calibration
         include/jaco2_calibration/com_inertia_residuals.hpp

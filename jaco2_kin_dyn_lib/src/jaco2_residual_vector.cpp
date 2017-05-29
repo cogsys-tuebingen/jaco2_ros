@@ -1,24 +1,16 @@
 #include <jaco2_kin_dyn_lib/jaco2_residual_vector.h>
 Jaco2ResidualVector::Jaco2ResidualVector()
-    : model_(),
-      accuracy_(0.1),
-      max_iter_(10)
+    : model_()
 {
 
 }
 
 Jaco2ResidualVector::Jaco2ResidualVector(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip)
-    : model_(robot_model, chain_root, chain_tip),
-      accuracy_(0.1),
-      max_iter_(10)
+    : model_(robot_model, chain_root, chain_tip)
 {
 
 }
 
-void Jaco2ResidualVector::setAccuracy(double val)
-{
-    accuracy_ = val;
-}
 
 void Jaco2ResidualVector::setGains(std::vector<double> &gains)
 {
@@ -36,9 +28,9 @@ void Jaco2ResidualVector::setGravity(double x, double y, double z)
     model_.setGravity(x,y,z);
 }
 
-void Jaco2ResidualVector::setMaxIterations(std::size_t val)
+std::size_t Jaco2ResidualVector::getNrOfJoints()const
 {
-    max_iter_ = val;
+    model_.getNrOfJoints();
 }
 
 void Jaco2ResidualVector::setTree(const std::string &robot_model)
@@ -99,24 +91,60 @@ void Jaco2ResidualVector::getResidualVector(std::vector<ResidualData> &sequence,
 
 void Jaco2ResidualVector::getResidualVector(std::vector<ResidualData> &sequence, std::vector<std::vector<double> > &residual_vec) const
 {
-   std::vector<Eigen::VectorXd> res;
-   getResidualVector(sequence, res);
-   residual_vec.resize(sequence.size());
-   auto it_res_vec = residual_vec.begin();
-   for(auto data : res){
-       eigenVector2vector(data, *it_res_vec);
-   }
+    std::vector<Eigen::VectorXd> res;
+    getResidualVector(sequence, res);
+    residual_vec.resize(sequence.size());
+    auto it_res_vec = residual_vec.begin();
+    for(auto data : res){
+        eigenVector2vector(data, *it_res_vec);
+    }
 }
 
-void Jaco2ResidualVector::getResidualVector(const ResidualData &last_data, const ResidualData &new_data, const Eigen::VectorXd last_residual)
+void Jaco2ResidualVector::getResidualVector(const ResidualData &data,
+                                            const Eigen::VectorXd& last_residual,
+                                            const Eigen::VectorXd& last_integral,
+                                            Eigen::VectorXd& new_integral,
+                                            Eigen::VectorXd& new_residual)
 {
-    //TODO
+    Eigen::MatrixXd C;
+    model_.getMatrixC(data.joint_positions,data.joint_velocities, C);
+
+    Eigen::VectorXd omega;
+    Eigen::VectorXd tau;
+    vector2EigenVector(data.joint_velocities, omega);
+    vector2EigenVector(data.torques, tau);
+
+    Eigen::MatrixXd H;
+    Eigen::VectorXd G;
+    model_.getChainDynInertiaAndGravity(data.gx, data.gy, data.gz, data.joint_positions, H, G);
+    Eigen::VectorXd m = H * omega;
+    Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - G + last_residual;
+
+    new_integral = integration_step(data.dt, last_integral, to_integrate);
+
+    new_residual = gains_ * (m - new_integral);
+
 }
 
 Eigen::VectorXd Jaco2ResidualVector::integration_step(const double dt, const Eigen::VectorXd &last_integral, const Eigen::VectorXd &next_integrant) const
 {
     Eigen::VectorXd result = last_integral + dt * next_integrant;
     return result;
+}
+
+int Jaco2ResidualVector::getAcceleration(const double gx, const double gy, const double gz,
+                                         const std::vector<double> &q,
+                                         const std::vector<double> &q_Dot,
+                                         const std::vector<double> &q_DotDot,
+                                         std::vector<std::string> &links,
+                                         std::vector<KDL::Twist> &spatial_acc)
+{
+    return model_.getAcceleration(gx, gy, gz, q, q_Dot, q_DotDot, links, spatial_acc);
+}
+
+std::vector<std::string> Jaco2ResidualVector::getLinkNames() const
+{
+    return model_.getLinkNames();
 }
 
 void Jaco2ResidualVector::vector2EigenVector(const std::vector<double> &vec, Eigen::VectorXd &res)

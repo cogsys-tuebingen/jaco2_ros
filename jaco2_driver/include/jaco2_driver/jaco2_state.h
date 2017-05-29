@@ -4,6 +4,7 @@
 #include <jaco2_driver/jaco2_api.h>
 #include <kinova/KinovaTypes.h>
 #include <jaco2_driver/accelerometer_calibration.hpp>
+#include <jaco2_driver/torque_offset_lut.hpp>
 
 #include <deque>
 
@@ -57,11 +58,13 @@ public:
     std::vector<int> getLowPriQue() const;
 
     std::vector<Jaco2Calibration::AccelerometerCalibrationParam> getAccelerometerCalibration() const;
+    Jaco2Calibration::TorqueOffsetLut getTorqueCalibration() const;
 
     void setHighPriQue(std::vector<int> que);
     void setLowPriQue(std::vector<int> que);
     void setPriorityRate(int rate);
     void setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam>& params);
+    void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut& lut);
 
     ///
     /// \brief readQuickStatus reads the arms status over command layer
@@ -125,7 +128,9 @@ private:
     std::chrono::time_point<std::chrono::high_resolution_clock> time_quick_status_;
     std::chrono::time_point<std::chrono::high_resolution_clock> time_sensor_info_;
     std::vector<Jaco2Calibration::AccelerometerCalibrationParam> accCalibParam_;
+    Jaco2Calibration::TorqueOffsetLut torque_offset_;
     std::vector<bool> calibrate_acc_;
+    bool calibrate_torque_;
     std::deque<AngularPosition> lastVelocity_;
     std::deque<double> dt_;
     int acc_counter_;
@@ -142,6 +147,8 @@ private:
 
     void calculateJointAcceleration();
     void applyAccelerationCalibration();
+    void applyTorqueOffsets();
+    void applyTorqueOffsets2TorqueGFree();
 
 };
 

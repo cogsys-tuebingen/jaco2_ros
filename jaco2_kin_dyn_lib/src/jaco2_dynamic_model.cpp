@@ -1,10 +1,13 @@
 #include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
+#include <jaco2_kin_dyn_lib/kdl_conversion.h>
 #include <random>
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/chainidsolver.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <tf_conversions/tf_kdl.h>
 #include <ros/ros.h>
+
+using namespace Jaco2KinDynLib;
 
 Jaco2DynamicModel::Jaco2DynamicModel():
     gravity_(0,0,-9.81)//, solverID_(chain_,gravity_)
@@ -84,7 +87,54 @@ int Jaco2DynamicModel::getTorques(const std::vector<double> &q, const std::vecto
     int e_code = -1;
     e_code = solverID_->CartToJnt(qkdl,qkdl_Dot,qkdl_DotDot,wrenches,torques_kdl);
 
-    convert(torques_kdl,torques);
+    Jaco2KinDynLib::convert(torques_kdl,torques);
+
+
+    return e_code;
+}
+
+int Jaco2DynamicModel::getTorques(const std::vector<double> &q,
+                                  const std::vector<double> &q_Dot,
+                                  const std::vector<double> &q_DotDot,
+                                  std::vector<double> &torques,
+                                  const std::vector<KDL::Wrench> &wrenches_ext)
+{
+    if(q.size() != q_Dot.size() || q.size() != q_DotDot.size() || q.size() != chain_.getNrOfJoints()){
+        ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is " << q.size() << ". While q_Dot has dimension " << q_Dot.size() << " and q_DotDot "
+                         << q_DotDot.size()<<". The KDL chain contains " <<  chain_.getNrOfJoints() << "  joints." << std::endl);
+        return KDL::SolverI::E_UNDEFINED;
+    }
+
+    KDL::JntArray qkdl(q.size());
+    KDL::JntArray qkdl_Dot(q.size());
+    KDL::JntArray qkdl_DotDot(q.size());
+    KDL::JntArray torques_kdl(chain_.getNrOfJoints());
+    KDL::Wrenches wrenches;
+    wrenches.resize(chain_.getNrOfSegments());
+    for(std::size_t i = 0; i < q.size(); ++i) {
+        qkdl(i) = q[i];
+        qkdl_Dot(i) = q_Dot[i];
+        qkdl_DotDot(i) = q_DotDot[i];
+    }
+
+    int e_code = -1;
+
+    if(wrenches_ext.size() == 0){
+        for(std::size_t i = 0; i < chain_.getNrOfSegments(); ++i)
+        {
+            wrenches[i] = KDL::Wrench::Zero();
+        }
+        e_code = solverID_->CartToJnt(qkdl,qkdl_Dot,qkdl_DotDot,wrenches,torques_kdl);
+    }
+    else if(wrenches_ext.size() != chain_.getNrOfSegments()){
+        ROS_ERROR_STREAM("Dimension mismatch: " << wrenches_ext.size() <<" wrenches are given as input, but kdl expects " << chain_.getNrOfSegments() << "wenches.");
+        return KDL::SolverI::E_UNDEFINED;
+    }
+    else{
+         e_code = solverID_->CartToJnt(qkdl,qkdl_Dot,qkdl_DotDot,wrenches_ext,torques_kdl);
+    }
+
+    Jaco2KinDynLib::convert(torques_kdl,torques);
 
 
     return e_code;
@@ -208,8 +258,8 @@ int Jaco2DynamicModel::getChainDynParam(const double gx, const double gy, const 
     KDL::JntArray coriolis(q.size());
     KDL::JntArray gravity(q.size());
     KDL::JntSpaceInertiaMatrix inertia(q.size());
-    convert(q,theta);
-    convert(q_Dot, omega);
+    Jaco2KinDynLib::convert(q,theta);
+    Jaco2KinDynLib::convert(q_Dot, omega);
 
     int res = dynparam.JntToCoriolis(theta, omega, coriolis);
     if(res == KDL::SolverI::E_NOERROR){
@@ -228,7 +278,7 @@ int Jaco2DynamicModel::getChainDynParam(const double gx, const double gy, const 
     kdlJntArray2Eigen(coriolis, C);
     kdlJntArray2Eigen(gravity, G);
 
-    kdlMatrix2Eigen(inertia, H);
+    convert2Eigen(inertia, H);
 
     return res;
 
@@ -251,7 +301,7 @@ int Jaco2DynamicModel::getChainDynInertiaAndGravity(const double gx, const doubl
     KDL::JntArray gravity(q.size());
 
     KDL::JntSpaceInertiaMatrix inertia(q.size());
-    convert(q,theta);
+    Jaco2KinDynLib::convert(q,theta);
 
     int res = dynparam.JntToGravity(theta, gravity);
     if(res == KDL::SolverI::E_NOERROR){
@@ -263,7 +313,7 @@ int Jaco2DynamicModel::getChainDynInertiaAndGravity(const double gx, const doubl
 
     kdlJntArray2Eigen(gravity, G);
 
-    kdlMatrix2Eigen(inertia, H);
+    convert2Eigen(inertia, H);
 
     return res;
 
@@ -625,7 +675,7 @@ Eigen::MatrixXd Jaco2DynamicModel::getRigidBodyRegressionMatrix(const std::strin
                 double norm =rotAxis.Norm();
                 zi << rotAxis(0)/norm, rotAxis(1)/norm, rotAxis(2)/norm, 0, 0, 0;
                 KDL::Frame xi = Xij[tipId - row].Inverse() * Xij[tipId - col];
-                Eigen::Matrix<double, 6, 6> Xi = kdlFrame2Spatial(xi.Inverse()).transpose();
+                Eigen::Matrix<double, 6, 6> Xi = convert2EigenTwistTransform(xi.Inverse()).transpose();
                 if(project) {
                     Eigen::Matrix<double, 1, 10> Kij = zi * Xi * An[tipId - col];
                     result.block<1,10>( nLinks -1 - row,(nLinks -1 - col) * 10) = Kij;
@@ -779,143 +829,4 @@ void Jaco2DynamicModel::getMatrixC(const std::vector<double> &q,
         modifiedRNE(0, 0, 0, q, qDot, unit_vec, qDotDot, res, i);
 
     }
-}
-
-Eigen::Matrix3d Jaco2DynamicModel::skewSymMat(const KDL::Vector &vec)
-{
-    Eigen::Matrix3d res;
-    res << 0    , -vec(2)   , vec(1),
-            vec(2), 0         , -vec(0),
-            -vec(1), vec(0)    , 0;
-    return res;
-}
-
-Eigen::Matrix<double, 3, 6> Jaco2DynamicModel::inertiaProductMat(const KDL::Vector &vec)
-{
-    Eigen::Matrix<double, 3, 6> res;
-    res << vec(0), vec(1), vec(2), 0     , 0     , 0,
-            0    , vec(0), 0     , vec(1), vec(2), 0,
-            0    , 0     , vec(0), 0     , vec(1), vec(2);
-    return res;
-
-}
-
-Eigen::Matrix<double, 6, 6> Jaco2DynamicModel::kdlFrame2Spatial(const KDL::Frame &frame)
-{
-    Eigen::Matrix<double, 6, 6> result;
-    Eigen::Matrix<double, 3, 3> rot = kdlMatrix2Eigen(frame.M);
-    result.block<3,3>(0,0) = rot;
-    result.block<3,3>(0,3).setZero();
-    result.block<3,3>(3,0) = skewSymMat(frame.p) * rot;
-    result.block<3,3>(3,3) = rot;
-    return result;
-}
-
-Eigen::Matrix<double, 3, 3> Jaco2DynamicModel::kdlMatrix2Eigen(const KDL::Rotation &rot)
-{
-    Eigen::Matrix<double, 3, 3> result;
-    result << rot.data[0], rot.data[1], rot.data[2],
-            rot.data[3], rot.data[4], rot.data[5],
-            rot.data[6], rot.data[7], rot.data[8];
-    return result;
-}
-
-void Jaco2DynamicModel::kdlJntArray2Eigen(const KDL::JntArray &q, Eigen::VectorXd& res)
-{
-    res.setZero(q.rows());
-    for(std::size_t i = 0; i < q.rows(); ++i){
-        res(i) = q(i);
-    }
-}
-
-void Jaco2DynamicModel::kdlMatrix2Eigen(const KDL::JntSpaceInertiaMatrix& mat, Eigen::MatrixXd & res)
-{
-    res.setZero(mat.rows(), mat.columns());
-    for(std::size_t i = 0; i < mat.rows(); ++i){
-        for(std::size_t j = 0; j < mat.columns(); ++j){
-            res(i,j) = mat(i,j);
-        }
-    }
-}
-
-void::Jaco2DynamicModel::setRootAndTip(const std::string &chain_root, const std::string &chain_tip)
-{
-   Jaco2KinematicModel::setRootAndTip(chain_root, chain_tip);
-}
-
-void Jaco2DynamicModel::getRotationAxis(const std::string &link, KDL::Vector& rot_axis)
-{
-    Jaco2KinematicModel::getRotationAxis(link, rot_axis);
-}
-
-void Jaco2DynamicModel::getRotationAxis(const std::string &link, Eigen::Vector3d &rot_axis)
-{
-    Jaco2KinematicModel::getRotationAxis(link, rot_axis);
-}
-
-Eigen::Vector3d Jaco2DynamicModel::getLinkFixedTranslation(const std::string &link) const
-{
-    return Jaco2KinematicModel::getLinkFixedTranslation(link);
-}
-
-Eigen::Matrix3d Jaco2DynamicModel::getLinkFixedRotation(const std::string &link) const
-{
-    return Jaco2KinematicModel::getLinkFixedRotation(link);
-}
-
-std::vector<std::string> Jaco2DynamicModel::getLinkNames() const
-{
-    return Jaco2KinematicModel::getLinkNames();
-}
-
-
-void Jaco2DynamicModel::convert(const KDL::JntArray &in, std::vector<double> &out)
-{
-    Jaco2KinematicModel::convert(in, out);
-}
-
-void Jaco2DynamicModel::convert(const std::vector<double> &in, KDL::JntArray &out)
-{
-    Jaco2KinematicModel::convert(in, out);
-}
-
-void Jaco2DynamicModel::PoseTFToKDL(const tf::Pose& t, KDL::Frame& k)
-{
-    Jaco2KinematicModel::PoseTFToKDL(t, k);
-}
-
-int Jaco2DynamicModel::getFKPose(const std::vector<double> &q_in, KDL::Frame &out, const std::string link)
-{
-   return Jaco2KinematicModel::getFKPose(q_in, out, link);
-}
-
-int Jaco2DynamicModel::getFKPose(const std::vector<double> &q_in, tf::Pose &out, const std::string link)
-{
-    return Jaco2KinematicModel::getFKPose(q_in, out, link);
-
-}
-
-int Jaco2DynamicModel::getIKSolution(const tf::Pose& pose, std::vector<double>& result, const std::vector<double> &seed)
-{
-    return Jaco2KinematicModel::getIKSolution(pose, result, seed);
-}
-
-int Jaco2DynamicModel::getKDLSegmentIndexFK(const std::string &name) const
-{
-    return Jaco2KinematicModel::getKDLSegmentIndexFK(name);
-}
-
-int Jaco2DynamicModel::getKDLSegmentIndex(const std::string &name) const
-{
-    return Jaco2KinematicModel::getKDLSegmentIndex(name);
-}
-
-void Jaco2DynamicModel::getRandomConfig(std::vector<double>& config)
-{
-    Jaco2KinematicModel::getRandomConfig(config);
-}
-
-void Jaco2DynamicModel::getRandomConfig(Eigen::VectorXd& config)
-{
-    Jaco2KinematicModel::getRandomConfig(config);
 }

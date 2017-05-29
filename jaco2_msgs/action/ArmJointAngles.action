@@ -1,5 +1,9 @@
 # Goal
+time stamp
+int16 type
 JointAngles angles
+int16 RADIAN=1
+int16 DEGREE=2
 ---
 # Result
 int16 val

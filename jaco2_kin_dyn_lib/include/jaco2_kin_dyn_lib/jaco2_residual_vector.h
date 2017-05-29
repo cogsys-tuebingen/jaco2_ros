@@ -1,7 +1,7 @@
 #ifndef JACO2RESIDUALVECTOR_H
 #define JACO2RESIDUALVECTOR_H
 #include <string>
-#include <jaco2_kin_dyn_lib/jaco2_kinematics_dynamics.h>
+#include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 struct ResidualData
 {
     double dt;
@@ -31,7 +31,20 @@ public:
     void changeDynamicParams(const std::string& link, const double mass, const Eigen::Vector3d& com, const Eigen::Matrix3d& inertia);
     void getResidualVector(std::vector<ResidualData>& sequence, std::vector<Eigen::VectorXd>& residual_vec) const;
     void getResidualVector(std::vector<ResidualData>& sequence, std::vector<std::vector<double>>& residual_vec) const;
-    void getResidualVector(const ResidualData& last_data, const ResidualData& new_data, const Eigen::VectorXd last_residual);
+    void getResidualVector(const ResidualData &data,
+                           const Eigen::VectorXd& last_residual,
+                           const Eigen::VectorXd& last_integral,
+                           Eigen::VectorXd& new_integral,
+                           Eigen::VectorXd& new_residual);
+
+    std::size_t getNrOfJoints() const;
+    int getAcceleration(const double gx, const double gy, const double gz,
+                        const std::vector<double>& q,
+                        const std::vector<double>& q_Dot,
+                        const std::vector<double>& q_DotDot, std::vector<std::string> &links,
+                        std::vector<KDL::Twist > &spatial_acc );
+
+    std::vector<std::string> getLinkNames() const;
 
     static void vector2EigenVector(const std::vector<double>& vec, Eigen::VectorXd& res);
     static void eigenVector2vector(const Eigen::VectorXd &vec, std::vector<double> &res);
@@ -41,9 +54,7 @@ private:
 
 
 private:
-    mutable Jaco2KinematicsDynamicsModel model_;
-    double accuracy_;
-    std::size_t max_iter_;
+    mutable Jaco2KinDynLib::Jaco2DynamicModel model_;
     Eigen::MatrixXd gains_;
 };
 

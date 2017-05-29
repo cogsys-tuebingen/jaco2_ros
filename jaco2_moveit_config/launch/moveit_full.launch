@@ -1,5 +1,7 @@
 <?xml version="1.0" ?>
 <launch>
+
+  <arg name="planner_in" default="ompl" />
   <remap from="/joint_states" to="/jaco_arm_driver/out/joint_states"/>
  <!--# The planning and execution components of MoveIt! configured to 
  # publish the current configuration of the robot (simulated or real)
@@ -19,5 +21,6 @@
     <arg name="fake_execution" value="false"/>
     <arg name="info" value="true"/>
     <arg name="debug" value="false" />
+    <arg name="planner" value="$(arg planner_in)" />
  </include>
 </launch>

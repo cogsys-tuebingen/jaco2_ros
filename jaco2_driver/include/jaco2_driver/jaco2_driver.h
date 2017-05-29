@@ -14,6 +14,8 @@
 #include <jaco2_driver/jaco2_controller.h>
 #include <jaco2_driver/angular_position_controller.h>
 #include <jaco2_driver/joint_trajectory.h>
+#include <jaco2_driver/accelerometer_calibration.hpp>
+#include <jaco2_driver/torque_offset_lut.hpp>
 //Jaco2 Controller
 #include <jaco2_driver/jaco2_controller.h>
 #include <jaco2_driver/empty_controller.h>
@@ -21,6 +23,7 @@
 #include <jaco2_driver/velocity_controller.h>
 #include <jaco2_driver/point_2_point_velocity_controller.h>
 #include <jaco2_driver/gripper_controller.h>
+
 
 class Jaco2Driver
 {
@@ -30,6 +33,7 @@ public:
 
     bool reachedGoal() const;
     bool serviceDone() const;
+    bool initialize(std::string serial = std::string(""), bool right = true);
     // GET
     AngularPosition getAngularPosition() const;
     AngularPosition getAngularVelocity() const;
@@ -43,6 +47,8 @@ public:
     SensorsInfo getSensorInfo() const;
     std::chrono::time_point<std::chrono::high_resolution_clock> getLastReadUpdate(int read_data) const;
     std::vector<Jaco2Calibration::AccelerometerCalibrationParam> getAccerlerometerCalibration() const;
+    Jaco2Calibration::TorqueOffsetLut getTorqueCalibration() const;
+
     int getSetTorqueZeroResult() const;
 
     //SET
@@ -68,6 +74,7 @@ public:
     void grabObj(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3);
     void grabObjSetUnusedFingerPos(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3, const int posFinger1, const int posFinger2, const int posFinger3);
     void setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam>& params);
+    void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut& lut);
 
     void startArm();
     void stopArm();
@@ -81,8 +88,11 @@ public:
     static const int U_SlEEP_TIME = 5000;
 
 private:
+    bool initialized_;
     Jaco2API jaco_api_;
 
+    std::string serial_;
+    bool right_arm_;
     Jaco2Controller* active_controller_;
 
     VelocityController velocity_controller_;

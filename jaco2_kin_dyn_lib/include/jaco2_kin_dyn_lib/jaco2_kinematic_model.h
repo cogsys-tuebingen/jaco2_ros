@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <random>
 //ROS
 #include <ros/ros.h>
 #include <kdl_parser/kdl_parser.hpp>
@@ -16,14 +17,18 @@
 #include <kdl/chain.hpp>
 #include <kdl/solveri.hpp>
 
+namespace Jaco2KinDynLib {
+
+
 class Jaco2KinematicModel
 {
 public:
     Jaco2KinematicModel();
     Jaco2KinematicModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
 
+    virtual ~Jaco2KinematicModel();
 
-    void setTree(const std::string& robot_model);
+    virtual void setTree(const std::string& robot_model);
     void setRootAndTip(const std::string& chain_root, const std::string& chain_tip);
     void setGravity(double x, double y, double z);
     void getGravity(double& gx, double& gy, double& gz);
@@ -37,7 +42,7 @@ public:
      * @param link  input: the link for which the pose should be calculated.
      * @return
      */
-    int getFKPose(const std::vector<double>& q_in, tf::Pose& out, const std::string link);
+    int getFKPose(const std::vector<double>& q_in, tf::Pose& out, const std::string link) const;
 
     /**
      * @brief getFKPose Given the joint variables q_in the world space coordinates are calculated. KDL wrapper
@@ -46,7 +51,7 @@ public:
      * @param link  input: the link for which the pose should be calculated.
      * @return
      */
-    int getFKPose(const std::vector<double>& q_in, KDL::Frame& out, const std::string link);
+    int getFKPose(const std::vector<double>& q_in, KDL::Frame& out, const std::string link) const;
 
     /**
      * @brief getIKSolution given a end effector pose a corresponding joint configuration is search. trac_ik wrapper
@@ -59,16 +64,17 @@ public:
 
     void changeKineticParams(const std::string& link, const Eigen::Vector3d& trans, const Eigen::Matrix3d& rotation);
 
-
     void getRandomConfig(std::vector<double>& config);
     /**
      * @brief getKDLSegmentIndex gets the KDL segment index for a given segment/ link name
      * @param name the name of the segment/ link
      * @return returns index of segment -1 if name == root_ ; -2 if link name not found.
      */
-    void getRandomConfig(Eigen::VectorXd& config);
-    void useUrdfDynamicParams();
     int getKDLSegmentIndex(const std::string &name ) const;
+
+    void getRandomConfig(Eigen::VectorXd& config);
+
+    void useUrdfDynamicParams();
     /**
      * @brief getKDLSegmentIndexFK gets the index of a link as needed for forward kinematics. root = 0, ...
      * @param name name of the segment/link.
@@ -82,13 +88,16 @@ public:
     std::string getRootLink() const {return root_;}
     std::string getTipLink() const {return tip_;}
 
+    double getUpperJointLimit(const std::size_t id);
+    double getLowerJointLimit(const std::size_t id);
+
 
     Eigen::Vector3d getLinkFixedTranslation(const std::string &link) const;
     Eigen::Matrix3d getLinkFixedRotation(const std::string &link) const;
 
-    static void convert(const KDL::JntArray& in, std::vector<double>& out);
-    static void convert(const std::vector<double>& in, KDL::JntArray& out);
-    static void PoseTFToKDL(const tf::Pose& t, KDL::Frame& k);
+    //    static void convert(const KDL::JntArray& in, std::vector<double>& out);
+    //    static void convert(const std::vector<double>& in, KDL::JntArray& out);
+    //    static void PoseTFToKDL(const tf::Pose& t, KDL::Frame& k);
 
 
 
@@ -97,8 +106,11 @@ public:
      * @param link the name of the link
      * @param rot_axis the rotation axis normaly z-axis (DH connvention)
      */
-    void getRotationAxis(const std::string &link, KDL::Vector &rot_axis);
-    void getRotationAxis(const std::string &link, Eigen::Vector3d& rot_axis);
+    void getRotationAxis(const std::string &link, KDL::Vector &rot_axis) const;
+    void getRotationAxis(const std::string &link, Eigen::Vector3d& rot_axis) const;
+
+protected:
+    virtual void initialize();
 
 protected:
     std::string urdf_param_;
@@ -117,10 +129,10 @@ protected:
     KDL::JntArray lowerLimits_;
     KDL::JntArray upperLimits_;
 
-    void initialize();
 
 
 
 };
+}
 
 #endif // JACO2KINEMATICMODEL_H

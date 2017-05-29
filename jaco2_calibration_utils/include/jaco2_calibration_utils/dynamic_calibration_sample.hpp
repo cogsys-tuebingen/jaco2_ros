@@ -77,12 +77,145 @@ struct DynamicCalibrationSample
             res += std::to_string(jointTorque[j]) + delimiter;
         }
         res += std::to_string(gravity(0)) + delimiter +
-               std::to_string(gravity(1)) + delimiter +
-               std::to_string(gravity(2)) + delimiter;
+                std::to_string(gravity(1)) + delimiter +
+                std::to_string(gravity(2)) + delimiter;
         return res;
     }
 
-    const std::size_t length = 6;
+    DynamicCalibrationSample operator+(const DynamicCalibrationSample &other) const
+    {
+        DynamicCalibrationSample res;
+        res.time = time;
+
+        auto it_res = res.jointPos.begin();
+        auto it_other = other.jointPos.begin();
+        for(auto d : jointPos){
+            *it_res = d + (*it_other);
+            ++it_res;
+            ++it_other;
+        }
+
+        it_res = res.jointVel.begin();
+        it_other = other.jointVel.begin();
+        for(auto d : jointVel){
+            *it_res = d + (*it_other);
+            ++it_res;
+            ++it_other;
+        }
+
+        it_res = res.jointAcc.begin();
+        it_other = other.jointAcc.begin();
+        for(auto d : jointAcc){
+            *it_res = d + (*it_other);
+            ++it_res;
+            ++it_other;
+        }
+
+        it_res = res.jointTorque.begin();
+        it_other = other.jointTorque.begin();
+        for(auto d :jointTorque){
+            *it_res = d + (*it_other);
+            ++it_res;
+            ++it_other;
+        }
+
+        res.gravity = gravity + other.gravity;
+
+        return res;
+    }
+
+    DynamicCalibrationSample operator*(const double &value) const
+    {
+        DynamicCalibrationSample res;
+        res.time = time;
+
+        auto it_res = res.jointPos.begin();
+        for(auto d : jointPos){
+            *it_res = d * value;
+            ++it_res;
+        }
+
+        it_res = res.jointVel.begin();
+        for(auto d : jointVel){
+            *it_res = d * value;
+            ++it_res;
+        }
+
+        it_res = res.jointAcc.begin();
+        for(auto d : jointAcc){
+            *it_res = d * value;
+            ++it_res;
+        }
+
+        it_res = res.jointTorque.begin();
+        for(auto d : jointTorque){
+            *it_res = d * value;
+            ++it_res;
+        }
+
+        res.gravity = gravity * value;
+
+        return res;
+    }
+
+    DynamicCalibrationSample& operator+=(const DynamicCalibrationSample &other)
+    {
+
+        auto it = this->jointPos.begin();
+        for(auto d : other.jointPos){
+            *it += d;
+            ++it;
+        }
+
+        it = this->jointVel.begin();
+        for(auto d : other.jointVel){
+            *it += d;
+            ++it;
+
+        }
+
+        it = this->jointAcc.begin();
+        for(auto d : other.jointAcc){
+            *it += d;
+            ++it;
+        }
+
+        it = this->jointTorque.begin();
+        for(auto d : other.jointTorque){
+            *it += d;
+            ++it;
+        }
+
+        gravity += other.gravity;
+        return *this;
+    }
+
+    DynamicCalibrationSample& operator*=(const double value)
+    {
+
+        for(auto it = jointPos.begin(); it > this->jointPos.end(); ++it){
+            *it *= value;
+        }
+
+        for(auto it = jointVel.begin(); it > this->jointVel.end(); ++it){
+            *it *= value;
+        }
+
+        for(auto it = jointAcc.begin(); it > this->jointAcc.end(); ++it){
+            *it *= value;
+        }
+
+        for(auto it = jointTorque.begin(); it > this->jointTorque.end(); ++it){
+            *it *= value;
+        }
+
+        gravity *= value;
+        return *this;
+    }
+
+
+
+    const static std::size_t length = 6;
     double time;
     std::vector<double> jointPos;
     std::vector<double> jointVel;

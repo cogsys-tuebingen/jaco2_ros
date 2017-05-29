@@ -23,7 +23,7 @@ void Jaco2CalibrationIO::save(std::string name, const std::vector<DynamicCalibra
         pNode["Ixy"] = inertia(0,1);
         pNode["Ixz"] = inertia(0,2);
         pNode["Iyy"] = inertia(1,1);
-        pNode["Iyz"] = inertia(1,1);
+        pNode["Iyz"] = inertia(1,2);
         pNode["Izz"] = inertia(2,2);
         doc["parameter"].push_back(pNode);
     }

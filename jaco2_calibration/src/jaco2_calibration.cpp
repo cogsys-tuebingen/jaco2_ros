@@ -185,7 +185,7 @@ int Jaco2Calibration::calibrateArmDynamic(const std::vector<DynamicCalibrationSa
 
     ceres::Solver::Options options;
     options.linear_solver_type = ceres::DENSE_NORMAL_CHOLESKY;
-    options.numeric_derivative_relative_step_size = 1e-3;
+    options.gradient_check_numeric_derivative_relative_step_size = 1e-3;
     options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
     options.minimizer_progress_to_stdout = true;
     options.use_nonmonotonic_steps = true;

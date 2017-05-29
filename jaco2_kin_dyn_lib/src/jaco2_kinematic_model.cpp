@@ -1,15 +1,20 @@
+/// Project
 #include <jaco2_kin_dyn_lib/jaco2_kinematic_model.h>
-#include <random>
-#include <kdl_parser/kdl_parser.hpp>
-#include <kdl/chainidsolver.hpp>
-#include <kdl/chainfksolverpos_recursive.hpp>
+#include <jaco2_kin_dyn_lib/kdl_conversion.h>
+/// ROS
 #include <tf_conversions/tf_kdl.h>
 #include <ros/ros.h>
+/// Orocos KDL
+#include <kdl/chainidsolver.hpp>
+#include <kdl/chainfksolverpos_recursive.hpp>
+#include <kdl_parser/kdl_parser.hpp>
+/// System
+#include <random>
 
 
 
 
-
+using namespace Jaco2KinDynLib;
 
 Jaco2KinematicModel::Jaco2KinematicModel():
     gravity_(0,0,-9.81)//, solverID_(chain_,gravity_)
@@ -40,6 +45,11 @@ Jaco2KinematicModel::Jaco2KinematicModel(const std::string &robot_model, const s
     initialize();
 
     std::cout << "Number of Joints: " << chain_.getNrOfJoints() << " | Number of Segments: " << chain_.getNrOfSegments() << std::endl;
+}
+
+Jaco2KinematicModel::~Jaco2KinematicModel()
+{
+
 }
 
 void Jaco2KinematicModel::setTree(const std::string &robot_model)
@@ -84,10 +94,10 @@ void::Jaco2KinematicModel::setRootAndTip(const std::string &chain_root, const st
 }
 
 
-int Jaco2KinematicModel::getFKPose(const std::vector<double> &q_in, KDL::Frame &out, const std::string link)
+int Jaco2KinematicModel::getFKPose(const std::vector<double> &q_in, KDL::Frame &out, const std::string link) const
 {
     KDL::JntArray q;
-    convert(q_in,q);
+    Jaco2KinDynLib::convert(q_in,q);
 
     int segId = getKDLSegmentIndexFK(link);
 
@@ -101,7 +111,7 @@ int Jaco2KinematicModel::getFKPose(const std::vector<double> &q_in, KDL::Frame &
     }
 }
 
-int Jaco2KinematicModel::getFKPose(const std::vector<double> &q_in, tf::Pose &out, const std::string link)
+int Jaco2KinematicModel::getFKPose(const std::vector<double> &q_in, tf::Pose &out, const std::string link) const
 {
     KDL::Frame pose;
 
@@ -128,11 +138,11 @@ int Jaco2KinematicModel::getIKSolution(const tf::Pose& pose, std::vector<double>
 
         }
     }
-    convert(seed,q);
+    Jaco2KinDynLib::convert(seed,q);
     //convert tf pose to kdl frame
-    PoseTFToKDL(pose,frame);
+    Jaco2KinDynLib::poseTFToKDL(pose,frame);
     int error_code = solverIK_->CartToJnt(q,frame,solution);
-    convert(solution,result);
+    Jaco2KinDynLib::convert(solution,result);
     return error_code;
 }
 
@@ -285,49 +295,68 @@ std::vector<std::string> Jaco2KinematicModel::getLinkNames() const
     return result;
 }
 
-
-void Jaco2KinematicModel::convert(const KDL::JntArray &in, std::vector<double> &out)
+double  Jaco2KinematicModel::getUpperJointLimit(const std::size_t id)
 {
-    out.resize(in.rows());
-    for(std::size_t i = 0; i < out.size(); ++i)
-    {
-        out[i] = in(i);
+    if(upperLimits_.rows() > id){
+        return upperLimits_(id);
+    }
+    else{
+        return 0;
     }
 }
 
-void Jaco2KinematicModel::convert(const std::vector<double> &in, KDL::JntArray &out)
+double  Jaco2KinematicModel::getLowerJointLimit(const std::size_t id)
 {
-    out.resize(in.size());
-    for(std::size_t i = 0; i < out.rows(); ++i)
-    {
-        out(i) = in[i];
+    if(lowerLimits_.rows() > id){
+        return lowerLimits_(id);
+    }
+    else{
+        return 0;
     }
 }
 
-void Jaco2KinematicModel::PoseTFToKDL(const tf::Pose& t, KDL::Frame& k)
-{
-    for (unsigned int i = 0; i < 3; ++i){
-        k.p[i] = t.getOrigin()[i];
-    }
-    for (unsigned int i = 0; i < 9; ++i){
-        k.M.data[i] = t.getBasis()[i/3][i%3];
-    }
-}
 
-void Jaco2KinematicModel::getRotationAxis(const std::string &link, KDL::Vector& rot_axis)
+
+//void Jaco2KinematicModel::convert(const KDL::JntArray &in, std::vector<double> &out)
+//{
+//    out.resize(in.rows());
+//    for(std::size_t i = 0; i < out.size(); ++i)
+//    {
+//        out[i] = in(i);
+//    }
+//}
+
+//void Jaco2KinematicModel::convert(const std::vector<double> &in, KDL::JntArray &out)
+//{
+//    out.resize(in.size());
+//    for(std::size_t i = 0; i < out.rows(); ++i)
+//    {
+//        out(i) = in[i];
+//    }
+//}
+
+//void Jaco2KinematicModel::PoseTFToKDL(const tf::Pose& t, KDL::Frame& k)
+//{
+//    for (unsigned int i = 0; i < 3; ++i){
+//        k.p[i] = t.getOrigin()[i];
+//    }
+//    for (unsigned int i = 0; i < 9; ++i){
+//        k.M.data[i] = t.getBasis()[i/3][i%3];
+//    }
+//}
+
+void Jaco2KinematicModel::getRotationAxis(const std::string &link, KDL::Vector& rot_axis) const
 {
     int id = getKDLSegmentIndex(link);
     KDL::Frame X = chain_.getSegment(id).pose(0);
     rot_axis = X.Inverse().M * chain_.getSegment(id).getJoint().JointAxis();
 }
 
-void Jaco2KinematicModel::getRotationAxis(const std::string &link, Eigen::Vector3d &rot_axis)
+void Jaco2KinematicModel::getRotationAxis(const std::string &link, Eigen::Vector3d &rot_axis) const
 {
     KDL::Vector v;
     getRotationAxis(link, v);
-    Eigen::Vector3d res;
     rot_axis(0) = v(0);
     rot_axis(1) = v(1);
     rot_axis(2) = v(2);
-
 }

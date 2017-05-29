@@ -1,3 +1,4 @@
+#include <jaco2_utils/configuration_list.h>
 #include <ros/ros.h>
 #include <moveit/move_group_interface/move_group.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
@@ -8,134 +9,16 @@
 
 #include <signal.h>
 
-struct Configuration{
-
-    bool equal(Configuration& other, std::vector<double>& threshold)
-    {
-        if(other.angles.size() == angles.size()){
-            bool eq = true;
-            for(std::size_t i = 0; i < angles.size(); ++i){
-                double diff = std::abs(angles[i] - other.angles[i]);
-                eq &= diff < threshold[i];
-            }
-            return eq;
-        }
-        else{
-            return false;
-        }
-    }
-
-    std::string to_string()
-    {
-        std::string res;
-        for(auto val : angles){
-            res += std::to_string(val) + ";";
-        }
-        return res;
-    }
-
-    std::vector<double> angles;
-};
-
-struct ConfigurationList{
-
-    bool contains(Configuration& conf)
-    {
-        if(conf.angles.size() == jointNames.size()){
-            bool test = false;
-            for(auto elemets : configurations){
-                test |= elemets.equal(conf, offsets);
-                if(test){
-                    return test;
-                }
-            }
-            return test;
-
-        }
-        else{
-            return false;
-        }
-    }
-
-    void save(std::string filename)
-    {
-        std::ofstream file(filename);
-
-        for(auto name : jointNames){
-            file << name << ";";
-        }
-
-        file << std::endl;
-
-        for(auto conf : configurations){
-            file  << conf.to_string() << std::endl;
-        }
-    }
-
-    bool load(std::string filename)
-    {
-
-
-        std::string line;
-        std::ifstream infile;
-        char delimiter = ';';
-
-        jointNames.clear();
-//        configurations.clear();
-
-        infile.open ( filename );
-        if ( infile.is_open() )
-        {
-
-            char value[256];
-
-            std::getline ( infile,line );
-            std::stringstream ss;
-            ss << line ;
-
-            while( ss.getline( value, 256, delimiter )){
-                jointNames.push_back(value);
-            }
-
-
-            while ( std::getline ( infile,line ) ){
-
-                std::stringstream ss;
-                ss << line ;
-
-                Configuration cfg;
-                while( ss.getline( value, 256, delimiter ))
-                {
-                    double val = std::atof(value);
-                    cfg.angles.push_back(val);
-                }
-
-                configurations.push_back(cfg);
-
-            }
-            infile.close();
-            n_joints_ = jointNames.size();
-            return true;
-        }
-        else{
-            return false;
-        }
-
-
-    }
-
-    std::size_t n_joints_;
-    std::vector<double> offsets;
-    std::vector<std::string> jointNames;
-    std::vector<Configuration> configurations;
-};
-
 class NewRandomConfPlanner{
 public:
     NewRandomConfPlanner(std::string group, std::string description, std::string planner) :
         group_(group)
     {
-        planningMonitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>(description);
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+        planningMonitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+#else
+        planningMonitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+#endif
         jointNames_ =  planningMonitor_->getRobotModel()->getJointModelGroup("manipulator")->getActiveJointModelNames();
 
         group_.setPlannerId(planner);
@@ -182,7 +65,7 @@ public:
         configurations_.offsets = threshold;
     }
 
-    Configuration& getLastConfiguration()
+    jaco2_utils::Configuration& getLastConfiguration()
     {
         return configurations_.configurations.back();
     }
@@ -196,17 +79,17 @@ public:
 
 
         while(!succeded){
-            Configuration rand;
-//            std::vector<double> jvalues(configurations_.n_joints_);
-//            rand.angles = group_.getRandomJointValues();
+            jaco2_utils::Configuration rand;
+            //            std::vector<double> jvalues(configurations_.n_joints_);
+            //            rand.angles = group_.getRandomJointValues();
             rand.angles.resize(configurations_.n_joints_);
 
-//            planningMonitor_->updatesScene();
+            //            planningMonitor_->updatesScene();
             robot_state::RobotState& random_state = planningMonitor_->getPlanningScene()->getCurrentStateNonConst();
 
             random_state.setToRandomPositions();
             for(std::size_t i = 0; i < configurations_.n_joints_; ++i){
-//                random_state.setJointPositions(jointNames_[i], &(jvalues[i]));
+                //                random_state.setJointPositions(jointNames_[i], &(jvalues[i]));
                 rand.angles[i] = *random_state.getJointPositions(jointNames_[i]);
             }
 
@@ -229,15 +112,15 @@ public:
                 group_.setPlanningTime(3.0);
                 moveit_msgs::MoveItErrorCodes success = group_.plan(my_plan);
 
-//                std::cout << "Test 4: Planning successfull:  "
-//                          << "error code: " << success.val << std::endl;
+                //                std::cout << "Test 4: Planning successfull:  "
+                //                          << "error code: " << success.val << std::endl;
                 if(success.val == moveit_msgs::MoveItErrorCodes::SUCCESS) {
                     success = group_.execute(my_plan);
-//                    success = group_.move();
+                    //                    success = group_.move();
                     succeded = true;
                     std::cout << success << std::endl;
                     last_conf_ = rand;
-//                    configurations_.configurations.push_back(rand);
+                    //                    configurations_.configurations.push_back(rand);
                 }
                 if(success.val != moveit_msgs::MoveItErrorCodes::SUCCESS) {
                     succeded = false;
@@ -289,7 +172,7 @@ public:
         collision_object.header.frame_id = group_.getPlanningFrame();
 
         /* The id of the object is used to identify it. */
-        collision_object.id = "ground_plan";
+        collision_object.id = "ground_plane";
 
         collision_object.primitives.push_back(primitive);
         collision_object.primitive_poses.push_back(box_pose);
@@ -373,8 +256,8 @@ public:
 
         collision_objects.push_back(collision_object);
         planning_scene_interface_.addCollisionObjects(collision_objects);
-//        bool suc =  group_.attachObject("ground_plan","root");
-//        std::cout << suc << std::endl;
+        //        bool suc =  group_.attachObject("ground_plan","root");
+        //        std::cout << suc << std::endl;
     }
 
     std::size_t getConfigurationSize()
@@ -383,7 +266,7 @@ public:
     }
 
 public:
-    Configuration last_conf_;
+    jaco2_utils::Configuration last_conf_;
 private:
 
     std::vector<std::string> jointNames_;
@@ -392,7 +275,7 @@ private:
 
     planning_scene_monitor::PlanningSceneMonitorPtr planningMonitor_;
 
-    ConfigurationList configurations_;
+    jaco2_utils::ConfigurationList configurations_;
 };
 
 std::shared_ptr<NewRandomConfPlanner> planner;

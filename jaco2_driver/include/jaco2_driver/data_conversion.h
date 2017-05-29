@@ -119,6 +119,19 @@ void to_degrees(std::vector<double>& angles)
     }
 }
 
+void normalize(std::vector<double>& angles)
+{
+    auto it = angles.begin();
+    for(std::size_t i = 0; i < 6; ++i){
+        while(*it > 2*M_PI){
+            *it -= 2.0*M_PI;
+        }
+        while(*it < -2*M_PI){
+            *it += 2.0 *M_PI;
+        }
+    }
+}
+
 void from_degrees(AngularPosition &values)
 {
     values.Actuators.Actuator1 = angles::from_degrees(values.Actuators.Actuator1);
