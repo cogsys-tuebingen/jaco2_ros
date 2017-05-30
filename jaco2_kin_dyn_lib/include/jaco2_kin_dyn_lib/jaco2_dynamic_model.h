@@ -63,7 +63,19 @@ public:
 
 
     void setTree(const std::string& robot_model) override;
+    /**
+     * @brief setGravity set gravity
+     * @param x x component (default 0)
+     * @param y y component (default 0)
+     * @param z z component (default -9.81)
+     */
     void setGravity(double x, double y, double z);
+    /**
+     * @brief getGravity gets gravity
+     * @param gx x component (default 0)
+     * @param gy y component (default 0)
+     * @param gz z component (default -9.81)
+     */
     void getGravity(double& gx, double& gy, double& gz);
 
     //Solver Calls
@@ -84,28 +96,20 @@ public:
 
     /**
      * @brief getJointAcceleration Forward Dynamic solver call. Inertia Matrix method
-     * @param gx acceleration of the basis frame x-component
-     * @param gy acceleration of the basis frame y-component
-     * @param gz acceleration of the basis frame z-component
      * @param q             input: the joint variables, positions
      * @param q_Dot         input: joint velocities
      * @param torques       input: joint torques
-     * @param q_Dot_Dot     output: joint acceleration: solve H q_Dot_Dot = torques - C(q,q_Dot) + g(q)
+     * @param q_Dot_Dot     output: joint acceleration: solve H q_Dot_Dot = torques - C(q,q_Dot) - g(q)
      * @return wrenches_ext optional input: external forces (not gravity)
      * @return 0 if successful
-     * If gravity is pointing downwards (-z direction) insert: gx = 0; gy = 0; gz = 9.81;
      */
-    int getJointAcceleration(double gx, double gy, double gz,
-                             const std::vector<double>& q,
+    int getJointAcceleration(const std::vector<double>& q,
                              const std::vector<double>& q_Dot,
                              const std::vector<double>& torques,
                              std::vector<double>& q_Dot_Dot);
 
     /**
      * @brief getAcceleration gets the accerlaration for all moving frames
-     * @param gx acceleration of the basis frame x-component
-     * @param gy acceleration of the basis frame y-component
-     * @param gz acceleration of the basis frame z-component
      * @param q joint positions
      * @param q_Dot joint velocities
      * @param q_DotDot joint accelerations
@@ -113,17 +117,13 @@ public:
      * @param spatial_acc the spatial velocity of the link in link coordinates
      * @return
      */
-    int getAcceleration(const double gx, const double gy, const double gz,
-                        const std::vector<double>& q,
+    int getAcceleration(const std::vector<double>& q,
                         const std::vector<double>& q_Dot,
                         const std::vector<double>& q_DotDot,
                         std::vector<std::string>& links,
                         std::vector<Eigen::Matrix<double, 6, 1> > &spatial_acc );
     /**
      * @brief getAcceleration gets the accerlaration for all moving frames
-     * @param gx acceleration of the basis frame x-component
-     * @param gy acceleration of the basis frame y-component
-     * @param gz acceleration of the basis frame z-component
      * @param q joint positions
      * @param q_Dot joint velocities
      * @param q_DotDot joint accelerations
@@ -131,8 +131,7 @@ public:
      * @param spatial_acc the spatial velocity of the link in link coordinates
      * @return
      */
-    int getAcceleration(const double gx, const double gy, const double gz,
-                        const std::vector<double>& q,
+    int getAcceleration(const std::vector<double>& q,
                         const std::vector<double>& q_Dot,
                         const std::vector<double>& q_DotDot, std::vector<std::string> &links,
                         std::vector<KDL::Twist > &spatial_acc );
@@ -143,9 +142,6 @@ public:
     void changeKineticParams(const std::string& link, const Eigen::Vector3d& trans, const Eigen::Matrix3d& rotation);
     /**
      * @brief getChainDynParam calculates the matrices H,C and G needed for the inverse dynamics problem. KDL wrapper
-     * @param gx acceleration of the basis frame x-component
-     * @param gy acceleration of the basis frame y-component
-     * @param gz acceleration of the basis frame z-component
      * @param q joint positions
      * @param q_Dot joint velocities
      * @param q_DotDot joint accelerations
@@ -156,10 +152,9 @@ public:
      * Implementation of a method to calculate the matrices H (inertia),C(coriolis) and G(gravitation) for the calculation torques out of the pose and derivatives. (inverse dynamics)
      * The algorithm implementation for H is based on the book "Rigid Body Dynamics Algorithms" of Roy Featherstone, 2008 (ISBN:978-0-387-74314-1) See page 107 for the pseudo-code. This algorithm is extended for the use of fixed joints
      * It calculates the joint-space inertia matrix, given the motion of the joints (q,qdot,qdotdot), external forces on the segments (expressed in the segments reference frame) and the dynamical parameters of the segments.
-     *  torques  = H*qdotdot + C(q,qdot,f) - G(q)
+     *  torques  = H*qdotdot + C(q,qdot,f) + G(q)
      */
-    int getChainDynParam(const double gx, const double gy, const double gz,
-                         const std::vector<double>& q,
+    int getChainDynParam(const std::vector<double>& q,
                          const std::vector<double>& q_Dot,
                          Eigen::MatrixXd& H, Eigen::VectorXd& C, Eigen::VectorXd& G);
 

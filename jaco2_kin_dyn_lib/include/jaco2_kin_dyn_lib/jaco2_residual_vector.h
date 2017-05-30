@@ -38,8 +38,7 @@ public:
                            Eigen::VectorXd& new_residual);
 
     std::size_t getNrOfJoints() const;
-    int getAcceleration(const double gx, const double gy, const double gz,
-                        const std::vector<double>& q,
+    int getAcceleration(const std::vector<double>& q,
                         const std::vector<double>& q_Dot,
                         const std::vector<double>& q_DotDot, std::vector<std::string> &links,
                         std::vector<KDL::Twist > &spatial_acc );

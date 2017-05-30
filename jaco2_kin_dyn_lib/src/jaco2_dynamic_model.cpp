@@ -16,8 +16,8 @@ Jaco2DynamicModel::Jaco2DynamicModel():
 }
 
 Jaco2DynamicModel::Jaco2DynamicModel(const std::string &robot_model, const std::string& chain_root, const std::string& chain_tip):
-     Jaco2KinematicModel(robot_model, chain_root, chain_tip),
-     gravity_(0,0,-9.81)
+    Jaco2KinematicModel(robot_model, chain_root, chain_tip),
+    gravity_(0,0,-9.81)
 {
     initialize();
 }
@@ -51,7 +51,7 @@ void Jaco2DynamicModel::initialize()
 
 
 int Jaco2DynamicModel::getTorques(const std::vector<double> &q, const std::vector<double> &q_Dot, const std::vector<double> &q_DotDot,
-                                             std::vector<double> &torques, const std::vector<Wrench> &wrenches_ext)
+                                  std::vector<double> &torques, const std::vector<Wrench> &wrenches_ext)
 {
     if(q.size() != q_Dot.size() || q.size() != q_DotDot.size() || q.size() != chain_.getNrOfJoints()){
         ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is " << q.size() << ". While q_Dot has dimension " << q_Dot.size() << " and q_DotDot "
@@ -132,7 +132,7 @@ int Jaco2DynamicModel::getTorques(const std::vector<double> &q,
         return KDL::SolverI::E_UNDEFINED;
     }
     else{
-         e_code = solverID_->CartToJnt(qkdl,qkdl_Dot,qkdl_DotDot,wrenches_ext,torques_kdl);
+        e_code = solverID_->CartToJnt(qkdl,qkdl_Dot,qkdl_DotDot,wrenches_ext,torques_kdl);
     }
 
     Jaco2KinDynLib::convert(torques_kdl,torques);
@@ -141,20 +141,19 @@ int Jaco2DynamicModel::getTorques(const std::vector<double> &q,
     return e_code;
 }
 
-int Jaco2DynamicModel::getJointAcceleration(double gx, double gy, double gz,
-                                            const std::vector<double> &q,
+int Jaco2DynamicModel::getJointAcceleration(const std::vector<double> &q,
                                             const std::vector<double> &q_Dot,
                                             const std::vector<double> &torques,
                                             std::vector<double> &q_Dot_Dot)
 {
     Eigen::MatrixXd H;
     Eigen::VectorXd C,g;
-    int e_code = getChainDynParam(gx, gy, gz, q, q_Dot, H, C, g);
+    int e_code = getChainDynParam(q, q_Dot, H, C, g);
     Eigen::VectorXd tau;
     convert(torques, tau);
-    Eigen::VectorXd residual = tau - C + g;
-//    Eigen::JacobiSVD<Eigen::MatrixXd> svd(H, Eigen::ComputeThinU | Eigen::ComputeThinV | Eigen::FullPivHouseholderQRPreconditioner);
-//    Eigen::VectorXd qDotDot = svd.solve(residual);
+    Eigen::VectorXd residual = tau - C - g;
+    //    Eigen::JacobiSVD<Eigen::MatrixXd> svd(H, Eigen::ComputeThinU | Eigen::ComputeThinV | Eigen::FullPivHouseholderQRPreconditioner);
+    //    Eigen::VectorXd qDotDot = svd.solve(residual);
     Eigen::ColPivHouseholderQR<Eigen::MatrixXd> qr(H);
     Eigen::VectorXd  qDotDot = qr.solve(residual);
     convert(qDotDot,q_Dot_Dot);
@@ -175,12 +174,11 @@ void Jaco2DynamicModel::getGravity(double &gx, double &gy, double &gz)
     gz = gravity_(2);
 }
 
-int Jaco2DynamicModel::getAcceleration(const double gx, const double gy, const double gz,
-                                                  const std::vector<double>& q,
-                                                  const std::vector<double>& q_Dot,
-                                                  const std::vector<double>& q_DotDot,
-                                                  std::vector<std::string>& links,
-                                                  std::vector<KDL::Twist > &spatial_acc )
+int Jaco2DynamicModel::getAcceleration(const std::vector<double>& q,
+                                       const std::vector<double>& q_Dot,
+                                       const std::vector<double>& q_DotDot,
+                                       std::vector<std::string>& links,
+                                       std::vector<KDL::Twist > &spatial_acc )
 {
 
     if(q.size() != q_Dot.size() || q.size() != q_DotDot.size() || q.size() != chain_.getNrOfJoints()){
@@ -195,7 +193,7 @@ int Jaco2DynamicModel::getAcceleration(const double gx, const double gy, const d
     std::vector<KDL::Twist> v(q.size());
     std::vector<KDL::Twist> a(q.size());
 
-    KDL::Twist ag = -KDL::Twist(KDL::Vector(gx,gy,gz),KDL::Vector::Zero());
+    KDL::Twist ag = -KDL::Twist(gravity_, KDL::Vector::Zero());
     int j = 0;
     double ns = chain_.getNrOfSegments() ;
     //    std::cout << "ns " << ns << " nj " << chain_.getNrOfJoints() << std::endl;
@@ -241,13 +239,13 @@ int Jaco2DynamicModel::getAcceleration(const double gx, const double gy, const d
     return KDL::SolverI::E_NOERROR;
 }
 
-int Jaco2DynamicModel::getAcceleration(const double gx, const double gy, const double gz,
-                                                  const std::vector<double> &q, const std::vector<double> &q_Dot,
-                                                  const std::vector<double> &q_DotDot, std::vector<std::string> &links, std::vector<Eigen::Matrix<double, 6, 1>  >&spatial_acc)
+int Jaco2DynamicModel::getAcceleration(const std::vector<double> &q, const std::vector<double> &q_Dot,
+                                       const std::vector<double> &q_DotDot, std::vector<std::string> &links,
+                                       std::vector<Eigen::Matrix<double, 6, 1>  >&spatial_acc)
 {
 
     std::vector<KDL::Twist> acc;
-    int ec = getAcceleration(gx,gy,gz,q,q_Dot, q_DotDot, links, acc);
+    int ec = getAcceleration(q,q_Dot, q_DotDot, links, acc);
 
     spatial_acc.resize(links.size());
     for(std::size_t i = 0; i < links.size(); ++i) {
@@ -261,10 +259,9 @@ int Jaco2DynamicModel::getAcceleration(const double gx, const double gy, const d
     return ec;
 
 }
-int Jaco2DynamicModel::getChainDynParam(const double gx, const double gy, const double gz,
-                                                   const std::vector<double> &q,
-                                                   const std::vector<double> &q_Dot,
-                                                   Eigen::MatrixXd &H, Eigen::VectorXd &C, Eigen::VectorXd &G)
+int Jaco2DynamicModel::getChainDynParam(const std::vector<double> &q,
+                                        const std::vector<double> &q_Dot,
+                                        Eigen::MatrixXd &H, Eigen::VectorXd &C, Eigen::VectorXd &G)
 {
     if(q.size() != q_Dot.size() || q.size() != chain_.getNrOfJoints()){
         ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is " << q.size() << ". While q_Dot has dimension " << q_Dot.size()
@@ -272,7 +269,7 @@ int Jaco2DynamicModel::getChainDynParam(const double gx, const double gy, const 
         return KDL::SolverI::E_UNDEFINED;
     }
 
-    KDL::ChainDynParam dynparam(chain_, KDL::Vector(gx, gy, gz));
+    KDL::ChainDynParam dynparam(chain_, gravity_);
 
     KDL::JntArray theta;
     KDL::JntArray omega;
@@ -306,9 +303,9 @@ int Jaco2DynamicModel::getChainDynParam(const double gx, const double gy, const 
 }
 
 int Jaco2DynamicModel::getChainDynInertiaAndGravity(const double gx, const double gy, const double gz,
-                                                              const std::vector<double>& q,
-                                                              Eigen::MatrixXd& H,
-                                                              Eigen::VectorXd &G)
+                                                    const std::vector<double>& q,
+                                                    Eigen::MatrixXd& H,
+                                                    Eigen::VectorXd &G)
 {
     if(q.size() != chain_.getNrOfJoints()){
         ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is " << q.size()
@@ -597,14 +594,14 @@ Eigen::Matrix3d Jaco2DynamicModel::getURDFLinkInertiaCoM(const std::string &link
 }
 
 Eigen::MatrixXd Jaco2DynamicModel::getRigidBodyRegressionMatrix(const std::string &root,
-                                                                           const std::string &tip,
-                                                                           const std::vector<double> &q,
-                                                                           const std::vector<double> &q_Dot,
-                                                                           const std::vector<double> &q_DotDot,
-                                                                           const double& gx,
-                                                                           const double& gy,
-                                                                           const double& gz,
-                                                                           const bool project)
+                                                                const std::string &tip,
+                                                                const std::vector<double> &q,
+                                                                const std::vector<double> &q_Dot,
+                                                                const std::vector<double> &q_DotDot,
+                                                                const double& gx,
+                                                                const double& gy,
+                                                                const double& gz,
+                                                                const bool project)
 {
 
     int tipId = getKDLSegmentIndex(tip);
@@ -722,9 +719,9 @@ Eigen::MatrixXd Jaco2DynamicModel::getRigidBodyRegressionMatrix(const std::strin
 }
 
 void Jaco2DynamicModel::modifiedRNE(const double gx, const double gy, const double gz,
-                                               const std::vector<double> &q1, const std::vector<double> &q2,
-                                               const std::vector<double> &q3, const std::vector<double> &q4,
-                                               Eigen::MatrixXd& res, std::size_t column)
+                                    const std::vector<double> &q1, const std::vector<double> &q2,
+                                    const std::vector<double> &q3, const std::vector<double> &q4,
+                                    Eigen::MatrixXd& res, std::size_t column)
 {
     std::size_t nj = chain_.getNrOfJoints();
     std::size_t ns = chain_.getNrOfSegments();
@@ -830,8 +827,8 @@ void Jaco2DynamicModel::modifiedRNE(const double gx, const double gy, const doub
 }
 
 void Jaco2DynamicModel::getMatrixC(const std::vector<double> &q,
-                                              const std::vector<double> &qDot,
-                                              Eigen::MatrixXd& res)
+                                   const std::vector<double> &qDot,
+                                   Eigen::MatrixXd& res)
 {
 
     if(q.size() != qDot.size() || q.size() != chain_.getNrOfJoints()){

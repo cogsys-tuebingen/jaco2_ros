@@ -152,7 +152,8 @@ public:
 
             std::vector<KDL::Twist> spatial_accs;
             std::vector<std::string> frame_names;
-            solver_.getAcceleration(x,y,z,jointPos_,jointVel_,jointAcc_,frame_names,spatial_accs);
+            solver_.setGravity(x,y,z);
+            solver_.getAcceleration(jointPos_,jointVel_,jointAcc_,frame_names,spatial_accs);
 
             jaco2_msgs::Jaco2Accelerometers modelAccs;
 

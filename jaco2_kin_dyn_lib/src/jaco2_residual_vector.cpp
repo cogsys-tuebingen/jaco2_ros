@@ -132,14 +132,13 @@ Eigen::VectorXd Jaco2ResidualVector::integration_step(const double dt, const Eig
     return result;
 }
 
-int Jaco2ResidualVector::getAcceleration(const double gx, const double gy, const double gz,
-                                         const std::vector<double> &q,
+int Jaco2ResidualVector::getAcceleration(const std::vector<double> &q,
                                          const std::vector<double> &q_Dot,
                                          const std::vector<double> &q_DotDot,
                                          std::vector<std::string> &links,
                                          std::vector<KDL::Twist> &spatial_acc)
 {
-    return model_.getAcceleration(gx, gy, gz, q, q_Dot, q_DotDot, links, spatial_acc);
+    return model_.getAcceleration(q, q_Dot, q_DotDot, links, spatial_acc);
 }
 
 std::vector<std::string> Jaco2ResidualVector::getLinkNames() const

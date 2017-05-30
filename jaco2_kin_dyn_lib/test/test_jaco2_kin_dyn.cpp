@@ -504,9 +504,9 @@ TEST(Jaco2DynamicsTests, dynParamMatrices)
 
         Eigen::VectorXd alpha(6);
         alpha << qDotDot[0], qDotDot[1], qDotDot[2], qDotDot[3], qDotDot[4], qDotDot[5];
-        jaco2KDL.getChainDynParam(0, 0, 9.81, q, qDot, H, C, G );
+        jaco2KDL.getChainDynParam(q, qDot, H, C, G );
 
-        Eigen::VectorXd  tau = H*alpha + C - G;
+        Eigen::VectorXd  tau = H*alpha + C + G;
 
         double accuracy = 1e-3;
         for(int i = 0; i < torque.size(); ++i) {
@@ -562,7 +562,7 @@ TEST(Jaco2DynamicsTests, matrixC)
 
     for(std::size_t i = 0; i < 50 ; ++ i){
 
-        jaco2KDL.getChainDynParam(0, 0, 9.81, q, qDot, H, c, g );
+        jaco2KDL.getChainDynParam(q, qDot, H, c, g );
         jaco2KDL.getMatrixC(q, qDot, C);
 
         Eigen::VectorXd omega(6);
@@ -586,8 +586,8 @@ TEST(Jaco2DynamicsTests, forwadInverseDynamics)
 {
     std::size_t ntests = 50;
     std::vector<double> q,qDot,qDotDot,tau, accFD, tau2;
-    double gx,gy,gz;
-    jaco2KDL.getGravity(gx, gy, gz);
+//    double gx,gy,gz;
+//    jaco2KDL.getGravity(gx, gy, gz);
     Eigen::VectorXd run_times = Eigen::VectorXd::Zero(ntests);
     for(std::size_t i = 0; i < ntests ; ++ i){
 
@@ -597,7 +597,7 @@ TEST(Jaco2DynamicsTests, forwadInverseDynamics)
 
         jaco2KDL.getTorques(q,qDot,qDotDot,tau);
         ros::Time start = ros::Time::now();
-        jaco2KDL.getJointAcceleration(gx, gy, -gz, q, qDot, tau, accFD);
+        jaco2KDL.getJointAcceleration(q, qDot, tau, accFD);
         ros::Time end = ros::Time::now();
         run_times(i) = (end -start).toSec();
         jaco2KDL.getTorques(q,qDot,accFD,tau2);
