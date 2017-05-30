@@ -15,7 +15,7 @@ using namespace Jaco2KinDynLib;
 
 Jaco2DynamicModel jaco2KDL;
 
-TEST(Jaco2KinematicsDynamicsToolTests,converttest)
+TEST(Jaco2KinematicsDynamicsToolTests, converttest)
 {
     KDL::JntArray q(6);
     std::vector<double> qvec;
@@ -33,7 +33,8 @@ TEST(Jaco2KinematicsDynamicsToolTests,converttest)
     }
 }
 
-TEST(Jaco2KinematicsDynamicsToolTests,chaintest)
+
+TEST(Jaco2KinematicsDynamicsToolTests, chaintest)
 {
     EXPECT_TRUE(jaco2KDL.getRootLink().find("jaco_link_base")!=std::string::npos);
     EXPECT_TRUE(jaco2KDL.getTipLink().find("jaco_link_hand")!=std::string::npos);
@@ -93,6 +94,16 @@ TEST(Jaco2KinematicsDynamicsToolTests, KinParam)
     EXPECT_NEAR(rot(2,1),  0, 1e-4);
     EXPECT_NEAR(rot(2,2), -1, 1e-4);
 }
+
+TEST(Jaco2KinematicsDynamicsToolTests, robotModleFileTest)
+{
+   std::string file = "/localhome/zwiener/workspace/jaco_ws/src/jaco2_ros/jaco2_description/robots/standalone_arm.urdf";
+
+   Jaco2KinematicModel kinmodel(file, "jaco_link_base","jaco_link_hand");
+   std::vector<std::string> names = kinmodel.getLinkNames();
+   EXPECT_EQ(names.size(), 6);
+}
+
 
 TEST(Jaco2KinematicsDynamicsToolTests, getRotationAxisTest)
 {

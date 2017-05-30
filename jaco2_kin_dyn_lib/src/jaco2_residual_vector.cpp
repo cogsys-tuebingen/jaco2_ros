@@ -35,7 +35,7 @@ std::size_t Jaco2ResidualVector::getNrOfJoints()const
 
 void Jaco2ResidualVector::setTree(const std::string &robot_model)
 {
-    model_.setTree(robot_model);
+    model_.setTreeParam(robot_model);
 }
 
 void Jaco2ResidualVector::setRootAndTip(const std::string &chain_root, const std::string &chain_tip)

@@ -7,7 +7,7 @@ CollisionReplellingP2PController::CollisionReplellingP2PController(Jaco2State &s
 {
     fac_ = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
     threshold_ = 1.0;
-    setRobotModel("robot_description", "jaco_link_base", "jaco_link_hand");
+    setRobotModel("/robot_description", "jaco_link_base", "jaco_link_hand");
 }
 
 void CollisionReplellingP2PController::write()
@@ -21,7 +21,8 @@ void CollisionReplellingP2PController::write()
     samplingPeriod_ = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
 
 
-    double residual = getResiduals();
+//    double residual = getResiduals();
+    double residual = 0;
 
     if(residual > threshold_){
         // repell

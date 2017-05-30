@@ -62,7 +62,8 @@ public:
     Jaco2DynamicModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
 
 
-    void setTree(const std::string& robot_model) override;
+    void setTreeParam(const std::string& robot_model) override;
+    void setTreeFile(const std::string &robot_model) override;
     /**
      * @brief setGravity set gravity
      * @param x x component (default 0)

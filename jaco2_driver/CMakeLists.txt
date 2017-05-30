@@ -108,6 +108,7 @@ include_directories(
    src/jaco2_state.cpp
    src/torque_controller.cpp
    include/jaco2_driver/data_conversion.h
+   include/jaco2_driver/jaco2_driver.h
    include/jaco2_driver/joint_trajectory.h
    include/jaco2_driver/angular_position_controller.h
    include/jaco2_driver/jaco2_state.h

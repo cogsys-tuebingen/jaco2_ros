@@ -22,13 +22,21 @@ Jaco2DynamicModel::Jaco2DynamicModel(const std::string &robot_model, const std::
     initialize();
 }
 
-void Jaco2DynamicModel::setTree(const std::string &robot_model)
+void Jaco2DynamicModel::setTreeParam(const std::string &robot_model)
 {
 
     robot_model_.initString(robot_model);
     urdf_param_ = robot_model;
     initialize();
 }
+
+void Jaco2DynamicModel::setTreeFile(const std::string &robot_model)
+{
+    robot_model_.initFile(robot_model);
+    urdf_param_ = robot_model;
+    initialize();
+}
+
 
 void Jaco2DynamicModel::initialize()
 {
