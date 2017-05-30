@@ -582,6 +582,32 @@ TEST(Jaco2DynamicsTests, matrixC)
 
     }
 }
+TEST(Jaco2DynamicsTests, forwadInverseDynamics)
+{
+    std::size_t ntests = 50;
+    std::vector<double> q,qDot,qDotDot,tau, accFD, tau2;
+    double gx,gy,gz;
+    jaco2KDL.getGravity(gx, gy, gz);
+    Eigen::VectorXd run_times = Eigen::VectorXd::Zero(ntests);
+    for(std::size_t i = 0; i < ntests ; ++ i){
+
+        jaco2KDL.getRandomConfig(q);
+        jaco2KDL.getRandomConfig(qDot);
+        jaco2KDL.getRandomConfig(qDotDot);
+
+        jaco2KDL.getTorques(q,qDot,qDotDot,tau);
+        ros::Time start = ros::Time::now();
+        jaco2KDL.getJointAcceleration(gx, gy, -gz, q, qDot, tau, accFD);
+        ros::Time end = ros::Time::now();
+        run_times(i) = (end -start).toSec();
+        jaco2KDL.getTorques(q,qDot,accFD,tau2);
+
+        for(int i = 0; i < 6; ++i) {
+            EXPECT_NEAR(tau[i], tau2[i], 1e-10);
+        }
+    }
+    std::cout << "mean FD runtime: " << run_times.mean() * 1000 << " ms." << std::endl;
+}
 
 int main(int argc, char *argv[])
 {

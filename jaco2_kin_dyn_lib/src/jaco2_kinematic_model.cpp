@@ -315,36 +315,6 @@ double  Jaco2KinematicModel::getLowerJointLimit(const std::size_t id)
     }
 }
 
-
-
-//void Jaco2KinematicModel::convert(const KDL::JntArray &in, std::vector<double> &out)
-//{
-//    out.resize(in.rows());
-//    for(std::size_t i = 0; i < out.size(); ++i)
-//    {
-//        out[i] = in(i);
-//    }
-//}
-
-//void Jaco2KinematicModel::convert(const std::vector<double> &in, KDL::JntArray &out)
-//{
-//    out.resize(in.size());
-//    for(std::size_t i = 0; i < out.rows(); ++i)
-//    {
-//        out(i) = in[i];
-//    }
-//}
-
-//void Jaco2KinematicModel::PoseTFToKDL(const tf::Pose& t, KDL::Frame& k)
-//{
-//    for (unsigned int i = 0; i < 3; ++i){
-//        k.p[i] = t.getOrigin()[i];
-//    }
-//    for (unsigned int i = 0; i < 9; ++i){
-//        k.M.data[i] = t.getBasis()[i/3][i%3];
-//    }
-//}
-
 void Jaco2KinematicModel::getRotationAxis(const std::string &link, KDL::Vector& rot_axis) const
 {
     int id = getKDLSegmentIndex(link);

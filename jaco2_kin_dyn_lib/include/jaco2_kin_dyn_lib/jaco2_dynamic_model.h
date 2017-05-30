@@ -83,6 +83,25 @@ public:
                    std::vector<double>& torques, const std::vector<KDL::Wrench>& wrenches_ext);
 
     /**
+     * @brief getJointAcceleration Forward Dynamic solver call. Inertia Matrix method
+     * @param gx acceleration of the basis frame x-component
+     * @param gy acceleration of the basis frame y-component
+     * @param gz acceleration of the basis frame z-component
+     * @param q             input: the joint variables, positions
+     * @param q_Dot         input: joint velocities
+     * @param torques       input: joint torques
+     * @param q_Dot_Dot     output: joint acceleration: solve H q_Dot_Dot = torques - C(q,q_Dot) + g(q)
+     * @return wrenches_ext optional input: external forces (not gravity)
+     * @return 0 if successful
+     * If gravity is pointing downwards (-z direction) insert: gx = 0; gy = 0; gz = 9.81;
+     */
+    int getJointAcceleration(double gx, double gy, double gz,
+                             const std::vector<double>& q,
+                             const std::vector<double>& q_Dot,
+                             const std::vector<double>& torques,
+                             std::vector<double>& q_Dot_Dot);
+
+    /**
      * @brief getAcceleration gets the accerlaration for all moving frames
      * @param gx acceleration of the basis frame x-component
      * @param gy acceleration of the basis frame y-component
@@ -137,6 +156,7 @@ public:
      * Implementation of a method to calculate the matrices H (inertia),C(coriolis) and G(gravitation) for the calculation torques out of the pose and derivatives. (inverse dynamics)
      * The algorithm implementation for H is based on the book "Rigid Body Dynamics Algorithms" of Roy Featherstone, 2008 (ISBN:978-0-387-74314-1) See page 107 for the pseudo-code. This algorithm is extended for the use of fixed joints
      * It calculates the joint-space inertia matrix, given the motion of the joints (q,qdot,qdotdot), external forces on the segments (expressed in the segments reference frame) and the dynamical parameters of the segments.
+     *  torques  = H*qdotdot + C(q,qdot,f) - G(q)
      */
     int getChainDynParam(const double gx, const double gy, const double gz,
                          const std::vector<double>& q,

@@ -6,6 +6,7 @@
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <tf_conversions/tf_kdl.h>
 #include <ros/ros.h>
+#include <Eigen/SVD>
 
 using namespace Jaco2KinDynLib;
 
@@ -137,6 +138,26 @@ int Jaco2DynamicModel::getTorques(const std::vector<double> &q,
     Jaco2KinDynLib::convert(torques_kdl,torques);
 
 
+    return e_code;
+}
+
+int Jaco2DynamicModel::getJointAcceleration(double gx, double gy, double gz,
+                                            const std::vector<double> &q,
+                                            const std::vector<double> &q_Dot,
+                                            const std::vector<double> &torques,
+                                            std::vector<double> &q_Dot_Dot)
+{
+    Eigen::MatrixXd H;
+    Eigen::VectorXd C,g;
+    int e_code = getChainDynParam(gx, gy, gz, q, q_Dot, H, C, g);
+    Eigen::VectorXd tau;
+    convert(torques, tau);
+    Eigen::VectorXd residual = tau - C + g;
+//    Eigen::JacobiSVD<Eigen::MatrixXd> svd(H, Eigen::ComputeThinU | Eigen::ComputeThinV | Eigen::FullPivHouseholderQRPreconditioner);
+//    Eigen::VectorXd qDotDot = svd.solve(residual);
+    Eigen::ColPivHouseholderQR<Eigen::MatrixXd> qr(H);
+    Eigen::VectorXd  qDotDot = qr.solve(residual);
+    convert(qDotDot,q_Dot_Dot);
     return e_code;
 }
 
