@@ -24,6 +24,8 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
   trac_ik_lib
+  rosbag
+  jaco2_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -71,6 +73,7 @@ file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLIN
    src/yaml_to_kdl_tranform.cpp
    src/jaco2_residual_vector.cpp
    src/kdl_conversion.cpp
+   src/joint_vel_pos_integrator.cpp
    ${ALL_HEADERS}
 )
 
@@ -82,6 +85,7 @@ add_dependencies(jaco2_kin_dyn_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_
 ## Declare a C++ executable
 add_executable(jaco2_tf_static_transforms_conversion src/jaco2_tf_static_tranforms_conversion.cpp)
 add_executable(jaco2_kin_dyn_lib_test test/test_jaco2_kin_dyn.cpp)
+add_executable(jaco2_integration_test test/test_pos_vel_integration.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -107,7 +111,12 @@ target_link_libraries(jaco2_kin_dyn_lib_test
    jaco2_kin_dyn_lib
 )
 
-
+target_link_libraries(jaco2_integration_test
+   ${catkin_LIBRARIES}
+   ${orocos_kdl_LIBRARIES}
+#   ${GTEST_LIBRARIES}
+   jaco2_kin_dyn_lib
+)
 
 #############
 ## Install ##
