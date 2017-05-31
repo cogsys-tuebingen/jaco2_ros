@@ -98,6 +98,7 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
 )
+file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/jaco2_driver/*.hpp include/jaco2_driver/*.h)
 ## Declare a C++ library
  add_library(jaco2_driver
    src/jaco2_driver.cpp
@@ -107,21 +108,7 @@ include_directories(
    src/collision_repelling_p2p_controller.cpp
    src/jaco2_state.cpp
    src/torque_controller.cpp
-   include/jaco2_driver/data_conversion.h
-   include/jaco2_driver/jaco2_driver.h
-   include/jaco2_driver/joint_trajectory.h
-   include/jaco2_driver/angular_position_controller.h
-   include/jaco2_driver/jaco2_state.h
-   include/jaco2_driver/jaco2_controller.h
-   include/jaco2_driver/velocity_controller.h
-   include/jaco2_driver/point_2_point_velocity_controller.h
-   include/jaco2_driver/collision_repelling_p2p_controller.h
-   include/jaco2_driver/gravity_compensation_controller.hpp
-   include/jaco2_driver/accelerometer_calibration.hpp
-   include/jaco2_driver/torque_offset_lut.hpp
-   include/jaco2_driver/gravity_params.hpp
-   include/jaco2_driver/torque_controller.h
-   include/kinova/KinovaArithmetics.hpp
+   ${ALL_HEADERS}
  )
 
 ## Add cmake target dependencies of the library
