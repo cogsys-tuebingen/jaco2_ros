@@ -10,7 +10,9 @@ namespace Jaco2KinDynLib {
 struct IntegrationData{
 
     double  time;
-    std::vector<double> torques;
+    std::vector<double> torques;  // control command
+    std::vector<double> vel;      // current velocity
+    std::vector<double> pos;      // current position
 };
 
 struct IntegrationDataBuffer{
@@ -50,19 +52,23 @@ struct IntegrationDataBuffer{
     std::deque<IntegrationData> data;
 };
 
-class JointVelPosIntegrator
+class JointVelPosEstimator
 {
 public:
-    JointVelPosIntegrator();
-    JointVelPosIntegrator(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
+    JointVelPosEstimator();
+    JointVelPosEstimator(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
 
     void setModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
-    void setInitalValues(std::vector<double>& pos, std::vector<double>& vel);
-    void integrate(const IntegrationData &data);
+    void setInitalValues(const IntegrationData &data);
+
+    void estimate(const IntegrationData &data);
+//    void integrate(const IntegrationData &data);
 
     std::vector<double> getCurrentPosition() const;
     std::vector<double> getCurrentVelocity() const;
     std::vector<double> getCurrentAcceleration() const;
+
+    inline double getTime() const { return time_;}
 
 private:
     Jaco2KinDynLib::Jaco2DynamicModel model_;
@@ -72,6 +78,7 @@ private:
     std::vector<double> current_pos_;
     std::vector<double> current_vel_;
     std::vector<double> current_acc_;
+    double time_;
 
 };
 
