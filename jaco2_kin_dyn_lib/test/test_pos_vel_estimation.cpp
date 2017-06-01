@@ -2,7 +2,7 @@
 #include <rosbag/view.h>
 #include <sensor_msgs/JointState.h>
 #include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
-#include <jaco2_kin_dyn_lib/joint_vel_pos_integrator.h>
+#include <jaco2_kin_dyn_lib/joint_vel_pos_estimator.h>
 #include <jaco2_msgs/Jaco2JointState.h>
 #include <ros/ros.h>
 #include <gtest/gtest.h>

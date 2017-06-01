@@ -1,4 +1,4 @@
-#include <jaco2_kin_dyn_lib/joint_vel_pos_integrator.h>
+#include <jaco2_kin_dyn_lib/joint_vel_pos_estimator.h>
 
 
 std::vector<double> operator+(const std::vector<double>& v1, const std::vector<double>& v2)
