@@ -108,6 +108,7 @@ file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLIN
    src/collision_repelling_p2p_controller.cpp
    src/jaco2_state.cpp
    src/torque_controller.cpp
+   src/torque_trajectory_controller.cpp
    ${ALL_HEADERS}
  )
 

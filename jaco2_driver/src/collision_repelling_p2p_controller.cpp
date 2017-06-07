@@ -21,8 +21,8 @@ void CollisionReplellingP2PController::write()
     samplingPeriod_ = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
 
 
-//    double residual = getResiduals();
-    double residual = 0;
+    double residual = getResiduals();
+//    double residual = 0;
 
     if(residual > threshold_){
         // repell

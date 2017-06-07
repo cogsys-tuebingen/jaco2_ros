@@ -9,7 +9,7 @@ namespace Jaco2KinDynLib {
 
 struct IntegrationData{
 
-    double  time;
+    double  dt;
     std::vector<double> torques;  // control command
     std::vector<double> vel;      // current velocity
     std::vector<double> pos;      // current position
@@ -45,7 +45,7 @@ struct IntegrationDataBuffer{
 
     double time(std::size_t i)
     {
-        return data[i].time;
+        return data[i].dt;
     }
 
     std::size_t max_size;
@@ -61,17 +61,20 @@ public:
     void setModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
     void setInitalValues(const IntegrationData &data);
 
+    void setGravity(double gx, double gy, double gz) const;
     void estimate(const IntegrationData &data);
+    void estimateGfree(const IntegrationData &data);
 //    void integrate(const IntegrationData &data);
 
     std::vector<double> getCurrentPosition() const;
     std::vector<double> getCurrentVelocity() const;
     std::vector<double> getCurrentAcceleration() const;
+    std::vector<double> getModelTorques(std::vector<double> currentAcc = std::vector<double>{0,0,0,0,0,0}) const;
 
     inline double getTime() const { return time_;}
 
 private:
-    Jaco2KinDynLib::Jaco2DynamicModel model_;
+    mutable Jaco2KinDynLib::Jaco2DynamicModel model_;
     bool loaded_model_;
     bool initial_values;
     IntegrationDataBuffer buffer_;

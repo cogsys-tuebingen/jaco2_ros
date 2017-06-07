@@ -4,7 +4,6 @@
 
 GripperController::GripperController(Jaco2State &state, Jaco2API& api)
     : Jaco2Controller(state, api),
-      done_(false),
       usePos_(false),
       threshold_(1),
       counter_(1)

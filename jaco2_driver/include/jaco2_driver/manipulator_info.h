@@ -7,38 +7,76 @@
 #include <math.h>
 
 #include <kinova/KinovaTypes.h>
+#include <kinova/KinovaArithmetics.hpp>
 #include <jaco2_driver/jaco2_driver_constants.h>
+using namespace KinovaArithmetics;
 
 class ManipulatorInfo
 {
 public:
     ManipulatorInfo() {
-        for(std::size_t i = 0; i < length_; ++ i)
-        {
-            values_[i] = 0;
-        }
+        values_.InitStruct();
     }
 
     ~ManipulatorInfo() {}
 
     const std::size_t length_ = Jaco2DriverConstants::n_Jaco2Joints;
 
-    double& operator[](std::size_t idx)
+    float& operator[](std::size_t idx)
     {
         if(idx < length_)
         {
-            return values_[idx];
+            switch (idx) {
+            case 0:
+                return values_.Actuator1;
+                break;
+            case 1:
+                return values_.Actuator2;
+                break;
+            case 2:
+                return values_.Actuator3;
+                break;
+            case 3:
+                return values_.Actuator4;
+                break;
+            case 4:
+                return values_.Actuator5;
+                break;
+            case 5:
+                return values_.Actuator6;
+                break;
+            }
         }
         else
         {
             throw std::logic_error("ManipulatorInfo Illegal Index ");
         }
     }
-    const double& operator[](std::size_t idx) const
+
+    const float& operator[](std::size_t idx) const
     {
         if(idx < length_)
         {
-            return values_[idx];
+            switch (idx) {
+            case 0:
+                return values_.Actuator1;
+                break;
+            case 1:
+                return values_.Actuator2;
+                break;
+            case 2:
+                return values_.Actuator3;
+                break;
+            case 3:
+                return values_.Actuator4;
+                break;
+            case 4:
+                return values_.Actuator5;
+                break;
+            case 5:
+                return values_.Actuator6;
+                break;
+            }
         }
         else
         {
@@ -48,90 +86,89 @@ public:
 
     ManipulatorInfo& operator=(const ManipulatorInfo& arg) // copy/move constructor is called to construct arg
     {
-        for(std::size_t i = 0; i < length_; ++ i)
-        {
-            values_[i] = arg.values_[i];
-        }
+        values_ = arg.values_;
         return *this;
     }
+
     ManipulatorInfo operator/(const double &b)
     {
         ManipulatorInfo res;
-        for(std::size_t i = 0; i < length_; ++ i)
-        {
-            res.values_[i] = values_[i] / b;
-        }
+        res.values_ = values_ / b;
         return res;
     }
 
     ManipulatorInfo& operator/=(const double &b)
     {
-        for(std::size_t i = 0; i < length_; ++ i)
-        {
-            values_[i] /= b;
-        }
+        values_ /= b;
         return *this;
     }
 
-    ManipulatorInfo operator*(const double &b)
+    ManipulatorInfo operator*(const double &b) const
     {
         ManipulatorInfo res;
-        for(std::size_t i = 0; i < length_; ++ i)
-        {
-            res.values_[i] = values_[i] *  b;
-        }
+        res.values_ = values_ * b;
         return res;
     }
 
-    ManipulatorInfo operator*(const ManipulatorInfo &other)
+    ManipulatorInfo operator*(const ManipulatorInfo &other) const
     {
         ManipulatorInfo res;
-        for(std::size_t i = 0; i < length_; ++ i)
-        {
-            res.values_[i] = values_[i] *  other.values_[i];
-        }
+        res.values_ = values_ *  other.values_;
         return res;
     }
-
-
 
     ManipulatorInfo& operator*=(const double &b)
     {
-        for(std::size_t i = 0; i < length_; ++ i)
-        {
-            values_[i] *= b;
-        }
+        values_ *= b;
+
         return *this;
     }
 
-    ManipulatorInfo operator+(const ManipulatorInfo &other)
+    ManipulatorInfo operator+(const ManipulatorInfo &other) const
     {
         ManipulatorInfo res;
-        for(std::size_t i = 0; i < length_; ++ i)
-        {
-            res.values_[i] = values_[i] +  other[i];
-        }
+        res.values_ = values_ +  other.values_;
+
         return res;
     }
 
-    ManipulatorInfo operator-(const ManipulatorInfo &other)
+    ManipulatorInfo operator-(const ManipulatorInfo &other) const
     {
         ManipulatorInfo res;
-        for(std::size_t i = 0; i < length_; ++ i)
-        {
-            res.values_[i] = values_[i] -  other[i];
-        }
+
+        res.values_ = values_ -  other.values_;
+
         return res;
     }
 
+    ManipulatorInfo operator+(const AngularInfo &other) const
+    {
+        ManipulatorInfo res;
+        res.values_ = values_ +  other;
+
+        return res;
+    }
+
+    ManipulatorInfo operator-(const AngularInfo &other) const
+    {
+        ManipulatorInfo res;
+
+        res.values_ = values_ -  other;
+
+        return res;
+    }
+
+    ManipulatorInfo abs() const
+    {
+        ManipulatorInfo res;
+        res.values_ = KinovaArithmetics::abs(values_);
+        return res;
+    }
 
     double getSum()
     {
-        double res = 0;
-        for(std::size_t i = 0; i < length_; ++ i)
-        {
-            res += values_[i];
-        }
+        double res =  KinovaArithmetics::sum(values_);
+
         return res;
     }
 
@@ -139,13 +176,13 @@ public:
     {
         for(std::size_t i = 0; i < length_; ++i )
         {
-            while(values_[i] >= 180.0)
+            while((*this)[i] >= 180.0)
             {
-                values_[i] -= 360.0;
+                (*this)[i] -= 360.0;
             }
-            while(values_[i] < -180.0)
+            while((*this)[i] < -180.0)
             {
-                values_[i] += 360.0;
+                (*this)[i] += 360.0;
             }
         }
     }
@@ -154,13 +191,13 @@ public:
     {
         for(std::size_t i = 0; i < length_; ++i )
         {
-            while(values_[i] >= M_PI)
+            while((*this)[i]>= M_PI)
             {
-                values_[i] -= 2.0*M_PI;
+                (*this)[i] -= 2.0*M_PI;
             }
-            while(values_[i] < -M_PI)
+            while((*this)[i] < -M_PI)
             {
-                values_[i] += 2.0*M_PI;
+                (*this)[i] += 2.0*M_PI;
             }
         }
     }
@@ -171,9 +208,9 @@ public:
         id = 0;
         for(std::size_t j = 0; j < length_; ++ j)
         {
-            if(res < values_[j])
+            if(res < (*this)[j])
             {
-                res = values_[j];
+                res = (*this)[j];
                 id = j;
             }
         }
@@ -185,32 +222,29 @@ public:
         std::string res;
         for(std::size_t j = 0; j < length_; ++ j)
         {
-            res += std::to_string(values_[j]) + delimiter;
+            res += std::to_string((*this)[j]) + delimiter;
         }
         return res;
     }
 
     AngularInfo toAngularInfo() const
     {
-        AngularInfo res;
-        res.InitStruct();
-        res.Actuator1 = values_[0];
-        res.Actuator2 = values_[1];
-        res.Actuator3 = values_[2];
-        res.Actuator4 = values_[3];
-        res.Actuator5 = values_[4];
-        res.Actuator6 = values_[5];
-        return res;
+        return values_;
+    }
+
+    AngularInfo& getAngularInfo()
+    {
+        return values_;
     }
 
     void setFrom(const AngularInfo& in)
     {
-        values_[0] = in.Actuator1;
-        values_[1] = in.Actuator2;
-        values_[2] = in.Actuator3;
-        values_[3] = in.Actuator4;
-        values_[4] = in.Actuator5;
-        values_[5] = in.Actuator6;
+        values_.Actuator1 = in.Actuator1;
+        values_.Actuator2 = in.Actuator2;
+        values_.Actuator3 = in.Actuator3;
+        values_.Actuator4 = in.Actuator4;
+        values_.Actuator5 = in.Actuator5;
+        values_.Actuator6 = in.Actuator6;
     }
 
     static ManipulatorInfo mean(const std::vector<ManipulatorInfo>& vec)
@@ -255,6 +289,16 @@ public:
         return res;
     }
 
+    static  std::vector<ManipulatorInfo> abs(const std::vector<ManipulatorInfo>& vec)
+    {
+        std::vector<ManipulatorInfo> res;
+        for(auto m : vec){
+            res.emplace_back(m.abs());
+        }
+        return res;
+
+    }
+
     static void max(const std::vector<ManipulatorInfo>& vec, ManipulatorInfo& max, std::vector<std::size_t>& id )
     {
         id.resize(max.length_);
@@ -285,6 +329,23 @@ public:
         }
     }
 
+    static void min(const std::vector<ManipulatorInfo>& vec, ManipulatorInfo& min)
+    {
+        for(std::size_t j = 0; j < min.length_; ++ j){
+            min[j] = INFINITY;
+        }
+        for(std::size_t i = 0; i <vec.size(); ++i)
+        {
+            for(std::size_t j = 0; j < vec[i].length_; ++ j)
+            {
+                if(min[j] > vec[i][j])
+                {
+                    min[j] = vec[i][j];
+                }
+            }
+        }
+    }
+
     static ManipulatorInfo elment_sqrt(const ManipulatorInfo& x)
     {
         ManipulatorInfo res;
@@ -298,7 +359,7 @@ public:
 
 
 private:
-    double values_[6];
+    AngularInfo values_;
 };
 #endif // MANIPULATOR_INFO_H
 

@@ -95,12 +95,12 @@ TEST(PosVelIntegrationTest, simpleEstimateTest)
     JointVelPosEstimator integrator("/robot_description","jaco_link_base","jaco_link_hand");
 
     IntegrationData idata;
-    idata.time =jdata.front().header.stamp.toSec();
+    idata.dt = 0;
     idata.vel = jdata.front().velocity;
     idata.pos = jdata.front().position;
     idata.torques = jdata.front().effort;
     integrator.setInitalValues(idata);
-    integrator.estimate(idata);
+//    integrator.estimate(idata);
 
     rosbag::Bag outbag;
     outbag.open("/tmp/fake_traj_test_simple_est.bag", rosbag::bagmode::Write);
@@ -108,10 +108,17 @@ TEST(PosVelIntegrationTest, simpleEstimateTest)
     Jaco2DynamicModel model("/robot_description","jaco_link_base","jaco_link_hand");
     for(auto it = jdata.begin(); it < jdata.end(); ++it){
         IntegrationData idata;
-        idata.time =it->header.stamp.toSec();
         idata.torques = it->effort;
         idata.vel = it->velocity;
         idata.pos = it->position;
+        if(it> jdata.begin()){
+            auto it_prev = it -1;
+            auto dt = it->header.stamp - it_prev->header.stamp;
+            idata.dt = dt.toSec();
+        }
+        else{
+            idata.dt = 0;
+        }
 
         integrator.estimate(idata);
 
@@ -121,9 +128,9 @@ TEST(PosVelIntegrationTest, simpleEstimateTest)
         j2.velocity = integrator.getCurrentVelocity();
         j2.acceleration = integrator.getCurrentAcceleration();
         model.getTorques(it->position, it->velocity, it->acceleration, j2.effort);
-        ros::Time stamp;
-        stamp.fromSec(integrator.getTime());
-        j2.header.stamp = stamp;
+        ros::Duration d(integrator.getTime());
+
+        j2.header.stamp = jdata.front().header.stamp +d;
         if(it < jdata.end() -1 ){
             for(std::size_t i = 0; i < 6; ++i){
                 auto it_test = it +1;

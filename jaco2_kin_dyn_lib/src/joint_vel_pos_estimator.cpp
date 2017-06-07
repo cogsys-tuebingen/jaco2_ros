@@ -82,26 +82,44 @@ void JointVelPosEstimator::setInitalValues(const IntegrationData &data)
     current_vel_ = data.vel;
     current_pos_ = data.pos;
 
-    time_ = data.time;
+    time_ = data.dt;
 
     initial_values = true;
 }
 
+void JointVelPosEstimator::setGravity(double gx, double gy, double gz) const
+{
+    model_.setGravity(gx, gy, gz);
+}
 
+void JointVelPosEstimator::estimateGfree(const IntegrationData &data)
+{
+    IntegrationData modified = data;
+    std::vector<double> zero(model_.getNrOfJoints(),0);
+    std::vector<double> g;
+    model_.getTorques(data.pos, zero, zero, g);
+    modified.torques += g;
+    estimate(data);
+}
 
 void JointVelPosEstimator::estimate(const IntegrationData &data)
 {
-    buffer_.push_back(data);
+//    buffer_.push_back(data);
 
-    if(buffer_.size() < 2 || !initial_values){
-        return;
-    }
+//    if(buffer_.size() < 2 || !initial_values){
+//        return;
+//    }
 
-    double h = buffer_.time(1) - buffer_.time(0);
-    time_ += h;
     model_.getJointAcceleration(data.pos, data.vel, data.torques, current_acc_);
-    current_vel_ = data.vel + 0.5 * h * current_acc_;
-    current_pos_ = data.pos + h * current_vel_;
+    current_vel_ = data.vel + 0.5 * data.dt * current_acc_;
+    current_pos_ = data.pos + data.dt * current_vel_;
+}
+
+std::vector<double> JointVelPosEstimator::getModelTorques(std::vector<double> currentAcc) const
+{
+    std::vector<double> result;
+    model_.getTorques(current_pos_, current_vel_, currentAcc, result);
+    return result;
 }
 
 //void JointVelPosIntegrator::integrate(const IntegrationData &data)

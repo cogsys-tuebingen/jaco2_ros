@@ -3,6 +3,7 @@
 #include "jaco2_controller.h"
 #include <kinova/KinovaTypes.h>
 #include <kinova/KinovaArithmetics.hpp>
+#include <jaco2_kin_dyn_lib/joint_vel_pos_estimator.h>
 
 class TorqueController : public Jaco2Controller
 {
@@ -20,7 +21,7 @@ public:
 
     virtual bool isDone() const override;
 
-private:
+protected:
     AngularInfo pidControl();
 
 
@@ -28,18 +29,22 @@ private:
 
     void calculateEsum(const AngularInfo& diff);
 
-private:
+protected:
+    Jaco2KinDynLib::JointVelPosEstimator estimator_;
     AngularPosition desired_;
     AngularPosition cmd_;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> last_command_;
-    bool done_;
     double kp_;
     double ki_;
     double kd_;
+    double kqp_;
+    double kqi_;
+    double kqd_;
     double samplingPeriod_;
     AngularInfo last_diff_;
     AngularInfo esum_;
+    AngularInfo esumQ_;
     std::deque<AngularInfo> torque_buffer_;
     std::deque<AngularInfo> e_buffer_;
 };

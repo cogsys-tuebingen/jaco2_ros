@@ -35,7 +35,7 @@ protected:
 
 protected:
     Jaco2Controller(Jaco2State &state, Jaco2API &api)
-        : state_(state), api_(api)
+        : state_(state), api_(api), done_(false)
     {
 
     }
@@ -43,6 +43,7 @@ protected:
 protected:
     Jaco2State &state_;
     Jaco2API &api_;
+    bool done_;
 };
 #endif // JACO2_CONTROLLER_H
 

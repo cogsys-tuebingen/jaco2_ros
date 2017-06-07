@@ -24,6 +24,16 @@ public:
     virtual bool isDone() const;
 
 protected:
+    double jointAcceleration(const double dt, const std::size_t joint) const;
+    double jointCmdVelocity(const double dt, const std::size_t joint) const;
+    double jointPosition(const double dt, const std::size_t joint) const;
+    ManipulatorInfo diffTrajectoryPoint();
+    void pidController(const double dt);
+    void simpleVelController(const double dt);
+
+    void evaluationOutput();
+
+protected:
     JointTrajectory trajectory_;
     std::size_t  current_point_;
     ManipulatorInfo gainP_;
@@ -45,15 +55,7 @@ protected:
     std::chrono::time_point<std::chrono::high_resolution_clock> start_command_;
     std::chrono::time_point<std::chrono::high_resolution_clock> last_command_;
 
-    bool done_;
 
-    double jointCmdVelocity(const double dt, const std::size_t joint) const;
-    double jointPosition(const double dt, const std::size_t joint) const;
-    ManipulatorInfo diffTrajectoryPoint();
-    void pidController(const double dt);
-    void simpleVelController(const double dt);
-
-    void evaluationOutput();
 
 
 };

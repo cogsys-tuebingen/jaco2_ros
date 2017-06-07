@@ -54,7 +54,14 @@ struct Wrench{
         return KDL::Wrench(f,tau);
     }
 };
-
+/**
+ * @brief The Jaco2DynamicModel class
+ *
+ * Inverse Dynamics: torques  = H*qdotdot + C(q,qdot,f) + G(q)
+ *                   qdotdot:  joint acceleration
+ *                   qdot:     joint velocity
+ *                   q:        joint position
+ */
 class Jaco2DynamicModel : public Jaco2KinematicModel
 {
 public:

@@ -13,7 +13,6 @@ public:
         : Jaco2Controller(state, api),
           //          last_command_(std::time(nullptr)),
           last_command_(std::chrono::high_resolution_clock::now()),
-          done_(false),
           kp_(1.2),
           ki_(0.0),
           kd_(0.0),
@@ -171,7 +170,7 @@ private:
     TrajectoryPoint cmd_;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> last_command_;
-    bool done_;
+
     double kp_;
     double ki_;
     double kd_;

@@ -20,7 +20,7 @@ namespace DataConversion {
 
 void convert(const AngularPosition &in, std::vector<double> &out)
 {
-    out.resize(Jaco2DriverNode::JACO_JOINTS_COUNT);
+    out.resize(Jaco2DriverConstants::n_Jaco2JointsAndKG3);
     out[0] = in.Actuators.Actuator1;
     out[1] = in.Actuators.Actuator2;
     out[2] = in.Actuators.Actuator3;

@@ -262,6 +262,22 @@ void Jaco2API::setAngularTorque(const AngularPosition& torque)
     SendAngularTorqueCommand(cmd);
 }
 
+void Jaco2API::setAngularTorque(const AngularInfo& torque)
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    //    SetTorqueControlType(DIRECTTORQUE);
+    float cmd[COMMAND_SIZE];
+    memset(cmd,0.0,sizeof(float)*COMMAND_SIZE);
+    cmd[0] = torque.Actuator1;
+    cmd[1] = torque.Actuator2;
+    cmd[2] = torque.Actuator3;
+    cmd[3] = torque.Actuator4;
+    cmd[4] = torque.Actuator5;
+    cmd[5] = torque.Actuator6;
+
+    SendAngularTorqueCommand(cmd);
+}
+
 AngularPosition Jaco2API::getAngularCurrent() const
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
@@ -459,7 +475,7 @@ void Jaco2API::moveHomeLeft()
 }
 
 
-void Jaco2API::setActuatorPID(unsigned int actuator, double p, double i, double d)
+void Jaco2API::setActuatorPID(ActuatorID actuator, double p, double i, double d)
 {
     std::unique_lock<std::recursive_mutex>lock(mutex_);
     if(actuator > 0 && actuator < 7){

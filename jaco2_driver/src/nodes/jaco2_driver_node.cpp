@@ -420,12 +420,16 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
     trajectoryGainsI[4] = config.trajectory_i_gain_joint_4;
     trajectoryGainsI[5] = config.trajectory_i_gain_joint_5;
     ManipulatorInfo trajectoryGainsD;
-    trajectoryGainsD[0] = config.trajectory_i_gain_joint_0;
-    trajectoryGainsD[1] = config.trajectory_i_gain_joint_1;
-    trajectoryGainsD[2] = config.trajectory_i_gain_joint_2;
-    trajectoryGainsD[3] = config.trajectory_i_gain_joint_3;
-    trajectoryGainsD[4] = config.trajectory_i_gain_joint_4;
-    trajectoryGainsD[5] = config.trajectory_i_gain_joint_5;
+    trajectoryGainsD[0] = config.trajectory_d_gain_joint_0;
+    trajectoryGainsD[1] = config.trajectory_d_gain_joint_1;
+    trajectoryGainsD[2] = config.trajectory_d_gain_joint_2;
+    trajectoryGainsD[3] = config.trajectory_d_gain_joint_3;
+    trajectoryGainsD[4] = config.trajectory_d_gain_joint_4;
+    trajectoryGainsD[5] = config.trajectory_d_gain_joint_5;
+
+    std::cout << "Trajectory K_P: " << trajectoryGainsP.toString() << std::endl;
+    std::cout << "Trajectory K_I: " << trajectoryGainsI.toString() << std::endl;
+    std::cout << "Trajectory K_D: " << trajectoryGainsD.toString() << std::endl;
 
     driver_.setTrajectoryPGains(trajectoryGainsP);
     driver_.setTrajectoryIGains(trajectoryGainsI);
@@ -442,9 +446,9 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
                                        config.velocity_controller_i_gain,
                                        config.velocity_controller_d_gain);
 
-    std::cout << config.torque_controller_p_gain <<" , " <<
-                 config.torque_controller_i_gain <<" , " <<
-                 config.torque_controller_d_gain << std::endl;
+//    std::cout << config.torque_controller_p_gain <<" , " <<
+//                 config.torque_controller_i_gain <<" , " <<
+//                 config.torque_controller_d_gain << std::endl;
 
     driver_.setTorqueControllerGains(config.torque_controller_p_gain,
                                      config.torque_controller_i_gain,

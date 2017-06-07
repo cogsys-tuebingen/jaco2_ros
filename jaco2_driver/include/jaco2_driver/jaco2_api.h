@@ -11,6 +11,15 @@
 #include <kinova/Kinova.API.UsbCommandLayerUbuntu.h>
 #include <mutex>
 
+enum ActuatorID{
+    Actuator1 = 1,
+    Actuator2 = 2,
+    Actuator3 = 3,
+    Actuator4 = 4,
+    Actuator5 = 5,
+    Actuator6 = 6
+};
+
 class Jaco2API
 {
 public:
@@ -31,6 +40,7 @@ public:
     void setAngularVelocity(const TrajectoryPoint &velocity);
     void setAngularPosition(const TrajectoryPoint &position);
     void setAngularTorque(const AngularPosition &torque);
+    void setAngularTorque(const AngularInfo &torque);
     void startAPI();
     void stopAPI();
     void exitAPI();
@@ -62,7 +72,7 @@ public:
      * @param i integrative controller gain
      * @param d derivative controller gain
      */
-    void setActuatorPID(unsigned int actuator, double p, double i, double d);
+    void setActuatorPID(ActuatorID actuator, double p, double i, double d);
 
 
 private:

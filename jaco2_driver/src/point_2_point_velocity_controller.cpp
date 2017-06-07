@@ -3,8 +3,7 @@
 
 Point2PointVelocityController::Point2PointVelocityController(Jaco2State &state, Jaco2API& api)
     : VelocityController(state, api),
-      current_point_(0),
-      done_(false)
+      current_point_(0)
 {
     tp_.InitStruct();
     tp_.Position.Type = ANGULAR_VELOCITY;
@@ -25,9 +24,13 @@ void Point2PointVelocityController::start()
 void Point2PointVelocityController::setTrajectory(const JointTrajectory& trajectory)
 {
     trajectory_ = trajectory;
+    paramsConst_.clear();
     paramsConst_.resize(trajectory_.size());
+    paramsLinear_.clear();
     paramsLinear_.resize(trajectory_.size());
+    paramsSquare_.clear();
     paramsSquare_.resize(trajectory_.size());
+    paramsCube_.clear();
     paramsCube_.resize(trajectory_.size());
     timeDiff_.resize(trajectory_.size());
     posDiff_.resize(trajectory_.size());
@@ -61,6 +64,7 @@ void Point2PointVelocityController::setTrajectory(const JointTrajectory& traject
     done_ = false;
     current_point_ = 0;
     start_command_ = std::chrono::high_resolution_clock::now();
+    last_command_ = start_command_;
 
 }
 
@@ -116,11 +120,17 @@ bool Point2PointVelocityController::isDone() const
     return done_;
 }
 
+double Point2PointVelocityController::jointAcceleration(const double dt, const std::size_t joint) const
+{
+    return paramsSquare_[current_point_][joint] + 2.0 * paramsCube_[current_point_][joint] * dt;
+}
+
 double Point2PointVelocityController::jointCmdVelocity(const double dt, const std::size_t joint) const
 {
     double dt2 = dt*dt;
 
-    return paramsLinear_[current_point_][joint] + paramsSquare_[current_point_][joint] * dt +
+    return paramsLinear_[current_point_][joint] +
+           paramsSquare_[current_point_][joint] * dt +
            paramsCube_[current_point_][joint] * dt2;
 }
 
@@ -128,7 +138,8 @@ double Point2PointVelocityController::jointPosition(const double dt, const std::
 {
     double dt2 = dt*dt;
     double dt3 = dt*dt2;
-    return paramsConst_[current_point_][joint] + paramsLinear_[current_point_][joint] * dt +
+    return paramsConst_[current_point_][joint] +
+           paramsLinear_[current_point_][joint] * dt +
            0.5*paramsSquare_[current_point_][joint] * dt2 +
            paramsCube_[current_point_][joint]/3.0 * dt3 ;
 }
@@ -237,19 +248,19 @@ void Point2PointVelocityController::evaluationOutput()
         rootSquaredDiff.push_back(tmp);
 
     }
-    std::string delimiter(" | ");
+    std::string delimiter("\t");
     ManipulatorInfo totalError = ManipulatorInfo::sum(rootSquaredDiff);
     ManipulatorInfo standardDev = ManipulatorInfo::elment_sqrt(ManipulatorInfo::variance(posDiff_,meanError));
-    std::cout << "'sum of the root of the squared differences (SRS) /total error'' | " << totalError.toString(delimiter) << std::endl;
+    std::cout << "'sum of the root of the squared differences (SRS) /total error''" << std::endl << totalError.toString(delimiter) << std::endl;
     ManipulatorInfo meanSRS = ManipulatorInfo::mean(rootSquaredDiff);
-    std::cout << "'mean SRS' | " <<  meanSRS.toString(delimiter) << std::endl;
-    std::cout << "'std SRS' | " <<  ManipulatorInfo::elment_sqrt(ManipulatorInfo::variance(rootSquaredDiff,meanSRS)).toString(delimiter) << std::endl;
-    std::cout << "'meanErrors' | " << meanError.toString(delimiter) << std::endl;
-    std::cout << "'Standard deviation' | " << standardDev.toString(delimiter) << std::endl;
-    std::cout << "'maxErrors' : " << maxError.toString(delimiter) << std::endl;
-    std::cout << "'endPointDifference' | " << posDiff_.back().toString(delimiter) << std::endl;
+    std::cout << "'mean SRS'  " << std::endl <<  meanSRS.toString(delimiter) << std::endl;
+    std::cout << "'std SRS' " << std::endl <<  ManipulatorInfo::elment_sqrt(ManipulatorInfo::variance(rootSquaredDiff,meanSRS)).toString(delimiter) << std::endl;
+    std::cout << "'meanErrors' " << std::endl << meanError.toString(delimiter) << std::endl;
+    std::cout << "'Standard deviation' " << std::endl << standardDev.toString(delimiter) << std::endl;
+    std::cout << "'maxErrors' " << std::endl << maxError.toString(delimiter) << std::endl;
+    std::cout << "'endPointDifference' " << std::endl << posDiff_.back().toString(delimiter) << std::endl;
     ManipulatorInfo vmax;
-    ManipulatorInfo::max(paramsLinear_,vmax);
-    std::cout << "'max velocity' | " << vmax.toString(delimiter) << std::endl;
+    ManipulatorInfo::max(ManipulatorInfo::abs(paramsLinear_),vmax);
+    std::cout << "'max abs(velocity)' "  << std::endl<< vmax.toString(delimiter) << std::endl;
     std::cout << std::endl;
 }

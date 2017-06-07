@@ -35,7 +35,6 @@ private:
 
 
 private:
-    bool done_;
     bool useFingers_[3];
     bool usePos_;
     AngularPosition lastPosition_;
