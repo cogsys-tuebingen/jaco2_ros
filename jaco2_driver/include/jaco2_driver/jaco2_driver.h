@@ -74,6 +74,7 @@ public:
     void setVelocityControllerGains(double p, double i, double d);
     void setTorque(const AngularPosition& torque);
     void setTorqueControllerGains(double p, double i, double d);
+    void setTorqueControllerQGains(double p, double i, double d);
     void enableGravityCompensation();
     void disableGravityCompensation();
 
@@ -114,8 +115,8 @@ private:
 
     VelocityController velocity_controller_;
     AngularPositionController position_controller_;
-    Point2PointVelocityController p2p_velocity_controller_;
-//    TorqueTrajectoryController p2p_velocity_controller_;
+//    Point2PointVelocityController p2p_velocity_controller_;
+    TorqueTrajectoryController p2p_velocity_controller_;
     EmptyController empty_controller_;
     GripperController gripper_controller_;
     GravityCompensationController gravity_comp_controller_;

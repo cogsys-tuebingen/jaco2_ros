@@ -454,6 +454,10 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
                                      config.torque_controller_i_gain,
                                      config.torque_controller_d_gain);
 
+    driver_.setTorqueControllerQGains(config.torque_controller_p_q_gain,
+                                     config.torque_controller_i_q_gain,
+                                     config.torque_controller_d_q_gain);
+
     std::vector<int> highPriQue;
     std::vector<int> lowPriQue;
     if(config.state_high_pri_pos){

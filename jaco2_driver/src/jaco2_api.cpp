@@ -377,12 +377,22 @@ bool Jaco2API::inTrajectoryMode()
 
 bool Jaco2API::setGravityOptimalZParam(const std::vector<double> &params)
 {
+
+    /* Email Kinova: Martine Blouin:
+     * Subject: return of SetGravityOptimalZParam == 2005:
+     * This is not a real error. Parameters should have been sent normally. The
+     * reason for this error is because we do not send the same number of bytes in
+     * this message than what the DSP expects to receive (we actually send more
+     * bytes). So the robot actually receives what it needs even if it sends you
+     * back this weird message.
+     */
     std::unique_lock<std::recursive_mutex>lock(mutex_);
     SwitchTrajectoryTorque(POSITION);
     SetGravityType(MANUAL_INPUT);
     usleep(30000);
     bool ok = params.size() == OPTIMAL_Z_PARAM_SIZE;
-    int res = 0;
+    bool suc_change_param = false;
+    bool suc_change_type = false;
     if(ok){
 
         float optimalParams [OPTIMAL_Z_PARAM_SIZE];
@@ -391,18 +401,20 @@ bool Jaco2API::setGravityOptimalZParam(const std::vector<double> &params)
             optimalParams[i] = (float) params[i];
             std::cout << i << " | " << optimalParams[i] << std::endl;
         }
-        res = SetGravityOptimalZParam(optimalParams);
+        int res_change_param = SetGravityOptimalZParam(optimalParams);
+        suc_change_param = (res_change_param == 1) || (res_change_param == 2005);
         usleep(30000);
-        std::cout << "setting parameter result:  " << res<< std::endl;
-        int res2 = SetGravityType(OPTIMAL);
-        res +=res2;
-        std::cout << "changing gravity type result:  " << res2<< std::endl;
+        std::cout << "setting parameter result:  " << res_change_param<< std::endl;
+        int res_change_type = SetGravityType(OPTIMAL);
+        suc_change_type = res_change_type == 1;
+        std::cout << "changing gravity type result:  " << res_change_type<< std::endl;
         usleep(30000);
-        if(res != 2){
+        if(!suc_change_type || !suc_change_param){
             setGravityType(MANUAL_INPUT);
+            std::cout << "something failed ... use manual prams." << std::endl;
         }
     }
-    return ok && (res == 2);
+    return ok && suc_change_type && suc_change_param;
 }
 
 void Jaco2API::setGravityType(GRAVITY_TYPE type)

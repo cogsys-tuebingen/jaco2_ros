@@ -279,8 +279,14 @@ void Jaco2Driver::setVelocityControllerGains(double p, double i, double d)
 void Jaco2Driver::setTorqueControllerGains(double p, double i, double d)
 {
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
-    std::cout << p<<", " << i <<", " << d <<std::endl;
+//    std::cout << p<<", " << i <<", " << d <<std::endl;
     torque_controller_.setGains(p, i, d);
+}
+void Jaco2Driver::setTorqueControllerQGains(double p, double i, double d)
+{
+    std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
+    std::cout << p<<", " << i <<", " << d <<std::endl;
+    torque_controller_.setQGains(p, i, d);
 }
 void Jaco2Driver::setTrajectoryPGains(const ManipulatorInfo &gains)
 {

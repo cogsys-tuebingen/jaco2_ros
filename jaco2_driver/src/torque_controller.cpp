@@ -67,10 +67,18 @@ void TorqueController::setTorque(const AngularPosition& tp)
 
 void TorqueController::setGains(double p, double i, double d)
 {
-    api_.setActuatorPID(Actuator1,p,i,d);
-//    kp_ = p;
-//    ki_ = i;
-//    kd_ = d;
+//    api_.setActuatorPID(Actuator1,p,i,d);
+    kp_ = p;
+    ki_ = i;
+    kd_ = d;
+}
+
+void TorqueController::setQGains(double p, double i, double d)
+{
+//    api_.setActuatorPID(Actuator1,p,i,d);
+    kqp_ = p;
+    kqi_ = i;
+    kqd_ = d;
 }
 
 void TorqueController::write()
@@ -135,7 +143,7 @@ bool TorqueController::isDone() const
 
 AngularInfo TorqueController::pidControl()
 {
-    auto new_torque = api_.getAngularForceGravityFree();
+    auto new_torque = state_.getTorqueGFree();
     auto pos = state_.getAngularPosition();
     auto vel = state_.getAngularPosition();
 

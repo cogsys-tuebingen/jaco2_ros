@@ -15,6 +15,7 @@ public:
     void setTorque(const AngularPosition& torques);
 
     void setGains(double p, double i, double d);
+    void setQGains(double p, double i, double d);
 
 
     virtual void write() override;
