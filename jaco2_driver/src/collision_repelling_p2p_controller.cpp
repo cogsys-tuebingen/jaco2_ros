@@ -3,22 +3,27 @@
 
 CollisionReplellingP2PController::CollisionReplellingP2PController(Jaco2State &state, Jaco2API &api):
     Point2PointVelocityController(state, api),
-    resiudals_("robot_description", "jaco_link_base", "jaco_link_hand")
+    threshold_(1.0),
+    first_coll_(true),
+    resiudals_("robot_description", "jaco_link_base", "jaco_link_hand"),
+    estimator_("/robot_description","jaco_link_base","jaco_link_hand")
 {
-    fac_ = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-    threshold_ = 1.0;
     setRobotModel("/robot_description", "jaco_link_base", "jaco_link_hand");
+    last_cmd_rep_  = std::chrono::high_resolution_clock::now();
+
+    kr_.InitStruct();
+    kpq_.InitStruct();
+    kdq_.InitStruct();
 }
 
 void CollisionReplellingP2PController::write()
 {
 
     auto now = std::chrono::high_resolution_clock::now();
-    auto duration = now - start_command_ ;
-    auto durationLast = now - last_command_;
-    last_command_ = now;
+    auto durationLast = now - last_cmd_rep_;
+    last_cmd_rep_ = now;
 //    double timeDiff = std::chrono::duration_cast<std::chrono::microseconds>(duration).count()*1e-6;
-    samplingPeriod_ = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
+    dt_ = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
 
 
     double residual = getResiduals();
@@ -26,22 +31,78 @@ void CollisionReplellingP2PController::write()
 
     if(residual > threshold_){
         // repell
-       AngularPosition cmd;
-       cmd.InitStruct();
-       cmd.Actuators.Actuator1 = fac_[0] * last_residual_(0);
-       cmd.Actuators.Actuator2 = fac_[1] * last_residual_(1);
-       cmd.Actuators.Actuator3 = fac_[2] * last_residual_(2);
-       cmd.Actuators.Actuator4 = fac_[3] * last_residual_(3);
-       cmd.Actuators.Actuator5 = fac_[4] * last_residual_(4);
-       cmd.Actuators.Actuator6 = fac_[5] * last_residual_(5);
-       api_.enableDirectTorqueMode(1.0, 0.5);
-       api_.setAngularTorque(cmd);
+
+        reflex();
        ROS_INFO_STREAM("Repelling! collision detected: "<< residual);
     }
     else{
+        done_ =!first_coll_;
         Point2PointVelocityController::write();
     }
 
+
+}
+
+void CollisionReplellingP2PController::reflex()
+{
+
+    AngularInfo cmd;
+    cmd.InitStruct();
+    cmd.Actuator1 = kr_.Actuator1 * last_residual_(0);
+    cmd.Actuator2 = kr_.Actuator2 * last_residual_(1);
+    cmd.Actuator3 = kr_.Actuator3 * last_residual_(2);
+    cmd.Actuator4 = kr_.Actuator4 * last_residual_(3);
+    cmd.Actuator5 = kr_.Actuator5 * last_residual_(4);
+    cmd.Actuator6 = kr_.Actuator6 * last_residual_(5);
+
+//    auto new_torque = state_.getTorqueGFree();
+    auto pos = state_.getAngularPosition();
+    auto vel = state_.getAngularPosition();
+
+    DataConversion::from_degrees(pos);
+    DataConversion::from_degrees(vel);
+
+    Jaco2KinDynLib::IntegrationData data;
+    DataConversion::convert(pos.Actuators, data.pos);
+    DataConversion::convert(vel.Actuators, data.vel);
+    if(first_coll_){
+        data.dt = 0;
+        estimator_.setInitalValues(data);
+        api_.enableDirectTorqueMode(1.0,0.5);
+        first_coll_ = false;
+    }
+
+    DataConversion::convert(cmd, data.torques);
+    data.dt = dt_;
+
+    estimator_.estimateGfree(data);
+    std::vector<double> desired_pos = estimator_.getCurrentPosition();
+    std::vector <double> desired_vel = estimator_.getCurrentVelocity();
+    AngularInfo diffQ = desired_pos - pos.Actuators;
+    AngularInfo diffV = desired_vel - vel.Actuators;
+
+    cmd += kpq_ * diffQ +
+           kdq_ * diffV;
+
+    api_.setAngularTorque(cmd);
+    //alternative solution velocity control
+//    TrajectoryPoint tp;
+//    tp.InitStruct();
+//    tp.Position.Type = ANGULAR_VELOCITY;
+//    tp.Position.HandMode = HAND_NOMOVEMENT;
+//    tp.Position.Actuators = kpq_ * diffQ + kdq_ * diffV;
+//    api_.setAngularVelocity(tp);
+}
+
+void CollisionReplellingP2PController::setReflexGain(const AngularInfo& R)
+{
+    kr_ = R;
+}
+
+void CollisionReplellingP2PController::setCorrectionGains(const AngularInfo& kp, const AngularInfo kd)
+{
+    kpq_ = kp;
+    kdq_ = kd;
 }
 
 bool CollisionReplellingP2PController::isDone() const
@@ -58,6 +119,7 @@ void CollisionReplellingP2PController::setThreshold(double threshold)
 void CollisionReplellingP2PController::setRobotModel(const std::string &robot_model, const std::string &chain_root, const std::string &chain_tip)
 {
      resiudals_ = Jaco2ResidualVector(robot_model, chain_root, chain_tip);
+     estimator_.setModel(robot_model, chain_root, chain_tip);
      resiudals_.setGravity(0,0,0);
 }
 
@@ -94,7 +156,7 @@ void CollisionReplellingP2PController::getResidualsData(ResidualData &data)
     {
         return;
     }
-    data.dt = samplingPeriod_;
+    data.dt = dt_;
 
     data.joint_positions.resize(Jaco2DriverConstants::n_Jaco2Joints);
     data.joint_velocities.resize(Jaco2DriverConstants::n_Jaco2Joints);

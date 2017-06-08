@@ -5,20 +5,20 @@
 #include <stdexcept>
 #include <chrono>
 //ROS
-#include <trajectory_msgs/JointTrajectory.h>
 #include <angles/angles.h>
+#include <trajectory_msgs/JointTrajectory.h>
 #include <geometry_msgs/Vector3Stamped.h>
 //Kinova
 #include <kinova/KinovaTypes.h>
-#include <jaco2_msgs/JointAngles.h>
 #include "joint_trajectory.h"
 //Jaco2
 #include "jaco2_driver_constants.h"
+#include <jaco2_msgs/JointAngles.h>
 
 
 namespace DataConversion {
 
-void convert(const AngularPosition &in, std::vector<double> &out)
+inline void convert(const AngularPosition &in, std::vector<double> &out)
 {
     out.resize(Jaco2DriverConstants::n_Jaco2JointsAndKG3);
     out[0] = in.Actuators.Actuator1;
@@ -33,7 +33,7 @@ void convert(const AngularPosition &in, std::vector<double> &out)
     out[8] = Jaco2DriverConstants::fingerAngleConversion*in.Fingers.Finger3;
 }
 
-void convert(const std::vector<double> &in, AngularPosition &out)
+inline void convert(const std::vector<double> &in, AngularPosition &out)
 {
     out.InitStruct();
     if(in.size() >= Jaco2DriverConstants::n_Jaco2Joints)
@@ -63,7 +63,7 @@ void convert(const std::vector<double> &in, AngularPosition &out)
     }
 }
 
-void convert(const AngularPosition &in, jaco2_msgs::JointAngles &out)
+inline void convert(const AngularPosition &in, jaco2_msgs::JointAngles &out)
 {
     out.joint1 = in.Actuators.Actuator1;
     out.joint2 = in.Actuators.Actuator2;
@@ -73,7 +73,7 @@ void convert(const AngularPosition &in, jaco2_msgs::JointAngles &out)
     out.joint6 = in.Actuators.Actuator6;
 }
 
-void convert(const jaco2_msgs::JointAngles &in, AngularPosition &out)
+inline void convert(const jaco2_msgs::JointAngles &in, AngularPosition &out)
 {
     out.InitStruct();
     out.Actuators.Actuator1 = in.joint1;
@@ -84,7 +84,7 @@ void convert(const jaco2_msgs::JointAngles &in, AngularPosition &out)
     out.Actuators.Actuator6 = in.joint6;
 }
 
-void convert(const trajectory_msgs::JointTrajectory &in, JointTrajectory& out)
+inline void convert(const trajectory_msgs::JointTrajectory &in, JointTrajectory& out)
 {
     out.setJointNames(in.joint_names);
     out.resize(in.points.size());
@@ -103,7 +103,7 @@ void convert(const trajectory_msgs::JointTrajectory &in, JointTrajectory& out)
     }
 }
 
-void from_degrees(std::vector<double> &angles)
+inline void from_degrees(std::vector<double> &angles)
 {
     for(std::size_t i = 0; i < angles.size(); ++i)
     {
@@ -111,7 +111,7 @@ void from_degrees(std::vector<double> &angles)
     }
 }
 
-void to_degrees(std::vector<double>& angles)
+inline void to_degrees(std::vector<double>& angles)
 {
     for(std::size_t i = 0; i < angles.size(); ++i)
     {
@@ -119,7 +119,7 @@ void to_degrees(std::vector<double>& angles)
     }
 }
 
-void normalize(std::vector<double>& angles)
+inline void normalize(std::vector<double>& angles)
 {
     auto it = angles.begin();
     for(std::size_t i = 0; i < 6; ++i){
@@ -132,7 +132,7 @@ void normalize(std::vector<double>& angles)
     }
 }
 
-void from_degrees(AngularPosition &values)
+inline void from_degrees(AngularPosition &values)
 {
     values.Actuators.Actuator1 = angles::from_degrees(values.Actuators.Actuator1);
     values.Actuators.Actuator2 = angles::from_degrees(values.Actuators.Actuator2);
@@ -146,7 +146,7 @@ void from_degrees(AngularPosition &values)
 }
 
 
-void to_degrees(AngularPosition &values)
+inline void to_degrees(AngularPosition &values)
 {
     values.Actuators.Actuator1 = angles::to_degrees(values.Actuators.Actuator1);
     values.Actuators.Actuator2 = angles::to_degrees(values.Actuators.Actuator2);
@@ -159,7 +159,7 @@ void to_degrees(AngularPosition &values)
     values.Fingers.Finger3 = angles::to_degrees(values.Fingers.Finger3);
 }
 
-void convert(const AngularAcceleration & in, const std::chrono::time_point<std::chrono::high_resolution_clock>& stamp,  std::vector<geometry_msgs::Vector3Stamped>& out )
+inline void convert(const AngularAcceleration & in, const std::chrono::time_point<std::chrono::high_resolution_clock>& stamp,  std::vector<geometry_msgs::Vector3Stamped>& out )
 {
     geometry_msgs::Vector3Stamped accMsg;
     accMsg.header.stamp.fromNSec(std::chrono::duration_cast<std::chrono::nanoseconds>(stamp.time_since_epoch()).count());
@@ -195,7 +195,7 @@ void convert(const AngularAcceleration & in, const std::chrono::time_point<std::
     out[5] = accMsg;
 }
 
-void convert(const AngularInfo& in, std::vector<double>& out)
+inline void convert(const AngularInfo& in, std::vector<double>& out)
 {
     out.resize(Jaco2DriverConstants::n_Jaco2Joints);
     out[0] = in.Actuator1;
@@ -206,7 +206,7 @@ void convert(const AngularInfo& in, std::vector<double>& out)
     out[5] = in.Actuator6;
 }
 
-void convert(const std::chrono::time_point<std::chrono::high_resolution_clock>& stamp_in, ros::Time& stamp_out)
+inline void convert(const std::chrono::time_point<std::chrono::high_resolution_clock>& stamp_in, ros::Time& stamp_out)
 {
    stamp_out.fromNSec(std::chrono::duration_cast<std::chrono::nanoseconds>(stamp_in.time_since_epoch()).count());
 }
