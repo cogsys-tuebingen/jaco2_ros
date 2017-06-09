@@ -608,6 +608,7 @@ void Jaco2DriverNode::publishJointState()
     jaco2JointStateMsg.effort = jointStateMsg_.effort;
 
     DataConversion::convert(driver_.getAngularAcceleration(), jaco2JointStateMsg.acceleration);
+    DataConversion::convert(driver_.getAngularForceGravityFree(), jaco2JointStateMsg.effort_g_free);
     DataConversion::from_degrees(jaco2JointStateMsg.acceleration);
 
     pubJaco2JointState_.publish(jaco2JointStateMsg);
