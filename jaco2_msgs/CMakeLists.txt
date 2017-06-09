@@ -22,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   message_generation
   std_srvs
+  std_msgs
 )
 
 
@@ -91,9 +92,10 @@ generate_messages(
   DEPENDENCIES
   actionlib_msgs
   geometry_msgs
+  std_msgs
 )
 
 catkin_package(
-  CATKIN_DEPENDS actionlib_msgs geometry_msgs message_runtime
+  CATKIN_DEPENDS message_generation actionlib actionlib_msgs geometry_msgs message_runtime std_msgs
 )
 
