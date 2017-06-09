@@ -120,13 +120,15 @@ void CollisionReplellingP2PController::setRobotModel(const std::string &robot_mo
 {
      resiudals_ = Jaco2ResidualVector(robot_model, chain_root, chain_tip);
      estimator_.setModel(robot_model, chain_root, chain_tip);
-     resiudals_.setGravity(0,0,0);
+
 }
 
 
 double CollisionReplellingP2PController::getResiduals()
 {
     ResidualData data;
+
+
 
     getResidualsData(data);
 
@@ -136,7 +138,8 @@ double CollisionReplellingP2PController::getResiduals()
     Eigen::VectorXd new_residual(Jaco2DriverConstants::n_Jaco2Joints);
     new_residual.setZero(Jaco2DriverConstants::n_Jaco2Joints);
 
-    resiudals_.getResidualVector(data,last_residual_,last_integral_,new_integral,new_residual);
+    resiudals_.setGravity(data.gx, data.gy, data.gz);
+    resiudals_.getResidualVector(data,last_residual_,last_integral_, new_integral, new_residual);
 
     last_integral_ = new_integral;
     last_residual_ = new_residual;
@@ -152,6 +155,7 @@ void CollisionReplellingP2PController::getResidualsData(ResidualData &data)
     auto vel = state_.getAngularVelocity();
     auto pos = state_.getAngularPosition();
     estimateGravity(data.gx, data.gy, data.gz);
+
     if(filter_g_.size() == 1)
     {
         return;
