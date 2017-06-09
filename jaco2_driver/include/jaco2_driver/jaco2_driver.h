@@ -115,8 +115,8 @@ private:
 
     VelocityController velocity_controller_;
     AngularPositionController position_controller_;
-//    Point2PointVelocityController p2p_velocity_controller_;
-    TorqueTrajectoryController p2p_velocity_controller_;
+    Point2PointVelocityController p2p_velocity_controller_;
+//    TorqueTrajectoryController p2p_velocity_controller_;
     EmptyController empty_controller_;
     GripperController gripper_controller_;
     GravityCompensationController gravity_comp_controller_;

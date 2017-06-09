@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
                     << data.Actuators.Actuator6);
 
     if(result == 1){
+//        api.setAngularPosition();
         Jaco2Calibration::ApiGravitationalParams params;
         //        api.disableTorque();
         ros::Duration(0.2).sleep();
