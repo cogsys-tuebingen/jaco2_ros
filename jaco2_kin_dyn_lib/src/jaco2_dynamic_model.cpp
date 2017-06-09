@@ -310,8 +310,7 @@ int Jaco2DynamicModel::getChainDynParam(const std::vector<double> &q,
 
 }
 
-int Jaco2DynamicModel::getChainDynInertiaAndGravity(const double gx, const double gy, const double gz,
-                                                    const std::vector<double>& q,
+int Jaco2DynamicModel::getChainDynInertiaAndGravity(const std::vector<double>& q,
                                                     Eigen::MatrixXd& H,
                                                     Eigen::VectorXd &G)
 {
@@ -321,7 +320,7 @@ int Jaco2DynamicModel::getChainDynInertiaAndGravity(const double gx, const doubl
         return KDL::SolverI::E_UNDEFINED;
     }
 
-    KDL::ChainDynParam dynparam(chain_, KDL::Vector(gx, gy, gz));
+    KDL::ChainDynParam dynparam(chain_, gravity_);
 
     KDL::JntArray theta;
     KDL::JntArray gravity(q.size());

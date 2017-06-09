@@ -246,6 +246,17 @@ void Jaco2API::setAngularPosition(const TrajectoryPoint &position)
     }
 }
 
+void Jaco2API::setLimitedAngularCmd(const TrajectoryPoint &point)
+{
+    std::unique_lock<std::recursive_mutex>lock(mutex_);
+    TrajectoryPoint cp = point;
+    cp.LimitationsActive = 1;
+    if(!stopedAPI_){
+        SendAdvanceTrajectory(point);
+    }
+
+}
+
 void Jaco2API::setAngularTorque(const AngularPosition& torque)
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
@@ -265,7 +276,7 @@ void Jaco2API::setAngularTorque(const AngularPosition& torque)
 void Jaco2API::setAngularTorque(const AngularInfo& torque)
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
-    //    SetTorqueControlType(DIRECTTORQUE);
+//    SetTorqueControlType(DIRECTTORQUE);
     float cmd[COMMAND_SIZE];
     memset(cmd,0.0,sizeof(float)*COMMAND_SIZE);
     cmd[0] = torque.Actuator1;
@@ -325,27 +336,27 @@ void Jaco2API::disableTorque()
     SwitchTrajectoryTorque(POSITION);
 }
 
-int Jaco2API::setTorqueZero(int actuator)
+int Jaco2API::setTorqueZero(ActuatorID actuator)
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     int result; //may return
     switch (actuator) {
-    case 1:
+    case Actuator1:
         result = (*SetTorqueZero)(16);
         break;
-    case 2:
+    case Actuator2:
         result = (*SetTorqueZero)(17);
         break;
-    case 3:
+    case Actuator3:
         result = (*SetTorqueZero)(18);
         break;
-    case 4:
+    case Actuator4:
         result = (*SetTorqueZero)(19);
         break;
-    case 5:
+    case Actuator5:
         result = (*SetTorqueZero)(20);
         break;
-    case 6:
+    case Actuator6:
         result = (*SetTorqueZero)(21);
         break;
     default:
@@ -500,3 +511,5 @@ void Jaco2API::setActuatorPID(ActuatorID actuator, double p, double i, double d)
     }
 
 }
+
+

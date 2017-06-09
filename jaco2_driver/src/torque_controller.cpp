@@ -173,22 +173,22 @@ AngularInfo TorqueController::pidControl()
 //        std::cout <<  desired_pos[i] << "\t";
 //    }
 //    std::cout << std::endl;
-    torque_buffer_.push_back(new_torque.Actuators);
-    if(torque_buffer_.size() > 5){
-        torque_buffer_.pop_front();
-    }
-    auto tau = meanOfTorqueBuffer();
+//    torque_buffer_.push_back(new_torque.Actuators);
+//    if(torque_buffer_.size() > 5){
+//        torque_buffer_.pop_front();
+//    }
+//    auto tau = meanOfTorqueBuffer();
     std::cout << "g_free:  "   << std::endl
-              << tau.Actuator1 << "\t"
-              << tau.Actuator2 << "\t"
-              << tau.Actuator3 << "\t"
-              << tau.Actuator4 << "\t"
-              << tau.Actuator5 << "\t"
-              << tau.Actuator6 << std::endl;
+              << new_torque.Actuators.Actuator1 << "\t"
+              << new_torque.Actuators.Actuator2 << "\t"
+              << new_torque.Actuators.Actuator3 << "\t"
+              << new_torque.Actuators.Actuator4 << "\t"
+              << new_torque.Actuators.Actuator5 << "\t"
+              << new_torque.Actuators.Actuator6 << std::endl;
 
     AngularInfo res;
     res.InitStruct();
-    AngularInfo diff = desired_.Actuators - tau;
+    AngularInfo diff = desired_.Actuators - new_torque.Actuators;
 
     calculateEsum(diff);
     AngularInfo diffQ = desired_pos - pos.Actuators;
@@ -219,7 +219,7 @@ AngularInfo TorqueController::pidControl()
         kd = 0;
     }
 
-    res = 0.0 * desired_.Actuators
+    res = 1.0 * desired_.Actuators
             + kp_ * diff
             + ki_ * esum_
             + kd * (diff - last_diff_)

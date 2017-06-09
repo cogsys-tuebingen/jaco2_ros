@@ -65,6 +65,7 @@ void Jaco2ResidualVector::getResidualVector(std::vector<ResidualData> &sequence,
 
     for(auto data : sequence){
 
+        model_.setGravity(data.gx, data.gy, data.gz);
         Eigen::MatrixXd C;
         model_.getMatrixC(data.joint_positions,data.joint_velocities, C);
 
@@ -75,7 +76,7 @@ void Jaco2ResidualVector::getResidualVector(std::vector<ResidualData> &sequence,
 
         Eigen::MatrixXd H;
         Eigen::VectorXd G;
-        model_.getChainDynInertiaAndGravity(data.gx, data.gy, data.gz, data.joint_positions, H, G);
+        model_.getChainDynInertiaAndGravity(data.joint_positions, H, G);
         Eigen::VectorXd m = H * omega;
         Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - G + *it_residual_vec;
 
@@ -116,7 +117,8 @@ void Jaco2ResidualVector::getResidualVector(const ResidualData &data,
 
     Eigen::MatrixXd H;
     Eigen::VectorXd G;
-    model_.getChainDynInertiaAndGravity(data.gx, data.gy, data.gz, data.joint_positions, H, G);
+    model_.setGravity(data.gx, data.gy, data.gz);
+    model_.getChainDynInertiaAndGravity(data.joint_positions, H, G);
     Eigen::VectorXd m = H * omega;
     Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - G + last_residual;
 

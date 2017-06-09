@@ -24,13 +24,24 @@ int main(int argc, char *argv[])
                     << data.Actuators.Actuator6);
 
     if(result == 1){
-//        api.setAngularPosition();
+        TrajectoryPoint tp;
+        tp.InitStruct();
+        tp.Position.Actuators.Actuator2 = 180;
+        tp.Position.Actuators.Actuator3 = 180;
+        tp.Position.Type = ANGULAR_POSITION;
+        api.setAngularPosition(tp);
+        ros::Duration(40).sleep();
+        for(std::size_t i = 1; i < 7; ++i){
+            ActuatorID id = static_cast<ActuatorID>(i);
+            ROS_INFO_STREAM("Set torque zero for Actuator " << i);
+            api.setTorqueZero(id);
+        }
         Jaco2Calibration::ApiGravitationalParams params;
         //        api.disableTorque();
         ros::Duration(0.2).sleep();
         ROS_INFO_STREAM("ATTENTION RUNNING PARAMETER ESTIMATION!");
         std::cout << "ATTENTION RUNNING PARAMETER ESTIMATION!" << std::endl;
-        api.runGravityEstimationSequnce(params.parameter, JACOV2_6DOF_ASSISTIVE);
+        api.runGravityEstimationSequnce(params.parameter, JACOV2_6DOF_SERVICE);
         ros::Duration(0.2).sleep();
         ROS_INFO_STREAM("Found Parameter");
         std::cout << "Found parameter." << std::endl;

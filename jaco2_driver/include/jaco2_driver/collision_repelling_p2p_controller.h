@@ -18,17 +18,22 @@ public:
     void setRobotModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
     void setReflexGain(const AngularInfo& kr);
     void setCorrectionGains(const AngularInfo& kp, const AngularInfo kd);
+    void setTrajectory(const JointTrajectory& trajectory);
+    void setTorqueControlGains(double p, double i, double d);
 
 private:
     void reflex();
     double getResiduals();
     void estimateGravity(double& gx, double &gy, double& gz);
     void getResidualsData(ResidualData& data);
+    void resetResiduals();
+    void calculateEsum(const AngularInfo& diff);
 
 
 private:
     double threshold_;
     bool first_coll_;
+    bool in_collision_;
     Jaco2ResidualVector resiudals_;
     Jaco2KinDynLib::JointVelPosEstimator estimator_;
     Eigen::VectorXd last_integral_;
@@ -39,7 +44,10 @@ private:
     AngularInfo kr_;
     AngularInfo kpq_;
     AngularInfo kdq_;
-
+    std::deque<AngularInfo> e_buffer_;
+    AngularInfo esum_;
+    double kp_;
+    double ki_;
 
 
 };

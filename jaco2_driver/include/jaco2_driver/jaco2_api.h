@@ -41,6 +41,7 @@ public:
     void setAngularPosition(const TrajectoryPoint &position);
     void setAngularTorque(const AngularPosition &torque);
     void setAngularTorque(const AngularInfo &torque);
+    void setLimitedAngularCmd(const TrajectoryPoint &point);
     void startAPI();
     void stopAPI();
     void exitAPI();
@@ -50,7 +51,7 @@ public:
      * @brief setTorqueZero sets the actuator torque sensor to zero for current position
      * @param actuator the index of the actuator [1,..., 6]
      */
-    int setTorqueZero(int actuator);
+    int setTorqueZero(ActuatorID actuator);
     void enableDirectTorqueMode(double torque_saftey_factor = 0.6, double vibration_controller = 0.5);
     void getApiVersion(int& v_major, int& v_minor, int& version);
     /**

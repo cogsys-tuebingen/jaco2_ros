@@ -453,7 +453,23 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
     driver_.setTorqueControllerGains(config.torque_controller_p_gain,
                                      config.torque_controller_i_gain,
                                      config.torque_controller_d_gain);
+    // EXPERIMENTAL
+    AngularInfo kp,kd;
+    kp.Actuator1 = config.torque_controller_p_q_gain;
+    kp.Actuator2 = config.torque_controller_p_q_gain;
+    kp.Actuator3 = config.torque_controller_p_q_gain;
+    kp.Actuator4 = config.torque_controller_p_q_gain;
+    kp.Actuator5 = config.torque_controller_p_q_gain;
+    kp.Actuator6 = config.torque_controller_p_q_gain;
 
+    kd.Actuator1 = config.torque_controller_d_q_gain;
+    kd.Actuator2 = config.torque_controller_d_q_gain;
+    kd.Actuator3 = config.torque_controller_d_q_gain;
+    kd.Actuator4 = config.torque_controller_d_q_gain;
+    kd.Actuator5 = config.torque_controller_d_q_gain;
+    kd.Actuator6 = config.torque_controller_d_q_gain;
+    driver_.setCorrectionGains(kp, kd);
+    // EXPERIMENTAL
     driver_.setTorqueControllerQGains(config.torque_controller_p_q_gain,
                                      config.torque_controller_i_q_gain,
                                      config.torque_controller_d_q_gain);

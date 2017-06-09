@@ -201,7 +201,28 @@ void Jaco2Driver::setTorqueZero(int actuator)
 {
     executeLater([this, actuator](){
         serviceDone_ = false;
-        setTorqueZeroResult_ = jaco_api_.setTorqueZero(actuator);
+        switch (actuator) {
+        case Actuator1:
+            setTorqueZeroResult_ = jaco_api_.setTorqueZero(Actuator1);
+            break;
+        case Actuator2:
+            setTorqueZeroResult_ = jaco_api_.setTorqueZero(Actuator2);
+            break;
+        case Actuator3:
+            setTorqueZeroResult_ = jaco_api_.setTorqueZero(Actuator3);
+            break;
+        case Actuator4:
+            setTorqueZeroResult_ = jaco_api_.setTorqueZero(Actuator4);
+            break;
+        case Actuator5:
+            setTorqueZeroResult_ = jaco_api_.setTorqueZero(Actuator5);
+            break;
+        case Actuator6:
+            setTorqueZeroResult_ = jaco_api_.setTorqueZero(Actuator6);
+            break;
+        default:
+            break;
+        }
         usleep(10000);
         serviceDone_= true;
     });
@@ -281,6 +302,8 @@ void Jaco2Driver::setTorqueControllerGains(double p, double i, double d)
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
 //    std::cout << p<<", " << i <<", " << d <<std::endl;
     torque_controller_.setGains(p, i, d);
+   // Experimetntal
+    p2p_velocity_controller_.setTorqueControlGains(p,i,d);
 }
 void Jaco2Driver::setTorqueControllerQGains(double p, double i, double d)
 {

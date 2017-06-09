@@ -563,8 +563,8 @@ TEST(Jaco2DynamicsTests, matrixC)
     //        std::vector<double> qDot = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     std::vector<double> qDotDot = {1.0, 1, 1, 1, 1.0, 1.0};
 
-    std::vector<double> torques;
-    Eigen::MatrixXd mrne_res(6,1);
+//    std::vector<double> torques;
+//    Eigen::MatrixXd mrne_res(6,1);
     Eigen::MatrixXd H;
     Eigen::MatrixXd C;
     Eigen::VectorXd c;

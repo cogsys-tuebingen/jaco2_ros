@@ -2,6 +2,7 @@
 #define KINOVA_ARITHMETICS_HPP
 #include <kinova/KinovaTypes.h>
 #include <vector>
+#include <string>
 namespace KinovaArithmetics {
 inline AngularInfo operator+(const AngularInfo& rhs, const AngularInfo& lhs)
 {
@@ -203,6 +204,19 @@ inline AngularInfo abs(const AngularInfo& val)
     res.Actuator5 = std::abs(val.Actuator5);
     res.Actuator6 = std::abs(val.Actuator6);
     return res;
+}
+
+inline std::string to_string(const AngularInfo& in, const std::string& delimiter = std::string("\t"))
+{
+    std::string res;
+    res = std::to_string(in.Actuator1) + delimiter +
+          std::to_string(in.Actuator2) + delimiter +
+          std::to_string(in.Actuator3) + delimiter +
+          std::to_string(in.Actuator4) + delimiter +
+          std::to_string(in.Actuator5) + delimiter +
+          std::to_string(in.Actuator6) + delimiter ;
+    return res;
+
 }
 
 }
