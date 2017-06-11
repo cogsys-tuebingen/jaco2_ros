@@ -257,7 +257,6 @@ int main(int argc, char *argv[])
     std::vector<std::size_t> problem_sizes = {3*1, 3*5, 3*1, 3*2, 3*2, 3*2};
 
     for(std::size_t i = 0; i < 6; ++i){
-        double min_cost = 2e10;
         ceres::Problem problem;
 
         Jaco2Calibration::ActuatorTorqueOffset func(problem_sizes[i]/3);
