@@ -17,6 +17,7 @@ public:
 
     virtual void start() override
     {
+        api_.stopForceControl();
         api_.enableDirectTorqueMode(1.0);
         done_ = false;
     }

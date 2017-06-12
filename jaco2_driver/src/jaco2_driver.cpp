@@ -247,8 +247,13 @@ void Jaco2Driver::tick()
         active_controller_->read();
         if(active_controller_)
         {
-            active_controller_->execute();
-            usleep(5000);
+            if(active_controller_->isDone()){
+                active_controller_->stop();
+            }
+            else{
+                active_controller_->execute();
+                usleep(5000);
+            }
         }
     }
     else
@@ -295,15 +300,15 @@ void Jaco2Driver::setVelocityControllerGains(double p, double i, double d)
 {
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
     velocity_controller_.setGains(p, i, d);
+    // BEGIN EXPERIMENTAL
+    p2p_velocity_controller_.setVelocityControlGains(p, i, d);
+    // END EXPERIMENTAL
 }
 
 void Jaco2Driver::setTorqueControllerGains(double p, double i, double d)
 {
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
-//    std::cout << p<<", " << i <<", " << d <<std::endl;
     torque_controller_.setGains(p, i, d);
-   // Experimetntal
-    p2p_velocity_controller_.setTorqueControlGains(p,i,d);
 }
 void Jaco2Driver::setTorqueControllerQGains(double p, double i, double d)
 {
@@ -457,4 +462,23 @@ int Jaco2Driver::getSetTorqueZeroResult() const
 {
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
     return setTorqueZeroResult_;
+}
+
+void Jaco2Driver::disableForceControl()
+{
+    executeLater([this](){
+        serviceDone_ = false;
+        jaco_api_.stopForceControl();
+        usleep(5000);
+        serviceDone_= true;
+    });
+}
+void Jaco2Driver::enableForceControl()
+{
+    executeLater([this](){
+        serviceDone_ = false;
+        jaco_api_.startForceControl();
+        usleep(5000);
+        serviceDone_= true;
+    });
 }

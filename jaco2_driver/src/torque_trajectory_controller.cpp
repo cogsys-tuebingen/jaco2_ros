@@ -26,6 +26,10 @@ void TorqueTrajectoryController::start()
     //    std::cout << "start torque control" << std::endl;
 }
 
+void TorqueTrajectoryController::stop()
+{
+    api_.disableTorque();
+}
 
 void TorqueTrajectoryController::write()
 {
@@ -133,7 +137,7 @@ void TorqueTrajectoryController::control(const double dt)
     AngularInfo P = (gainP_ * diff).getAngularInfo();
     AngularInfo I = (gainI_ * eSum_).getAngularInfo();
     AngularInfo D = (gainD_ * d_diff).getAngularInfo();
-    AngularInfo cmd =desiredTorques + P + I + D;
+    AngularInfo cmd = desiredTorques + P + I + D;
 
 
     // We will command torques in Nm!

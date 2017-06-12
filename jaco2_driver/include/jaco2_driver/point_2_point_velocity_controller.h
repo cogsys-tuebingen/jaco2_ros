@@ -23,10 +23,11 @@ public:
 
     virtual bool isDone() const;
 
-protected:
     double jointAcceleration(const double dt, const std::size_t joint) const;
     double jointCmdVelocity(const double dt, const std::size_t joint) const;
     double jointPosition(const double dt, const std::size_t joint) const;
+
+protected:
     ManipulatorInfo diffTrajectoryPoint();
     void pidController(const double dt);
     void simpleVelController(const double dt);

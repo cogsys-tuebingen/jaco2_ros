@@ -1,7 +1,7 @@
 #ifndef COLLISION_REPELLING_P2P_CONTROLLER_H
 #define COLLISION_REPELLING_P2P_CONTROLLER_H
 #include "data_conversion.h"
-#include <jaco2_driver/point_2_point_velocity_controller.h>
+//#include <jaco2_driver/point_2_point_velocity_controller.h>
 #include <jaco2_driver/torque_controller.h>
 #include <jaco2_driver/torque_trajectory_controller.h>
 #include <jaco2_kin_dyn_lib/jaco2_residual_vector.h>
@@ -20,11 +20,8 @@ public:
     void setRobotModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
     void setReflexGain(const AngularInfo& kr);
     void setCorrectionGains(const AngularInfo& kp, const AngularInfo kd);
-    void setVelocityControlGains(double p, double i, double d);
-
-    //Velocity Controller Gains
     void setTrajectory(const JointTrajectory& trajectory);
-
+    void setTorqueControlGains(double p, double i, double d);
     //Tracking Gains
     void setGainP(const ManipulatorInfo &gains);
     void setGainI(const ManipulatorInfo &gains);
@@ -42,7 +39,8 @@ private:
 
 private:
     VelocityController reflex_controller_;
-    Point2PointVelocityController tracking_controller_;
+    TorqueTrajectoryController tracking_controller_;
+    TorqueController torque_controller_;
     double threshold_;
     bool first_coll_;
     bool in_collision_;

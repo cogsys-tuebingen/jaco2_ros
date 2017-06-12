@@ -13,6 +13,7 @@ public:
     virtual void start() override;
 
     void setTorque(const AngularPosition& torques);
+    void setTorque(const AngularInfo& torques);
 
     void setGains(double p, double i, double d);
     void setQGains(double p, double i, double d);
@@ -21,6 +22,7 @@ public:
     virtual void write() override;
 
     virtual bool isDone() const override;
+    virtual void stop() override;
 
 protected:
     AngularInfo pidControl();
@@ -48,6 +50,8 @@ protected:
     AngularInfo esumQ_;
     std::deque<AngularInfo> torque_buffer_;
     std::deque<AngularInfo> e_buffer_;
+    AngularInfo max_torques_;
+    int counter_;
 };
 
 #endif // TORQUE_CONTROLLER_H

@@ -24,7 +24,6 @@ bool GripperController::isDone() const
 
 void GripperController::start()
 {
-    api_.disableTorque();
 }
 
 void GripperController::grabObj(const bool& useFinger1, const bool& useFinger2, const bool& useFinger3)

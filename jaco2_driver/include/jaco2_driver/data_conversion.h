@@ -145,6 +145,16 @@ inline void from_degrees(AngularPosition &values)
     values.Fingers.Finger3 = angles::from_degrees(values.Fingers.Finger3);
 }
 
+inline void from_degrees(AngularInfo &values)
+{
+    values.Actuator1 = angles::from_degrees(values.Actuator1);
+    values.Actuator2 = angles::from_degrees(values.Actuator2);
+    values.Actuator3 = angles::from_degrees(values.Actuator3);
+    values.Actuator4 = angles::from_degrees(values.Actuator4);
+    values.Actuator5 = angles::from_degrees(values.Actuator5);
+    values.Actuator6 = angles::from_degrees(values.Actuator6);
+}
+
 
 inline void to_degrees(AngularPosition &values)
 {
@@ -158,6 +168,17 @@ inline void to_degrees(AngularPosition &values)
     values.Fingers.Finger2 = angles::to_degrees(values.Fingers.Finger2);
     values.Fingers.Finger3 = angles::to_degrees(values.Fingers.Finger3);
 }
+
+inline void to_degrees(AngularInfo &values)
+{
+    values.Actuator1 = angles::to_degrees(values.Actuator1);
+    values.Actuator2 = angles::to_degrees(values.Actuator2);
+    values.Actuator3 = angles::to_degrees(values.Actuator3);
+    values.Actuator4 = angles::to_degrees(values.Actuator4);
+    values.Actuator5 = angles::to_degrees(values.Actuator5);
+    values.Actuator6 = angles::to_degrees(values.Actuator6);
+}
+
 
 inline void convert(const AngularAcceleration & in, const std::chrono::time_point<std::chrono::high_resolution_clock>& stamp,  std::vector<geometry_msgs::Vector3Stamped>& out )
 {

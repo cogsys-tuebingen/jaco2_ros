@@ -1,9 +1,12 @@
+#ifndef TORQUE_TRAJECTORY_CONTROLLER_H
+#define TORQUE_TRAJECTORY_CONTROLLER_H
+
 #include <jaco2_driver/point_2_point_velocity_controller.h>
 #include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
-class TorqueTrajectoryController  : public virtual Point2PointVelocityController
+class TorqueTrajectoryController  : public Point2PointVelocityController
 {
 public:
     TorqueTrajectoryController(Jaco2State &state, Jaco2API& api);
@@ -17,6 +20,7 @@ public:
     void write() override;
     void start() override;
     bool isDone() const;
+    virtual void stop() override;
 
     void control(const double dt);
 
@@ -39,3 +43,5 @@ protected:
     sensor_msgs::JointState joint_state;
     sensor_msgs::JointState joint_state2;
 };
+
+#endif // TORQUE_TRAJECTORY_CONTROLLER_H

@@ -90,12 +90,27 @@ public:
     void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetCalibration& lut);
     bool setGravityParams(const Jaco2Calibration::ApiGravitationalParams &params);
     void setVelocitySensorCalibration(const std::vector<double>& factors);
-// EXPERIMENTAL
+
+    void enableForceControl();
+    void disableForceControl();
+
+// BEGIN EXPERIMENTAL
     inline void setCorrectionGains(const AngularInfo& kp, const AngularInfo kd)
     {
         p2p_velocity_controller_.setCorrectionGains(kp, kd);
     }
-// EXPERIMENTAL
+
+    inline void setCollisionReflexGain(const AngularInfo& r)
+    {
+        p2p_velocity_controller_.setReflexGain(r);
+    }
+
+    inline void setCollisionThreshold(double delta)
+    {
+        p2p_velocity_controller_.setThreshold(delta);
+    }
+// END EXPERIMENTAL
+
     void startArm();
     void stopArm();
     void homeArm();
@@ -123,9 +138,9 @@ private:
 //    Point2PointVelocityController p2p_velocity_controller_;
 //    TorqueTrajectoryController p2p_velocity_controller_;
 
-    // EXPERIMENTAL
+    // BEGIN EXPERIMENTAL
     CollisionReplellingP2PController p2p_velocity_controller_;
-    // EXPERIMENTAL
+    // END EXPERIMENTAL
     EmptyController empty_controller_;
     GripperController gripper_controller_;
     GravityCompensationController gravity_comp_controller_;

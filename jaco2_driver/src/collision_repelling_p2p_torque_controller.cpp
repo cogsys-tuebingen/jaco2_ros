@@ -6,6 +6,7 @@ CollisionReplellingP2PController::CollisionReplellingP2PController(Jaco2State &s
     Jaco2Controller(state, api),
     reflex_controller_(state, api),
     tracking_controller_(state, api),
+    torque_controller_(state, api),
     threshold_(std::sqrt(6)*2),
     first_coll_(true),
     in_collision_(false),
@@ -16,12 +17,12 @@ CollisionReplellingP2PController::CollisionReplellingP2PController(Jaco2State &s
     last_cmd_rep_  = std::chrono::high_resolution_clock::now();
 
     kr_.InitStruct();
-    kr_.Actuator1 = 1.0;
-    kr_.Actuator2 = 1.0;
-    kr_.Actuator3 = 1.0;
-    kr_.Actuator4 = 1.0;
-    kr_.Actuator5 = 1.0;
-    kr_.Actuator6 = 0.0;
+    kr_.Actuator1 = 0.25;
+    kr_.Actuator2 = 0.25;
+    kr_.Actuator3 = 0.25;
+    kr_.Actuator4 = 0.25;
+    kr_.Actuator5 = 0.25;
+    kr_.Actuator6 = 0.25;
     kpq_.InitStruct();
     kdq_.InitStruct();
 //    esum_.InitStruct();
@@ -70,10 +71,10 @@ void CollisionReplellingP2PController::write()
     in_collision_ = residual > threshold_;
     if(in_collision_){
         // repell
-        ROS_INFO_STREAM("Repelling! collision detected: "<< residual);
+//        ROS_INFO_STREAM("Repelling! collision detected: "<< residual);
         reflex();
-        reflex_controller_.write();
-
+//        reflex_controller_.write();
+        torque_controller_.write();
     }
     else{
 //        done_ =!first_coll_;
@@ -87,53 +88,83 @@ void CollisionReplellingP2PController::reflex()
 {
 
     AngularInfo cmd;
-    cmd.Actuator1 = kr_.Actuator1 * last_residual_(0);
-    cmd.Actuator2 = kr_.Actuator2 * last_residual_(1);
-    cmd.Actuator3 = kr_.Actuator3 * last_residual_(2);
-    cmd.Actuator4 = kr_.Actuator4 * last_residual_(3);
-    cmd.Actuator5 = kr_.Actuator5 * last_residual_(4);
-    cmd.Actuator6 = kr_.Actuator6 * last_residual_(5);
 //    std::cout << "residual " << last_residual_ << std::endl;
-
-
-    auto vel = state_.getAngularPosition();
-    auto pos = state_.getAngularPosition();
-
-    DataConversion::from_degrees(pos);
-    DataConversion::from_degrees(vel);
-
-    Jaco2KinDynLib::IntegrationData data;
-    DataConversion::convert(pos.Actuators, data.pos);
-    DataConversion::convert(vel.Actuators, data.vel);
     if(first_coll_){
-        data.dt = 0;
-        estimator_.setInitalValues(data);
-        ROS_WARN_STREAM("activate torque control");
+        cmd.InitStruct();
+        torque_controller_.start();
         first_coll_ = false;
     }
+    else{
+        cmd.Actuator1 = kr_.Actuator1 * last_residual_(0);
+        cmd.Actuator2 = kr_.Actuator2 * last_residual_(1);
+        cmd.Actuator3 = kr_.Actuator3 * last_residual_(2);
+        cmd.Actuator4 = kr_.Actuator4 * last_residual_(3);
+        cmd.Actuator5 = kr_.Actuator5 * last_residual_(4);
+        cmd.Actuator6 = kr_.Actuator6 * last_residual_(5);
+    }
+    torque_controller_.setTorque(cmd);
 
-    DataConversion::convert(cmd, data.torques);
-    data.dt = dt_;
+//    auto new_torque = state_.getTorqueGFree();
+//    auto pos = state_.getAngularPosition();
+//    auto vel = state_.getAngularPosition();
 
-    estimator_.estimateGfree(data);
-    std::vector<double> desired_pos = estimator_.getCurrentPosition();
-    std::vector <double> desired_vel = estimator_.getCurrentVelocity();
-//    std::cout << "Desired Pos: ";
-//    for(auto d : desired_pos){
-//        std::cout << d << "\t";
+//    //alternative solution velocity control
+//    auto new_torque = state_.getTorqueGFree();
+//    DataConversion::from_degrees(pos);
+//    DataConversion::from_degrees(vel);
+
+//    Jaco2KinDynLib::IntegrationData data;
+//    DataConversion::convert(pos.Actuators, data.pos);
+//    DataConversion::convert(vel.Actuators, data.vel);
+//    if(first_coll_){
+//        data.dt = 0;
+//        estimator_.setInitalValues(data);
+////        api_.enableDirectTorqueMode(1.0,0.5);
+//        ROS_WARN_STREAM("activate torque control");
+//        first_coll_ = false;
 //    }
-//    std::cout << std::endl;
-    AngularInfo diffQ = desired_pos - pos.Actuators;
-    AngularInfo diffV = desired_vel - vel.Actuators;
+////    api_.enableDirectTorqueMode(1.0,0.5);
 
-    TrajectoryPoint tp;
-    tp.InitStruct();
-    tp.Position.Type = ANGULAR_VELOCITY;
-    tp.Position.HandMode = HAND_NOMOVEMENT;
-    tp.Position.Actuators = -1.0 * kpq_ * diffQ + -1.0 * kdq_ * diffV;
-    DataConversion::to_degrees(tp.Position.Actuators);
-    std::cout << "vel cmd: " << KinovaArithmetics::to_string(tp.Position.Actuators ) <<std::endl;
-    reflex_controller_.setVelocity(tp);
+//    DataConversion::convert(cmd, data.torques);
+//    data.dt = dt_;
+
+//    estimator_.estimateGfree(data);
+//    std::vector<double> desired_pos = estimator_.getCurrentPosition();
+//    std::vector <double> desired_vel = estimator_.getCurrentVelocity();
+////    std::cout << "Desired Pos: ";
+////    for(auto d : desired_pos){
+////        std::cout << d << "\t";
+////    }
+////    std::cout << std::endl;
+//    AngularInfo diffQ = desired_pos - pos.Actuators;
+//    AngularInfo diffV = desired_vel - vel.Actuators;
+
+//    TrajectoryPoint tp;
+//    tp.InitStruct();
+//    tp.Position.Type = ANGULAR_VELOCITY;
+//    tp.Position.HandMode = HAND_NOMOVEMENT;
+//    tp.Position.Actuators = kpq_ * diffQ + kdq_ * diffV;
+//    DataConversion::to_degrees(tp.Position.Actuators);
+//    std::cout << "vel cmd: " << KinovaArithmetics::to_string(tp.Position.Actuators ) <<std::endl;
+//    reflex_controller_.setVelocity(tp);
+}
+
+//void CollisionReplellingP2PController::calculateEsum(const AngularInfo& diff)
+//{
+//    e_buffer_.push_back(diff);
+//    if(e_buffer_.size() > 130){
+//        e_buffer_.pop_front();
+//    }
+//    esum_.InitStruct();
+//    for(auto val : e_buffer_){
+//        esum_ = esum_ + dt_ * val ;
+//    }
+//}
+void CollisionReplellingP2PController::setTorqueControlGains(double p, double i, double d)
+{
+    kp_ = p;
+    ki_ = i;
+    torque_controller_.setGains(p,i,d);
 }
 
 void CollisionReplellingP2PController::setReflexGain(const AngularInfo& R)
@@ -146,11 +177,7 @@ void CollisionReplellingP2PController::setCorrectionGains(const AngularInfo& kp,
     kpq_ = kp;
     kdq_ = kd;
 
-}
-
-void CollisionReplellingP2PController::setVelocityControlGains(double p, double i, double d)
-{
-    reflex_controller_.setGains(p, i, d);
+    torque_controller_.setQGains(kp.Actuator1,0,kdq_.Actuator1);
 }
 
 void CollisionReplellingP2PController::setThreshold(double threshold)
@@ -218,9 +245,34 @@ void CollisionReplellingP2PController::getResidualsData(ResidualData &data)
     }
     data.dt = dt_;
 
+//    data.joint_positions.resize(Jaco2DriverConstants::n_Jaco2Joints);
+//    data.joint_velocities.resize(Jaco2DriverConstants::n_Jaco2Joints);
+//    data.torques.resize(Jaco2DriverConstants::n_Jaco2Joints);
+
+//    data.joint_positions[0] = pos.Actuators.Actuator1;
+//    data.joint_positions[1] = pos.Actuators.Actuator2;
+//    data.joint_positions[2] = pos.Actuators.Actuator3;
+//    data.joint_positions[3] = pos.Actuators.Actuator4;
+//    data.joint_positions[4] = pos.Actuators.Actuator5;
+//    data.joint_positions[5] = pos.Actuators.Actuator6;
+
     DataConversion::convert(pos.Actuators, data.joint_positions);
     DataConversion::convert(vel.Actuators, data.joint_velocities);
     DataConversion::convert(torques.Actuators, data.torques);
+
+//    data.joint_velocities[0] = vel.Actuators.Actuator1;
+//    data.joint_velocities[1] = vel.Actuators.Actuator2;
+//    data.joint_velocities[2] = vel.Actuators.Actuator3;
+//    data.joint_velocities[3] = vel.Actuators.Actuator4;
+//    data.joint_velocities[4] = vel.Actuators.Actuator5;
+//    data.joint_velocities[5] = vel.Actuators.Actuator6;
+
+//    data.torques[0] = torques.Actuators.Actuator1;
+//    data.torques[1] = torques.Actuators.Actuator2;
+//    data.torques[2] = torques.Actuators.Actuator3;
+//    data.torques[3] = torques.Actuators.Actuator4;
+//    data.torques[4] = torques.Actuators.Actuator5;
+//    data.torques[5] = torques.Actuators.Actuator6;
 
 }
 

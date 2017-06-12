@@ -50,6 +50,8 @@ Jaco2API::Jaco2API():
     SetGravityType = (int(*)(GRAVITY_TYPE Type)) dlsym(commandLayer_handle, "SetGravityType");
     SetGravityOptimalZParam = (int(*)(float Command[GRAVITY_PARAM_SIZE])) dlsym(commandLayer_handle, "SetGravityOptimalZParam");
     SetActuatorPID = (int (*)(unsigned int, float, float, float )) dlsym(commandLayer_handle,"SetActuatorPID");
+    StartForceControl = (int (*)()) dlsym(commandLayer_handle,"StartForceControl");
+    StopForceControl = (int (*)()) dlsym(commandLayer_handle,"StopForceControl");
 
 }
 
@@ -323,11 +325,11 @@ void Jaco2API::enableDirectTorqueMode(double torque_saftey_factor, double vibrat
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     int res1 = SetTorqueControlType(DIRECTTORQUE);
-    std::cout << "torque control type: " << res1 << std::endl;
+//    std::cout << "torque control type: " << res1 << std::endl;
     SetTorqueSafetyFactor(torque_saftey_factor);
     SetTorqueVibrationController(vibration_controller);
     int res2 = SwitchTrajectoryTorque(TORQUE);
-    std::cout << "switching result: " << res2 << std::endl;
+//    std::cout << "switching result: " << res2 << std::endl;
 }
 
 void Jaco2API::disableTorque()
@@ -494,7 +496,6 @@ void Jaco2API::moveHomeLeft()
     else{
         MoveHome();
     }
-
 }
 
 
@@ -512,4 +513,17 @@ void Jaco2API::setActuatorPID(ActuatorID actuator, double p, double i, double d)
 
 }
 
+void Jaco2API::startForceControl()
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    int res = StartForceControl();
+    std::cout << res << std::endl;
+}
+
+void Jaco2API::stopForceControl()
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    int res = StopForceControl();
+    std::cout << res << std::endl;
+}
 

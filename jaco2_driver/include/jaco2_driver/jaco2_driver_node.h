@@ -55,6 +55,8 @@ private:
     bool homeArmServiceCallback(jaco2_msgs::HomeArm::Request &req, jaco2_msgs::HomeArm::Response &res);
     bool setTorqueZeroCallback(jaco2_msgs::SetTorqueZero::Request &req, jaco2_msgs::SetTorqueZero::Response & res);
     bool gravityCompCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
+    bool admittanceControlCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
+
 
     void dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureConfig &config, uint32_t level);
 
@@ -81,6 +83,7 @@ private:
     ros::ServiceServer homingService_;
     ros::ServiceServer zeroTorqueService_;
     ros::ServiceServer gravityCompensationService_;
+    ros::ServiceServer admittanceControlService_;
 
     actionlib::SimpleActionServer<jaco2_msgs::ArmJointAnglesAction> actionAngleServer_;
     actionlib::SimpleActionServer<control_msgs::FollowJointTrajectoryAction> trajServer_;

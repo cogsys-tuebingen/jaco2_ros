@@ -20,7 +20,6 @@ public:
 
     virtual void start() override
     {
-        api_.disableTorque();
     }
 
     void setPosition(const TrajectoryPoint& tp)

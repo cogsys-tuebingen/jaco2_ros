@@ -75,6 +75,9 @@ public:
      */
     void setActuatorPID(ActuatorID actuator, double p, double i, double d);
 
+    void startForceControl();
+    void stopForceControl();
+
 
 private:
     void * commandLayer_handle;
@@ -119,6 +122,8 @@ private:
     int(*SetTorqueControlType)(TORQUECONTROL_TYPE type);
     int(*GetTrajectoryTorqueMode)(int &);
     int(*SetActuatorPID)(unsigned int address, float P, float I, float D);
+    int (*StartForceControl)();
+    int (*StopForceControl)();
 
 
     void moveHomeLeft();

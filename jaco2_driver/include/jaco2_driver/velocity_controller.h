@@ -27,7 +27,8 @@ public:
 
     virtual void start() override
     {
-        api_.disableTorque();
+//        api_.disableTorque();
+
         last_diff_.InitStruct();
     }
 
@@ -47,10 +48,6 @@ public:
         kp_ = p;
         ki_ = i;
         kd_ = d;
-//        std::cout << "velocity PID: " << p << ", " << i <<", "<< d<<std::endl;
-//        for(unsigned int i = 1; i < 7; ++i){
-//            api_.setActuatorPID(i, kp_,ki_, kd_);
-//        }
     }
 
     void setFingerPosition(const TrajectoryPoint& tp)
@@ -92,10 +89,11 @@ public:
             desired_.Position.InitStruct();
             desired_.Position.Type = ANGULAR_VELOCITY;
         }
-        else if(desired_.Position.HandMode == HAND_NOMOVEMENT && sum > 0.1){
+        else if(desired_.Position.HandMode == HAND_NOMOVEMENT && sum > 0.01){
             auto vel = pidControl();
             cmd_.Position.Actuators = vel;
 //            cmd_.Position.Actuators = desired_.Position.Actuators;
+//            std::cout << "controller command vel: " << KinovaArithmetics::to_string(cmd_.Position.Actuators ) <<std::endl;
 
         }
 //        std::cout << "desired vel: "<< desired_.Position.Actuators.Actuator6 <<std::endl;

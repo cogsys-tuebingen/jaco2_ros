@@ -49,6 +49,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     homingService_ = private_nh_.advertiseService("in/home_arm", &Jaco2DriverNode::homeArmServiceCallback, this);
     zeroTorqueService_ = private_nh_.advertiseService("in/set_torque_zero", &Jaco2DriverNode::setTorqueZeroCallback, this);
     gravityCompensationService_ = private_nh_.advertiseService("in/enable_gravity_compensation_mode", &Jaco2DriverNode::gravityCompCallback, this);
+    admittanceControlService_ = private_nh_.advertiseService("in/enable_admittance_mode", &Jaco2DriverNode::admittanceControlCallback, this);
 
     actionAngleServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::actionAngleGoalCb, this));
     trajServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::trajGoalCb, this));
@@ -282,6 +283,21 @@ bool Jaco2DriverNode::gravityCompCallback(std_srvs::SetBool::Request &req, std_s
     return true;
 }
 
+bool Jaco2DriverNode::admittanceControlCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
+{
+    if(req.data){
+        driver_.enableForceControl();
+        res.message = "Admittance control aktive.";
+    }
+    else{
+        driver_.disableForceControl();
+        res.message = "Admittance control deactivated.";
+    }
+
+    res.success = true;
+    return true;
+}
+
 bool Jaco2DriverNode::tick()
 {
     publishJointState();
@@ -446,30 +462,36 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
                                        config.velocity_controller_i_gain,
                                        config.velocity_controller_d_gain);
 
-//    std::cout << config.torque_controller_p_gain <<" , " <<
-//                 config.torque_controller_i_gain <<" , " <<
-//                 config.torque_controller_d_gain << std::endl;
-
     driver_.setTorqueControllerGains(config.torque_controller_p_gain,
                                      config.torque_controller_i_gain,
                                      config.torque_controller_d_gain);
-    // EXPERIMENTAL
-    AngularInfo kp,kd;
-    kp.Actuator1 = config.torque_controller_p_q_gain;
-    kp.Actuator2 = config.torque_controller_p_q_gain;
-    kp.Actuator3 = config.torque_controller_p_q_gain;
-    kp.Actuator4 = config.torque_controller_p_q_gain;
-    kp.Actuator5 = config.torque_controller_p_q_gain;
-    kp.Actuator6 = config.torque_controller_p_q_gain;
+    // BEGIN EXPERIMENTAL
+    AngularInfo kp,kd,kr;
+    kp.Actuator1 = config.collision_reflex_p_gain_joint_0;
+    kp.Actuator2 = config.collision_reflex_p_gain_joint_1;
+    kp.Actuator3 = config.collision_reflex_p_gain_joint_2;
+    kp.Actuator4 = config.collision_reflex_p_gain_joint_3;
+    kp.Actuator5 = config.collision_reflex_p_gain_joint_4;
+    kp.Actuator6 = config.collision_reflex_p_gain_joint_5;
 
-    kd.Actuator1 = config.torque_controller_d_q_gain;
-    kd.Actuator2 = config.torque_controller_d_q_gain;
-    kd.Actuator3 = config.torque_controller_d_q_gain;
-    kd.Actuator4 = config.torque_controller_d_q_gain;
-    kd.Actuator5 = config.torque_controller_d_q_gain;
-    kd.Actuator6 = config.torque_controller_d_q_gain;
+    kd.Actuator1 = config.collision_reflex_d_gain_joint_0;
+    kd.Actuator2 = config.collision_reflex_d_gain_joint_1;
+    kd.Actuator3 = config.collision_reflex_d_gain_joint_2;
+    kd.Actuator4 = config.collision_reflex_d_gain_joint_3;
+    kd.Actuator5 = config.collision_reflex_d_gain_joint_4;
+    kd.Actuator6 = config.collision_reflex_d_gain_joint_5;
+
+    kr.Actuator1 = config.collision_reflex_gain_joint_0;
+    kr.Actuator2 = config.collision_reflex_gain_joint_1;
+    kr.Actuator3 = config.collision_reflex_gain_joint_2;
+    kr.Actuator4 = config.collision_reflex_gain_joint_3;
+    kr.Actuator5 = config.collision_reflex_gain_joint_4;
+    kr.Actuator6 = config.collision_reflex_gain_joint_5;
     driver_.setCorrectionGains(kp, kd);
-    // EXPERIMENTAL
+    driver_.setCollisionReflexGain(kr);
+    driver_.setCollisionThreshold(config.collision_threshold);
+    // END EXPERIMENTAL
+
     driver_.setTorqueControllerQGains(config.torque_controller_p_q_gain,
                                      config.torque_controller_i_q_gain,
                                      config.torque_controller_d_q_gain);

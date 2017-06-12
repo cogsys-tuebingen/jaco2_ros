@@ -24,6 +24,14 @@ TorqueController::TorqueController(Jaco2State &state, Jaco2API &api)
     desired_.InitStruct();
     esum_.InitStruct();
     esumQ_.InitStruct();
+    //See Torque Control Documentation for the Jaco 2.
+    max_torques_.Actuator1 = 19.0;
+    max_torques_.Actuator2 = 38.0;
+    max_torques_.Actuator3 = 19.0;
+    max_torques_.Actuator4 = 7.0;
+    max_torques_.Actuator5 = 7.0;
+    max_torques_.Actuator6 = 7.0;
+
 
 }
 
@@ -47,8 +55,9 @@ void TorqueController::start()
     estimator_.setInitalValues(data);
     data.torques = estimator_.getModelTorques();
 
-//    estimator_.estimateGfree(data);
+    //    estimator_.estimateGfree(data);
     esumQ_.InitStruct();
+    counter_ = 0;
 
 }
 
@@ -60,14 +69,28 @@ void TorqueController::setTorque(const AngularPosition& tp)
     if(done_){
         start();
     }
+    api_.enableDirectTorqueMode(1.0);
 
     done_ = false;
-//    std::cout << "new target." << std::endl;
+    //    std::cout << "new target." << std::endl;
+}
+
+void TorqueController::setTorque(const AngularInfo& tp)
+{
+    desired_.Actuators = tp;
+    //        last_command_ = std::time(nullptr);
+    last_command_ = std::chrono::high_resolution_clock::now();
+    if(done_){
+        start();
+    }
+    api_.enableDirectTorqueMode(1.0);
+    done_ = false;
+    //    std::cout << "new target." << std::endl;
 }
 
 void TorqueController::setGains(double p, double i, double d)
 {
-//    api_.setActuatorPID(Actuator1,p,i,d);
+    //    api_.setActuatorPID(Actuator1,p,i,d);
     kp_ = p;
     ki_ = i;
     kd_ = d;
@@ -75,7 +98,7 @@ void TorqueController::setGains(double p, double i, double d)
 
 void TorqueController::setQGains(double p, double i, double d)
 {
-//    api_.setActuatorPID(Actuator1,p,i,d);
+    //    api_.setActuatorPID(Actuator1,p,i,d);
     kqp_ = p;
     kqi_ = i;
     kqd_ = d;
@@ -89,7 +112,7 @@ void TorqueController::write()
 
     samplingPeriod_ = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
 
-//    std ::cout << "torque control dt: "<< samplingPeriod_ << std::endl;
+    //    std ::cout << "torque control dt: "<< samplingPeriod_ << std::endl;
     if(samplingPeriod_ > 0.05)
     {
         cmd_.InitStruct();
@@ -98,14 +121,14 @@ void TorqueController::write()
 
         done_ = true;
         desired_.InitStruct();
-//        api_.disableTorque();
-//        std::cout << "torque control done: " <<  now.time_since_epoch().count() << std::endl;
+        api_.disableTorque();
+        //        std::cout << "torque control done: " <<  now.time_since_epoch().count() << std::endl;
     }
     else{
         auto cmd = pidControl();
         cmd_.Actuators.InitStruct();
 
-        if(std::abs(desired_.Actuators.Actuator1) > 0.1){
+        if(std::abs(desired_.Actuators.Actuator1) > 0.1) {
             cmd_.Actuators.Actuator1 = cmd.Actuator1;
         }
         if(std::abs(desired_.Actuators.Actuator2) > 0.1){
@@ -123,13 +146,11 @@ void TorqueController::write()
         if(std::abs(desired_.Actuators.Actuator6) > 0.1){
             cmd_.Actuators.Actuator6 = cmd.Actuator6;
         }
-        std::cout << "cmd torque :  "
-                  << cmd_.Actuators.Actuator1 << "\t"
-                  << cmd_.Actuators.Actuator2 << "\t"
-                  << cmd_.Actuators.Actuator3 << "\t"
-                  << cmd_.Actuators.Actuator4 << "\t"
-                  << cmd_.Actuators.Actuator5 << "\t"
-                  << cmd_.Actuators.Actuator6 << std::endl;;
+        if(++counter_ < 4){
+            std::cout << "t-control desired: counter: "<<  counter_ << "\t" << KinovaArithmetics::to_string(desired_.Actuators)<< std::endl;
+            std::cout << "t-control cmd.: counter: "<<  counter_ << "\t" << KinovaArithmetics::to_string(cmd)<< std::endl;
+            std::cout << kp_ << "\t" << ki_  << "\t" << kd_ << "\t" << kqp_ << "\t" << kqi_  << "\t" << kqd_   << std::endl;
+        }
         api_.setAngularTorque(cmd_);
     }
 
@@ -141,6 +162,11 @@ bool TorqueController::isDone() const
     return done_;
 }
 
+void TorqueController::stop()
+{
+    api_.disableTorque();
+}
+
 AngularInfo TorqueController::pidControl()
 {
     auto new_torque = state_.getTorqueGFree();
@@ -150,13 +176,13 @@ AngularInfo TorqueController::pidControl()
 
     DataConversion::from_degrees(pos);
     DataConversion::from_degrees(vel);
-//    std::cout << "Is Conf :  " << std::endl
-//              << pos.Actuators.Actuator1 << "\t"
-//              << pos.Actuators.Actuator2 << "\t"
-//              << pos.Actuators.Actuator3 << "\t"
-//              << pos.Actuators.Actuator4 << "\t"
-//              << pos.Actuators.Actuator5 << "\t"
-//              << pos.Actuators.Actuator6 << std::endl;;
+    //    std::cout << "Is Conf :  " << std::endl
+    //              << pos.Actuators.Actuator1 << "\t"
+    //              << pos.Actuators.Actuator2 << "\t"
+    //              << pos.Actuators.Actuator3 << "\t"
+    //              << pos.Actuators.Actuator4 << "\t"
+    //              << pos.Actuators.Actuator5 << "\t"
+    //              << pos.Actuators.Actuator6 << std::endl;;
 
     Jaco2KinDynLib::IntegrationData data;
     DataConversion::convert(pos.Actuators, data.pos);
@@ -168,23 +194,23 @@ AngularInfo TorqueController::pidControl()
 
     std::vector<double> desired_pos = estimator_.getCurrentPosition();
     std::vector <double> desired_vel = estimator_.getCurrentVelocity();
-//    std::cout << "Est. Desired Conf: " << std::endl;
-//    for(int i = 0; i < 6 ; ++ i) {
-//        std::cout <<  desired_pos[i] << "\t";
-//    }
-//    std::cout << std::endl;
-//    torque_buffer_.push_back(new_torque.Actuators);
-//    if(torque_buffer_.size() > 5){
-//        torque_buffer_.pop_front();
-//    }
-//    auto tau = meanOfTorqueBuffer();
-    std::cout << "g_free:  "   << std::endl
-              << new_torque.Actuators.Actuator1 << "\t"
-              << new_torque.Actuators.Actuator2 << "\t"
-              << new_torque.Actuators.Actuator3 << "\t"
-              << new_torque.Actuators.Actuator4 << "\t"
-              << new_torque.Actuators.Actuator5 << "\t"
-              << new_torque.Actuators.Actuator6 << std::endl;
+    //    std::cout << "Est. Desired Conf: " << std::endl;
+    //    for(int i = 0; i < 6 ; ++ i) {
+    //        std::cout <<  desired_pos[i] << "\t";
+    //    }
+    //    std::cout << std::endl;
+    //    torque_buffer_.push_back(new_torque.Actuators);
+    //    if(torque_buffer_.size() > 5){
+    //        torque_buffer_.pop_front();
+    //    }
+    //    auto tau = meanOfTorqueBuffer();
+    //    std::cout << "g_free:  "   << std::endl
+    //              << new_torque.Actuators.Actuator1 << "\t"
+    //              << new_torque.Actuators.Actuator2 << "\t"
+    //              << new_torque.Actuators.Actuator3 << "\t"
+    //              << new_torque.Actuators.Actuator4 << "\t"
+    //              << new_torque.Actuators.Actuator5 << "\t"
+    //              << new_torque.Actuators.Actuator6 << std::endl;
 
     AngularInfo res;
     res.InitStruct();
@@ -194,20 +220,20 @@ AngularInfo TorqueController::pidControl()
     AngularInfo diffQ = desired_pos - pos.Actuators;
     AngularInfo diffV = desired_vel - vel.Actuators;
 
-    std::cout << "diffQ:  " << std::endl
-              << diffQ.Actuator1 << "\t"
-              << diffQ.Actuator2 << "\t"
-              << diffQ.Actuator3 << "\t"
-              << diffQ.Actuator4 << "\t"
-              << diffQ.Actuator5 << "\t"
-              << diffQ.Actuator6 << std::endl;
-    std::cout << "diffV:  " << std::endl
-              << diffV.Actuator1 << "\t"
-              << diffV.Actuator2 << "\t"
-              << diffV.Actuator3 << "\t"
-              << diffV.Actuator4 << "\t"
-              << diffV.Actuator5 << "\t"
-              << diffV.Actuator6 << std::endl;
+//    std::cout << "diffQ:  " << std::endl
+//              << diffQ.Actuator1 << "\t"
+//              << diffQ.Actuator2 << "\t"
+//              << diffQ.Actuator3 << "\t"
+//              << diffQ.Actuator4 << "\t"
+//              << diffQ.Actuator5 << "\t"
+//              << diffQ.Actuator6 << std::endl;
+//    std::cout << "diffV:  " << std::endl
+//              << diffV.Actuator1 << "\t"
+//              << diffV.Actuator2 << "\t"
+//              << diffV.Actuator3 << "\t"
+//              << diffV.Actuator4 << "\t"
+//              << diffV.Actuator5 << "\t"
+//              << diffV.Actuator6 << std::endl;
 
     esumQ_ += samplingPeriod_ * diffQ;
 
@@ -227,10 +253,28 @@ AngularInfo TorqueController::pidControl()
             + kqd_ * (diffV)
             + kqi_ * (esumQ_);
 
-//    std::cout << kp_ << " | " << ki_ << " | " << kd << std::endl;
+    //    std::cout << kp_ << " | " << ki_ << " | " << kd << std::endl;
     last_diff_ = diff;
 
-
+    auto abs_cmd = KinovaArithmetics::abs(res);
+    if(abs_cmd.Actuator1 > max_torques_.Actuator1){
+        res.Actuator1 = 0.95 * max_torques_.Actuator1;
+    }
+    if(abs_cmd.Actuator2 > max_torques_.Actuator2){
+        res.Actuator2 = 0.95 *max_torques_.Actuator2;
+    }
+    if(abs_cmd.Actuator3 > max_torques_.Actuator3){
+        res.Actuator3 = 0.95 *max_torques_.Actuator3;
+    }
+    if(abs_cmd.Actuator4 > max_torques_.Actuator4){
+        res.Actuator4 = 0.95 * max_torques_.Actuator4;
+    }
+    if(abs_cmd.Actuator5 > max_torques_.Actuator5){
+        res.Actuator5 = 0.95 *max_torques_.Actuator5;
+    }
+    if(abs_cmd.Actuator6 > max_torques_.Actuator6){
+        res.Actuator6 = 0.95 * max_torques_.Actuator6;
+    }
 
     return res;
 }
