@@ -21,6 +21,7 @@ public:
     void start() override;
     bool isDone() const;
     virtual void stop() override;
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) override;
 
     void control(const double dt);
 

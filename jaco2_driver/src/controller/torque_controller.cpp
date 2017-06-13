@@ -61,6 +61,12 @@ void TorqueController::start()
 
 }
 
+void TorqueController::setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg)
+{
+    //TODO
+}
+
+
 void TorqueController::setTorque(const AngularPosition& tp)
 {
     desired_ = tp;

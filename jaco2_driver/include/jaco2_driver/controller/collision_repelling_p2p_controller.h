@@ -19,6 +19,11 @@ public:
     void setReflexGain(const AngularInfo& kr);
     void setVelocityControlGains(double p, double i, double d);
 
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) override
+    {
+        //TODO
+    }
+
     void setTrajectory(const JointTrajectory& trajectory);
 
     //Tracking Gains

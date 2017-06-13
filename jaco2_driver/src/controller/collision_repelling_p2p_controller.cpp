@@ -29,7 +29,6 @@ void CollisionReplellingP2PController::setTrajectory(const JointTrajectory& traj
 {
     tracking_controller_.setTrajectory(trajectory);
     collision_reaction_.resetResiduals();
-//    api_.disableTorque();
     last_cmd_rep_  = std::chrono::high_resolution_clock::now();
 }
 

@@ -166,6 +166,10 @@ bool GripperController::reachedGoal()
         return true;
     }
 }
+void GripperController::setConfig(jaco2_driver::jaco2_driver_configureConfig &cfg)
+{
+    //TODO
+}
 
 void GripperController::setGainP(const double finger1, const double finger2, const double finger3)
 {

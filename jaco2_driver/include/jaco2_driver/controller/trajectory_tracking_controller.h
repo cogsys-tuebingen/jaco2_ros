@@ -21,6 +21,8 @@ public:
 
     }
 
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) override;
+
     void setTrajectory(const JointTrajectory& trajectory);
     void setGainP(const ManipulatorInfo &gains);
     void setGainI(const ManipulatorInfo &gains);

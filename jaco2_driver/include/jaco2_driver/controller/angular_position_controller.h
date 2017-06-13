@@ -22,6 +22,11 @@ public:
     {
     }
 
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg)
+    {
+        //TODO
+    }
+
     void setPosition(const TrajectoryPoint& tp)
     {
         handMode_ = false;

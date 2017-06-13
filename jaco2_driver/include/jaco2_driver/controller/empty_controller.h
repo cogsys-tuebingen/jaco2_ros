@@ -22,8 +22,12 @@ public:
 
     virtual void start() override
     {
-        api_.disableTorque();
     }
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) override
+    {
+
+    }
+
 
 
     virtual bool isDone() const override

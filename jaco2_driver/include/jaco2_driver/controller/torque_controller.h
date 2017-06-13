@@ -23,6 +23,7 @@ public:
 
     virtual bool isDone() const override;
     virtual void stop() override;
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) override;
 
 protected:
     AngularInfo pidControl();

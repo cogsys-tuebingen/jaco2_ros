@@ -4,6 +4,7 @@
 #include <kinova/KinovaTypes.h>
 #include <jaco2_driver/jaco2_api.h>
 #include <jaco2_driver/jaco2_state.h>
+#include <jaco2_driver/jaco2_driver_configureConfig.h>
 
 class Jaco2Controller
 {
@@ -29,6 +30,8 @@ public:
     {
 
     }
+
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) = 0;
 
 protected:
     virtual void write() = 0;

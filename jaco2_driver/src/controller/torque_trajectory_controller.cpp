@@ -31,6 +31,12 @@ void TorqueTrajectoryController::stop()
     api_.disableTorque();
 }
 
+void TorqueTrajectoryController::setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg)
+{
+    //TODO
+}
+
+
 void TorqueTrajectoryController::write()
 {
     auto now = std::chrono::high_resolution_clock::now();

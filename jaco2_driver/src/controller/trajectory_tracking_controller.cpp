@@ -93,6 +93,11 @@ void TajectoryTrackingController::setGainD(const ManipulatorInfo &gains)
     gainD_ = gains;
 }
 
+void TajectoryTrackingController::setConfig(jaco2_driver::jaco2_driver_configureConfig &cfg)
+{
+//TODO
+}
+
 AngularInfo TajectoryTrackingController::getJointError() const
 {
     AngularInfo error;

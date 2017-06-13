@@ -32,6 +32,11 @@ public:
         last_diff_.InitStruct();
     }
 
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) override
+    {
+        //TODO
+    }
+
     void setVelocity(const TrajectoryPoint& tp)
     {
         desired_ = tp;
