@@ -11,24 +11,22 @@
 #include <kinova/KinovaTypes.h>
 #include <jaco2_msgs/JointVelocity.h>
 #include <jaco2_driver/jaco2_api.h>
-#include <jaco2_driver/jaco2_controller.h>
-#include <jaco2_driver/angular_position_controller.h>
 #include <jaco2_driver/joint_trajectory.h>
 #include <jaco2_driver/accelerometer_calibration.hpp>
 #include <jaco2_driver/torque_offset_lut.hpp>
 #include <jaco2_driver/gravity_params.hpp>
 #include <jaco2_driver/torque_offset_calibration.hpp>
 //Jaco2 Controller
-#include <jaco2_driver/jaco2_controller.h>
-#include <jaco2_driver/empty_controller.h>
-#include <jaco2_driver/angular_position_controller.h>
-#include <jaco2_driver/velocity_controller.h>
-#include <jaco2_driver/point_2_point_velocity_controller.h>
-#include <jaco2_driver/gripper_controller.h>
-#include <jaco2_driver/gravity_compensation_controller.hpp>
-#include <jaco2_driver/torque_controller.h>
-#include <jaco2_driver/collision_repelling_p2p_controller.h>
-#include <jaco2_driver/torque_trajectory_controller.h>
+#include <jaco2_driver/controller/jaco2_controller.h>
+#include <jaco2_driver/controller/empty_controller.h>
+#include <jaco2_driver/controller/angular_position_controller.h>
+#include <jaco2_driver/controller/velocity_controller.h>
+#include <jaco2_driver/controller/point_2_point_velocity_controller.h>
+#include <jaco2_driver/controller/gripper_controller.h>
+#include <jaco2_driver/controller/gravity_compensation_controller.hpp>
+#include <jaco2_driver/controller/torque_controller.h>
+#include <jaco2_driver/controller/collision_repelling_p2p_controller.h>
+#include <jaco2_driver/controller/torque_trajectory_controller.h>
 
 
 class Jaco2Driver

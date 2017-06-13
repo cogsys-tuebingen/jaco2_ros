@@ -1,7 +1,7 @@
 #ifndef GRIPPERPIDCONTROLLER_H
 #define GRIPPERPIDCONTROLLER_H
 
-#include <jaco2_driver/jaco2_controller.h>
+#include <jaco2_driver/controller/jaco2_controller.h>
 #include <chrono>
 #include <kinova/KinovaTypes.h>
 

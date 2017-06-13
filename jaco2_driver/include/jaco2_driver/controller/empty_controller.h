@@ -4,7 +4,7 @@
 #include <kinova/KinovaTypes.h>
 #include <jaco2_driver/jaco2_api.h>
 #include <jaco2_driver/jaco2_state.h>
-#include <jaco2_driver/jaco2_controller.h>
+#include <jaco2_driver/controller/jaco2_controller.h>
 
 class EmptyController : public Jaco2Controller
 {

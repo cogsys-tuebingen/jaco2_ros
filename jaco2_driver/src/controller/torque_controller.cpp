@@ -1,5 +1,5 @@
 #include <ctime>
-#include <jaco2_driver/torque_controller.h>
+#include <jaco2_driver/controller/torque_controller.h>
 #include <jaco2_driver/data_conversion.h>
 #include <kinova/KinovaTypes.h>
 #include <kinova/KinovaArithmetics.hpp>

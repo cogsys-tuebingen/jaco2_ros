@@ -2,8 +2,8 @@
 #define POINT_2_POINT_VELOCITY_CONTROLLER_H
 
 #include "velocity_controller.h"
-#include "joint_trajectory.h"
-#include "manipulator_info.h"
+#include <jaco2_driver/joint_trajectory.h>
+#include <jaco2_driver/manipulator_info.h>
 #include <jaco2_driver/jaco2_api.h>
 #include <chrono>
 

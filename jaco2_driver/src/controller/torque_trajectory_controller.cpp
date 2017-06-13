@@ -1,4 +1,4 @@
-#include <jaco2_driver/torque_trajectory_controller.h>
+#include <jaco2_driver/controller/torque_trajectory_controller.h>
 #include <kinova/KinovaArithmetics.hpp>
 
 TorqueTrajectoryController::TorqueTrajectoryController(Jaco2State &state, Jaco2API &api):

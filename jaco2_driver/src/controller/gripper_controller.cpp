@@ -1,4 +1,4 @@
-#include <jaco2_driver/gripper_controller.h>
+#include <jaco2_driver/controller/gripper_controller.h>
 #include <math.h>
 #include <kinova/KinovaTypes.h>
 

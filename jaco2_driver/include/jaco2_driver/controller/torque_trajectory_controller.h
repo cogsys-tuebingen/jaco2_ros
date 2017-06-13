@@ -1,7 +1,7 @@
 #ifndef TORQUE_TRAJECTORY_CONTROLLER_H
 #define TORQUE_TRAJECTORY_CONTROLLER_H
 
-#include <jaco2_driver/point_2_point_velocity_controller.h>
+#include <jaco2_driver/controller/point_2_point_velocity_controller.h>
 #include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 
 #include <ros/ros.h>

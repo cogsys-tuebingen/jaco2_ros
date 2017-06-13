@@ -1,4 +1,4 @@
-#include <jaco2_driver/collision_repelling_p2p_controller.h>
+#include <jaco2_driver/controller/collision_repelling_p2p_controller.h>
 #include <jaco2_driver/jaco2_driver_constants.h>
 #include <kinova/KinovaArithmetics.hpp>
 

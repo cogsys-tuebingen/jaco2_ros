@@ -1,4 +1,4 @@
-#include <jaco2_driver/point_2_point_velocity_controller.h>
+#include <jaco2_driver/controller/point_2_point_velocity_controller.h>
 #include <math.h>
 
 Point2PointVelocityController::Point2PointVelocityController(Jaco2State &state, Jaco2API& api)

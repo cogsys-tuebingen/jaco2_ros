@@ -1,9 +1,9 @@
 #ifndef COLLISION_REPELLING_P2P_CONTROLLER_H
 #define COLLISION_REPELLING_P2P_CONTROLLER_H
-#include "data_conversion.h"
-#include <jaco2_driver/point_2_point_velocity_controller.h>
-#include <jaco2_driver/torque_controller.h>
-#include <jaco2_driver/torque_trajectory_controller.h>
+#include <jaco2_driver/data_conversion.h>
+#include <jaco2_driver/controller/point_2_point_velocity_controller.h>
+#include <jaco2_driver/controller/torque_controller.h>
+#include <jaco2_driver/controller/torque_trajectory_controller.h>
 #include <jaco2_kin_dyn_lib/jaco2_residual_vector.h>
 #include <jaco2_kin_dyn_lib/joint_vel_pos_estimator.h>
 
