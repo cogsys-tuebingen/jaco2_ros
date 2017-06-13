@@ -249,6 +249,7 @@ void Jaco2Driver::tick()
         {
             if(active_controller_->isDone()){
                 active_controller_->stop();
+                setActiveController(&empty_controller_);
             }
             else{
                 active_controller_->execute();

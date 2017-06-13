@@ -104,6 +104,23 @@ AngularInfo TajectoryTrackingController::getJointError() const
     return error;
 }
 
+ManipulatorInfo TajectoryTrackingController::diffTrajectoryPoint()
+{
+
+    auto current_position =  state_.getAngularPosition();
+    ManipulatorInfo diff;
+    diff[0] = fabs(current_position.Actuators.Actuator1 - trajectory_.getPosition(current_point_,0));
+    diff[1] = fabs(current_position.Actuators.Actuator2 - trajectory_.getPosition(current_point_,1));
+    diff[2] = fabs(current_position.Actuators.Actuator3 - trajectory_.getPosition(current_point_,2));
+    diff[3] = fabs(current_position.Actuators.Actuator4 - trajectory_.getPosition(current_point_,3));
+    diff[4] = fabs(current_position.Actuators.Actuator5 - trajectory_.getPosition(current_point_,4));
+    diff[5] = fabs(current_position.Actuators.Actuator6 - trajectory_.getPosition(current_point_,5));
+
+    diff.normalizeAngleDegrees();
+
+    return diff;
+}
+
 
 void TajectoryTrackingController::evaluationOutput()
 {
