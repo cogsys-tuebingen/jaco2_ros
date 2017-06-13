@@ -4,8 +4,7 @@
 #include <jaco2_driver/controller/point_2_point_velocity_controller.h>
 #include <jaco2_driver/controller/torque_controller.h>
 #include <jaco2_driver/controller/torque_trajectory_controller.h>
-#include <jaco2_kin_dyn_lib/jaco2_residual_vector.h>
-#include <jaco2_kin_dyn_lib/joint_vel_pos_estimator.h>
+#include <jaco2_driver/controller/collision_reaction.h>
 
 class CollisionReplellingP2PController : public Jaco2Controller
 {
@@ -22,7 +21,6 @@ public:
     void setCorrectionGains(const AngularInfo& kp, const AngularInfo kd);
     void setVelocityControlGains(double p, double i, double d);
 
-    //Velocity Controller Gains
     void setTrajectory(const JointTrajectory& trajectory);
 
     //Tracking Gains
@@ -31,35 +29,14 @@ public:
     void setGainD(const ManipulatorInfo &gains);
     AngularInfo getJointError() const ;
 
-private:
-    void reflex();
-    double getResiduals();
-    void estimateGravity(double& gx, double &gy, double& gz);
-    void getResidualsData(ResidualData& data);
-    void resetResiduals();
-//    void calculateEsum(const AngularInfo& diff);
 
 
 private:
     VelocityController reflex_controller_;
     Point2PointVelocityController tracking_controller_;
-    double threshold_;
-    bool first_coll_;
-    bool in_collision_;
-    Jaco2ResidualVector resiudals_;
-    Jaco2KinDynLib::JointVelPosEstimator estimator_;
-    Eigen::VectorXd last_integral_;
-    Eigen::VectorXd last_residual_;
-    std::deque<Eigen::Vector3d> filter_g_;
-    double dt_;
+    CollisionReaction collision_reaction_;
     std::chrono::time_point<std::chrono::high_resolution_clock> last_cmd_rep_;
-    AngularInfo kr_;
-    AngularInfo kpq_;
-    AngularInfo kdq_;
-    std::deque<AngularInfo> e_buffer_;
-//    AngularInfo esum_;
-    double kp_;
-    double ki_;
+
 
 
 };

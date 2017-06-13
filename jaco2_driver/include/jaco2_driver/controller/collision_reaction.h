@@ -31,6 +31,7 @@ class CollisionReaction
 public:
     CollisionReaction(Jaco2State& state);
 
+    void start();
     void setThreshold(double threshold);
     void setRobotModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
     void setReflexGain(const AngularInfo& kr);

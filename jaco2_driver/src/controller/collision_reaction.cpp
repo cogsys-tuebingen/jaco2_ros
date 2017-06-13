@@ -39,6 +39,12 @@ CollisionReaction::CollisionReaction(Jaco2State &state):
 
 }
 
+void CollisionReaction::start()
+{
+    in_collision_ = false;
+    collision_counter_ = 0;
+}
+
 void CollisionReaction::setThreshold(double threshold)
 {
     threshold_ = threshold;
@@ -264,7 +270,7 @@ TrajectoryPoint CollisionReaction::calculateVelocity(AngularInfo& cmd)
     if(in_collision_ && collision_counter_ == 1){
         data.dt = 0;
         estimator_.setInitalValues(data);
-        ROS_WARN_STREAM("activate torque control");
+//        ROS_WARN_STREAM("activate torque control");
     }
 
     DataConversion::convert(cmd, data.torques);
@@ -287,7 +293,7 @@ TrajectoryPoint CollisionReaction::calculateVelocity(AngularInfo& cmd)
     tp.Position.HandMode = HAND_NOMOVEMENT;
     tp.Position.Actuators = kpq_ * diffQ + kdq_ * diffV;
     DataConversion::to_degrees(tp.Position.Actuators);
-    std::cout << "vel cmd: " << KinovaArithmetics::to_string(tp.Position.Actuators ) <<std::endl;
+//    std::cout << "vel cmd: " << KinovaArithmetics::to_string(tp.Position.Actuators ) <<std::endl;
     return tp;
 }
 
