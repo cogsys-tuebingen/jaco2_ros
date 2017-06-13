@@ -2,8 +2,7 @@
 #define COLLISION_REPELLING_P2P_CONTROLLER_H
 #include <jaco2_driver/data_conversion.h>
 #include <jaco2_driver/controller/point_2_point_velocity_controller.h>
-#include <jaco2_driver/controller/torque_controller.h>
-#include <jaco2_driver/controller/torque_trajectory_controller.h>
+#include <jaco2_driver/controller/velocity_controller.h>
 #include <jaco2_driver/controller/collision_reaction.h>
 
 class CollisionReplellingP2PController : public Jaco2Controller

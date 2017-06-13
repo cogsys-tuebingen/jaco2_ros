@@ -489,6 +489,7 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
     kr.Actuator6 = config.collision_reflex_gain_joint_5;
     driver_.setCorrectionGains(kp, kd);
     driver_.setCollisionReflexGain(kr);
+    std::cout << "DRIVER kr:\t" << KinovaArithmetics::to_string(kr) <<std::endl;
     driver_.setCollisionThreshold(config.collision_threshold);
     // END EXPERIMENTAL
 

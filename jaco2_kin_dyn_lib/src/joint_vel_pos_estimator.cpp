@@ -28,6 +28,18 @@ std::vector<double>& operator+=(std::vector<double> &rhs, const std::vector<doub
     return rhs;
 }
 
+std::vector<double>& operator-=(std::vector<double> &rhs, const std::vector<double> &lhs)
+{
+        auto it_rhs = rhs.begin();
+        for(auto val : lhs){
+            *it_rhs -= val;
+            ++it_rhs;
+        }
+
+    return rhs;
+}
+
+
 std::vector<double> operator*(const double& val, const std::vector<double>& v)
 {
     std::vector<double> result;
@@ -95,10 +107,16 @@ void JointVelPosEstimator::setGravity(double gx, double gy, double gz) const
 void JointVelPosEstimator::estimateGfree(const IntegrationData &data)
 {
     IntegrationData modified = data;
-    std::vector<double> zero(model_.getNrOfJoints(),0);
-    std::vector<double> g;
-    model_.getTorques(data.pos, zero, zero, g);
-    modified.torques += g;
+//    std::vector<double> zero(model_.getNrOfJoints(),0);
+//    std::vector<double> g;
+//    model_.getTorques(data.pos, zero, zero, g);
+    Eigen::MatrixXd H;
+    Eigen::VectorXd G;
+    model_.getChainDynInertiaAndGravity(modified.pos, H, G);
+    for(std::size_t i = 0; i < data.pos.size(); ++i)
+    {
+        modified.torques[i] += G(i);
+    }
     estimate(data);
 }
 
@@ -111,7 +129,7 @@ void JointVelPosEstimator::estimate(const IntegrationData &data)
 //    }
 
     model_.getJointAcceleration(data.pos, data.vel, data.torques, current_acc_);
-    current_vel_ = data.vel + 0.5 * data.dt * current_acc_;
+    current_vel_ = data.vel + data.dt * current_acc_;
     current_pos_ = data.pos + data.dt * current_vel_;
 }
 

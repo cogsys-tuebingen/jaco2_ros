@@ -53,6 +53,7 @@ void CollisionReaction::setThreshold(double threshold)
 void CollisionReaction::setReflexGain(const AngularInfo &kr)
 {
     kr_ = kr;
+    std::cout << "kr:\t" << KinovaArithmetics::to_string(kr_) <<std::endl;
 }
 
 void CollisionReaction::setRobotModel(const std::string &robot_model, const std::string &chain_root, const std::string &chain_tip)
@@ -104,12 +105,12 @@ AngularInfo CollisionReaction::torqueControlReflex()
     cmd.InitStruct();
 
 
-        cmd.Actuator1 = kr_.Actuator1 * last_residual_(0);
-        cmd.Actuator2 = kr_.Actuator2 * last_residual_(1);
-        cmd.Actuator3 = kr_.Actuator3 * last_residual_(2);
-        cmd.Actuator4 = kr_.Actuator4 * last_residual_(3);
-        cmd.Actuator5 = kr_.Actuator5 * last_residual_(4);
-        cmd.Actuator6 = kr_.Actuator6 * last_residual_(5);
+    cmd.Actuator1 = kr_.Actuator1 * last_residual_(0);
+    cmd.Actuator2 = kr_.Actuator2 * last_residual_(1);
+    cmd.Actuator3 = kr_.Actuator3 * last_residual_(2);
+    cmd.Actuator4 = kr_.Actuator4 * last_residual_(3);
+    cmd.Actuator5 = kr_.Actuator5 * last_residual_(4);
+    cmd.Actuator6 = kr_.Actuator6 * last_residual_(5);
 
     return cmd;
 }
@@ -270,7 +271,7 @@ TrajectoryPoint CollisionReaction::calculateVelocity(AngularInfo& cmd)
     if(in_collision_ && collision_counter_ == 1){
         data.dt = 0;
         estimator_.setInitalValues(data);
-//        ROS_WARN_STREAM("activate torque control");
+        //        ROS_WARN_STREAM("activate torque control");
     }
 
     DataConversion::convert(cmd, data.torques);
@@ -279,11 +280,11 @@ TrajectoryPoint CollisionReaction::calculateVelocity(AngularInfo& cmd)
     estimator_.estimateGfree(data);
     std::vector<double> desired_pos = estimator_.getCurrentPosition();
     std::vector <double> desired_vel = estimator_.getCurrentVelocity();
-    //    std::cout << "Desired Pos: ";
-    //    for(auto d : desired_pos){
-    //        std::cout << d << "\t";
-    //    }
-    //    std::cout << std::endl;
+        std::cout << "Desired Pos:\t";
+        for(auto d : desired_pos){
+            std::cout << d << "\t";
+        }
+        std::cout << std::endl;
     AngularInfo diffQ = desired_pos - pos.Actuators;
     AngularInfo diffV = desired_vel - vel.Actuators;
 
@@ -291,9 +292,20 @@ TrajectoryPoint CollisionReaction::calculateVelocity(AngularInfo& cmd)
     tp.InitStruct();
     tp.Position.Type = ANGULAR_VELOCITY;
     tp.Position.HandMode = HAND_NOMOVEMENT;
-    tp.Position.Actuators = kpq_ * diffQ + kdq_ * diffV;
+//    tp.Position.Actuators = kpq_ * diffQ + kdq_ * diffV;
+    tp.Position.Actuators = cmd;
     DataConversion::to_degrees(tp.Position.Actuators);
-    std::cout << "vel cmd: " << KinovaArithmetics::to_string(tp.Position.Actuators ) <<std::endl;
+    std::cout << "cmd:\t" << KinovaArithmetics::to_string(cmd) <<std::endl;
+    std::cout << "ikr:\t" << KinovaArithmetics::to_string(kr_) <<std::endl;
+    std::cout << "is q cmd:\t" << KinovaArithmetics::to_string(pos.Actuators) <<std::endl;
+    std::cout << "vel cmd:\t" << KinovaArithmetics::to_string(tp.Position.Actuators ) <<std::endl;
+    std::cout << "residual:\t"
+              << last_residual_(0) << "\t"
+              << last_residual_(1) << "\t"
+              << last_residual_(2) << "\t"
+              << last_residual_(3) << "\t"
+              << last_residual_(4) << "\t"
+              << last_residual_(5) << "\t" << std::endl;
     return tp;
 }
 

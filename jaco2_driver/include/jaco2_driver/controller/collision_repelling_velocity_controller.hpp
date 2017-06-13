@@ -44,10 +44,10 @@ public:
                 ROS_INFO_STREAM("Repelling! collision detected: "<< residual);
                 auto cmd = collision_reaction_.velocityControlReflex();
                 VelocityController::setVelocity(cmd);
-                for(int i = 0; i < 5; ++i){
+//                for(int i = 0; i < ; ++i){
                     VelocityController::write();
-                    usleep(5000);
-                }
+//                    usleep(5000);
+//                }
                 state_.read();
             }
 
