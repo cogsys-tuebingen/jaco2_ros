@@ -106,6 +106,7 @@ add_library(jaco2_driver
     src/jaco2_driver.cpp
     src/jaco2_api.cpp
     src/jaco2_state.cpp
+    src/controller/collision_reaction.cpp
     src/controller/point_2_point_velocity_controller.cpp
     src/controller/gripper_controller.cpp
     src/controller/collision_repelling_p2p_controller.cpp

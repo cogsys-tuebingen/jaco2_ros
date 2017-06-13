@@ -120,7 +120,8 @@ inline AngularInfo& operator+=(AngularInfo &rhs, const AngularInfo &lhs)
     return rhs;
 }
 
-inline AngularInfo operator*(const double& rhs, const AngularInfo& lhs)
+
+inline AngularInfo operator*(double rhs, const AngularInfo& lhs)
 {
     AngularInfo result;
     result.InitStruct();
@@ -133,6 +134,7 @@ inline AngularInfo operator*(const double& rhs, const AngularInfo& lhs)
 
     return result;
 }
+
 
 inline AngularInfo& operator*=(AngularInfo &rhs, const double &lhs)
 {
@@ -217,6 +219,29 @@ inline std::string to_string(const AngularInfo& in, const std::string& delimiter
           std::to_string(in.Actuator6) + delimiter ;
     return res;
 
+}
+
+inline void invert(AngularInfo& val)
+{
+    val.Actuator1 *= -1.0;
+    val.Actuator2 *= -1.0;
+    val.Actuator3 *= -1.0;
+    val.Actuator4 *= -1.0;
+    val.Actuator5 *= -1.0;
+    val.Actuator6 *= -1.0;
+}
+
+inline double norm(AngularInfo& vec)
+{
+    double res = 0;
+    res += vec.Actuator1 * vec.Actuator1;
+    res += vec.Actuator2 * vec.Actuator2;
+    res += vec.Actuator3 * vec.Actuator3;
+    res += vec.Actuator4 * vec.Actuator4;
+    res += vec.Actuator5 * vec.Actuator5;
+    res += vec.Actuator6 * vec.Actuator6;
+
+    return std::sqrt(res);
 }
 
 }

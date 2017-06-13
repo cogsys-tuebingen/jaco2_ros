@@ -48,6 +48,17 @@ void Jaco2ResidualVector::changeDynamicParams(const std::string &link, const dou
     model_.changeDynamicParams(link, mass, com, inertia);
 }
 
+std::vector<double> Jaco2ResidualVector::getGravityTorque() const
+{
+    std::size_t njoints = model_.getNrOfJoints();
+    std::vector<double> res(njoints);
+    for(std::size_t i = 0; i < njoints; ++i){
+        res[i] = gravity_torque_(i);
+    }
+    return res;
+
+}
+
 void Jaco2ResidualVector::getResidualVector(std::vector<ResidualData> &sequence, std::vector<Eigen::VectorXd> &residual_vec) const
 {
     // initialization
@@ -116,15 +127,19 @@ void Jaco2ResidualVector::getResidualVector(const ResidualData &data,
     vector2EigenVector(data.torques, tau);
 
     Eigen::MatrixXd H;
-    Eigen::VectorXd G;
+//    Eigen::VectorXd G;
     model_.setGravity(data.gx, data.gy, data.gz);
-    model_.getChainDynInertiaAndGravity(data.joint_positions, H, G);
+//    model_.getChainDynInertiaAndGravity(data.joint_positions, H, G);
+//    Eigen::VectorXd m = H * omega;
+//    Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - G + last_residual;
+    model_.getChainDynInertiaAndGravity(data.joint_positions, H, gravity_torque_);
     Eigen::VectorXd m = H * omega;
-    Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - G + last_residual;
+    Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - gravity_torque_ + last_residual;
 
     new_integral = integration_step(data.dt, last_integral, to_integrate);
 
     new_residual = gains_ * (m - new_integral);
+
 
 }
 
