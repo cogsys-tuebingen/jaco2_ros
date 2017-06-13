@@ -27,6 +27,7 @@
 #include <jaco2_driver/controller/torque_controller.h>
 #include <jaco2_driver/controller/collision_repelling_p2p_controller.h>
 #include <jaco2_driver/controller/torque_trajectory_controller.h>
+#include <jaco2_driver/controller/collision_repelling_velocity_controller.hpp>
 
 
 class Jaco2Driver
@@ -96,16 +97,20 @@ public:
     inline void setCorrectionGains(const AngularInfo& kp, const AngularInfo kd)
     {
         p2p_velocity_controller_.setCorrectionGains(kp, kd);
+        velocity_controller_.setCorrectionGains(kp, kd);
     }
 
     inline void setCollisionReflexGain(const AngularInfo& r)
     {
         p2p_velocity_controller_.setReflexGain(r);
+        velocity_controller_.setReflexGain(r);
+
     }
 
     inline void setCollisionThreshold(double delta)
     {
         p2p_velocity_controller_.setThreshold(delta);
+        velocity_controller_.setThreshold(delta);
     }
 // END EXPERIMENTAL
 
@@ -131,7 +136,8 @@ private:
     bool right_arm_;
     Jaco2Controller* active_controller_;
 
-    VelocityController velocity_controller_;
+//    VelocityController velocity_controller_;
+    CollisionRepellingVelocityController velocity_controller_;
     AngularPositionController position_controller_;
 //    Point2PointVelocityController p2p_velocity_controller_;
 //    TorqueTrajectoryController p2p_velocity_controller_;

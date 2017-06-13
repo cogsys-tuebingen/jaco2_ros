@@ -293,7 +293,7 @@ TrajectoryPoint CollisionReaction::calculateVelocity(AngularInfo& cmd)
     tp.Position.HandMode = HAND_NOMOVEMENT;
     tp.Position.Actuators = kpq_ * diffQ + kdq_ * diffV;
     DataConversion::to_degrees(tp.Position.Actuators);
-//    std::cout << "vel cmd: " << KinovaArithmetics::to_string(tp.Position.Actuators ) <<std::endl;
+    std::cout << "vel cmd: " << KinovaArithmetics::to_string(tp.Position.Actuators ) <<std::endl;
     return tp;
 }
 

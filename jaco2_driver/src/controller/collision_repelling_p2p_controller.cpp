@@ -49,7 +49,10 @@ void CollisionReplellingP2PController::write()
         ROS_INFO_STREAM("Repelling! collision detected: "<< residual);
         auto cmd = collision_reaction_.velocityControlReflex();
         reflex_controller_.setVelocity(cmd);
-        reflex_controller_.write();
+        for(int i = 0; i < 4; ++i){
+            reflex_controller_.write();
+            usleep(5000);
+        }
 
     }
     else{  // for now do not use energy dissipation

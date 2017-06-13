@@ -7,11 +7,20 @@ class CollisionRepellingVelocityController : public VelocityController
 {
 public:
     CollisionRepellingVelocityController(Jaco2State &state, Jaco2API &api)
-        : Jaco2Controller(state, api),
+        : VelocityController(state, api),
           collision_reaction_(state)
     {
         collision_reaction_.setRobotModel("/robot_description", "jaco_link_base", "jaco_link_hand");
         last_cmd_rep_  = std::chrono::high_resolution_clock::now();
+    }
+
+    void setVelocity(const TrajectoryPoint& tp)
+    {
+        if(!collision_reaction_.inCollision()){
+//            collision_reaction_.resetResiduals();
+            VelocityController::setVelocity(tp);
+            last_cmd_rep_  = std::chrono::high_resolution_clock::now();
+        }
     }
 
     virtual void write() override
@@ -20,18 +29,33 @@ public:
         auto durationLast = now - last_cmd_rep_;
         last_cmd_rep_ = now;
         double dt = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
+        //        std::cout << dt << std::endl;
         collision_reaction_.update(dt);
 
         double residual = collision_reaction_.getResidualsNorm();
 
-        if(collision_reaction_.inCollision()){
-            ROS_INFO_STREAM("Repelling! collision detected: "<< residual);
-            auto cmd = collision_reaction_.velocityControlReflex();
-            VelocityController::setVelocity(cmd);
+        if(collision_reaction_.inCollision() && desired_.Position.HandMode == HAND_NOMOVEMENT ){
+            while(collision_reaction_.inCollision()){
+                now = std::chrono::high_resolution_clock::now();
+                last_cmd_rep_ = now;
+                dt = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
+                //        std::cout << dt << std::endl;
+                collision_reaction_.update(dt);
+                ROS_INFO_STREAM("Repelling! collision detected: "<< residual);
+                auto cmd = collision_reaction_.velocityControlReflex();
+                VelocityController::setVelocity(cmd);
+                for(int i = 0; i < 5; ++i){
+                    VelocityController::write();
+                    usleep(5000);
+                }
+                state_.read();
+            }
 
         }
+        else{
 
-        VelocityController::write();
+            VelocityController::write();
+        }
 
     }
 

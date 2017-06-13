@@ -38,7 +38,6 @@ public:
         desired_.Position.Type = ANGULAR_VELOCITY;
         desired_.Position.HandMode = HAND_NOMOVEMENT;
 
-        //        last_command_ = std::time(nullptr);
         last_command_ = std::chrono::high_resolution_clock::now();
         done_ = false;
     }
@@ -163,8 +162,9 @@ private:
         }
     }
 
-private:
+protected:
     TrajectoryPoint desired_;
+private:
     TrajectoryPoint cmd_;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> last_command_;
