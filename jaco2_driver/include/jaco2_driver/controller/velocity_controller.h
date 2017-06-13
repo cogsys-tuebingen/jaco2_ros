@@ -178,5 +178,6 @@ private:
     int counter_;
     std::deque<AngularInfo> vel_buffer_;
     std::deque<AngularInfo> e_buffer_;
+
 };
 #endif // VELOCITYCONTROLLER_H

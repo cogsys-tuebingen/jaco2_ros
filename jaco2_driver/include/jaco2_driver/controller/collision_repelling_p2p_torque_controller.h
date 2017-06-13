@@ -15,7 +15,7 @@ public:
 
     virtual void write() override;
     virtual void start() override;
-    virutal void stop() override;
+    virtual void stop() override;
     virtual bool isDone() const override;
 
     void setThreshold(double threshold);
