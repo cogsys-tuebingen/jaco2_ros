@@ -466,30 +466,15 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
                                      config.torque_controller_i_gain,
                                      config.torque_controller_d_gain);
     // BEGIN EXPERIMENTAL
-    AngularInfo kp,kd,kr;
-    kp.Actuator1 = config.collision_reflex_p_gain_joint_0;
-    kp.Actuator2 = config.collision_reflex_p_gain_joint_1;
-    kp.Actuator3 = config.collision_reflex_p_gain_joint_2;
-    kp.Actuator4 = config.collision_reflex_p_gain_joint_3;
-    kp.Actuator5 = config.collision_reflex_p_gain_joint_4;
-    kp.Actuator6 = config.collision_reflex_p_gain_joint_5;
-
-    kd.Actuator1 = config.collision_reflex_d_gain_joint_0;
-    kd.Actuator2 = config.collision_reflex_d_gain_joint_1;
-    kd.Actuator3 = config.collision_reflex_d_gain_joint_2;
-    kd.Actuator4 = config.collision_reflex_d_gain_joint_3;
-    kd.Actuator5 = config.collision_reflex_d_gain_joint_4;
-    kd.Actuator6 = config.collision_reflex_d_gain_joint_5;
-
+    AngularInfo kr;
     kr.Actuator1 = config.collision_reflex_gain_joint_0;
     kr.Actuator2 = config.collision_reflex_gain_joint_1;
     kr.Actuator3 = config.collision_reflex_gain_joint_2;
     kr.Actuator4 = config.collision_reflex_gain_joint_3;
     kr.Actuator5 = config.collision_reflex_gain_joint_4;
     kr.Actuator6 = config.collision_reflex_gain_joint_5;
-    driver_.setCorrectionGains(kp, kd);
     driver_.setCollisionReflexGain(kr);
-    std::cout << "DRIVER kr:\t" << KinovaArithmetics::to_string(kr) <<std::endl;
+
     driver_.setCollisionThreshold(config.collision_threshold);
     // END EXPERIMENTAL
 

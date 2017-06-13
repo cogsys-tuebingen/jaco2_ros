@@ -3,7 +3,6 @@
 
 #include <kinova/KinovaTypes.h>
 #include <jaco2_driver/jaco2_state.h>
-#include <jaco2_kin_dyn_lib/joint_vel_pos_estimator.h>
 #include <jaco2_kin_dyn_lib/jaco2_residual_vector.h>
 /**
  * @brief The CollisionReaction class
@@ -35,7 +34,6 @@ public:
     void setThreshold(double threshold);
     void setRobotModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
     void setReflexGain(const AngularInfo& kr);
-    void setVelocityGains(const AngularInfo& kp, const AngularInfo kd);
 
     TrajectoryPoint velocityControlReflex();
     TrajectoryPoint velocityEnergyDisspation();
@@ -70,15 +68,12 @@ private:
     double dt_;
     double residualNorm_;
     Jaco2ResidualVector resiudals_;
-    Jaco2KinDynLib::JointVelPosEstimator estimator_;
     Eigen::VectorXd last_integral_;
     Eigen::VectorXd last_residual_;
     std::deque<Eigen::Vector3d> filter_g_;
 
     AngularInfo kr_;
     AngularInfo vel_bound_;
-    AngularInfo kpq_;
-    AngularInfo kdq_;
     AngularInfo max_torques_;
     AngularInfo velocity_threshold_;
 };

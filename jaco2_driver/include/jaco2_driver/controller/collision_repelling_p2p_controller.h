@@ -17,7 +17,6 @@ public:
     void setThreshold(double threshold);
     void setRobotModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
     void setReflexGain(const AngularInfo& kr);
-    void setCorrectionGains(const AngularInfo& kp, const AngularInfo kd);
     void setVelocityControlGains(double p, double i, double d);
 
     void setTrajectory(const JointTrajectory& trajectory);

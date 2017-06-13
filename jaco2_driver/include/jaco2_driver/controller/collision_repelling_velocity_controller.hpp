@@ -44,10 +44,7 @@ public:
                 ROS_INFO_STREAM("Repelling! collision detected: "<< residual);
                 auto cmd = collision_reaction_.velocityControlReflex();
                 VelocityController::setVelocity(cmd);
-//                for(int i = 0; i < ; ++i){
-                    VelocityController::write();
-//                    usleep(5000);
-//                }
+                VelocityController::write();
                 state_.read();
             }
 
@@ -72,11 +69,6 @@ public:
     void setReflexGain(const AngularInfo& kr)
     {
         collision_reaction_.setReflexGain(kr);
-    }
-
-    void setCorrectionGains(const AngularInfo& kp, const AngularInfo kd)
-    {
-        collision_reaction_.setVelocityGains(kp, kd);
     }
 
 

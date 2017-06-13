@@ -56,7 +56,6 @@ void CollisionReplellingP2PController::write()
 
     }
     else{  // for now do not use energy dissipation
-//        done_ =!first_coll_;
         tracking_controller_.write();
     }
 
@@ -67,12 +66,6 @@ void CollisionReplellingP2PController::write()
 void CollisionReplellingP2PController::setReflexGain(const AngularInfo& R)
 {
     collision_reaction_.setReflexGain(R);
-}
-
-void CollisionReplellingP2PController::setCorrectionGains(const AngularInfo& kp, const AngularInfo kd)
-{
-    collision_reaction_.setVelocityGains(kp, kd);
-
 }
 
 void CollisionReplellingP2PController::setVelocityControlGains(double p, double i, double d)

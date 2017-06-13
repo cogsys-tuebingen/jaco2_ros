@@ -10,8 +10,8 @@ CollisionReaction::CollisionReaction(Jaco2State &state):
     stop_threshold_(0),
     in_collision_(false),
     collision_counter_(0),
-    resiudals_("robot_description", "jaco_link_base", "jaco_link_hand"),
-    estimator_("/robot_description","jaco_link_base","jaco_link_hand")
+    resiudals_("robot_description", "jaco_link_base", "jaco_link_hand")
+
 {
     kr_.InitStruct();
     kr_.Actuator1 = 1.0;
@@ -20,9 +20,6 @@ CollisionReaction::CollisionReaction(Jaco2State &state):
     kr_.Actuator4 = 1.0;
     kr_.Actuator5 = 1.0;
     kr_.Actuator6 = 0.0;
-    kpq_.InitStruct();
-    kdq_.InitStruct();
-    //    esum_.InitStruct();
 
     for(int i = 0; i < 30; ++i)
     {
@@ -59,8 +56,6 @@ void CollisionReaction::setReflexGain(const AngularInfo &kr)
 void CollisionReaction::setRobotModel(const std::string &robot_model, const std::string &chain_root, const std::string &chain_tip)
 {
     resiudals_ = Jaco2ResidualVector(robot_model, chain_root, chain_tip);
-    estimator_.setModel(robot_model, chain_root, chain_tip);
-
 
     std::vector<double> r_gains(resiudals_.getNrOfJoints(), 10);
     resiudals_.setGains(r_gains);
@@ -248,46 +243,8 @@ void CollisionReaction::estimateGravity(double& gx, double &gy, double& gz)
 
 }
 
-void CollisionReaction::setVelocityGains(const AngularInfo& kp, const AngularInfo kd)
-{
-    kpq_ = kp;
-    kdq_ = kd;
-    KinovaArithmetics::invert(kpq_);
-    KinovaArithmetics::invert(kdq_);
-
-}
-
 TrajectoryPoint CollisionReaction::calculateVelocity(AngularInfo& cmd)
 {
-    auto vel = state_.getAngularPosition();
-    auto pos = state_.getAngularPosition();
-
-    DataConversion::from_degrees(pos);
-    DataConversion::from_degrees(vel);
-
-    Jaco2KinDynLib::IntegrationData data;
-    DataConversion::convert(pos.Actuators, data.pos);
-    DataConversion::convert(vel.Actuators, data.vel);
-    if(in_collision_ && collision_counter_ == 1){
-        data.dt = 0;
-        estimator_.setInitalValues(data);
-        //        ROS_WARN_STREAM("activate torque control");
-    }
-
-    DataConversion::convert(cmd, data.torques);
-    data.dt = dt_;
-
-    estimator_.estimateGfree(data);
-    std::vector<double> desired_pos = estimator_.getCurrentPosition();
-    std::vector <double> desired_vel = estimator_.getCurrentVelocity();
-        std::cout << "Desired Pos:\t";
-        for(auto d : desired_pos){
-            std::cout << d << "\t";
-        }
-        std::cout << std::endl;
-    AngularInfo diffQ = desired_pos - pos.Actuators;
-    AngularInfo diffV = desired_vel - vel.Actuators;
-
     TrajectoryPoint tp;
     tp.InitStruct();
     tp.Position.Type = ANGULAR_VELOCITY;
@@ -296,8 +253,6 @@ TrajectoryPoint CollisionReaction::calculateVelocity(AngularInfo& cmd)
     tp.Position.Actuators = cmd;
     DataConversion::to_degrees(tp.Position.Actuators);
     std::cout << "cmd:\t" << KinovaArithmetics::to_string(cmd) <<std::endl;
-    std::cout << "ikr:\t" << KinovaArithmetics::to_string(kr_) <<std::endl;
-    std::cout << "is q cmd:\t" << KinovaArithmetics::to_string(pos.Actuators) <<std::endl;
     std::cout << "vel cmd:\t" << KinovaArithmetics::to_string(tp.Position.Actuators ) <<std::endl;
     std::cout << "residual:\t"
               << last_residual_(0) << "\t"

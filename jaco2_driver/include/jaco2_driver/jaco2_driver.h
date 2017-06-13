@@ -94,11 +94,6 @@ public:
     void disableForceControl();
 
 // BEGIN EXPERIMENTAL
-    inline void setCorrectionGains(const AngularInfo& kp, const AngularInfo kd)
-    {
-        p2p_velocity_controller_.setCorrectionGains(kp, kd);
-        velocity_controller_.setCorrectionGains(kp, kd);
-    }
 
     inline void setCollisionReflexGain(const AngularInfo& r)
     {
