@@ -81,45 +81,16 @@ TrajectoryPoint CollisionReaction::velocityControlReflex()
 {
 
     AngularInfo cmd = torqueControlReflex();
+    return calculateVelocity(cmd);
 
-    auto vel = state_.getAngularPosition();
-    auto pos = state_.getAngularPosition();
-
-    DataConversion::from_degrees(pos);
-    DataConversion::from_degrees(vel);
-
-    Jaco2KinDynLib::IntegrationData data;
-    DataConversion::convert(pos.Actuators, data.pos);
-    DataConversion::convert(vel.Actuators, data.vel);
-    if(in_collision_ && collision_counter_ == 1){
-        data.dt = 0;
-        estimator_.setInitalValues(data);
-        ROS_WARN_STREAM("activate torque control");
-    }
-
-    DataConversion::convert(cmd, data.torques);
-    data.dt = dt_;
-
-    estimator_.estimateGfree(data);
-    std::vector<double> desired_pos = estimator_.getCurrentPosition();
-    std::vector <double> desired_vel = estimator_.getCurrentVelocity();
-    //    std::cout << "Desired Pos: ";
-    //    for(auto d : desired_pos){
-    //        std::cout << d << "\t";
-    //    }
-    //    std::cout << std::endl;
-    AngularInfo diffQ = desired_pos - pos.Actuators;
-    AngularInfo diffV = desired_vel - vel.Actuators;
-
-    TrajectoryPoint tp;
-    tp.InitStruct();
-    tp.Position.Type = ANGULAR_VELOCITY;
-    tp.Position.HandMode = HAND_NOMOVEMENT;
-    tp.Position.Actuators = kpq_ * diffQ + kdq_ * diffV;
-    DataConversion::to_degrees(tp.Position.Actuators);
-    std::cout << "vel cmd: " << KinovaArithmetics::to_string(tp.Position.Actuators ) <<std::endl;
-    return tp;
 }
+
+TrajectoryPoint CollisionReaction::velocityEnergyDisspation()
+{
+    AngularInfo cmd = torqueControlEnergyDisspation();
+    return calculateVelocity(cmd);
+}
+
 
 AngularInfo CollisionReaction::torqueControlReflex()
 {
@@ -277,6 +248,47 @@ void CollisionReaction::setVelocityGains(const AngularInfo& kp, const AngularInf
     KinovaArithmetics::invert(kpq_);
     KinovaArithmetics::invert(kdq_);
 
+}
+
+TrajectoryPoint CollisionReaction::calculateVelocity(AngularInfo& cmd)
+{
+    auto vel = state_.getAngularPosition();
+    auto pos = state_.getAngularPosition();
+
+    DataConversion::from_degrees(pos);
+    DataConversion::from_degrees(vel);
+
+    Jaco2KinDynLib::IntegrationData data;
+    DataConversion::convert(pos.Actuators, data.pos);
+    DataConversion::convert(vel.Actuators, data.vel);
+    if(in_collision_ && collision_counter_ == 1){
+        data.dt = 0;
+        estimator_.setInitalValues(data);
+        ROS_WARN_STREAM("activate torque control");
+    }
+
+    DataConversion::convert(cmd, data.torques);
+    data.dt = dt_;
+
+    estimator_.estimateGfree(data);
+    std::vector<double> desired_pos = estimator_.getCurrentPosition();
+    std::vector <double> desired_vel = estimator_.getCurrentVelocity();
+    //    std::cout << "Desired Pos: ";
+    //    for(auto d : desired_pos){
+    //        std::cout << d << "\t";
+    //    }
+    //    std::cout << std::endl;
+    AngularInfo diffQ = desired_pos - pos.Actuators;
+    AngularInfo diffV = desired_vel - vel.Actuators;
+
+    TrajectoryPoint tp;
+    tp.InitStruct();
+    tp.Position.Type = ANGULAR_VELOCITY;
+    tp.Position.HandMode = HAND_NOMOVEMENT;
+    tp.Position.Actuators = kpq_ * diffQ + kdq_ * diffV;
+    DataConversion::to_degrees(tp.Position.Actuators);
+    std::cout << "vel cmd: " << KinovaArithmetics::to_string(tp.Position.Actuators ) <<std::endl;
+    return tp;
 }
 
 double CollisionReaction::energyDisipation(AngularInfo& velocity, AngularInfo& lower_lim, AngularInfo& upper_lim, std::size_t id) const

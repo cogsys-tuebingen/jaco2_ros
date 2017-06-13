@@ -21,6 +21,10 @@
  *    torqueControlEnergyDisspation()
  *    execute cmd
  * }
+ *
+ * De Luca, A., Albu-Schäffer, A., Haddadin, S., & Hirzinger, G. (2006).
+ * Collision detection and safe reaction with the DLR-III lightweight manipulator arm.
+ * IEEE International Conference on Intelligent Robots and Systems, 1623–1630. https://doi.org/10.1109/IROS.2006.282053
  */
 class CollisionReaction
 {
@@ -33,6 +37,7 @@ public:
     void setVelocityGains(const AngularInfo& kp, const AngularInfo kd);
 
     TrajectoryPoint velocityControlReflex();
+    TrajectoryPoint velocityEnergyDisspation();
     AngularInfo torqueControlReflex();
     AngularInfo torqueControlEnergyDisspation();
     AngularInfo getResiduals() const;
@@ -53,6 +58,7 @@ private:
     void getResidualsData(ResidualData &data);
     void updateResiduals();
     double energyDisipation(AngularInfo &vel, AngularInfo &lower, AngularInfo &upper, std::size_t id) const;
+    TrajectoryPoint calculateVelocity(AngularInfo& cmd);
 
 private:
     Jaco2State &state_;
