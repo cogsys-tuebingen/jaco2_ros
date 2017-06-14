@@ -297,55 +297,18 @@ Jaco2Calibration::TorqueOffsetLut Jaco2Driver::getTorqueCalibration() const
 {
     return state_.getTorqueCalibration();
 }
-void Jaco2Driver::setVelocityControllerGains(double p, double i, double d)
+void Jaco2Driver::updateControllerConfig(jaco2_driver::jaco2_driver_configureConfig& cfg)
 {
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
-    velocity_controller_.setGains(p, i, d);
-    // BEGIN EXPERIMENTAL
-    p2p_velocity_controller_.setVelocityControlGains(p, i, d);
-    // END EXPERIMENTAL
+    velocity_controller_.setConfig(cfg);
+    position_controller_.setConfig(cfg);
+    p2p_velocity_controller_.setConfig(cfg);
+    empty_controller_.setConfig(cfg);
+    gripper_controller_.setConfig(cfg);
+    gravity_comp_controller_.setConfig(cfg);
+    torque_controller_.setConfig(cfg);
 }
 
-void Jaco2Driver::setTorqueControllerGains(double p, double i, double d)
-{
-    std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
-    torque_controller_.setGains(p, i, d);
-}
-void Jaco2Driver::setTorqueControllerQGains(double p, double i, double d)
-{
-    std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
-    std::cout << p<<", " << i <<", " << d <<std::endl;
-    torque_controller_.setQGains(p, i, d);
-}
-void Jaco2Driver::setTrajectoryPGains(const ManipulatorInfo &gains)
-{
-    p2p_velocity_controller_.setGainP(gains);
-}
-
-void Jaco2Driver::setTrajectoryIGains(const ManipulatorInfo &gains)
-{
-    p2p_velocity_controller_.setGainI(gains);
-}
-
-void Jaco2Driver::setTrajectoryDGains(const ManipulatorInfo &gains)
-{
-    p2p_velocity_controller_.setGainD(gains);
-}
-
-void Jaco2Driver::setGripperPGain(const double finger1, const double finger2, const double finger3)
-{
-    gripper_controller_.setGainP(finger1,finger2,finger3);
-}
-
-void Jaco2Driver::setGripperIGain(const double finger1, const double finger2, const double finger3)
-{
-    gripper_controller_.setGainI(finger1,finger2,finger3);
-}
-
-void Jaco2Driver::setGripperDGain(const double finger1, const double finger2, const double finger3)
-{
-    gripper_controller_.setGainD(finger1,finger2,finger3);
-}
 
 void Jaco2Driver::setFingerPosition(const AngularPosition &position)
 {
@@ -370,11 +333,6 @@ void Jaco2Driver::setTorque(const AngularPosition &torque)
 {
     torque_controller_.setTorque(torque);
     setActiveController(&torque_controller_);
-}
-
-void Jaco2Driver::setGripperFingerVelocity(const int finger1, const int finger2, const int finger3)
-{
-    gripper_controller_.setFingerVelocity(finger1, finger2, finger3);
 }
 
 void Jaco2Driver::setVelocitySensorCalibration(const std::vector<double> &factors)

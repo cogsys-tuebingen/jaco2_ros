@@ -16,6 +16,7 @@
 #include <jaco2_driver/torque_offset_lut.hpp>
 #include <jaco2_driver/gravity_params.hpp>
 #include <jaco2_driver/torque_offset_calibration.hpp>
+#include <jaco2_driver/jaco2_driver_configureConfig.h>
 //Jaco2 Controller
 #include <jaco2_driver/controller/jaco2_controller.h>
 #include <jaco2_driver/controller/empty_controller.h>
@@ -64,23 +65,13 @@ public:
     void setTrajectory(const JointTrajectory & trajectory);
     void stop();
     void stopMovement();
-    void setTrajectoryPGains(const ManipulatorInfo& gains);
-    void setTrajectoryIGains(const ManipulatorInfo& gains);
-    void setTrajectoryDGains(const ManipulatorInfo& gains);
+
     void setStatePriorityRatio(const int r);
     void setStateHighPriorityQue(const std::vector<int> &que);
     void setStateLowPriorityQue(const std::vector<int> &que);
-    void setVelocityControllerGains(double p, double i, double d);
     void setTorque(const AngularPosition& torque);
-    void setTorqueControllerGains(double p, double i, double d);
-    void setTorqueControllerQGains(double p, double i, double d);
     void enableGravityCompensation();
     void disableGravityCompensation();
-
-    void setGripperPGain(const double finger1, const double finger2, const double finger3);
-    void setGripperIGain(const double finger1, const double finger2, const double finger3);
-    void setGripperDGain(const double finger1, const double finger2, const double finger3);
-    void setGripperFingerVelocity(const int finger1, const int finger2, const int finger3);
 
     void grabObj(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3);
     void grabObjSetUnusedFingerPos(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3, const int posFinger1, const int posFinger2, const int posFinger3);
@@ -93,20 +84,12 @@ public:
     void enableForceControl();
     void disableForceControl();
 
+
+
 // BEGIN EXPERIMENTAL
 
-    inline void setCollisionReflexGain(const AngularInfo& r)
-    {
-        p2p_velocity_controller_.setReflexGain(r);
-        velocity_controller_.setReflexGain(r);
+    void updateControllerConfig(jaco2_driver::jaco2_driver_configureConfig& cfg);
 
-    }
-
-    inline void setCollisionThreshold(double delta)
-    {
-        p2p_velocity_controller_.setThreshold(delta);
-        velocity_controller_.setThreshold(delta);
-    }
 // END EXPERIMENTAL
 
     void startArm();

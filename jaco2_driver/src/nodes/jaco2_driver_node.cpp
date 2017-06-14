@@ -421,66 +421,7 @@ bool Jaco2DriverNode::tick()
 
 void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureConfig &config, uint32_t level)
 {
-    ManipulatorInfo trajectoryGainsP;
-    trajectoryGainsP[0] = config.trajectory_p_gain_joint_0;
-    trajectoryGainsP[1] = config.trajectory_p_gain_joint_1;
-    trajectoryGainsP[2] = config.trajectory_p_gain_joint_2;
-    trajectoryGainsP[3] = config.trajectory_p_gain_joint_3;
-    trajectoryGainsP[4] = config.trajectory_p_gain_joint_4;
-    trajectoryGainsP[5] = config.trajectory_p_gain_joint_5;
-    ManipulatorInfo trajectoryGainsI;
-    trajectoryGainsI[0] = config.trajectory_i_gain_joint_0;
-    trajectoryGainsI[1] = config.trajectory_i_gain_joint_1;
-    trajectoryGainsI[2] = config.trajectory_i_gain_joint_2;
-    trajectoryGainsI[3] = config.trajectory_i_gain_joint_3;
-    trajectoryGainsI[4] = config.trajectory_i_gain_joint_4;
-    trajectoryGainsI[5] = config.trajectory_i_gain_joint_5;
-    ManipulatorInfo trajectoryGainsD;
-    trajectoryGainsD[0] = config.trajectory_d_gain_joint_0;
-    trajectoryGainsD[1] = config.trajectory_d_gain_joint_1;
-    trajectoryGainsD[2] = config.trajectory_d_gain_joint_2;
-    trajectoryGainsD[3] = config.trajectory_d_gain_joint_3;
-    trajectoryGainsD[4] = config.trajectory_d_gain_joint_4;
-    trajectoryGainsD[5] = config.trajectory_d_gain_joint_5;
-
-    std::cout << "Trajectory K_P: " << trajectoryGainsP.toString() << std::endl;
-    std::cout << "Trajectory K_I: " << trajectoryGainsI.toString() << std::endl;
-    std::cout << "Trajectory K_D: " << trajectoryGainsD.toString() << std::endl;
-
-    driver_.setTrajectoryPGains(trajectoryGainsP);
-    driver_.setTrajectoryIGains(trajectoryGainsI);
-    driver_.setTrajectoryDGains(trajectoryGainsD);
-    driver_.setGripperPGain(config.gripper_p_gain_finger_1,
-                            config.gripper_p_gain_finger_2,
-                            config.gripper_p_gain_finger_3);
-
-    driver_.setGripperFingerVelocity(config.gipper_controller_finger_vel_1,
-                                     config.gipper_controller_finger_vel_2,
-                                     config.gipper_controller_finger_vel_3);
-
-    driver_.setVelocityControllerGains(config.velocity_controller_p_gain,
-                                       config.velocity_controller_i_gain,
-                                       config.velocity_controller_d_gain);
-
-    driver_.setTorqueControllerGains(config.torque_controller_p_gain,
-                                     config.torque_controller_i_gain,
-                                     config.torque_controller_d_gain);
-    // BEGIN EXPERIMENTAL
-    AngularInfo kr;
-    kr.Actuator1 = config.collision_reflex_gain_joint_0;
-    kr.Actuator2 = config.collision_reflex_gain_joint_1;
-    kr.Actuator3 = config.collision_reflex_gain_joint_2;
-    kr.Actuator4 = config.collision_reflex_gain_joint_3;
-    kr.Actuator5 = config.collision_reflex_gain_joint_4;
-    kr.Actuator6 = config.collision_reflex_gain_joint_5;
-    driver_.setCollisionReflexGain(kr);
-
-    driver_.setCollisionThreshold(config.collision_threshold);
-    // END EXPERIMENTAL
-
-    driver_.setTorqueControllerQGains(config.torque_controller_p_q_gain,
-                                     config.torque_controller_i_q_gain,
-                                     config.torque_controller_d_q_gain);
+    driver_.updateControllerConfig(config);
 
     std::vector<int> highPriQue;
     std::vector<int> lowPriQue;
