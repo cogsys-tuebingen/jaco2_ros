@@ -4,6 +4,7 @@
 #include <kinova/KinovaTypes.h>
 #include <jaco2_driver/jaco2_state.h>
 #include <jaco2_kin_dyn_lib/jaco2_residual_vector.h>
+#include <jaco2_driver/jaco2_driver_configureConfig.h>
 /**
  * @brief The CollisionReaction class
  *
@@ -34,6 +35,7 @@ public:
     void setThreshold(double threshold);
     void setRobotModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
     void setReflexGain(const AngularInfo& kr);
+    void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg);
 
     TrajectoryPoint velocityControlReflex();
     TrajectoryPoint velocityEnergyDisspation();
@@ -44,7 +46,6 @@ public:
 
     void estimateGravity(double& gx, double &gy, double& gz);
     void resetResiduals();
-
     void update(double dt);
 
     bool inCollision() const;
@@ -67,10 +68,14 @@ private:
     double stop_threshold_;
     double dt_;
     double residualNorm_;
+    std::string robot_model_;
+    std::string base_link_;
+    std::string tip_link_;
     Jaco2ResidualVector resiudals_;
     Eigen::VectorXd last_integral_;
     Eigen::VectorXd last_residual_;
     std::deque<Eigen::Vector3d> filter_g_;
+
 
     AngularInfo kr_;
     AngularInfo vel_bound_;

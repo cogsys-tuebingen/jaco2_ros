@@ -34,7 +34,6 @@ protected:
     void calculateEsum(const AngularInfo& diff);
 
 protected:
-    Jaco2KinDynLib::JointVelPosEstimator estimator_;
     AngularPosition desired_;
     AngularPosition cmd_;
 
@@ -46,6 +45,10 @@ protected:
     double kqi_;
     double kqd_;
     double samplingPeriod_;
+    std::string robot_model_;
+    std::string base_link_;
+    std::string tip_link_;
+    Jaco2KinDynLib::JointVelPosEstimator estimator_;
     AngularInfo last_diff_;
     AngularInfo esum_;
     AngularInfo esumQ_;

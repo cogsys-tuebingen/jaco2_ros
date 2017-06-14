@@ -3,7 +3,7 @@
 #include <kinova/KinovaArithmetics.hpp>
 
 CollisionReplellingP2PController::CollisionReplellingP2PController(Jaco2State &state, Jaco2API &api):
-    Jaco2Controller(state, api),
+    TrajectoryTrackingController(state, api),
     reflex_controller_(state, api),
     tracking_controller_(state, api),
     collision_reaction_(state)
@@ -59,6 +59,13 @@ void CollisionReplellingP2PController::write()
     }
 
 
+}
+
+void CollisionReplellingP2PController::setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg)
+{
+    tracking_controller_.setConfig(cfg);
+    collision_reaction_.setConfig(cfg);
+    reflex_controller_.setConfig(cfg);
 }
 
 

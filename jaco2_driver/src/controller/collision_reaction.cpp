@@ -6,11 +6,16 @@ using namespace KinovaArithmetics;
 
 CollisionReaction::CollisionReaction(Jaco2State &state):
     state_(state),
-    threshold_(std::sqrt(6)*2),
-    stop_threshold_(0),
     in_collision_(false),
     collision_counter_(0),
-    resiudals_("robot_description", "jaco_link_base", "jaco_link_hand")
+    threshold_(std::sqrt(6)*2),
+    stop_threshold_(0),
+    dt_(0),
+    residualNorm_(0),
+    robot_model_("/robot_description"),
+    base_link_("jaco_link_base"),
+    tip_link_("jaco_link_hand"),
+    resiudals_(robot_model_, base_link_, tip_link_)
 
 {
     kr_.InitStruct();
@@ -262,6 +267,36 @@ TrajectoryPoint CollisionReaction::calculateVelocity(AngularInfo& cmd)
               << last_residual_(4) << "\t"
               << last_residual_(5) << "\t" << std::endl;
     return tp;
+}
+
+void CollisionReaction::setConfig(jaco2_driver::jaco2_driver_configureConfig &cfg)
+{
+    kr_.Actuator1 = cfg.collision_reflex_gain_joint_0;
+    kr_.Actuator2 = cfg.collision_reflex_gain_joint_1;
+    kr_.Actuator3 = cfg.collision_reflex_gain_joint_2;
+    kr_.Actuator4 = cfg.collision_reflex_gain_joint_3;
+    kr_.Actuator5 = cfg.collision_reflex_gain_joint_4;
+    kr_.Actuator6 = cfg.collision_reflex_gain_joint_5;
+
+    velocity_threshold_.Actuator1 = cfg.collision_ed_vel_eps_joint_0;
+    velocity_threshold_.Actuator2 = cfg.collision_ed_vel_eps_joint_1;
+    velocity_threshold_.Actuator3 = cfg.collision_ed_vel_eps_joint_2;
+    velocity_threshold_.Actuator4 = cfg.collision_ed_vel_eps_joint_3;
+    velocity_threshold_.Actuator5 = cfg.collision_ed_vel_eps_joint_4;
+    velocity_threshold_.Actuator6 = cfg.collision_ed_vel_eps_joint_5;
+
+    threshold_ = cfg.collision_threshold;
+    stop_threshold_ = cfg.collision_stop_threshold;
+    std::string rmodel = cfg.robot_model_param_sever;
+    std::string base = cfg.robot_model_base_link;
+    std::string tip = cfg.robot_model_tip_link;
+    if(rmodel != robot_model_ || base != base_link_ || tip != tip_link_){
+        robot_model_ = rmodel;
+        base_link_ = base;
+        tip_link_ = tip;
+        setRobotModel(robot_model_,base_link_, tip_link_);
+    }
+
 }
 
 double CollisionReaction::energyDisipation(AngularInfo& velocity, AngularInfo& lower_lim, AngularInfo& upper_lim, std::size_t id) const

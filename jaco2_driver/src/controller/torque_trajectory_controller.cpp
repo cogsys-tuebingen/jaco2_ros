@@ -2,7 +2,7 @@
 #include <kinova/KinovaArithmetics.hpp>
 
 TorqueTrajectoryController::TorqueTrajectoryController(Jaco2State &state, Jaco2API &api):
-    Point2PointVelocityController(state, api),
+    P2PJointTrajactoryController(state, api),
     model_("/robot_description","jaco_link_base","jaco_link_hand"),
     nh("~")
 {
@@ -13,17 +13,15 @@ TorqueTrajectoryController::TorqueTrajectoryController(Jaco2State &state, Jaco2A
 void TorqueTrajectoryController::setTrajectory(const JointTrajectory& trajectory)
 {
     api_.enableDirectTorqueMode(1.0,0.5);
-    Point2PointVelocityController::setTrajectory(trajectory);
+    P2PJointTrajactoryController::setTrajectory(trajectory);
 }
 
 
 void TorqueTrajectoryController::start()
 {
     api_.enableDirectTorqueMode(1.0,0.5);
-    //    done_
 
     done_ = false;
-    //    std::cout << "start torque control" << std::endl;
 }
 
 void TorqueTrajectoryController::stop()
@@ -33,7 +31,8 @@ void TorqueTrajectoryController::stop()
 
 void TorqueTrajectoryController::setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg)
 {
-    //TODO
+    P2PJointTrajactoryController::setConfig(cfg);
+
 }
 
 

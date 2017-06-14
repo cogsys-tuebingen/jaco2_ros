@@ -24,7 +24,7 @@ public:
 
     virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg)
     {
-        //TODO
+        // No parameters here.
     }
 
     void setPosition(const TrajectoryPoint& tp)

@@ -9,8 +9,6 @@ using namespace KinovaArithmetics;
 
 TorqueController::TorqueController(Jaco2State &state, Jaco2API &api)
     : Jaco2Controller(state, api),
-      //          last_command_(std::time(nullptr)),
-      estimator_("/robot_description","jaco_link_base","jaco_link_hand"),
       last_command_(std::chrono::high_resolution_clock::now()),
       kp_(1.2),
       ki_(0.0),
@@ -18,7 +16,11 @@ TorqueController::TorqueController(Jaco2State &state, Jaco2API &api)
       kqp_(1.0),
       kqi_(0.0),
       kqd_(0.0),
-      samplingPeriod_(1.0/65.0)
+      samplingPeriod_(1.0/65.0),
+      robot_model_("/robot_description"),
+      base_link_("jaco_link_base"),
+      tip_link_("jaco_link_hand"),
+      estimator_("/robot_description","jaco_link_base","jaco_link_hand")
 {
     cmd_.InitStruct();
     desired_.InitStruct();
@@ -63,7 +65,22 @@ void TorqueController::start()
 
 void TorqueController::setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg)
 {
-    //TODO
+    kp_ = cfg.torque_controller_p_gain;
+    ki_ = cfg.torque_controller_i_gain;
+    kd_ = cfg.torque_controller_d_gain;
+    kqp_ = cfg.torque_controller_p_q_gain;
+    kqd_ = cfg.torque_controller_d_q_gain;
+    kqi_ = cfg.torque_controller_i_q_gain;
+
+    std::string rmodel = cfg.robot_model_param_sever;
+    std::string base = cfg.robot_model_base_link;
+    std::string tip = cfg.robot_model_tip_link;
+    if(rmodel != robot_model_ || base != base_link_ || tip != tip_link_){
+        robot_model_ = rmodel;
+        base_link_ = base;
+        tip_link_ = tip;
+        estimator_.setModel(robot_model_,base_link_, tip_link_);
+    }
 }
 
 
@@ -96,7 +113,6 @@ void TorqueController::setTorque(const AngularInfo& tp)
 
 void TorqueController::setGains(double p, double i, double d)
 {
-    //    api_.setActuatorPID(Actuator1,p,i,d);
     kp_ = p;
     ki_ = i;
     kd_ = d;
@@ -104,7 +120,6 @@ void TorqueController::setGains(double p, double i, double d)
 
 void TorqueController::setQGains(double p, double i, double d)
 {
-    //    api_.setActuatorPID(Actuator1,p,i,d);
     kqp_ = p;
     kqi_ = i;
     kqd_ = d;

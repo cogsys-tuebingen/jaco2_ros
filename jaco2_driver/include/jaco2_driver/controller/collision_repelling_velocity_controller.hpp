@@ -23,6 +23,12 @@ public:
         }
     }
 
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) override
+    {
+        VelocityController::setConfig(cfg);
+        collision_reaction_.setConfig(cfg);
+    }
+
     virtual void write() override
     {
         auto now = std::chrono::high_resolution_clock::now();

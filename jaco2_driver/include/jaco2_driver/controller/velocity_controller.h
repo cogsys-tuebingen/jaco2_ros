@@ -34,7 +34,9 @@ public:
 
     virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) override
     {
-        //TODO
+        kp_ = cfg.velocity_controller_p_gain;
+        ki_ = cfg.velocity_controller_i_gain;
+        kd_ = cfg.velocity_controller_p_gain;
     }
 
     void setVelocity(const TrajectoryPoint& tp)
