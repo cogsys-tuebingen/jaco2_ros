@@ -167,7 +167,7 @@ void Jaco2Driver::stopArm()
         serviceDone_ = false;
         jaco_api_.stopAPI();
         paused_ = true;
-        usleep(5000);
+        usleep(U_SlEEP_TIME);
         serviceDone_= true;
     });
 }
@@ -178,7 +178,7 @@ void Jaco2Driver::startArm()
         serviceDone_ = false;
         jaco_api_.startAPI();
         paused_ = false;
-        usleep(5000);
+        usleep(U_SlEEP_TIME);
         serviceDone_= true;
     });
 }
@@ -189,9 +189,9 @@ void Jaco2Driver::homeArm()
         serviceDone_ = false;
         paused_ = true;
         jaco_api_.moveHome();
-        usleep(5000);
+        usleep(U_SlEEP_TIME);
         jaco_api_.initFingers();
-        usleep(10000);
+        usleep(2*U_SlEEP_TIME);
         paused_ = false;
         serviceDone_= true;
     });
@@ -223,7 +223,7 @@ void Jaco2Driver::setTorqueZero(int actuator)
         default:
             break;
         }
-        usleep(10000);
+        usleep(2*U_SlEEP_TIME);
         serviceDone_= true;
     });
 }
@@ -253,7 +253,7 @@ void Jaco2Driver::tick()
             }
             else{
                 active_controller_->execute();
-                usleep(5000);
+                usleep(U_SlEEP_TIME);
             }
         }
     }
