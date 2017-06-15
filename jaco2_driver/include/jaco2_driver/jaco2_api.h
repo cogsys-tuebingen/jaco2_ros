@@ -11,6 +11,15 @@
 #include <kinova/Kinova.API.UsbCommandLayerUbuntu.h>
 #include <mutex>
 
+enum ActuatorID{
+    Actuator1 = 1,
+    Actuator2 = 2,
+    Actuator3 = 3,
+    Actuator4 = 4,
+    Actuator5 = 5,
+    Actuator6 = 6
+};
+
 class Jaco2API
 {
 public:
@@ -31,6 +40,8 @@ public:
     void setAngularVelocity(const TrajectoryPoint &velocity);
     void setAngularPosition(const TrajectoryPoint &position);
     void setAngularTorque(const AngularPosition &torque);
+    void setAngularTorque(const AngularInfo &torque);
+    void setLimitedAngularCmd(const TrajectoryPoint &point);
     void startAPI();
     void stopAPI();
     void exitAPI();
@@ -40,7 +51,7 @@ public:
      * @brief setTorqueZero sets the actuator torque sensor to zero for current position
      * @param actuator the index of the actuator [1,..., 6]
      */
-    int setTorqueZero(int actuator);
+    int setTorqueZero(ActuatorID actuator);
     void enableDirectTorqueMode(double torque_saftey_factor = 0.6, double vibration_controller = 0.5);
     void getApiVersion(int& v_major, int& v_minor, int& version);
     /**
@@ -62,7 +73,10 @@ public:
      * @param i integrative controller gain
      * @param d derivative controller gain
      */
-    void setActuatorPID(unsigned int actuator, double p, double i, double d);
+    void setActuatorPID(ActuatorID actuator, double p, double i, double d);
+
+    void startForceControl();
+    void stopForceControl();
 
 
 private:
@@ -108,6 +122,8 @@ private:
     int(*SetTorqueControlType)(TORQUECONTROL_TYPE type);
     int(*GetTrajectoryTorqueMode)(int &);
     int(*SetActuatorPID)(unsigned int address, float P, float I, float D);
+    int (*StartForceControl)();
+    int (*StopForceControl)();
 
 
     void moveHomeLeft();

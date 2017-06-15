@@ -11,23 +11,24 @@
 #include <kinova/KinovaTypes.h>
 #include <jaco2_msgs/JointVelocity.h>
 #include <jaco2_driver/jaco2_api.h>
-#include <jaco2_driver/jaco2_controller.h>
-#include <jaco2_driver/angular_position_controller.h>
 #include <jaco2_driver/joint_trajectory.h>
 #include <jaco2_driver/accelerometer_calibration.hpp>
 #include <jaco2_driver/torque_offset_lut.hpp>
 #include <jaco2_driver/gravity_params.hpp>
 #include <jaco2_driver/torque_offset_calibration.hpp>
+#include <jaco2_driver/jaco2_driver_configureConfig.h>
 //Jaco2 Controller
-#include <jaco2_driver/jaco2_controller.h>
-#include <jaco2_driver/empty_controller.h>
-#include <jaco2_driver/angular_position_controller.h>
-#include <jaco2_driver/velocity_controller.h>
-#include <jaco2_driver/point_2_point_velocity_controller.h>
-#include <jaco2_driver/gripper_controller.h>
-#include <jaco2_driver/gravity_compensation_controller.hpp>
-#include <jaco2_driver/torque_controller.h>
-#include <jaco2_driver/collision_repelling_p2p_controller.h>
+#include <jaco2_driver/controller/jaco2_controller.h>
+#include <jaco2_driver/controller/empty_controller.h>
+#include <jaco2_driver/controller/angular_position_controller.h>
+#include <jaco2_driver/controller/velocity_controller.h>
+#include <jaco2_driver/controller/point_2_point_velocity_controller.h>
+#include <jaco2_driver/controller/gripper_controller.h>
+#include <jaco2_driver/controller/gravity_compensation_controller.hpp>
+#include <jaco2_driver/controller/torque_controller.h>
+#include <jaco2_driver/controller/collision_repelling_p2p_controller.h>
+#include <jaco2_driver/controller/torque_trajectory_controller.h>
+#include <jaco2_driver/controller/collision_repelling_velocity_controller.hpp>
 
 
 class Jaco2Driver
@@ -64,22 +65,13 @@ public:
     void setTrajectory(const JointTrajectory & trajectory);
     void stop();
     void stopMovement();
-    void setTrajectoryPGains(const ManipulatorInfo& gains);
-    void setTrajectoryIGains(const ManipulatorInfo& gains);
-    void setTrajectoryDGains(const ManipulatorInfo& gains);
+
     void setStatePriorityRatio(const int r);
     void setStateHighPriorityQue(const std::vector<int> &que);
     void setStateLowPriorityQue(const std::vector<int> &que);
-    void setVelocityControllerGains(double p, double i, double d);
     void setTorque(const AngularPosition& torque);
-    void setTorqueControllerGains(double p, double i, double d);
     void enableGravityCompensation();
     void disableGravityCompensation();
-
-    void setGripperPGain(const double finger1, const double finger2, const double finger3);
-    void setGripperIGain(const double finger1, const double finger2, const double finger3);
-    void setGripperDGain(const double finger1, const double finger2, const double finger3);
-    void setGripperFingerVelocity(const int finger1, const int finger2, const int finger3);
 
     void grabObj(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3);
     void grabObjSetUnusedFingerPos(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3, const int posFinger1, const int posFinger2, const int posFinger3);
@@ -88,6 +80,17 @@ public:
     void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetCalibration& lut);
     bool setGravityParams(const Jaco2Calibration::ApiGravitationalParams &params);
     void setVelocitySensorCalibration(const std::vector<double>& factors);
+
+    void enableForceControl();
+    void disableForceControl();
+
+
+
+// BEGIN EXPERIMENTAL
+
+    void updateControllerConfig(jaco2_driver::jaco2_driver_configureConfig& cfg);
+
+// END EXPERIMENTAL
 
     void startArm();
     void stopArm();
@@ -111,9 +114,17 @@ private:
     bool right_arm_;
     Jaco2Controller* active_controller_;
 
-    VelocityController velocity_controller_;
+//    VelocityController velocity_controller_;
+//    std::shared_ptr<VelocityController> velocity_controller_;
+    CollisionRepellingVelocityController velocity_controller_;
     AngularPositionController position_controller_;
-    Point2PointVelocityController p2p_velocity_controller_;
+
+//    Point2PointVelocityController p2p_velocity_controller_;
+//    TorqueTrajectoryController p2p_velocity_controller_;
+
+    // BEGIN EXPERIMENTAL
+    CollisionReplellingP2PController p2p_velocity_controller_;
+    // END EXPERIMENTAL
     EmptyController empty_controller_;
     GripperController gripper_controller_;
     GravityCompensationController gravity_comp_controller_;

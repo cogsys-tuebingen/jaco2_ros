@@ -18,6 +18,25 @@ void Jaco2KinDynLib::convert(const std::vector<double> &in, KDL::JntArray &out)
     }
 }
 
+void Jaco2KinDynLib::convert(const std::vector<double> &in, Eigen::VectorXd &out)
+{
+    out.resize(in.size());
+    std::size_t i = 0;
+    for(auto data : in)
+    {
+        out(i) = data;
+        ++i;
+    }
+}
+
+void Jaco2KinDynLib::convert(const Eigen::VectorXd &in, std::vector<double> &out)
+{
+    out.resize(in.rows());
+    for(std::size_t i = 0; i < in.rows(); ++i){
+        out[i] = in(i);
+    }
+}
+
 void Jaco2KinDynLib::poseTFToKDL(const tf::Pose& t, KDL::Frame& k)
 {
     for (unsigned int i = 0; i < 3; ++i){

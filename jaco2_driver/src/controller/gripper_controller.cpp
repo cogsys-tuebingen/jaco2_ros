@@ -1,10 +1,9 @@
-#include <jaco2_driver/gripper_controller.h>
+#include <jaco2_driver/controller/gripper_controller.h>
 #include <math.h>
 #include <kinova/KinovaTypes.h>
 
 GripperController::GripperController(Jaco2State &state, Jaco2API& api)
     : Jaco2Controller(state, api),
-      done_(false),
       usePos_(false),
       threshold_(1),
       counter_(1)
@@ -25,7 +24,6 @@ bool GripperController::isDone() const
 
 void GripperController::start()
 {
-    api_.disableTorque();
 }
 
 void GripperController::grabObj(const bool& useFinger1, const bool& useFinger2, const bool& useFinger3)
@@ -167,6 +165,24 @@ bool GripperController::reachedGoal()
     {
         return true;
     }
+}
+void GripperController::setConfig(jaco2_driver::jaco2_driver_configureConfig &cfg)
+{
+    gainP_[0] = cfg.gripper_p_gain_finger_1;
+    gainP_[1] = cfg.gripper_p_gain_finger_2;
+    gainP_[2] = cfg.gripper_p_gain_finger_3;
+
+    gainI_[0] = cfg.gripper_i_gain_finger_1;
+    gainI_[1] = cfg.gripper_i_gain_finger_2;
+    gainI_[2] = cfg.gripper_i_gain_finger_3;
+
+    gainD_[0] = cfg.gripper_d_gain_finger_1;
+    gainD_[1] = cfg.gripper_d_gain_finger_2;
+    gainD_[2] = cfg.gripper_d_gain_finger_3;
+
+    fingerVelocity_[0] = cfg.gipper_controller_finger_vel_1;
+    fingerVelocity_[1] = cfg.gipper_controller_finger_vel_2;
+    fingerVelocity_[2] = cfg.gipper_controller_finger_vel_3;
 }
 
 void GripperController::setGainP(const double finger1, const double finger2, const double finger3)

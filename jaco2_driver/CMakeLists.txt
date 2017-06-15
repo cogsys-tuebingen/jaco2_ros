@@ -20,21 +20,21 @@ endif()
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  actionlib
-  actionlib_msgs
-  control_msgs
-  geometry_msgs
-  roscpp
-  sensor_msgs
-  std_msgs
-  tf
-  trajectory_msgs
-  jaco2_msgs
-  dynamic_reconfigure
-  jaco2_kin_dyn_lib
-  rostest
+    actionlib
+    actionlib_msgs
+    control_msgs
+    geometry_msgs
+    roscpp
+    sensor_msgs
+    std_msgs
+    tf
+    trajectory_msgs
+    jaco2_msgs
+    dynamic_reconfigure
+    jaco2_kin_dyn_lib
+    rostest
 
-)
+    )
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
@@ -66,8 +66,8 @@ link_directories(${PROJECT_SOURCE_DIR}/lib)
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
 
 generate_dynamic_reconfigure_options(
- cfg/jaco2_driver_configure.cfg
-)
+    cfg/jaco2_driver_configure.cfg
+    )
 
 ###################################
 ## catkin specific configuration ##
@@ -79,11 +79,11 @@ generate_dynamic_reconfigure_options(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES jaco2_driver
-  CATKIN_DEPENDS actionlib actionlib_msgs control_msgs geometry_msgs roscpp sensor_msgs std_msgs tf trajectory_msgs jaco2_msgs dynamic_reconfigure
-  DEPENDS system_lib
-)
+    INCLUDE_DIRS include
+    LIBRARIES jaco2_driver
+    CATKIN_DEPENDS actionlib actionlib_msgs control_msgs geometry_msgs roscpp sensor_msgs std_msgs tf trajectory_msgs jaco2_msgs dynamic_reconfigure
+    DEPENDS system_lib
+    )
 
 ###########
 ## Build ##
@@ -93,46 +93,38 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIR}
-)
+    include
+    ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIR}
+    )
+file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/jaco2_driver/*.hpp include/jaco2_driver/*.h
+                                                                                   include/jaco2_driver/controller/*.hpp include/jaco2_driver/controller/*.h)
 ## Declare a C++ library
- add_library(jaco2_driver
-   src/jaco2_driver.cpp
-   src/jaco2_api.cpp
-   src/point_2_point_velocity_controller.cpp
-   src/gripper_controller.cpp
-   src/collision_repelling_p2p_controller.cpp
-   src/jaco2_state.cpp
-   src/torque_controller.cpp
-   include/jaco2_driver/data_conversion.h
-   include/jaco2_driver/joint_trajectory.h
-   include/jaco2_driver/angular_position_controller.h
-   include/jaco2_driver/jaco2_state.h
-   include/jaco2_driver/jaco2_controller.h
-   include/jaco2_driver/velocity_controller.h
-   include/jaco2_driver/point_2_point_velocity_controller.h
-   include/jaco2_driver/collision_repelling_p2p_controller.h
-   include/jaco2_driver/gravity_compensation_controller.hpp
-   include/jaco2_driver/accelerometer_calibration.hpp
-   include/jaco2_driver/torque_offset_lut.hpp
-   include/jaco2_driver/gravity_params.hpp
-   include/jaco2_driver/torque_controller.h
-   include/kinova/KinovaArithmetics.hpp
- )
+add_library(jaco2_driver
+    ${ALL_HEADERS}
+    src/jaco2_driver.cpp
+    src/jaco2_api.cpp
+    src/jaco2_state.cpp
+    src/controller/collision_reaction.cpp
+    src/controller/gripper_controller.cpp
+    src/controller/torque_controller.cpp
+    src/controller/p2p_joint_trajectory_controller.cpp
+    src/controller/point_2_point_velocity_controller.cpp
+    src/controller/collision_repelling_p2p_controller.cpp
+    src/controller/torque_trajectory_controller.cpp
+    )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
- add_dependencies(jaco2_driver ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(jaco2_driver ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
- target_link_libraries(jaco2_driver
-   ${catkin_LIBRARIES}
-   ${Boost_LIBRARIES}
-   yaml-cpp
-)
+target_link_libraries(jaco2_driver
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+    yaml-cpp
+    )
 
 ## Declare a C++ executable
 add_executable(jaco2_driver_node src/nodes/jaco2_driver_node.cpp)
@@ -145,23 +137,23 @@ add_dependencies(jaco2_driver_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(jaco2_driver_node
-   ${catkin_LIBRARIES}
-   ${Boost_LIBRARIES}
-   jaco2_driver
-)
+    jaco2_driver
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+    )
 
 target_link_libraries(gravity_parameter_estimation
-   ${catkin_LIBRARIES}
-   ${Boost_LIBRARIES}
-   jaco2_driver
-)
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+    jaco2_driver
+    )
 
 target_link_libraries(test_torque_lut
     jaco2_driver
-   ${catkin_LIBRARIES}
-   ${Boost_LIBRARIES}
-   ${GTEST_LIBRARIES}
-)
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${GTEST_LIBRARIES}
+    )
 
 #############
 ## Install ##

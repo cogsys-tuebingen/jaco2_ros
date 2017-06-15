@@ -167,7 +167,7 @@ void Jaco2Driver::stopArm()
         serviceDone_ = false;
         jaco_api_.stopAPI();
         paused_ = true;
-        usleep(5000);
+        usleep(U_SlEEP_TIME);
         serviceDone_= true;
     });
 }
@@ -178,7 +178,7 @@ void Jaco2Driver::startArm()
         serviceDone_ = false;
         jaco_api_.startAPI();
         paused_ = false;
-        usleep(5000);
+        usleep(U_SlEEP_TIME);
         serviceDone_= true;
     });
 }
@@ -189,9 +189,9 @@ void Jaco2Driver::homeArm()
         serviceDone_ = false;
         paused_ = true;
         jaco_api_.moveHome();
-        usleep(5000);
+        usleep(U_SlEEP_TIME);
         jaco_api_.initFingers();
-        usleep(10000);
+        usleep(2*U_SlEEP_TIME);
         paused_ = false;
         serviceDone_= true;
     });
@@ -201,8 +201,29 @@ void Jaco2Driver::setTorqueZero(int actuator)
 {
     executeLater([this, actuator](){
         serviceDone_ = false;
-        setTorqueZeroResult_ = jaco_api_.setTorqueZero(actuator);
-        usleep(10000);
+        switch (actuator) {
+        case Actuator1:
+            setTorqueZeroResult_ = jaco_api_.setTorqueZero(Actuator1);
+            break;
+        case Actuator2:
+            setTorqueZeroResult_ = jaco_api_.setTorqueZero(Actuator2);
+            break;
+        case Actuator3:
+            setTorqueZeroResult_ = jaco_api_.setTorqueZero(Actuator3);
+            break;
+        case Actuator4:
+            setTorqueZeroResult_ = jaco_api_.setTorqueZero(Actuator4);
+            break;
+        case Actuator5:
+            setTorqueZeroResult_ = jaco_api_.setTorqueZero(Actuator5);
+            break;
+        case Actuator6:
+            setTorqueZeroResult_ = jaco_api_.setTorqueZero(Actuator6);
+            break;
+        default:
+            break;
+        }
+        usleep(2*U_SlEEP_TIME);
         serviceDone_= true;
     });
 }
@@ -226,8 +247,14 @@ void Jaco2Driver::tick()
         active_controller_->read();
         if(active_controller_)
         {
-            active_controller_->execute();
-            usleep(5000);
+            if(active_controller_->isDone()){
+                active_controller_->stop();
+                setActiveController(&empty_controller_);
+            }
+            else{
+                active_controller_->execute();
+                usleep(U_SlEEP_TIME);
+            }
         }
     }
     else
@@ -270,47 +297,18 @@ Jaco2Calibration::TorqueOffsetLut Jaco2Driver::getTorqueCalibration() const
 {
     return state_.getTorqueCalibration();
 }
-void Jaco2Driver::setVelocityControllerGains(double p, double i, double d)
+void Jaco2Driver::updateControllerConfig(jaco2_driver::jaco2_driver_configureConfig& cfg)
 {
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
-    velocity_controller_.setGains(p, i, d);
+    velocity_controller_.setConfig(cfg);
+    position_controller_.setConfig(cfg);
+    p2p_velocity_controller_.setConfig(cfg);
+    empty_controller_.setConfig(cfg);
+    gripper_controller_.setConfig(cfg);
+    gravity_comp_controller_.setConfig(cfg);
+    torque_controller_.setConfig(cfg);
 }
 
-void Jaco2Driver::setTorqueControllerGains(double p, double i, double d)
-{
-    std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
-    std::cout << p<<", " << i <<", " << d <<std::endl;
-    torque_controller_.setGains(p, i, d);
-}
-void Jaco2Driver::setTrajectoryPGains(const ManipulatorInfo &gains)
-{
-    p2p_velocity_controller_.setGainP(gains);
-}
-
-void Jaco2Driver::setTrajectoryIGains(const ManipulatorInfo &gains)
-{
-    p2p_velocity_controller_.setGainI(gains);
-}
-
-void Jaco2Driver::setTrajectoryDGains(const ManipulatorInfo &gains)
-{
-    p2p_velocity_controller_.setGainD(gains);
-}
-
-void Jaco2Driver::setGripperPGain(const double finger1, const double finger2, const double finger3)
-{
-    gripper_controller_.setGainP(finger1,finger2,finger3);
-}
-
-void Jaco2Driver::setGripperIGain(const double finger1, const double finger2, const double finger3)
-{
-    gripper_controller_.setGainI(finger1,finger2,finger3);
-}
-
-void Jaco2Driver::setGripperDGain(const double finger1, const double finger2, const double finger3)
-{
-    gripper_controller_.setGainD(finger1,finger2,finger3);
-}
 
 void Jaco2Driver::setFingerPosition(const AngularPosition &position)
 {
@@ -335,11 +333,6 @@ void Jaco2Driver::setTorque(const AngularPosition &torque)
 {
     torque_controller_.setTorque(torque);
     setActiveController(&torque_controller_);
-}
-
-void Jaco2Driver::setGripperFingerVelocity(const int finger1, const int finger2, const int finger3)
-{
-    gripper_controller_.setFingerVelocity(finger1, finger2, finger3);
 }
 
 void Jaco2Driver::setVelocitySensorCalibration(const std::vector<double> &factors)
@@ -428,4 +421,23 @@ int Jaco2Driver::getSetTorqueZeroResult() const
 {
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
     return setTorqueZeroResult_;
+}
+
+void Jaco2Driver::disableForceControl()
+{
+    executeLater([this](){
+        serviceDone_ = false;
+        jaco_api_.stopForceControl();
+        usleep(5000);
+        serviceDone_= true;
+    });
+}
+void Jaco2Driver::enableForceControl()
+{
+    executeLater([this](){
+        serviceDone_ = false;
+        jaco_api_.startForceControl();
+        usleep(5000);
+        serviceDone_= true;
+    });
 }

@@ -24,10 +24,12 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
   trac_ik_lib
+  rosbag
+  jaco2_msgs
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system)
 find_package(orocos_kdl REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -63,7 +65,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${orocos_kdl_INCLUDE_DIRS}
 )
-
+file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/*.hpp include/*.h)
 ## Declare a C++ library
  add_library(jaco2_kin_dyn_lib
    src/jaco2_dynamic_model.cpp
@@ -71,11 +73,8 @@ include_directories(
    src/yaml_to_kdl_tranform.cpp
    src/jaco2_residual_vector.cpp
    src/kdl_conversion.cpp
-   include/jaco2_kin_dyn_lib/yaml_to_kdl_tranform.h
-   include/jaco2_kin_dyn_lib/jaco2_residual_vector.h
-   include/jaco2_kin_dyn_lib/jaco2_kinematic_model.h
-   include/jaco2_kin_dyn_lib/jaco2_dynamic_model.h
-   include/jaco2_kin_dyn_lib/kdl_conversion.h
+   src/joint_vel_pos_estimator.cpp
+   ${ALL_HEADERS}
 )
 
 ## Add cmake target dependencies of the library
@@ -86,6 +85,7 @@ add_dependencies(jaco2_kin_dyn_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_
 ## Declare a C++ executable
 add_executable(jaco2_tf_static_transforms_conversion src/jaco2_tf_static_tranforms_conversion.cpp)
 add_executable(jaco2_kin_dyn_lib_test test/test_jaco2_kin_dyn.cpp)
+add_executable(jaco2_estimation_test test/test_pos_vel_estimation.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -111,7 +111,12 @@ target_link_libraries(jaco2_kin_dyn_lib_test
    jaco2_kin_dyn_lib
 )
 
-
+target_link_libraries(jaco2_estimation_test
+   ${catkin_LIBRARIES}
+   ${orocos_kdl_LIBRARIES}
+   ${GTEST_LIBRARIES}
+   jaco2_kin_dyn_lib
+)
 
 #############
 ## Install ##

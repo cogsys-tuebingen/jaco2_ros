@@ -28,7 +28,8 @@ public:
 
     virtual ~Jaco2KinematicModel();
 
-    virtual void setTree(const std::string& robot_model);
+    virtual void setTreeParam(const std::string& robot_model);
+    virtual void setTreeFile(const std::string &robot_model);
     void setRootAndTip(const std::string& chain_root, const std::string& chain_tip);
     void setGravity(double x, double y, double z);
     void getGravity(double& gx, double& gy, double& gz);

@@ -1,7 +1,7 @@
 #ifndef GRIPPERPIDCONTROLLER_H
 #define GRIPPERPIDCONTROLLER_H
 
-#include <jaco2_driver/jaco2_controller.h>
+#include <jaco2_driver/controller/jaco2_controller.h>
 #include <chrono>
 #include <kinova/KinovaTypes.h>
 
@@ -17,6 +17,9 @@ public:
     virtual bool isDone() const;
 
     virtual void start() override;
+
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) override;
+
 
     void grabObj(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3);
     void grabObjSetUnusedFingerPos(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3, const int posFinger1, const int posFinger2, const int posFinger3);
@@ -35,7 +38,6 @@ private:
 
 
 private:
-    bool done_;
     bool useFingers_[3];
     bool usePos_;
     AngularPosition lastPosition_;

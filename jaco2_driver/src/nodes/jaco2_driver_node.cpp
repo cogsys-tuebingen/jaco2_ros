@@ -49,6 +49,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     homingService_ = private_nh_.advertiseService("in/home_arm", &Jaco2DriverNode::homeArmServiceCallback, this);
     zeroTorqueService_ = private_nh_.advertiseService("in/set_torque_zero", &Jaco2DriverNode::setTorqueZeroCallback, this);
     gravityCompensationService_ = private_nh_.advertiseService("in/enable_gravity_compensation_mode", &Jaco2DriverNode::gravityCompCallback, this);
+    admittanceControlService_ = private_nh_.advertiseService("in/enable_admittance_mode", &Jaco2DriverNode::admittanceControlCallback, this);
 
     actionAngleServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::actionAngleGoalCb, this));
     trajServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::trajGoalCb, this));
@@ -282,6 +283,21 @@ bool Jaco2DriverNode::gravityCompCallback(std_srvs::SetBool::Request &req, std_s
     return true;
 }
 
+bool Jaco2DriverNode::admittanceControlCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
+{
+    if(req.data){
+        driver_.enableForceControl();
+        res.message = "Admittance control aktive.";
+    }
+    else{
+        driver_.disableForceControl();
+        res.message = "Admittance control deactivated.";
+    }
+
+    res.success = true;
+    return true;
+}
+
 bool Jaco2DriverNode::tick()
 {
     publishJointState();
@@ -405,50 +421,7 @@ bool Jaco2DriverNode::tick()
 
 void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureConfig &config, uint32_t level)
 {
-    ManipulatorInfo trajectoryGainsP;
-    trajectoryGainsP[0] = config.trajectory_p_gain_joint_0;
-    trajectoryGainsP[1] = config.trajectory_p_gain_joint_1;
-    trajectoryGainsP[2] = config.trajectory_p_gain_joint_2;
-    trajectoryGainsP[3] = config.trajectory_p_gain_joint_3;
-    trajectoryGainsP[4] = config.trajectory_p_gain_joint_4;
-    trajectoryGainsP[5] = config.trajectory_p_gain_joint_5;
-    ManipulatorInfo trajectoryGainsI;
-    trajectoryGainsI[0] = config.trajectory_i_gain_joint_0;
-    trajectoryGainsI[1] = config.trajectory_i_gain_joint_1;
-    trajectoryGainsI[2] = config.trajectory_i_gain_joint_2;
-    trajectoryGainsI[3] = config.trajectory_i_gain_joint_3;
-    trajectoryGainsI[4] = config.trajectory_i_gain_joint_4;
-    trajectoryGainsI[5] = config.trajectory_i_gain_joint_5;
-    ManipulatorInfo trajectoryGainsD;
-    trajectoryGainsD[0] = config.trajectory_i_gain_joint_0;
-    trajectoryGainsD[1] = config.trajectory_i_gain_joint_1;
-    trajectoryGainsD[2] = config.trajectory_i_gain_joint_2;
-    trajectoryGainsD[3] = config.trajectory_i_gain_joint_3;
-    trajectoryGainsD[4] = config.trajectory_i_gain_joint_4;
-    trajectoryGainsD[5] = config.trajectory_i_gain_joint_5;
-
-    driver_.setTrajectoryPGains(trajectoryGainsP);
-    driver_.setTrajectoryIGains(trajectoryGainsI);
-    driver_.setTrajectoryDGains(trajectoryGainsD);
-    driver_.setGripperPGain(config.gripper_p_gain_finger_1,
-                            config.gripper_p_gain_finger_2,
-                            config.gripper_p_gain_finger_3);
-
-    driver_.setGripperFingerVelocity(config.gipper_controller_finger_vel_1,
-                                     config.gipper_controller_finger_vel_2,
-                                     config.gipper_controller_finger_vel_3);
-
-    driver_.setVelocityControllerGains(config.velocity_controller_p_gain,
-                                       config.velocity_controller_i_gain,
-                                       config.velocity_controller_d_gain);
-
-    std::cout << config.torque_controller_p_gain <<" , " <<
-                 config.torque_controller_i_gain <<" , " <<
-                 config.torque_controller_d_gain << std::endl;
-
-    driver_.setTorqueControllerGains(config.torque_controller_p_gain,
-                                     config.torque_controller_i_gain,
-                                     config.torque_controller_d_gain);
+    driver_.updateControllerConfig(config);
 
     std::vector<int> highPriQue;
     std::vector<int> lowPriQue;
@@ -600,6 +573,7 @@ void Jaco2DriverNode::publishJointState()
     jaco2JointStateMsg.effort = jointStateMsg_.effort;
 
     DataConversion::convert(driver_.getAngularAcceleration(), jaco2JointStateMsg.acceleration);
+    DataConversion::convert(driver_.getAngularForceGravityFree(), jaco2JointStateMsg.effort_g_free);
     DataConversion::from_degrees(jaco2JointStateMsg.acceleration);
 
     pubJaco2JointState_.publish(jaco2JointStateMsg);

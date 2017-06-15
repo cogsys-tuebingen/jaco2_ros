@@ -4,7 +4,7 @@
 #include <kinova/KinovaTypes.h>
 #include <jaco2_driver/jaco2_api.h>
 #include <jaco2_driver/jaco2_state.h>
-#include <jaco2_driver/jaco2_controller.h>
+#include <jaco2_driver/controller/jaco2_controller.h>
 
 class EmptyController : public Jaco2Controller
 {
@@ -22,8 +22,12 @@ public:
 
     virtual void start() override
     {
-        api_.disableTorque();
     }
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) override
+    {
+
+    }
+
 
 
     virtual bool isDone() const override

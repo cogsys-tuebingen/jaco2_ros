@@ -17,6 +17,7 @@ public:
 
     virtual void start() override
     {
+        api_.stopForceControl();
         api_.enableDirectTorqueMode(1.0);
         done_ = false;
     }
@@ -40,6 +41,12 @@ public:
     {
         return done_;
     }
+
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) override
+    {
+
+    }
+
 
 private:
     TrajectoryPoint tp_;

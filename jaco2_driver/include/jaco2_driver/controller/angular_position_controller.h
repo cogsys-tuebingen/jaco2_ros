@@ -20,7 +20,11 @@ public:
 
     virtual void start() override
     {
-        api_.disableTorque();
+    }
+
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg)
+    {
+        // No parameters here.
     }
 
     void setPosition(const TrajectoryPoint& tp)

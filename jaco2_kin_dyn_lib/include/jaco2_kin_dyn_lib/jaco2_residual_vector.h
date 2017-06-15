@@ -37,9 +37,10 @@ public:
                            Eigen::VectorXd& new_integral,
                            Eigen::VectorXd& new_residual);
 
+    std::vector<double> getGravityTorque() const;
+
     std::size_t getNrOfJoints() const;
-    int getAcceleration(const double gx, const double gy, const double gz,
-                        const std::vector<double>& q,
+    int getAcceleration(const std::vector<double>& q,
                         const std::vector<double>& q_Dot,
                         const std::vector<double>& q_DotDot, std::vector<std::string> &links,
                         std::vector<KDL::Twist > &spatial_acc );
@@ -56,6 +57,7 @@ private:
 private:
     mutable Jaco2KinDynLib::Jaco2DynamicModel model_;
     Eigen::MatrixXd gains_;
+    Eigen::VectorXd gravity_torque_;
 };
 
 #endif // JACO2RESIDUALVECTOR_H

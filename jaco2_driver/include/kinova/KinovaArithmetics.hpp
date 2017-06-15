@@ -1,6 +1,8 @@
 #ifndef KINOVA_ARITHMETICS_HPP
 #define KINOVA_ARITHMETICS_HPP
 #include <kinova/KinovaTypes.h>
+#include <vector>
+#include <string>
 namespace KinovaArithmetics {
 inline AngularInfo operator+(const AngularInfo& rhs, const AngularInfo& lhs)
 {
@@ -12,6 +14,32 @@ inline AngularInfo operator+(const AngularInfo& rhs, const AngularInfo& lhs)
     result.Actuator4 = rhs.Actuator4 + lhs.Actuator4;
     result.Actuator5 = rhs.Actuator5 + lhs.Actuator5;
     result.Actuator6 = rhs.Actuator6 + lhs.Actuator6;
+    return result;
+}
+
+inline AngularInfo operator+(const AngularInfo& rhs, const std::vector<double>& lhs)
+{
+    AngularInfo result;
+    result.InitStruct();
+    result.Actuator1 = rhs.Actuator1 + lhs[0];
+    result.Actuator2 = rhs.Actuator2 + lhs[1];
+    result.Actuator3 = rhs.Actuator3 + lhs[2];
+    result.Actuator4 = rhs.Actuator4 + lhs[3];
+    result.Actuator5 = rhs.Actuator5 + lhs[4];
+    result.Actuator6 = rhs.Actuator6 + lhs[5];
+    return result;
+}
+
+inline AngularInfo operator+(const std::vector<double>& rhs, const AngularInfo& lhs )
+{
+    AngularInfo result;
+    result.InitStruct();
+    result.Actuator1 = rhs[0] + lhs.Actuator1 ;
+    result.Actuator2 = rhs[1] + lhs.Actuator2 ;
+    result.Actuator3 = rhs[2] + lhs.Actuator3 ;
+    result.Actuator4 = rhs[3] + lhs.Actuator4 ;
+    result.Actuator5 = rhs[4] + lhs.Actuator5 ;
+    result.Actuator6 = rhs[5] + lhs.Actuator6 ;
     return result;
 }
 
@@ -28,6 +56,33 @@ inline AngularInfo operator-(const AngularInfo& rhs, const AngularInfo& lhs)
     return result;
 }
 
+inline AngularInfo operator-(const AngularInfo& rhs, const std::vector<double>& lhs)
+{
+    AngularInfo result;
+    result.InitStruct();
+    result.Actuator1 = rhs.Actuator1 - lhs[0];
+    result.Actuator2 = rhs.Actuator2 - lhs[1];
+    result.Actuator3 = rhs.Actuator3 - lhs[2];
+    result.Actuator4 = rhs.Actuator4 - lhs[3];
+    result.Actuator5 = rhs.Actuator5 - lhs[4];
+    result.Actuator6 = rhs.Actuator6 - lhs[5];
+    return result;
+}
+
+inline AngularInfo operator-(const std::vector<double>& rhs, const AngularInfo& lhs)
+{
+    AngularInfo result;
+    result.InitStruct();
+    result.Actuator1 = rhs[0] - lhs.Actuator1 ;
+    result.Actuator2 = rhs[1] - lhs.Actuator2 ;
+    result.Actuator3 = rhs[2] - lhs.Actuator3 ;
+    result.Actuator4 = rhs[3] - lhs.Actuator4 ;
+    result.Actuator5 = rhs[4] - lhs.Actuator5 ;
+    result.Actuator6 = rhs[5] - lhs.Actuator6 ;
+    return result;
+}
+
+
 inline AngularInfo operator*(const AngularInfo& rhs, const double& lhs)
 {
     AngularInfo result;
@@ -41,6 +96,19 @@ inline AngularInfo operator*(const AngularInfo& rhs, const double& lhs)
     return result;
 }
 
+inline AngularInfo operator*(const AngularInfo& rhs, const AngularInfo& lhs)
+{
+    AngularInfo result;
+    result.Actuator1 = rhs.Actuator1 * lhs.Actuator1;
+    result.Actuator2 = rhs.Actuator2 * lhs.Actuator2;
+    result.Actuator3 = rhs.Actuator3 * lhs.Actuator3;
+    result.Actuator4 = rhs.Actuator4 * lhs.Actuator4;
+    result.Actuator5 = rhs.Actuator5 * lhs.Actuator5;
+    result.Actuator6 = rhs.Actuator6 * lhs.Actuator6;
+    return result;
+}
+
+
 inline AngularInfo& operator+=(AngularInfo &rhs, const AngularInfo &lhs)
 {
     rhs.Actuator1 = rhs.Actuator1 + lhs.Actuator1;
@@ -52,7 +120,8 @@ inline AngularInfo& operator+=(AngularInfo &rhs, const AngularInfo &lhs)
     return rhs;
 }
 
-inline AngularInfo operator*(const double& rhs, const AngularInfo& lhs)
+
+inline AngularInfo operator*(double rhs, const AngularInfo& lhs)
 {
     AngularInfo result;
     result.InitStruct();
@@ -65,6 +134,7 @@ inline AngularInfo operator*(const double& rhs, const AngularInfo& lhs)
 
     return result;
 }
+
 
 inline AngularInfo& operator*=(AngularInfo &rhs, const double &lhs)
 {
@@ -90,6 +160,18 @@ inline AngularInfo operator/(const AngularInfo& rhs, const double& lhs)
     result.Actuator6 = rhs.Actuator6 / lhs;
     return result;
 }
+
+inline AngularInfo& operator/=(AngularInfo &rhs, const double &lhs)
+{
+    rhs.Actuator1 = rhs.Actuator1 / lhs;
+    rhs.Actuator2 = rhs.Actuator2 / lhs;
+    rhs.Actuator3 = rhs.Actuator3 / lhs;
+    rhs.Actuator4 = rhs.Actuator4 / lhs;
+    rhs.Actuator5 = rhs.Actuator5 / lhs;
+    rhs.Actuator6 = rhs.Actuator6 / lhs;
+    return rhs;
+}
+
 inline double absSum(const AngularInfo& vals)
 {
     double res = 0;
@@ -102,6 +184,65 @@ inline double absSum(const AngularInfo& vals)
     return res;
 }
 
+inline double sum(const AngularInfo& vals)
+{
+    double res = 0;
+    res += vals.Actuator1;
+    res += vals.Actuator2;
+    res += vals.Actuator3;
+    res += vals.Actuator4;
+    res += vals.Actuator5;
+    res += vals.Actuator6;
+    return res;
+}
+
+inline AngularInfo abs(const AngularInfo& val)
+{
+    AngularInfo res;
+    res.Actuator1 = std::abs(val.Actuator1);
+    res.Actuator2 = std::abs(val.Actuator2);
+    res.Actuator3 = std::abs(val.Actuator3);
+    res.Actuator4 = std::abs(val.Actuator4);
+    res.Actuator5 = std::abs(val.Actuator5);
+    res.Actuator6 = std::abs(val.Actuator6);
+    return res;
+}
+
+inline std::string to_string(const AngularInfo& in, const std::string& delimiter = std::string("\t"))
+{
+    std::string res;
+    res = std::to_string(in.Actuator1) + delimiter +
+          std::to_string(in.Actuator2) + delimiter +
+          std::to_string(in.Actuator3) + delimiter +
+          std::to_string(in.Actuator4) + delimiter +
+          std::to_string(in.Actuator5) + delimiter +
+          std::to_string(in.Actuator6) + delimiter ;
+    return res;
+
+}
+
+inline void invert(AngularInfo& val)
+{
+    val.Actuator1 *= -1.0;
+    val.Actuator2 *= -1.0;
+    val.Actuator3 *= -1.0;
+    val.Actuator4 *= -1.0;
+    val.Actuator5 *= -1.0;
+    val.Actuator6 *= -1.0;
+}
+
+inline double norm(AngularInfo& vec)
+{
+    double res = 0;
+    res += vec.Actuator1 * vec.Actuator1;
+    res += vec.Actuator2 * vec.Actuator2;
+    res += vec.Actuator3 * vec.Actuator3;
+    res += vec.Actuator4 * vec.Actuator4;
+    res += vec.Actuator5 * vec.Actuator5;
+    res += vec.Actuator6 * vec.Actuator6;
+
+    return std::sqrt(res);
+}
 
 }
 #endif // KINOVA_ARITHMETICS_HPP

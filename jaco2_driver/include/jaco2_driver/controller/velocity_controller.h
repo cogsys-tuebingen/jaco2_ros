@@ -13,7 +13,6 @@ public:
         : Jaco2Controller(state, api),
           //          last_command_(std::time(nullptr)),
           last_command_(std::chrono::high_resolution_clock::now()),
-          done_(false),
           kp_(1.2),
           ki_(0.0),
           kd_(0.0),
@@ -28,8 +27,16 @@ public:
 
     virtual void start() override
     {
-        api_.disableTorque();
+//        api_.disableTorque();
+
         last_diff_.InitStruct();
+    }
+
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) override
+    {
+        kp_ = cfg.velocity_controller_p_gain;
+        ki_ = cfg.velocity_controller_i_gain;
+        kd_ = cfg.velocity_controller_p_gain;
     }
 
     void setVelocity(const TrajectoryPoint& tp)
@@ -38,7 +45,6 @@ public:
         desired_.Position.Type = ANGULAR_VELOCITY;
         desired_.Position.HandMode = HAND_NOMOVEMENT;
 
-        //        last_command_ = std::time(nullptr);
         last_command_ = std::chrono::high_resolution_clock::now();
         done_ = false;
     }
@@ -48,10 +54,6 @@ public:
         kp_ = p;
         ki_ = i;
         kd_ = d;
-//        std::cout << "velocity PID: " << p << ", " << i <<", "<< d<<std::endl;
-//        for(unsigned int i = 1; i < 7; ++i){
-//            api_.setActuatorPID(i, kp_,ki_, kd_);
-//        }
     }
 
     void setFingerPosition(const TrajectoryPoint& tp)
@@ -93,10 +95,11 @@ public:
             desired_.Position.InitStruct();
             desired_.Position.Type = ANGULAR_VELOCITY;
         }
-        else if(desired_.Position.HandMode == HAND_NOMOVEMENT && sum > 0.1){
+        else if(desired_.Position.HandMode == HAND_NOMOVEMENT && sum > 0.01){
             auto vel = pidControl();
             cmd_.Position.Actuators = vel;
 //            cmd_.Position.Actuators = desired_.Position.Actuators;
+//            std::cout << "controller command vel: " << KinovaArithmetics::to_string(cmd_.Position.Actuators ) <<std::endl;
 
         }
 //        std::cout << "desired vel: "<< desired_.Position.Actuators.Actuator6 <<std::endl;
@@ -166,12 +169,13 @@ private:
         }
     }
 
-private:
+protected:
     TrajectoryPoint desired_;
+private:
     TrajectoryPoint cmd_;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> last_command_;
-    bool done_;
+
     double kp_;
     double ki_;
     double kd_;
@@ -181,5 +185,6 @@ private:
     int counter_;
     std::deque<AngularInfo> vel_buffer_;
     std::deque<AngularInfo> e_buffer_;
+
 };
 #endif // VELOCITYCONTROLLER_H

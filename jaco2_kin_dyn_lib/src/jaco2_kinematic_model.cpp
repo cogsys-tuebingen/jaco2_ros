@@ -10,7 +10,7 @@
 #include <kdl_parser/kdl_parser.hpp>
 /// System
 #include <random>
-
+#include <boost/filesystem.hpp>
 
 
 
@@ -25,23 +25,32 @@ Jaco2KinematicModel::Jaco2KinematicModel(const std::string &robot_model, const s
     urdf_param_(robot_model), root_(chain_root), tip_(chain_tip), gravity_(0,0,-9.81)//, solverID_(chain_,gravity_)
 {
 
-    ros::NodeHandle node_handle("~");
-
-    std::string xml_string;
-
-    std::string urdf_xml,full_urdf_xml;
-    node_handle.param("urdf_xml",urdf_xml,urdf_param_);
-    node_handle.searchParam(urdf_xml,full_urdf_xml);
-
-    ROS_DEBUG_NAMED("Jaco2KinematicModel","Reading xml file from parameter server");
-    if (!node_handle.getParam(full_urdf_xml, xml_string))
-    {
-        ROS_FATAL_NAMED("Jaco2KinematicModel","Could not load the xml from parameter server: %s", urdf_xml.c_str());
-        return;
+    if(boost::filesystem::exists(robot_model)){
+        ROS_DEBUG_NAMED("Jaco2KinematicModel","Load robot model from file.");
+        if(!robot_model_.initFile(robot_model)){
+            ROS_ERROR("Failed to pars urdf file");
+        }
     }
+    else{
 
-    node_handle.param(full_urdf_xml,xml_string,std::string());
-    robot_model_.initString(xml_string);
+        ros::NodeHandle node_handle("~");
+
+        std::string xml_string;
+
+        std::string urdf_xml,full_urdf_xml;
+        node_handle.param("urdf_xml",urdf_xml,urdf_param_);
+        node_handle.searchParam(urdf_xml,full_urdf_xml);
+
+        ROS_DEBUG_NAMED("Jaco2KinematicModel","Reading xml file from parameter server");
+        if (!node_handle.getParam(full_urdf_xml, xml_string))
+        {
+            ROS_FATAL_NAMED("Jaco2KinematicModel","Could not load the xml from parameter server: %s", urdf_xml.c_str());
+            return;
+        }
+
+        node_handle.param(full_urdf_xml,xml_string,std::string());
+        robot_model_.initString(xml_string);
+    }
     initialize();
 
     std::cout << "Number of Joints: " << chain_.getNrOfJoints() << " | Number of Segments: " << chain_.getNrOfSegments() << std::endl;
@@ -52,13 +61,21 @@ Jaco2KinematicModel::~Jaco2KinematicModel()
 
 }
 
-void Jaco2KinematicModel::setTree(const std::string &robot_model)
+void Jaco2KinematicModel::setTreeParam(const std::string &robot_model)
 {
-
     robot_model_.initString(robot_model);
     urdf_param_ = robot_model;
     initialize();
 }
+
+void Jaco2KinematicModel::setTreeFile(const std::string &robot_model)
+{
+    robot_model_.initFile(robot_model);
+    urdf_param_ = robot_model_.getName();
+    initialize();
+}
+
+
 
 void Jaco2KinematicModel::initialize()
 {
@@ -314,36 +331,6 @@ double  Jaco2KinematicModel::getLowerJointLimit(const std::size_t id)
         return 0;
     }
 }
-
-
-
-//void Jaco2KinematicModel::convert(const KDL::JntArray &in, std::vector<double> &out)
-//{
-//    out.resize(in.rows());
-//    for(std::size_t i = 0; i < out.size(); ++i)
-//    {
-//        out[i] = in(i);
-//    }
-//}
-
-//void Jaco2KinematicModel::convert(const std::vector<double> &in, KDL::JntArray &out)
-//{
-//    out.resize(in.size());
-//    for(std::size_t i = 0; i < out.rows(); ++i)
-//    {
-//        out(i) = in[i];
-//    }
-//}
-
-//void Jaco2KinematicModel::PoseTFToKDL(const tf::Pose& t, KDL::Frame& k)
-//{
-//    for (unsigned int i = 0; i < 3; ++i){
-//        k.p[i] = t.getOrigin()[i];
-//    }
-//    for (unsigned int i = 0; i < 9; ++i){
-//        k.M.data[i] = t.getBasis()[i/3][i%3];
-//    }
-//}
 
 void Jaco2KinematicModel::getRotationAxis(const std::string &link, KDL::Vector& rot_axis) const
 {

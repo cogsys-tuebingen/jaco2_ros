@@ -50,6 +50,8 @@ Jaco2API::Jaco2API():
     SetGravityType = (int(*)(GRAVITY_TYPE Type)) dlsym(commandLayer_handle, "SetGravityType");
     SetGravityOptimalZParam = (int(*)(float Command[GRAVITY_PARAM_SIZE])) dlsym(commandLayer_handle, "SetGravityOptimalZParam");
     SetActuatorPID = (int (*)(unsigned int, float, float, float )) dlsym(commandLayer_handle,"SetActuatorPID");
+    StartForceControl = (int (*)()) dlsym(commandLayer_handle,"StartForceControl");
+    StopForceControl = (int (*)()) dlsym(commandLayer_handle,"StopForceControl");
 
 }
 
@@ -246,6 +248,17 @@ void Jaco2API::setAngularPosition(const TrajectoryPoint &position)
     }
 }
 
+void Jaco2API::setLimitedAngularCmd(const TrajectoryPoint &point)
+{
+    std::unique_lock<std::recursive_mutex>lock(mutex_);
+    TrajectoryPoint cp = point;
+    cp.LimitationsActive = 1;
+    if(!stopedAPI_){
+        SendAdvanceTrajectory(point);
+    }
+
+}
+
 void Jaco2API::setAngularTorque(const AngularPosition& torque)
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
@@ -258,6 +271,22 @@ void Jaco2API::setAngularTorque(const AngularPosition& torque)
     cmd[3] = torque.Actuators.Actuator4;
     cmd[4] = torque.Actuators.Actuator5;
     cmd[5] = torque.Actuators.Actuator6;
+
+    SendAngularTorqueCommand(cmd);
+}
+
+void Jaco2API::setAngularTorque(const AngularInfo& torque)
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+//    SetTorqueControlType(DIRECTTORQUE);
+    float cmd[COMMAND_SIZE];
+    memset(cmd,0.0,sizeof(float)*COMMAND_SIZE);
+    cmd[0] = torque.Actuator1;
+    cmd[1] = torque.Actuator2;
+    cmd[2] = torque.Actuator3;
+    cmd[3] = torque.Actuator4;
+    cmd[4] = torque.Actuator5;
+    cmd[5] = torque.Actuator6;
 
     SendAngularTorqueCommand(cmd);
 }
@@ -296,11 +325,11 @@ void Jaco2API::enableDirectTorqueMode(double torque_saftey_factor, double vibrat
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     int res1 = SetTorqueControlType(DIRECTTORQUE);
-    std::cout << "torque control type: " << res1 << std::endl;
+//    std::cout << "torque control type: " << res1 << std::endl;
     SetTorqueSafetyFactor(torque_saftey_factor);
     SetTorqueVibrationController(vibration_controller);
     int res2 = SwitchTrajectoryTorque(TORQUE);
-    std::cout << "switching result: " << res2 << std::endl;
+//    std::cout << "switching result: " << res2 << std::endl;
 }
 
 void Jaco2API::disableTorque()
@@ -309,27 +338,27 @@ void Jaco2API::disableTorque()
     SwitchTrajectoryTorque(POSITION);
 }
 
-int Jaco2API::setTorqueZero(int actuator)
+int Jaco2API::setTorqueZero(ActuatorID actuator)
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     int result; //may return
     switch (actuator) {
-    case 1:
+    case Actuator1:
         result = (*SetTorqueZero)(16);
         break;
-    case 2:
+    case Actuator2:
         result = (*SetTorqueZero)(17);
         break;
-    case 3:
+    case Actuator3:
         result = (*SetTorqueZero)(18);
         break;
-    case 4:
+    case Actuator4:
         result = (*SetTorqueZero)(19);
         break;
-    case 5:
+    case Actuator5:
         result = (*SetTorqueZero)(20);
         break;
-    case 6:
+    case Actuator6:
         result = (*SetTorqueZero)(21);
         break;
     default:
@@ -361,12 +390,22 @@ bool Jaco2API::inTrajectoryMode()
 
 bool Jaco2API::setGravityOptimalZParam(const std::vector<double> &params)
 {
+
+    /* Email Kinova: Martine Blouin:
+     * Subject: return of SetGravityOptimalZParam == 2005:
+     * This is not a real error. Parameters should have been sent normally. The
+     * reason for this error is because we do not send the same number of bytes in
+     * this message than what the DSP expects to receive (we actually send more
+     * bytes). So the robot actually receives what it needs even if it sends you
+     * back this weird message.
+     */
     std::unique_lock<std::recursive_mutex>lock(mutex_);
     SwitchTrajectoryTorque(POSITION);
     SetGravityType(MANUAL_INPUT);
     usleep(30000);
     bool ok = params.size() == OPTIMAL_Z_PARAM_SIZE;
-    int res = 0;
+    bool suc_change_param = false;
+    bool suc_change_type = false;
     if(ok){
 
         float optimalParams [OPTIMAL_Z_PARAM_SIZE];
@@ -375,18 +414,20 @@ bool Jaco2API::setGravityOptimalZParam(const std::vector<double> &params)
             optimalParams[i] = (float) params[i];
             std::cout << i << " | " << optimalParams[i] << std::endl;
         }
-        res = SetGravityOptimalZParam(optimalParams);
+        int res_change_param = SetGravityOptimalZParam(optimalParams);
+        suc_change_param = (res_change_param == 1) || (res_change_param == 2005);
         usleep(30000);
-        std::cout << "setting parameter result:  " << res<< std::endl;
-        int res2 = SetGravityType(OPTIMAL);
-        res +=res2;
-        std::cout << "changing gravity type result:  " << res2<< std::endl;
+        std::cout << "setting parameter result:  " << res_change_param<< std::endl;
+        int res_change_type = SetGravityType(OPTIMAL);
+        suc_change_type = res_change_type == 1;
+        std::cout << "changing gravity type result:  " << res_change_type<< std::endl;
         usleep(30000);
-        if(res != 2){
+        if(!suc_change_type || !suc_change_param){
             setGravityType(MANUAL_INPUT);
+            std::cout << "something failed ... use manual prams." << std::endl;
         }
     }
-    return ok && (res == 2);
+    return ok && suc_change_type && suc_change_param;
 }
 
 void Jaco2API::setGravityType(GRAVITY_TYPE type)
@@ -455,11 +496,10 @@ void Jaco2API::moveHomeLeft()
     else{
         MoveHome();
     }
-
 }
 
 
-void Jaco2API::setActuatorPID(unsigned int actuator, double p, double i, double d)
+void Jaco2API::setActuatorPID(ActuatorID actuator, double p, double i, double d)
 {
     std::unique_lock<std::recursive_mutex>lock(mutex_);
     if(actuator > 0 && actuator < 7){
@@ -472,3 +512,18 @@ void Jaco2API::setActuatorPID(unsigned int actuator, double p, double i, double 
     }
 
 }
+
+void Jaco2API::startForceControl()
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    int res = StartForceControl();
+    std::cout << res << std::endl;
+}
+
+void Jaco2API::stopForceControl()
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    int res = StopForceControl();
+    std::cout << res << std::endl;
+}
+

@@ -15,7 +15,7 @@ using namespace Jaco2KinDynLib;
 
 Jaco2DynamicModel jaco2KDL;
 
-TEST(Jaco2KinematicsDynamicsToolTests,converttest)
+TEST(Jaco2KinematicsDynamicsToolTests, converttest)
 {
     KDL::JntArray q(6);
     std::vector<double> qvec;
@@ -33,7 +33,8 @@ TEST(Jaco2KinematicsDynamicsToolTests,converttest)
     }
 }
 
-TEST(Jaco2KinematicsDynamicsToolTests,chaintest)
+
+TEST(Jaco2KinematicsDynamicsToolTests, chaintest)
 {
     EXPECT_TRUE(jaco2KDL.getRootLink().find("jaco_link_base")!=std::string::npos);
     EXPECT_TRUE(jaco2KDL.getTipLink().find("jaco_link_hand")!=std::string::npos);
@@ -93,6 +94,16 @@ TEST(Jaco2KinematicsDynamicsToolTests, KinParam)
     EXPECT_NEAR(rot(2,1),  0, 1e-4);
     EXPECT_NEAR(rot(2,2), -1, 1e-4);
 }
+
+TEST(Jaco2KinematicsDynamicsToolTests, robotModleFileTest)
+{
+   std::string file = "/localhome/zwiener/workspace/jaco_ws/src/jaco2_ros/jaco2_description/robots/standalone_arm.urdf";
+
+   Jaco2KinematicModel kinmodel(file, "jaco_link_base","jaco_link_hand");
+   std::vector<std::string> names = kinmodel.getLinkNames();
+   EXPECT_EQ(names.size(), 6);
+}
+
 
 TEST(Jaco2KinematicsDynamicsToolTests, getRotationAxisTest)
 {
@@ -504,9 +515,9 @@ TEST(Jaco2DynamicsTests, dynParamMatrices)
 
         Eigen::VectorXd alpha(6);
         alpha << qDotDot[0], qDotDot[1], qDotDot[2], qDotDot[3], qDotDot[4], qDotDot[5];
-        jaco2KDL.getChainDynParam(0, 0, 9.81, q, qDot, H, C, G );
+        jaco2KDL.getChainDynParam(q, qDot, H, C, G );
 
-        Eigen::VectorXd  tau = H*alpha + C - G;
+        Eigen::VectorXd  tau = H*alpha + C + G;
 
         double accuracy = 1e-3;
         for(int i = 0; i < torque.size(); ++i) {
@@ -552,8 +563,8 @@ TEST(Jaco2DynamicsTests, matrixC)
     //        std::vector<double> qDot = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     std::vector<double> qDotDot = {1.0, 1, 1, 1, 1.0, 1.0};
 
-    std::vector<double> torques;
-    Eigen::MatrixXd mrne_res(6,1);
+//    std::vector<double> torques;
+//    Eigen::MatrixXd mrne_res(6,1);
     Eigen::MatrixXd H;
     Eigen::MatrixXd C;
     Eigen::VectorXd c;
@@ -562,7 +573,7 @@ TEST(Jaco2DynamicsTests, matrixC)
 
     for(std::size_t i = 0; i < 50 ; ++ i){
 
-        jaco2KDL.getChainDynParam(0, 0, 9.81, q, qDot, H, c, g );
+        jaco2KDL.getChainDynParam(q, qDot, H, c, g );
         jaco2KDL.getMatrixC(q, qDot, C);
 
         Eigen::VectorXd omega(6);
@@ -581,6 +592,32 @@ TEST(Jaco2DynamicsTests, matrixC)
 
 
     }
+}
+TEST(Jaco2DynamicsTests, forwadInverseDynamics)
+{
+    std::size_t ntests = 50;
+    std::vector<double> q,qDot,qDotDot,tau, accFD, tau2;
+//    double gx,gy,gz;
+//    jaco2KDL.getGravity(gx, gy, gz);
+    Eigen::VectorXd run_times = Eigen::VectorXd::Zero(ntests);
+    for(std::size_t i = 0; i < ntests ; ++ i){
+
+        jaco2KDL.getRandomConfig(q);
+        jaco2KDL.getRandomConfig(qDot);
+        jaco2KDL.getRandomConfig(qDotDot);
+
+        jaco2KDL.getTorques(q,qDot,qDotDot,tau);
+        ros::Time start = ros::Time::now();
+        jaco2KDL.getJointAcceleration(q, qDot, tau, accFD);
+        ros::Time end = ros::Time::now();
+        run_times(i) = (end -start).toSec();
+        jaco2KDL.getTorques(q,qDot,accFD,tau2);
+
+        for(int i = 0; i < 6; ++i) {
+            EXPECT_NEAR(tau[i], tau2[i], 1e-10);
+        }
+    }
+    std::cout << "mean FD runtime: " << run_times.mean() * 1000 << " ms." << std::endl;
 }
 
 int main(int argc, char *argv[])
