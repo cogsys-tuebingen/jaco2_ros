@@ -111,8 +111,9 @@ add_library(jaco2_driver
     src/controller/torque_controller.cpp
     src/controller/p2p_joint_trajectory_controller.cpp
     src/controller/point_2_point_velocity_controller.cpp
-    src/controller/collision_repelling_p2p_controller.cpp
     src/controller/torque_trajectory_controller.cpp
+    src/controller/collision_repelling_p2p_controller.cpp
+    src/controller/collision_repelling_p2p_torque_controller.cpp
     )
 
 ## Add cmake target dependencies of the library

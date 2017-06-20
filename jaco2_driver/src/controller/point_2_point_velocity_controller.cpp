@@ -2,7 +2,8 @@
 #include <math.h>
 
 Point2PointVelocityController::Point2PointVelocityController(Jaco2State &state, Jaco2API& api)
-    : P2PJointTrajactoryController(state, api)
+    : TrajectoryTrackingController(state, api),
+      P2PJointTrajactoryController(state)
 {
     tp_.InitStruct();
     tp_.Position.Type = ANGULAR_VELOCITY;
@@ -17,6 +18,17 @@ Point2PointVelocityController::Point2PointVelocityController(Jaco2State &state, 
 
 void Point2PointVelocityController::start()
 {
+}
+
+void Point2PointVelocityController::setConfig(jaco2_driver::jaco2_driver_configureConfig &cfg)
+{
+    P2PJointTrajactoryController::setConfig(cfg);
+}
+
+void Point2PointVelocityController::setTrajectory(const JointTrajectory &trajectory)
+{
+    P2PJointTrajactoryController::setTrajectory(trajectory);
+    done_ = false;
 }
 
 void Point2PointVelocityController::write()

@@ -7,7 +7,7 @@
 #include <jaco2_driver/controller/collision_reaction.h>
 
 
-class CollisionReplellingP2PTorqueController : public Jaco2Controller
+class CollisionReplellingP2PTorqueController : public TrajectoryTrackingController
 {
 public:
     CollisionReplellingP2PTorqueController(Jaco2State &state, Jaco2API &api);
@@ -18,6 +18,7 @@ public:
     virtual void stop() override;
     virtual bool isDone() const override;
 
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) override;
     void setThreshold(double threshold);
     void setRobotModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
     void setReflexGain(const AngularInfo& kr);
@@ -25,7 +26,6 @@ public:
     void setVelocityControlGains(double p, double i, double d);
 
     void setTrajectory(const JointTrajectory& trajectory);
-
     //Tracking Gains
     void setGainP(const ManipulatorInfo &gains);
     void setGainI(const ManipulatorInfo &gains);

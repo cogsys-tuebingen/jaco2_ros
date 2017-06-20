@@ -1,8 +1,7 @@
 #include <jaco2_driver/controller/p2p_joint_trajectory_controller.h>
 
-P2PJointTrajactoryController::P2PJointTrajactoryController(Jaco2State &state, Jaco2API& api)
-    : TrajectoryTrackingController(state, api),
-      current_point_(0)
+P2PJointTrajactoryController::P2PJointTrajactoryController():
+    current_point_(0)
 {
 
 }
@@ -47,7 +46,7 @@ void P2PJointTrajactoryController::setTrajectory(const JointTrajectory& trajecto
         eLast_[i] = 0;
         eSum_[i] = 0;
     }
-    done_ = false;
+    //    done_ = false;
     current_point_ = 0;
     start_command_ = std::chrono::high_resolution_clock::now();
     last_command_ = start_command_;
@@ -64,8 +63,8 @@ double P2PJointTrajactoryController::jointCmdVelocity(const double dt, const std
     double dt2 = dt*dt;
 
     return paramsLinear_[current_point_][joint] +
-           paramsSquare_[current_point_][joint] * dt +
-           paramsCube_[current_point_][joint] * dt2;
+            paramsSquare_[current_point_][joint] * dt +
+            paramsCube_[current_point_][joint] * dt2;
 }
 
 double P2PJointTrajactoryController::jointPosition(const double dt, const std::size_t joint) const
@@ -73,9 +72,9 @@ double P2PJointTrajactoryController::jointPosition(const double dt, const std::s
     double dt2 = dt*dt;
     double dt3 = dt*dt2;
     return paramsConst_[current_point_][joint] +
-           paramsLinear_[current_point_][joint] * dt +
-           0.5*paramsSquare_[current_point_][joint] * dt2 +
-           paramsCube_[current_point_][joint]/3.0 * dt3 ;
+            paramsLinear_[current_point_][joint] * dt +
+            0.5*paramsSquare_[current_point_][joint] * dt2 +
+            paramsCube_[current_point_][joint]/3.0 * dt3 ;
 }
 
 void P2PJointTrajactoryController::setGainP(const ManipulatorInfo& gains)
@@ -128,10 +127,10 @@ AngularInfo P2PJointTrajactoryController::getJointError() const
     return error;
 }
 
-ManipulatorInfo P2PJointTrajactoryController::diffTrajectoryPoint()
+ManipulatorInfo P2PJointTrajactoryController::diffTrajectoryPoint(AngularInfo& current_position)
 {
 
-    auto current_position =  state_.getAngularPosition();
+//    auto current_position =  jstate_.getAngularPosition();
     ManipulatorInfo diff;
     diff[0] = fabs(current_position.Actuators.Actuator1 - trajectory_.getPosition(current_point_,0));
     diff[1] = fabs(current_position.Actuators.Actuator2 - trajectory_.getPosition(current_point_,1));

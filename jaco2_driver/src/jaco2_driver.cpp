@@ -1,4 +1,5 @@
 #include <jaco2_driver/jaco2_driver.h>
+#include <jaco2_driver/controller/controller_factory.hpp>
 
 Jaco2Driver::Jaco2Driver():
     initialized_(false),

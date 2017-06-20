@@ -5,18 +5,12 @@
 #include <jaco2_driver/manipulator_info.h>
 #include <jaco2_driver/joint_trajectory.h>
 
-class P2PJointTrajactoryController : public TrajectoryTrackingController
+class P2PJointTrajactoryController
 {
 public:
-    P2PJointTrajactoryController(Jaco2State &state, Jaco2API &api);
+    P2PJointTrajactoryController();
 
-    virtual ~P2PJointTrajactoryController() = default;
-
-    virtual bool isDone() const = 0;
-
-    virtual void start() = 0;
-
-    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) override;
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg);
 
     void setTrajectory(const JointTrajectory& trajectory);
     void setGainP(const ManipulatorInfo &gains);
@@ -28,16 +22,13 @@ public:
     double jointCmdVelocity(const double dt, const std::size_t joint) const;
     double jointPosition(const double dt, const std::size_t joint) const;
 
-protected:
-    virtual void write() = 0;
 
-
-protected:
-    ManipulatorInfo diffTrajectoryPoint();
+//protected:
+    ManipulatorInfo diffTrajectoryPoint(AngularInfo& current_position);
 
     void evaluationOutput();
 
-protected:
+//protected:
     JointTrajectory trajectory_;
     std::size_t  current_point_;
     ManipulatorInfo gainP_;

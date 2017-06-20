@@ -7,7 +7,7 @@
 #include <jaco2_driver/jaco2_api.h>
 #include <chrono>
 
-class Point2PointVelocityController : public P2PJointTrajactoryController
+class Point2PointVelocityController : public TrajectoryTrackingController, P2PJointTrajactoryController
 {
 public:
     Point2PointVelocityController(Jaco2State &state, Jaco2API& api);
@@ -16,6 +16,9 @@ public:
     virtual void start() override;
     virtual bool isDone() const;
 
+    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg);
+
+    void setTrajectory(const JointTrajectory& trajectory);
 
 
 protected:
