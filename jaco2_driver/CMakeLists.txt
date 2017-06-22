@@ -109,6 +109,7 @@ add_library(jaco2_driver
     src/controller/collision_reaction.cpp
     src/controller/gripper_controller.cpp
     src/controller/torque_controller.cpp
+    src/controller/trajectory_tracking_controller.cpp
     src/controller/p2p_joint_trajectory_controller.cpp
     src/controller/point_2_point_velocity_controller.cpp
     src/controller/torque_trajectory_controller.cpp

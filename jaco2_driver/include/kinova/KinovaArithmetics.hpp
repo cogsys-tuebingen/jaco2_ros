@@ -3,6 +3,7 @@
 #include <kinova/KinovaTypes.h>
 #include <vector>
 #include <string>
+#include <cmath>
 namespace KinovaArithmetics {
 inline AngularInfo operator+(const AngularInfo& rhs, const AngularInfo& lhs)
 {

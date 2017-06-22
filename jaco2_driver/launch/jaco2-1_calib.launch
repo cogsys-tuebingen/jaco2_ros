@@ -7,6 +7,8 @@
     <param name="/jaco_accelerometer_calibration_file" type="string" value="$(find jaco2_driver)/config/acc_calib_jaco2-1.yaml"/>
     <param name="/jaco_velocity_calibration_file" type="string" value="$(find jaco2_driver)/config/velocity_calibration_jaco2-1.yaml"/>
     <param name="/jaco_torque_calibration_file" type="string" value="$(find jaco2_driver)/config/torque_offset_lut_jaco2-1.yaml"/>
+    <param name="/velocity_controller" type="string" value="VEL"/>
+    <param name="/trajectory_controller" type="string" value="TRAJ_P2P_VEL"/>
   </node>
 </launch>
 

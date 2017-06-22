@@ -34,12 +34,15 @@ Jaco2DriverNode::Jaco2DriverNode()
     pubJaco2JointState_ = private_nh_.advertise<jaco2_msgs::Jaco2JointState>("out/joint_state_acc", 2);
     pubJaco2LinAcc_ = private_nh_.advertise<jaco2_msgs::Jaco2Accelerometers>("out/accelerometers",2);
 
-    private_nh_.param<bool>("right_arm", rightArm_, true);
-    private_nh_.param<std::string>("jaco_serial", serial_,std::string(""));
-    private_nh_.param<std::string>("tf_prefix", tf_prefix_, "jaco_");
+    rightArm_ = private_nh_.param<bool>("right_arm", true);
+    std::string serial_ = private_nh_.param<std::string>("jaco_serial", std::string(""));
+    std::string tf_prefix_ = private_nh_.param<std::string>("tf_prefix", "jaco_");
+    std::string vel_controller_type = private_nh_.param<std::string>("velocity_controller", Jaco2DriverConstants::velocity_controller);
+    std::string traj_controller_type = private_nh_.param<std::string>("trajectory_controller", Jaco2DriverConstants::trajectory_p2p_velocity_controller);
 
-    //    boost::function<void(const jaco2_msgs::JointVelocityConstPtr&)> cb = boost::bind(&Jaco2DriverNode::jointVelocityCb, this, _1);
-    //    boost::function<void(const jaco2_msgs::FingerPositionConstPtr&)> cb_finger = boost::bind(&Jaco2DriverNode::fingerVelocityCb, this, _1);
+    driver_.setVelocityController(vel_controller_type);
+    driver_.setTrajectoryController(traj_controller_type);
+
     subJointVelocity_ = private_nh_.subscribe("in/joint_velocity", 10, &Jaco2DriverNode::jointVelocityCb, this);
     subFingerVelocity_ = private_nh_.subscribe("in/finger_velocity", 10, &Jaco2DriverNode::fingerVelocityCb, this);
     subJointTorque_ = private_nh_.subscribe("in/joint_torques", 1, &Jaco2DriverNode::jointTorqueCb, this);

@@ -21,14 +21,11 @@
 #include <jaco2_driver/controller/jaco2_controller.h>
 #include <jaco2_driver/controller/empty_controller.h>
 #include <jaco2_driver/controller/angular_position_controller.h>
-#include <jaco2_driver/controller/velocity_controller.h>
-#include <jaco2_driver/controller/point_2_point_velocity_controller.h>
 #include <jaco2_driver/controller/gripper_controller.h>
 #include <jaco2_driver/controller/gravity_compensation_controller.hpp>
 #include <jaco2_driver/controller/torque_controller.h>
-#include <jaco2_driver/controller/collision_repelling_p2p_controller.h>
-#include <jaco2_driver/controller/torque_trajectory_controller.h>
-#include <jaco2_driver/controller/collision_repelling_velocity_controller.hpp>
+#include <jaco2_driver/controller/controller_factory.hpp>
+
 
 
 class Jaco2Driver
@@ -87,6 +84,8 @@ public:
 
 
 // BEGIN EXPERIMENTAL
+    void setVelocityController(const std::string& type);
+    void setTrajectoryController(const std::string& type);
 
     void updateControllerConfig(jaco2_driver::jaco2_driver_configureConfig& cfg);
 
@@ -114,21 +113,16 @@ private:
     bool right_arm_;
     Jaco2Controller* active_controller_;
 
-//    VelocityController velocity_controller_;
-//    std::shared_ptr<VelocityController> velocity_controller_;
-    CollisionRepellingVelocityController velocity_controller_;
+
+
     AngularPositionController position_controller_;
-
-//    Point2PointVelocityController p2p_velocity_controller_;
-//    TorqueTrajectoryController p2p_velocity_controller_;
-
-    // BEGIN EXPERIMENTAL
-    CollisionReplellingP2PController p2p_velocity_controller_;
-    // END EXPERIMENTAL
     EmptyController empty_controller_;
     GripperController gripper_controller_;
     GravityCompensationController gravity_comp_controller_;
     TorqueController torque_controller_;
+    // Variable Controller
+    std::shared_ptr<VelocityController> velocity_controller_;
+    std::shared_ptr<TrajectoryTrackingController> trajectory_controller_;
 
     std::vector<double> jointAngles_;
     std::vector<double> jointVelocities_;

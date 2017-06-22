@@ -2,12 +2,9 @@
 #define POINT_2_POINT_VELOCITY_CONTROLLER_H
 
 #include <jaco2_driver/controller/p2p_joint_trajectory_controller.h>
-#include <jaco2_driver/joint_trajectory.h>
-#include <jaco2_driver/manipulator_info.h>
-#include <jaco2_driver/jaco2_api.h>
-#include <chrono>
+#include <jaco2_driver/controller/trajectory_tracking_controller.h>
 
-class Point2PointVelocityController : public TrajectoryTrackingController, P2PJointTrajactoryController
+class Point2PointVelocityController : public TrajectoryTrackingController
 {
 public:
     Point2PointVelocityController(Jaco2State &state, Jaco2API& api);
@@ -16,14 +13,24 @@ public:
     virtual void start() override;
     virtual bool isDone() const;
 
-    virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg);
+    void setTrajectory(const JointTrajectory& trajectory) override;
+    AngularInfo getJointError() const override;
 
-    void setTrajectory(const JointTrajectory& trajectory);
-
+    void setGainP(const ManipulatorInfo& gains);
+    void setGainI(const ManipulatorInfo &gains);
+    void setGainD(const ManipulatorInfo &gains);
+    void setConfig(jaco2_driver::jaco2_driver_configureConfig &cfg) override;
 
 protected:
     void pidController(const double dt);
     void simpleVelController(const double dt);
+
+protected:
+    P2PJointTrajactoryControllerHelper trajectoryWrapper_;
+    TrajectoryPoint tp_;
+    ManipulatorInfo gainP_;
+    ManipulatorInfo gainI_;
+    ManipulatorInfo gainD_;
 
 
 

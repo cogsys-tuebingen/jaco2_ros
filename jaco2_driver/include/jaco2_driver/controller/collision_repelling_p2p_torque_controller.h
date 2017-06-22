@@ -1,7 +1,7 @@
-#ifndef COLLISION_REPELLING_P2P_CONTROLLER_H
-#define COLLISION_REPELLING_P2P_CONTROLLER_H
+#ifndef COLLISION_REPELLING_P2P_TORQUE_CONTROLLER_H
+#define COLLISION_REPELLING_P2P_TORQUE_CONTROLLER_H
 #include <jaco2_driver/data_conversion.h>
-//#include <jaco2_driver/point_2_point_velocity_controller.h>
+#include <jaco2_driver/controller/trajectory_tracking_controller.h>
 #include <jaco2_driver/controller/torque_controller.h>
 #include <jaco2_driver/controller/torque_trajectory_controller.h>
 #include <jaco2_driver/controller/collision_reaction.h>
@@ -42,4 +42,4 @@ private:
 
 };
 
-#endif // COLLISION_REPELLING_P2P_CONTROLLER_H
+#endif // COLLISION_REPELLING_P2P_TORQUE_CONTROLLER_H

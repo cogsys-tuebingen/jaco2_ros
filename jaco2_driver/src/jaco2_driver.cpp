@@ -8,8 +8,6 @@ Jaco2Driver::Jaco2Driver():
     active_controller_(nullptr),
 
     position_controller_(state_, jaco_api_),
-    velocity_controller_(state_, jaco_api_),
-    p2p_velocity_controller_(state_,jaco_api_),
     empty_controller_(state_,jaco_api_),
     gripper_controller_(state_,jaco_api_),
     gravity_comp_controller_(state_, jaco_api_),
@@ -107,8 +105,8 @@ void Jaco2Driver::setAngularVelocity(const AngularPosition &velocity)
     tp.Position.Fingers = velocity.Fingers;
     tp.Position.Type = ANGULAR_VELOCITY;
 
-    velocity_controller_.setVelocity(tp);
-    setActiveController(&velocity_controller_);
+    velocity_controller_->setVelocity(tp);
+    setActiveController(velocity_controller_.get());
 }
 
 void Jaco2Driver::setAngularPosition(const AngularPosition &position)
@@ -125,8 +123,8 @@ void Jaco2Driver::setAngularPosition(const AngularPosition &position)
 
 void Jaco2Driver::setTrajectory(const JointTrajectory &trajectory)
 {
-    p2p_velocity_controller_.setTrajectory(trajectory);
-    setActiveController(&p2p_velocity_controller_);
+    trajectory_controller_->setTrajectory(trajectory);
+    setActiveController(trajectory_controller_.get());
 }
 
 void Jaco2Driver::stop()
@@ -159,8 +157,8 @@ void Jaco2Driver::stopMovement()
     tp.InitStruct();
     tp.Position.Type = ANGULAR_VELOCITY;
 
-    velocity_controller_.setVelocity(tp);
-    setActiveController(&velocity_controller_);
+    velocity_controller_->setVelocity(tp);
+    setActiveController(velocity_controller_.get());
 }
 void Jaco2Driver::stopArm()
 {
@@ -285,7 +283,7 @@ bool Jaco2Driver::reachedGoal() const
 AngularPosition Jaco2Driver::getCurrentTrajError() const
 {
     AngularPosition res;
-    res.Actuators = p2p_velocity_controller_.getJointError();
+    res.Actuators = trajectory_controller_->getJointError();
     return res;
 }
 
@@ -301,9 +299,9 @@ Jaco2Calibration::TorqueOffsetLut Jaco2Driver::getTorqueCalibration() const
 void Jaco2Driver::updateControllerConfig(jaco2_driver::jaco2_driver_configureConfig& cfg)
 {
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
-    velocity_controller_.setConfig(cfg);
+    velocity_controller_->setConfig(cfg);
     position_controller_.setConfig(cfg);
-    p2p_velocity_controller_.setConfig(cfg);
+    trajectory_controller_->setConfig(cfg);
     empty_controller_.setConfig(cfg);
     gripper_controller_.setConfig(cfg);
     gravity_comp_controller_.setConfig(cfg);
@@ -326,8 +324,8 @@ void Jaco2Driver::setFingerVelocity(const AngularPosition &finger_velocity)
     TrajectoryPoint tp;
     tp.InitStruct();
     tp.Position.Fingers = finger_velocity.Fingers;
-    velocity_controller_.setFingerPosition(tp);
-    setActiveController(&velocity_controller_);
+    velocity_controller_->setFingerPosition(tp);
+    setActiveController(velocity_controller_.get());
 }
 
 void Jaco2Driver::setTorque(const AngularPosition &torque)
@@ -441,4 +439,31 @@ void Jaco2Driver::enableForceControl()
         usleep(5000);
         serviceDone_= true;
     });
+}
+
+void Jaco2Driver::setVelocityController(const std::string &type)
+{
+    std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
+    velocity_controller_ = ControllerFactory::makeVelocityController(state_, jaco_api_, type);
+    if(!velocity_controller_){
+        std::string msg = "Can not create velocity controller. Wrong Input? Valid types are: "
+                + Jaco2DriverConstants::velocity_controller + " & "
+                + Jaco2DriverConstants::velocity_collision_controller + ".";
+        throw std::runtime_error(msg);
+    }
+}
+
+void Jaco2Driver::setTrajectoryController(const std::string &type)
+{
+    std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
+    trajectory_controller_ = ControllerFactory::makeTrajectoryTrackingController(state_, jaco_api_, type);
+    if(!trajectory_controller_){
+        std::string msg = "Can not create trajactory controller. Wrong Input? Valid types are: "
+                + Jaco2DriverConstants::trajectory_p2p_velocity_controller + ", "
+                + Jaco2DriverConstants::trajectory_p2p_velocity_collision_controller + ", "
+                + Jaco2DriverConstants::trajectory_p2p_torque_controller + ", "
+                + Jaco2DriverConstants::trajectory_p2p_torque_collision_controller + ".";
+
+        throw std::runtime_error(msg);
+    }
 }
