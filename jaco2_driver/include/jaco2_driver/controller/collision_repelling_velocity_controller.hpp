@@ -14,7 +14,7 @@ public:
         last_cmd_rep_  = std::chrono::high_resolution_clock::now();
     }
 
-    void setVelocity(const TrajectoryPoint& tp)
+    void setVelocity(const TrajectoryPoint& tp) override
     {
         if(!collision_reaction_.inCollision()){
             collision_reaction_.resetResiduals();
@@ -43,9 +43,11 @@ public:
             while(collision_reaction_.inCollision()){
                 ROS_INFO_STREAM("Repelling! collision detected: "<< residual);
                 auto cmd = collision_reaction_.velocityControlReflex();
-                VelocityController::setVelocity(cmd);
-                VelocityController::write();
-                usleep(5000);
+                for(int i = 0; i < 3; ++i){
+                    VelocityController::setVelocity(cmd);
+                    VelocityController::write();
+                    usleep(5000);
+                }
                 state_.read();
                 now = std::chrono::high_resolution_clock::now();
                 last_cmd_rep_ = now;
