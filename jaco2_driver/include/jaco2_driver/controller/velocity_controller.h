@@ -39,7 +39,7 @@ public:
         kd_ = cfg.velocity_controller_p_gain;
     }
 
-    void setVelocity(const TrajectoryPoint& tp)
+    virtual void setVelocity(const TrajectoryPoint& tp)
     {
         desired_ = tp;
         desired_.Position.Type = ANGULAR_VELOCITY;
