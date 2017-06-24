@@ -221,6 +221,7 @@ struct DynamicCalibrationSample
     std::vector<double> jointVel;
     std::vector<double> jointAcc;
     std::vector<double> jointTorque;
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     Eigen::Vector3d gravity;
 };
 }
