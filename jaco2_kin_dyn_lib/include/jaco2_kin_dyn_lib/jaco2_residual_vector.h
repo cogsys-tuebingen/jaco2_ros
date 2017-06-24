@@ -13,7 +13,11 @@ struct ResidualData
     std::vector<double> torques;
 };
 
-
+/**
+ * @brief The Jaco2ResidualVector class
+ * Calculates external torques - Torques due to contacts !
+ * Attention for integration update rate >> 1 Hz are required! Otherwise residual vector is numerically instable!
+ */
 class Jaco2ResidualVector
 {
 public:

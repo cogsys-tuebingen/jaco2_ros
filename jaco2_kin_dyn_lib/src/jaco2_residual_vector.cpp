@@ -1,4 +1,5 @@
 #include <jaco2_kin_dyn_lib/jaco2_residual_vector.h>
+
 Jaco2ResidualVector::Jaco2ResidualVector()
     : model_()
 {
