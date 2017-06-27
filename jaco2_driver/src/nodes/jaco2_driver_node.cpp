@@ -35,6 +35,12 @@ Jaco2DriverNode::Jaco2DriverNode()
     pubJaco2LinAcc_ = private_nh_.advertise<jaco2_msgs::Jaco2Accelerometers>("out/accelerometers",2);
 
     rightArm_ = private_nh_.param<bool>("right_arm", true);
+    if(rightArm_){
+        ROS_INFO_STREAM("Right arm");
+    }
+    else{
+        ROS_INFO_STREAM("Left arm");
+    }
     std::string serial_ = private_nh_.param<std::string>("jaco_serial", std::string(""));
     std::string tf_prefix_ = private_nh_.param<std::string>("tf_prefix", "jaco_");
     std::string vel_controller_type = private_nh_.param<std::string>("velocity_controller", Jaco2DriverConstants::velocity_controller);
