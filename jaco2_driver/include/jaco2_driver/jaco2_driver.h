@@ -36,7 +36,7 @@ public:
 
     bool reachedGoal() const;
     bool serviceDone() const;
-    bool initialize(std::string serial = std::string(""), bool right = true);
+    bool initialize(std::string serial = std::string(""), bool right = true, bool move_home = true);
     // GET
     AngularPosition getAngularPosition() const;
     AngularPosition getAngularVelocity() const;

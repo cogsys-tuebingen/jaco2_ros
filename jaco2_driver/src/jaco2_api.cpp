@@ -64,7 +64,7 @@ Jaco2API::~Jaco2API()
 }
 
 
-int Jaco2API::init(std::string serial, bool right)
+int Jaco2API::init(std::string serial, bool right, bool move_home)
 {
     right_arm_ = right;
     int result = -1;
@@ -102,16 +102,21 @@ int Jaco2API::init(std::string serial, bool right)
                 std::cout << "Connect to the robot on the USB bus (" << serial_i << ")" << std::endl;
                 result = SetActiveDevice(list[i]);
 
-                std::cout << "Send the robot to HOME position " << ((right_arm_) ? "right" : "left") << std::endl;
-                if(right_arm_){
-                    result = MoveHome();
-                }
-                else{
-                    moveHomeLeft();
+                if(move_home){
+                    std::cout << "Send the robot to HOME position " << ((right_arm_) ? "right" : "left") << std::endl;
+                    if(right_arm_){
+                        result = MoveHome();
+                    }
+                    else{
+                        moveHomeLeft();
+                    }
                 }
 
-                std::cout << "Initializing the fingers" << std::endl;
-                result = InitFingers();
+                if(move_home){
+                    std::cout << "Initializing the fingers" << std::endl;
+                    result = InitFingers();
+                }
+
                 std::cout << std::endl << "D R I V E R   R E A D Y" << std::endl << std::endl;
             }
         }
@@ -265,7 +270,7 @@ void Jaco2API::setAngularTorque(const AngularPosition& torque)
 void Jaco2API::setAngularTorque(const AngularInfo& torque)
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
-//    SetTorqueControlType(DIRECTTORQUE);
+    //    SetTorqueControlType(DIRECTTORQUE);
     float cmd[COMMAND_SIZE];
     memset(cmd,0.0,sizeof(float)*COMMAND_SIZE);
     cmd[0] = torque.Actuator1;
@@ -312,11 +317,11 @@ void Jaco2API::enableDirectTorqueMode(double torque_saftey_factor, double vibrat
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     int res1 = SetTorqueControlType(DIRECTTORQUE);
-//    std::cout << "torque control type: " << res1 << std::endl;
+    //    std::cout << "torque control type: " << res1 << std::endl;
     SetTorqueSafetyFactor(torque_saftey_factor);
     SetTorqueVibrationController(vibration_controller);
     int res2 = SwitchTrajectoryTorque(TORQUE);
-//    std::cout << "switching result: " << res2 << std::endl;
+    //    std::cout << "switching result: " << res2 << std::endl;
 }
 
 void Jaco2API::disableTorque()
@@ -396,7 +401,7 @@ bool Jaco2API::setGravityOptimalZParam(const std::vector<double> &params)
     if(ok){
 
         float optimalParams [OPTIMAL_Z_PARAM_SIZE];
-//        std::size_t i = 0;
+        //        std::size_t i = 0;
         for(std::size_t i = 0; i < OPTIMAL_Z_PARAM_SIZE; ++i){
             optimalParams[i] = (float) params[i];
             std::cout << i << " | " << optimalParams[i] << std::endl;

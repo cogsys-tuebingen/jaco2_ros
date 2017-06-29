@@ -26,7 +26,7 @@ public:
     Jaco2API();
     ~Jaco2API();
 
-    int init(std::string serial = "", bool right = true);
+    int init(std::string serial = "", bool right = true, bool move_home = true);
 
     bool  isStopped() const;
     QuickStatus getQuickStatus() const;

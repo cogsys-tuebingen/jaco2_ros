@@ -35,6 +35,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     pubJaco2LinAcc_ = private_nh_.advertise<jaco2_msgs::Jaco2Accelerometers>("out/accelerometers",2);
 
     rightArm_ = private_nh_.param<bool>("right_arm", true);
+    bool move_home = private_nh_.param<bool>("move_home",true);
     if(rightArm_){
         ROS_INFO_STREAM("Right arm");
     }
@@ -95,7 +96,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     sensorMsg_.name[5] = tf_prefix_ + "joint_6";
 
 
-    bool init = driver_.initialize(serial_, rightArm_);
+    bool init = driver_.initialize(serial_, rightArm_, move_home);
     if(!init){
         ROS_ERROR_STREAM("Jaco 2 could not be initialized for device: " << serial_);
     }

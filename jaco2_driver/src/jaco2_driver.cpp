@@ -18,7 +18,7 @@ Jaco2Driver::Jaco2Driver():
 
 }
 
-bool Jaco2Driver::initialize(std::string serial, bool right)
+bool Jaco2Driver::initialize(std::string serial, bool right, bool move_home)
 {
     serial_ = serial;
     right_arm_ = right;
