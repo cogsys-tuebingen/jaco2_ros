@@ -9,6 +9,7 @@ struct DynamicCalibratedParameters
 {
     std::string linkName;
     double mass;
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     Eigen::Vector3d coM;
     Eigen::Matrix3d inertia;
 

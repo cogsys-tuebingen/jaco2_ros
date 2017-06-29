@@ -73,6 +73,7 @@ add_executable(jaco2_cartesian_transformation src/jaco2_cartesian_transformation
 add_executable(distFunction src/distFunction.cpp)
 add_executable(comparePlanner src/comparePlanner.cpp)
 add_executable(move_to_sampled_config src/move_to_sampled_config.cpp)
+add_executable(ds4_PID_teleop src/ds4_PID_teleop.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -93,6 +94,10 @@ add_dependencies(comparePlanner
     ${catkin_EXPORTED_TARGETS}
 )
 add_dependencies(move_to_sampled_config
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+)
+add_dependencies(ds4_PID_teleop
     ${${PROJECT_NAME}_EXPORTED_TARGETS}
     ${catkin_EXPORTED_TARGETS}
 )
@@ -121,6 +126,10 @@ target_link_libraries(comparePlanner
 )
 
 target_link_libraries(move_to_sampled_config
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(ds4_PID_teleop
    ${catkin_LIBRARIES}
 )
 

@@ -1,12 +1,12 @@
 #ifndef TORQUE_TRAJECTORY_CONTROLLER_H
 #define TORQUE_TRAJECTORY_CONTROLLER_H
 
-#include <jaco2_driver/controller/p2p_joint_trajectory_controller.h>
+#include <jaco2_driver/controller/trajectory_tracking_controller.h>
 #include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
-class TorqueTrajectoryController  : public P2PJointTrajactoryController
+class TorqueTrajectoryController  : public TrajectoryTrackingController
 {
 public:
     TorqueTrajectoryController(Jaco2State &state, Jaco2API& api);
@@ -21,6 +21,14 @@ public:
 
     void control(const double dt);
 
+    AngularInfo getJointError() const;
+
+    void setGainP(const ManipulatorInfo& gains);
+    void setGainI(const ManipulatorInfo &gains);
+    void setGainD(const ManipulatorInfo &gains);
+
+
+
 protected:
     void getDesiredPosition(double dt, AngularInfo& result);
     void getDesiredVelocity(double dt, AngularInfo& result);
@@ -31,7 +39,12 @@ protected:
 
 
 protected:
+    P2PJointTrajactoryControllerHelper trajectoryWrapper_;
     Jaco2KinDynLib:: Jaco2DynamicModel model_;
+    AngularInfo cmd_;
+    ManipulatorInfo gainP_;
+    ManipulatorInfo gainI_;
+    ManipulatorInfo gainD_;
 
     // Debug
     ros::NodeHandle nh;

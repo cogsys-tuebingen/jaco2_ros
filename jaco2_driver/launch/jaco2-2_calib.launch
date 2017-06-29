@@ -8,5 +8,7 @@
     <param name="/jaco_use_torque_calib" type="bool" value="false" />
     <param name="/jaco_torque_calibration_file" type="string" value="$(find jaco2_driver)/config/jaco2-2_torque_offset_sine.yaml" />
     <param name="/jaco_gravity_calibration_file" type="string" value="$(find jaco2_driver)/config/jaco2-2_g_params_service.yaml" /> 
+    <param name="/velocity_controller" type="string" value="VEL_COLL"/>
+    <param name="/trajectory_controller" type="string" value="TRAJ_P2P_VEL_COLL"/>
   </node>
 </launch>

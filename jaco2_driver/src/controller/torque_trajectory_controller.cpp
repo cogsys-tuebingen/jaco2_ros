@@ -2,7 +2,7 @@
 #include <kinova/KinovaArithmetics.hpp>
 
 TorqueTrajectoryController::TorqueTrajectoryController(Jaco2State &state, Jaco2API &api):
-    P2PJointTrajactoryController(state, api),
+    TrajectoryTrackingController(state, api),
     model_("/robot_description","jaco_link_base","jaco_link_hand"),
     nh("~")
 {
@@ -13,7 +13,7 @@ TorqueTrajectoryController::TorqueTrajectoryController(Jaco2State &state, Jaco2A
 void TorqueTrajectoryController::setTrajectory(const JointTrajectory& trajectory)
 {
     api_.enableDirectTorqueMode(1.0,0.5);
-    P2PJointTrajactoryController::setTrajectory(trajectory);
+    trajectoryWrapper_.setTrajectory(trajectory);
 }
 
 
@@ -29,13 +29,6 @@ void TorqueTrajectoryController::stop()
     api_.disableTorque();
 }
 
-void TorqueTrajectoryController::setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg)
-{
-    P2PJointTrajactoryController::setConfig(cfg);
-
-}
-
-
 void TorqueTrajectoryController::write()
 {
     auto now = std::chrono::high_resolution_clock::now();
@@ -43,37 +36,37 @@ void TorqueTrajectoryController::write()
     auto durationLast = now -last_command_;
     last_command_ = now;
     double timeDiff = std::chrono::duration_cast<std::chrono::microseconds>(duration).count()*1e-6;
-    samplingPeriod_ = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
+    trajectoryWrapper_.samplingPeriod_ = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
 
-    while(timeDiff > trajectory_.getTimeFromStart(current_point_))
+    while(timeDiff > trajectoryWrapper_.trajectory_.getTimeFromStart(current_point_))
     {
         ++current_point_;
-        if(current_point_ >= trajectory_.size() )
+        trajectoryWrapper_.current_point_ = current_point_;
+        if(current_point_ >= trajectoryWrapper_.trajectory_.size() )
         {
             std::cout << "done " << std::endl;
             done_ = true;
             // publish zero velocity
-            tp_.InitStruct();
-            tp_.Position.Type = ANGULAR_VELOCITY;
+            cmd_.InitStruct();
+
             //            api_.disableTorque();
-            evaluationOutput();
+            trajectoryWrapper_.evaluationOutput();
             //            api_.setAngularTorque(tp_.Position.Actuators);
             api_.disableTorque();
             return;
         }
     }
-    if(fabs(timeDiff -  trajectory_.getTimeFromStart(current_point_)) < 0.02)
+    if(fabs(timeDiff -  trajectoryWrapper_.trajectory_.getTimeFromStart(current_point_)) < 0.02)
     {
-        ManipulatorInfo diff = diffTrajectoryPoint();
-        posDiff_[current_point_] = diff;
-
+        AngularInfo conf = state_.getAngularPosition().Actuators;
+        trajectoryWrapper_.setPositionDifference(conf);
     }
     if(current_point_ <= 0)
     {
         return;
     }
-    double dt = timeDiff - trajectory_.getTimeFromStart(current_point_-1);
-    if(current_point_ < trajectory_.size())
+    double dt = timeDiff - trajectoryWrapper_.trajectory_.getTimeFromStart(current_point_-1);
+    if(current_point_ < trajectoryWrapper_.trajectory_.size())
     {
         //        std::cout << "case 0 " << current_point_  << " dt = " << dt  << " | timeDiff = " << timeDiff
         //                  << " | traj dur = " << timeDiff_[current_point_] << std::endl;
@@ -86,7 +79,7 @@ void TorqueTrajectoryController::write()
         //                  << tp_.Position.Actuators.Actuator4 << "\t"
         //                  << tp_.Position.Actuators.Actuator5 << "\t"
         //                  << tp_.Position.Actuators.Actuator6 << std::endl;;
-        api_.setAngularTorque(tp_.Position.Actuators);
+        api_.setAngularTorque(cmd_);
 
     }
 
@@ -116,8 +109,8 @@ void TorqueTrajectoryController::control(const double dt)
     diff.getAngularInfo() = desiredPos - currentPos.Actuators;
     diff.normalizeAngleDegrees();
     d_diff.getAngularInfo() = desiredVel - currentVel.Actuators;
-    eSum_ = diff * samplingPeriod_;
-    eLast_ = diff;
+    trajectoryWrapper_.eSum_ = diff * trajectoryWrapper_.samplingPeriod_;
+    trajectoryWrapper_.eLast_ = diff;
 
     model_.setGravity(0,0,0);
     // Warning: The Model needs RADIAN !!!
@@ -140,13 +133,13 @@ void TorqueTrajectoryController::control(const double dt)
     //    std::cout  << std::endl;
 
     AngularInfo P = (gainP_ * diff).getAngularInfo();
-    AngularInfo I = (gainI_ * eSum_).getAngularInfo();
+    AngularInfo I = (gainI_ * trajectoryWrapper_.eSum_).getAngularInfo();
     AngularInfo D = (gainD_ * d_diff).getAngularInfo();
     AngularInfo cmd = desiredTorques + P + I + D;
 
 
     // We will command torques in Nm!
-    tp_.Position.Actuators = cmd;
+    cmd_ = cmd;
 
     joint_state.header.stamp = ros::Time::now();
     joint_state.position = desiredPos;
@@ -160,32 +153,32 @@ void TorqueTrajectoryController::control(const double dt)
 
 void TorqueTrajectoryController::getDesiredPosition(double dt, AngularInfo& result)
 {
-    result.Actuator1 = jointPosition(dt,0);
-    result.Actuator2 = jointPosition(dt,1);
-    result.Actuator3 = jointPosition(dt,2);
-    result.Actuator4 = jointPosition(dt,3);
-    result.Actuator5 = jointPosition(dt,4);
-    result.Actuator5 = jointPosition(dt,5);
+    result.Actuator1 = trajectoryWrapper_.jointPosition(dt,0);
+    result.Actuator2 = trajectoryWrapper_.jointPosition(dt,1);
+    result.Actuator3 = trajectoryWrapper_.jointPosition(dt,2);
+    result.Actuator4 = trajectoryWrapper_.jointPosition(dt,3);
+    result.Actuator5 = trajectoryWrapper_.jointPosition(dt,4);
+    result.Actuator5 = trajectoryWrapper_.jointPosition(dt,5);
 }
 
 void TorqueTrajectoryController::getDesiredVelocity(double dt, AngularInfo& result)
 {
-    result.Actuator1 = jointCmdVelocity(dt,0);
-    result.Actuator2 = jointCmdVelocity(dt,1);
-    result.Actuator3 = jointCmdVelocity(dt,2);
-    result.Actuator4 = jointCmdVelocity(dt,3);
-    result.Actuator5 = jointCmdVelocity(dt,4);
-    result.Actuator5 = jointCmdVelocity(dt,5);
+    result.Actuator1 = trajectoryWrapper_.jointVelocity(dt,0);
+    result.Actuator2 = trajectoryWrapper_.jointVelocity(dt,1);
+    result.Actuator3 = trajectoryWrapper_.jointVelocity(dt,2);
+    result.Actuator4 = trajectoryWrapper_.jointVelocity(dt,3);
+    result.Actuator5 = trajectoryWrapper_.jointVelocity(dt,4);
+    result.Actuator5 = trajectoryWrapper_.jointVelocity(dt,5);
 }
 
 void TorqueTrajectoryController::getDesiredAcceleration(double dt, AngularInfo& result)
 {
-    result.Actuator1 = jointAcceleration(dt,0);
-    result.Actuator2 = jointAcceleration(dt,1);
-    result.Actuator3 = jointAcceleration(dt,2);
-    result.Actuator4 = jointAcceleration(dt,3);
-    result.Actuator5 = jointAcceleration(dt,4);
-    result.Actuator5 = jointAcceleration(dt,5);
+    result.Actuator1 = trajectoryWrapper_.jointAcceleration(dt,0);
+    result.Actuator2 = trajectoryWrapper_.jointAcceleration(dt,1);
+    result.Actuator3 = trajectoryWrapper_.jointAcceleration(dt,2);
+    result.Actuator4 = trajectoryWrapper_.jointAcceleration(dt,3);
+    result.Actuator5 = trajectoryWrapper_.jointAcceleration(dt,4);
+    result.Actuator5 = trajectoryWrapper_.jointAcceleration(dt,5);
 }
 
 void TorqueTrajectoryController::getDesiredPosition(double dt, std::vector<double>& result)
@@ -193,7 +186,7 @@ void TorqueTrajectoryController::getDesiredPosition(double dt, std::vector<doubl
     result.resize(6,0);
 
     for(std::size_t i = 0; i < 6; ++i){
-        result[i] = jointPosition(dt, i);
+        result[i] = trajectoryWrapper_.jointPosition(dt, i);
     }
 }
 
@@ -202,7 +195,7 @@ void TorqueTrajectoryController::getDesiredVelocity(double dt, std::vector<doubl
     result.resize(6,0);
 
     for(std::size_t i = 0; i < 6; ++i){
-        result[i] = jointCmdVelocity(dt, i);
+        result[i] = trajectoryWrapper_.jointVelocity(dt, i);
     }
 }
 
@@ -211,6 +204,51 @@ void TorqueTrajectoryController::getDesiredAcceleration(double dt, std::vector<d
     result.resize(6,0);
 
     for(std::size_t i = 0; i < 6; ++i){
-        result[i] = jointAcceleration(dt, i);
+        result[i] = trajectoryWrapper_.jointAcceleration(dt, i);
     }
+}
+
+
+AngularInfo TorqueTrajectoryController::getJointError() const
+{
+    return trajectoryWrapper_.getJointError();
+}
+
+void TorqueTrajectoryController::setGainP(const ManipulatorInfo& gains)
+{
+    gainP_ = gains;
+}
+
+void TorqueTrajectoryController::setGainI(const ManipulatorInfo &gains)
+{
+    gainI_ = gains;
+}
+
+void TorqueTrajectoryController::setGainD(const ManipulatorInfo &gains)
+{
+    gainD_ = gains;
+}
+
+void TorqueTrajectoryController::setConfig(jaco2_driver::jaco2_driver_configureConfig &cfg)
+{
+    gainP_[0] = cfg.trajectory_p_gain_joint_0;
+    gainP_[1] = cfg.trajectory_p_gain_joint_1;
+    gainP_[2] = cfg.trajectory_p_gain_joint_2;
+    gainP_[3] = cfg.trajectory_p_gain_joint_3;
+    gainP_[4] = cfg.trajectory_p_gain_joint_4;
+    gainP_[5] = cfg.trajectory_p_gain_joint_5;
+
+    gainI_[0] = cfg.trajectory_i_gain_joint_0;
+    gainI_[1] = cfg.trajectory_i_gain_joint_1;
+    gainI_[2] = cfg.trajectory_i_gain_joint_2;
+    gainI_[3] = cfg.trajectory_i_gain_joint_3;
+    gainI_[4] = cfg.trajectory_i_gain_joint_4;
+    gainI_[5] = cfg.trajectory_i_gain_joint_5;
+
+    gainD_[0] = cfg.trajectory_d_gain_joint_0;
+    gainD_[1] = cfg.trajectory_d_gain_joint_1;
+    gainD_[2] = cfg.trajectory_d_gain_joint_2;
+    gainD_[3] = cfg.trajectory_d_gain_joint_3;
+    gainD_[4] = cfg.trajectory_d_gain_joint_4;
+    gainD_[5] = cfg.trajectory_d_gain_joint_5;
 }

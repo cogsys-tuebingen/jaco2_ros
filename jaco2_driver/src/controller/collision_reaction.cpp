@@ -297,6 +297,7 @@ void CollisionReaction::setConfig(jaco2_driver::jaco2_driver_configureConfig &cf
         setRobotModel(robot_model_,base_link_, tip_link_);
     }
 
+
 }
 
 double CollisionReaction::energyDisipation(AngularInfo& velocity, AngularInfo& lower_lim, AngularInfo& upper_lim, std::size_t id) const

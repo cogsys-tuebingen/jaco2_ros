@@ -21,7 +21,7 @@
 #include <jaco2_kin_dyn_lib/jaco2_kinematic_model.h>
 namespace Jaco2KinDynLib {
 struct Wrench{
-
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     Eigen::Vector3d force;
     Eigen::Vector3d torque;
 
