@@ -1,5 +1,5 @@
 #include <moveit/move_group_interface/move_group.h>
-#include <moveit/move_group_interface/move_group_interface.h>
+//#include <moveit/move_group/move_group_interface.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
