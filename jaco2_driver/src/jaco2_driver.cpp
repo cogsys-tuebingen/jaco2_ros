@@ -23,7 +23,7 @@ bool Jaco2Driver::initialize(std::string serial, bool right, bool move_home)
     serial_ = serial;
     right_arm_ = right;
     ROS_INFO_STREAM("initialize jaco 2 driver for device: " << serial_);
-    int result = jaco_api_.init(serial_, right_arm_);
+    int result = jaco_api_.init(serial_, right_arm_, move_home);
     ROS_INFO_STREAM("Jaco API result: "<< result);
     int api_major, api_minor, api_version;
     jaco_api_.getApiVersion(api_major, api_minor, api_version);
