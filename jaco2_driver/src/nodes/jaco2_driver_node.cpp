@@ -79,9 +79,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     jointStateMsg_.name[8] = tf_prefix_ + "joint_finger_3";
 
     sensorMsg_.name.resize(Jaco2DriverConstants::n_Jaco2Joints);
-    sensorMsg_.acceleration.resize(Jaco2DriverConstants::n_Jaco2Joints);
     sensorMsg_.temperature.resize(Jaco2DriverConstants::n_Jaco2Joints);
-    sensorMsg_.torque.resize(Jaco2DriverConstants::n_Jaco2Joints);
     sensorMsg_.current.resize(Jaco2DriverConstants::n_Jaco2Joints);
     sensorMsg_.name[0] = tf_prefix_ + "joint_1";
     sensorMsg_.name[1] = tf_prefix_ + "joint_2";
@@ -609,9 +607,9 @@ void Jaco2DriverNode::publishJointAngles()
 
 void Jaco2DriverNode::publishSensorInfo()
 {
-    AngularAcceleration acc = driver_.getActuatorAcceleration(); // TODO remove acc from sensor
+    AngularAcceleration acc = driver_.getActuatorAcceleration();
     std::chrono::time_point<std::chrono::high_resolution_clock>  stamp = driver_.getLastReadUpdate(READ_ACCELRATION);
-    DataConversion::convert(acc,stamp,sensorMsg_.acceleration);
+
     if(stamp != lastTimeAccPublished_) {
         std::vector<geometry_msgs::Vector3Stamped> acc_msg(Jaco2DriverConstants::n_Jaco2Joints);
         DataConversion::convert(acc,stamp, acc_msg);
@@ -621,12 +619,10 @@ void Jaco2DriverNode::publishSensorInfo()
         lastTimeAccPublished_ = stamp;
 
     }
-    stamp = driver_.getLastReadUpdate(READ_TORQUE_GRAVITY_FREE);
-    AngularPosition torque = driver_.getAngularForceGravityFree();
-    DataConversion::convert(torque.Actuators,sensorMsg_.torque);
-    DataConversion::convert(stamp,sensorMsg_.torque_time);
-    SensorsInfo info = driver_.getSensorInfo();
+
     stamp = driver_.getLastReadUpdate(READ_SENSOR_INFO);
+
+    SensorsInfo info = driver_.getSensorInfo();
     DataConversion::convert(stamp,sensorMsg_.temperature_time);
     sensorMsg_.temperature[0] = info.ActuatorTemp1;
     sensorMsg_.temperature[1] = info.ActuatorTemp2;

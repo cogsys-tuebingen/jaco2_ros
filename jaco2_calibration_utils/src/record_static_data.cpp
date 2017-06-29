@@ -52,7 +52,7 @@ public:
           ac_(driver_name + "/arm_joint_angles_blocking")
     {
         subJointAngles_ = private_nh_.subscribe(driver_name + "/out/joint_angles",10, &RecordStaticDataNode::jointAngleCb, this);
-        subSensorInfo_ = private_nh_.subscribe(driver_name + "/out/sensor_info",10, &RecordStaticDataNode::sensorInfoCb, this);
+        subJacoJointState_ = private_nh_.subscribe(driver_name + "/out/joint_state_acc",10, &RecordStaticDataNode::sensorInfoCb, this);
         subJointState_ = private_nh_.subscribe(driver_name + "/out/joint_states",10, &RecordStaticDataNode::jointStateCb, this);
         zero_client_ = private_nh_.serviceClient<jaco2_msgs::SetTorqueZero>(driver_name + "/in/set_torque_zero");
         ac_.waitForServer(ros::Duration(10));
@@ -70,7 +70,7 @@ public:
 //        bag_.write("/joint_angles", ros::Time::now(), *msg);
     }
 
-    void sensorInfoCb(const jaco2_msgs::Jaco2SensorConstPtr& msg)
+    void sensorInfoCb(const jaco2_msgs::Jaco2JointStateConstPtr& msg)
     {
         if(initialAngles_){
             return;
@@ -85,7 +85,7 @@ public:
         current.angles(5) = last_angles_.joint6;
 
         std::size_t i = 0;
-        for(auto val : msg->torque){
+        for(auto val : msg->effort_g_free){
             current.torques(i) = val;
             ++i;
         }
@@ -297,9 +297,8 @@ private:
     int link_counter_;
     int steps_;
     actionlib::SimpleActionClient<jaco2_msgs::ArmJointAnglesAction> ac_;
-    //    ros::Subscriber subJointState_;
     ros::Subscriber subJointAngles_;
-    ros::Subscriber subSensorInfo_;
+    ros::Subscriber subJacoJointState_;
     ros::Subscriber subJointState_;
     ros::ServiceClient zero_client_;
 
