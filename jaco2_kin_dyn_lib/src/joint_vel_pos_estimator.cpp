@@ -82,7 +82,7 @@ JointVelPosEstimator::JointVelPosEstimator(const std::string &robot_model, const
 
 }
 
-void JointVelPosEstimator::setModel(const std::__cxx11::string &robot_model, const std::__cxx11::string &chain_root, const std::__cxx11::string &chain_tip)
+void JointVelPosEstimator::setModel(const std::string &robot_model, const std::string &chain_root, const std::string &chain_tip)
 {
     model_ = Jaco2DynamicModel(robot_model, chain_root, chain_tip);
     loaded_model_ = true;

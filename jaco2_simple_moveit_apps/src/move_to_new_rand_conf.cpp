@@ -163,106 +163,106 @@ public:
         primitive.dimensions[2] = 0.01;
 
 //        /* A pose for the box (specified relative to frame_id) */
-//        geometry_msgs::Pose box_pose;
-//        box_pose.orientation.w = 1.0;
-//        box_pose.position.x =  0.0;
-//        box_pose.position.y =  0.0;
-//        box_pose.position.z =  z;
+        geometry_msgs::Pose box_pose;
+        box_pose.orientation.w = 1.0;
+        box_pose.position.x =  0.0;
+        box_pose.position.y =  0.0;
+        box_pose.position.z =  z;
         moveit_msgs::CollisionObject collision_object;
         collision_object.header.frame_id = group_.getPlanningFrame();
 
-//        /* The id of the object is used to identify it. */
-//        collision_object.id = "ground_plane";
+        /* The id of the object is used to identify it. */
+        collision_object.id = "ground_plane";
 
-//        collision_object.primitives.push_back(primitive);
-//        collision_object.primitive_poses.push_back(box_pose);
-//        collision_object.operation = collision_object.ADD;
-
-
-
-//        collision_objects.push_back(collision_object);
-
-//        primitive.type = primitive.BOX;
-//        primitive.dimensions.resize(3);
-//        primitive.dimensions[0] = 0.01;
-//        primitive.dimensions[1] = 2.0;
-//        primitive.dimensions[2] = 2.0;
-
-//        box_pose.orientation.w = 1.0;
-//        box_pose.position.x =  xp;
-//        box_pose.position.y =  0.0;
-//        box_pose.position.z =  1.0;
-
-//        collision_object.id = "wall_1";
-
-//        collision_object.primitives.push_back(primitive);
-//        collision_object.primitive_poses.push_back(box_pose);
-//        collision_object.operation = collision_object.ADD;
-
-//        collision_objects.push_back(collision_object);
-
-//        primitive.type = primitive.BOX;
-//        primitive.dimensions.resize(3);
-//        primitive.dimensions[0] = 0.01;
-//        primitive.dimensions[1] = 2.0;
-
-//        box_pose.orientation.w = 1.0;
-//        box_pose.position.x =  xm;
-//        box_pose.position.y =  0.0;
+        collision_object.primitives.push_back(primitive);
+        collision_object.primitive_poses.push_back(box_pose);
+        collision_object.operation = collision_object.ADD;
 
 
-//        collision_object.primitives.push_back(primitive);
-//        collision_object.primitive_poses.push_back(box_pose);
-//        collision_object.operation = collision_object.ADD;
-
-//        collision_objects.push_back(collision_object);
-
-//        primitive.type = primitive.BOX;
-//        primitive.dimensions.resize(3);
-//        primitive.dimensions[0] = 2.0;
-//        primitive.dimensions[1] = 0.01;
-
-//        box_pose.orientation.w = 1.0;
-//        box_pose.position.x =  0.0;
-//        box_pose.position.y =  yp;
-
-//        collision_object.id = "wall_3";
-
-//        collision_object.primitives.push_back(primitive);
-//        collision_object.primitive_poses.push_back(box_pose);
-//        collision_object.operation = collision_object.ADD;
-
-//        collision_objects.push_back(collision_object);
-
-//        primitive.type = primitive.BOX;
-//        primitive.dimensions.resize(3);
-//        primitive.dimensions[0] = 2.0;
-//        primitive.dimensions[1] = 0.01;
-
-//        box_pose.orientation.w = 1.0;
-//        box_pose.position.x =  0.0;
-//        box_pose.position.y =  ym;
-
-//        collision_object.id = "wall_4";
-
-//        collision_object.primitives.push_back(primitive);
-//        collision_object.primitive_poses.push_back(box_pose);
-//        collision_object.operation = collision_object.ADD;
 
         collision_objects.push_back(collision_object);
 
-        primitive.type = primitive.CYLINDER;
-        primitive.dimensions[primitive.CYLINDER_RADIUS] = 0.05;
-        primitive.dimensions[primitive.CYLINDER_HEIGHT]  = 1.0;
-        geometry_msgs::Pose c_pose;
-        c_pose.orientation.w = 1.0;
-        c_pose.position.x = 0.3;
-        c_pose.position.y = 0.2;
-        c_pose.position.z = 0.5;
-        collision_object.id = "cylinder";
+        primitive.type = primitive.BOX;
+        primitive.dimensions.resize(3);
+        primitive.dimensions[0] = 0.01;
+        primitive.dimensions[1] = 2.0;
+        primitive.dimensions[2] = 2.0;
+
+        box_pose.orientation.w = 1.0;
+        box_pose.position.x =  xp;
+        box_pose.position.y =  0.0;
+        box_pose.position.z =  1.0;
+
+        collision_object.id = "wall_1";
+
         collision_object.primitives.push_back(primitive);
-        collision_object.primitive_poses.push_back(c_pose);
+        collision_object.primitive_poses.push_back(box_pose);
         collision_object.operation = collision_object.ADD;
+
+        collision_objects.push_back(collision_object);
+
+        primitive.type = primitive.BOX;
+        primitive.dimensions.resize(3);
+        primitive.dimensions[0] = 0.01;
+        primitive.dimensions[1] = 2.0;
+
+        box_pose.orientation.w = 1.0;
+        box_pose.position.x =  xm;
+        box_pose.position.y =  0.0;
+
+
+        collision_object.primitives.push_back(primitive);
+        collision_object.primitive_poses.push_back(box_pose);
+        collision_object.operation = collision_object.ADD;
+
+        collision_objects.push_back(collision_object);
+
+        primitive.type = primitive.BOX;
+        primitive.dimensions.resize(3);
+        primitive.dimensions[0] = 2.0;
+        primitive.dimensions[1] = 0.01;
+
+        box_pose.orientation.w = 1.0;
+        box_pose.position.x =  0.0;
+        box_pose.position.y =  yp;
+
+        collision_object.id = "wall_3";
+
+        collision_object.primitives.push_back(primitive);
+        collision_object.primitive_poses.push_back(box_pose);
+        collision_object.operation = collision_object.ADD;
+
+        collision_objects.push_back(collision_object);
+
+        primitive.type = primitive.BOX;
+        primitive.dimensions.resize(3);
+        primitive.dimensions[0] = 2.0;
+        primitive.dimensions[1] = 0.01;
+
+        box_pose.orientation.w = 1.0;
+        box_pose.position.x =  0.0;
+        box_pose.position.y =  ym;
+
+        collision_object.id = "wall_4";
+
+        collision_object.primitives.push_back(primitive);
+        collision_object.primitive_poses.push_back(box_pose);
+        collision_object.operation = collision_object.ADD;
+
+        collision_objects.push_back(collision_object);
+
+//        primitive.type = primitive.CYLINDER;
+//        primitive.dimensions[primitive.CYLINDER_RADIUS] = 0.05;
+//        primitive.dimensions[primitive.CYLINDER_HEIGHT]  = 1.0;
+//        geometry_msgs::Pose c_pose;
+//        c_pose.orientation.w = 1.0;
+//        c_pose.position.x = 0.3;
+//        c_pose.position.y = 0.2;
+//        c_pose.position.z = 0.5;
+//        collision_object.id = "cylinder";
+//        collision_object.primitives.push_back(primitive);
+//        collision_object.primitive_poses.push_back(c_pose);
+//        collision_object.operation = collision_object.ADD;
 
         // Now, let's add the collision object into the world
         ROS_INFO("Add an object into the world");

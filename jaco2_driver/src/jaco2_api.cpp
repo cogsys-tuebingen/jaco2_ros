@@ -87,20 +87,6 @@ int Jaco2API::init(std::string serial, bool right)
         }
         stopedAPI_ = false;
 
-        //        result = 1015;
-        //        int count = 1;
-        //        while(result != 1 && count < 4 && result == 1015)
-        //        {
-        //            result = (*InitAPI)();
-        //            std::cout << "Initialization's result : " << result << " attempt : " << count << std::endl;
-        //            if(result != 1){
-        //                sleep(10);
-        //            }
-        //            ++count;
-        //        }
-
-
-
         KinovaDevice list[MAX_KINOVA_DEVICE];
 
         int devicesCount = GetDevices(list, result);
@@ -113,10 +99,11 @@ int Jaco2API::init(std::string serial, bool right)
             std::cout << "Found a robot on the USB bus (" << serial_i << ")" << std::endl;
             if(serial_i.compare(0,length,serial) == 0 || serial == std::string("")){
                 //Setting the current device as the active device.
+                std::cout << "Connect to the robot on the USB bus (" << serial_i << ")" << std::endl;
                 result = SetActiveDevice(list[i]);
 
-                std::cout << "Send the robot to HOME position" << std::endl;
-                if(right){
+                std::cout << "Send the robot to HOME position " << ((right_arm_) ? "right" : "left") << std::endl;
+                if(right_arm_){
                     result = MoveHome();
                 }
                 else{
@@ -461,12 +448,12 @@ void Jaco2API::moveHomeLeft()
     ps.Actuators.Actuator5 = 354.7420435;
     ps.Actuators.Actuator6 = 260.12473297;
 
-    bool test = std::abs(p.Actuators.Actuator1 - ps.Actuators.Actuator1 ) < 3.0;
-    test &= std::abs(p.Actuators.Actuator2 - ps.Actuators.Actuator2 ) < 3.0;
-    test = std::abs(p.Actuators.Actuator3 - ps.Actuators.Actuator3 ) < 3.0;
-    test = std::abs(p.Actuators.Actuator4 - ps.Actuators.Actuator4 ) < 3.0;
-    test = std::abs(p.Actuators.Actuator5 - ps.Actuators.Actuator5 ) < 3.0;
-    test = std::abs(p.Actuators.Actuator6 - ps.Actuators.Actuator6 ) < 3.0;
+    bool test = std::abs(p.Actuators.Actuator1 - ps.Actuators.Actuator1 ) < 200.0;
+    test &= std::abs(p.Actuators.Actuator2 - ps.Actuators.Actuator2 ) < 200.0;
+    test = std::abs(p.Actuators.Actuator3 - ps.Actuators.Actuator3 ) < 200.0;
+    test = std::abs(p.Actuators.Actuator4 - ps.Actuators.Actuator4 ) < 200.0;
+    test = std::abs(p.Actuators.Actuator5 - ps.Actuators.Actuator5 ) < 280.0;
+    test = std::abs(p.Actuators.Actuator6 - ps.Actuators.Actuator6 ) < 360.0;
 
     SwitchTrajectoryTorque(POSITION);
 
