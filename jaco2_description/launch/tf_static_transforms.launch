@@ -19,6 +19,8 @@
 
     <node pkg="tf" type="static_transform_publisher" name="tf_finger_tip_3_bc" args="0.044094 -0.0029 -0.0029 0 0 0  /jaco_link_finger_3 /jaco_link_finger_tip_3 100" />
 
+   <node pkg="tf" type="static_transform_publisher" name="hand_tip_bc" args="0 0 -0.1093655 0  3.141592654 0  /jaco_link_hand /jaco_hand_tip 100" />
+
 
 
 </launch>
