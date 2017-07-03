@@ -574,7 +574,7 @@ void Jaco2DriverNode::publishJointState()
 
 
     jaco2_msgs::Jaco2JointState jaco2JointStateMsg;
-    jaco2JointStateMsg.header = jointStateMsg_.header;
+    jaco2JointStateMsg.header.stamp = ros::Time::now();
     jaco2JointStateMsg.name = jointStateMsg_.name;
     jaco2JointStateMsg.position = jointStateMsg_.position;
     jaco2JointStateMsg.velocity = jointStateMsg_.velocity;
