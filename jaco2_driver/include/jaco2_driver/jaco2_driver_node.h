@@ -77,6 +77,7 @@ private:
     ros::Publisher pubSensorInfo_;
     ros::Publisher pubJaco2JointState_;
     ros::Publisher pubJaco2LinAcc_;
+    ros::Publisher pubGfreeToruqes_;
 
     ros::ServiceServer stopService_;
     ros::ServiceServer startService_;

@@ -11,6 +11,7 @@
 #include <jaco2_driver/gravity_params.hpp>
 #include <jaco2_driver/velocity_calibration.hpp>
 #include <jaco2_driver/torque_offset_calibration.hpp>
+#include <jaco2_msgs/Jaco2GfreeTorques.h>
 
 
 Jaco2DriverNode::Jaco2DriverNode()
@@ -33,6 +34,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     pubSensorInfo_ = private_nh_.advertise<jaco2_msgs::Jaco2Sensor>("out/sensor_info",2);
     pubJaco2JointState_ = private_nh_.advertise<jaco2_msgs::Jaco2JointState>("out/joint_state_acc", 2);
     pubJaco2LinAcc_ = private_nh_.advertise<jaco2_msgs::Jaco2Accelerometers>("out/accelerometers",2);
+    pubGfreeToruqes_ = private_nh_.advertise<jaco2_msgs::Jaco2GfreeTorques>("out/torques_g_free",2);
 
     rightArm_ = private_nh_.param<bool>("right_arm", true);
     bool move_home = private_nh_.param<bool>("move_home",true);
@@ -581,10 +583,16 @@ void Jaco2DriverNode::publishJointState()
     jaco2JointStateMsg.effort = jointStateMsg_.effort;
 
     DataConversion::convert(driver_.getAngularAcceleration(), jaco2JointStateMsg.acceleration);
-    DataConversion::convert(driver_.getAngularForceGravityFree(), jaco2JointStateMsg.effort_g_free);
+
     DataConversion::from_degrees(jaco2JointStateMsg.acceleration);
 
     pubJaco2JointState_.publish(jaco2JointStateMsg);
+    jaco2_msgs::Jaco2GfreeTorques g_msg;
+    g_msg.header = jointStateMsg_.header;
+    std::chrono::time_point<std::chrono::high_resolution_clock>  stamp = driver_.getLastReadUpdate(READ_TORQUE_GRAVITY_FREE);
+    DataConversion::convert(stamp,g_msg.header.stamp);
+    DataConversion::convert(driver_.getAngularForceGravityFree(), g_msg.effort_g_free);
+    pubGfreeToruqes_.publish(g_msg);
 }
 
 void Jaco2DriverNode::publishJointAngles()

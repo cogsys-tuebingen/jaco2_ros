@@ -19,6 +19,7 @@
 #include <jaco2_msgs/Jaco2Sensor.h>
 #include <jaco2_msgs/Jaco2JointState.h>
 #include <jaco2_msgs/ArmJointAnglesAction.h>
+#include <jaco2_msgs/Jaco2GfreeTorques.h>
 #include <jaco2_msgs/SetTorqueZero.h>
 #include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
 #include <jaco2_calibration_utils/acceleration_samples.hpp>
@@ -52,7 +53,7 @@ public:
           ac_(driver_name + "/arm_joint_angles_blocking")
     {
         subJointAngles_ = private_nh_.subscribe(driver_name + "/out/joint_angles",10, &RecordStaticDataNode::jointAngleCb, this);
-        subJacoJointState_ = private_nh_.subscribe(driver_name + "/out/joint_state_acc",10, &RecordStaticDataNode::sensorInfoCb, this);
+        subJacoJointState_ = private_nh_.subscribe(driver_name + "out/torques_g_free",10, &RecordStaticDataNode::sensorInfoCb, this);
         subJointState_ = private_nh_.subscribe(driver_name + "/out/joint_states",10, &RecordStaticDataNode::jointStateCb, this);
         zero_client_ = private_nh_.serviceClient<jaco2_msgs::SetTorqueZero>(driver_name + "/in/set_torque_zero");
         ac_.waitForServer(ros::Duration(10));
@@ -70,7 +71,7 @@ public:
 //        bag_.write("/joint_angles", ros::Time::now(), *msg);
     }
 
-    void sensorInfoCb(const jaco2_msgs::Jaco2JointStateConstPtr& msg)
+    void sensorInfoCb(const jaco2_msgs::Jaco2GfreeTorquesConstPtr& msg)
     {
         if(initialAngles_){
             return;
