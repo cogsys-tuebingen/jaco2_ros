@@ -43,7 +43,7 @@ public:
 
     std::vector<double> getGravityTorque() const;
 
-    std::size_t getNrOfJoints() const;
+    int getNrOfJoints() const;
     int getAcceleration(const std::vector<double>& q,
                         const std::vector<double>& q_Dot,
                         const std::vector<double>& q_DotDot, std::vector<std::string> &links,

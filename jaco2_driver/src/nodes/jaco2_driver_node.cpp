@@ -36,6 +36,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     pubJaco2LinAcc_ = private_nh_.advertise<jaco2_msgs::Jaco2Accelerometers>("out/accelerometers",2);
     pubGfreeToruqes_ = private_nh_.advertise<jaco2_msgs::Jaco2GfreeTorques>("out/torques_g_free",2);
 
+    ROS_INFO_STREAM("test");
     rightArm_ = private_nh_.param<bool>("right_arm", true);
     bool move_home = private_nh_.param<bool>("move_home",true);
     if(rightArm_){
@@ -46,8 +47,8 @@ Jaco2DriverNode::Jaco2DriverNode()
     }
     std::string serial_ = private_nh_.param<std::string>("jaco_serial", std::string(""));
     std::string tf_prefix_ = private_nh_.param<std::string>("tf_prefix", "jaco_");
-    std::string vel_controller_type = private_nh_.param<std::string>("velocity_controller", Jaco2DriverConstants::velocity_controller);
-    std::string traj_controller_type = private_nh_.param<std::string>("trajectory_controller", Jaco2DriverConstants::trajectory_p2p_velocity_controller);
+    std::string vel_controller_type = private_nh_.param<std::string>("velocity_controller", Jaco2DriverConstants::velocity_collision_controller);
+    std::string traj_controller_type = private_nh_.param<std::string>("trajectory_controller", Jaco2DriverConstants::trajectory_p2p_velocity_collision_controller);
 
     driver_.setVelocityController(vel_controller_type);
     driver_.setTrajectoryController(traj_controller_type);

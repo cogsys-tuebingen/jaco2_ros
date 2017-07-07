@@ -68,6 +68,7 @@ private:
     double stop_threshold_;
     double dt_;
     double residualNorm_;
+    int n_joints_;
     std::string robot_model_;
     std::string base_link_;
     std::string tip_link_;

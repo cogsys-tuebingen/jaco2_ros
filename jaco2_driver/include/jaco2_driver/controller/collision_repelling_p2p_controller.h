@@ -33,6 +33,7 @@ public:
 
 
 private:
+    bool set_model_;
     VelocityController reflex_controller_;
     Point2PointVelocityController tracking_controller_;
     CollisionReaction collision_reaction_;

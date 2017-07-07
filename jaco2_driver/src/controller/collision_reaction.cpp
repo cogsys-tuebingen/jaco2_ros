@@ -1,7 +1,7 @@
 #include <jaco2_driver/controller/collision_reaction.h>
 #include <jaco2_driver/data_conversion.h>
 #include <kinova/KinovaArithmetics.hpp>
-
+#include <iostream>
 using namespace KinovaArithmetics;
 
 CollisionReaction::CollisionReaction(Jaco2State &state):
@@ -11,12 +11,7 @@ CollisionReaction::CollisionReaction(Jaco2State &state):
     threshold_(std::sqrt(6)*2),
     stop_threshold_(0),
     dt_(0),
-    residualNorm_(0),
-    robot_model_("/robot_description"),
-    base_link_("jaco_link_base"),
-    tip_link_("jaco_link_hand"),
-    resiudals_(robot_model_, base_link_, tip_link_)
-
+    residualNorm_(0)
 {
     kr_.InitStruct();
     kr_.Actuator1 = 1.0;
@@ -60,9 +55,11 @@ void CollisionReaction::setReflexGain(const AngularInfo &kr)
 
 void CollisionReaction::setRobotModel(const std::string &robot_model, const std::string &chain_root, const std::string &chain_tip)
 {
+    std::cout << robot_model<< " "<< chain_root << " " <<chain_tip<< std::endl;
+    ROS_INFO_STREAM(robot_model<< " "<< chain_root << " " <<chain_tip);
     resiudals_ = Jaco2ResidualVector(robot_model, chain_root, chain_tip);
-
-    std::vector<double> r_gains(resiudals_.getNrOfJoints(), 10);
+    n_joints_ = resiudals_.getNrOfJoints();
+    std::vector<double> r_gains(n_joints_, 10);
     resiudals_.setGains(r_gains);
     resetResiduals();
 
@@ -220,8 +217,8 @@ void CollisionReaction::getResidualsData(ResidualData &data)
 
 void CollisionReaction::resetResiduals()
 {
-    last_integral_ = Eigen::VectorXd::Zero(resiudals_.getNrOfJoints());
-    last_residual_ = Eigen::VectorXd::Zero(resiudals_.getNrOfJoints());
+    last_integral_ = Eigen::VectorXd::Zero(n_joints_);
+    last_residual_ = Eigen::VectorXd::Zero(n_joints_);
     collision_counter_ = 0;
 }
 

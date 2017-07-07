@@ -4,13 +4,12 @@
 
 CollisionReplellingP2PController::CollisionReplellingP2PController(Jaco2State &state, Jaco2API &api):
     TrajectoryTrackingController(state, api),
+    set_model_(false),
     reflex_controller_(state, api),
     tracking_controller_(state, api),
     collision_reaction_(state)
 {
-    collision_reaction_.setRobotModel("/robot_description", "jaco_link_base", "jaco_link_hand");
     last_cmd_rep_  = std::chrono::high_resolution_clock::now();
-
 }
 
 
@@ -35,6 +34,9 @@ void CollisionReplellingP2PController::setTrajectory(const JointTrajectory& traj
 
 void CollisionReplellingP2PController::write()
 {
+    if(!set_model_){
+        return;
+    }
 
     auto now = std::chrono::high_resolution_clock::now();
     auto durationLast = now - last_cmd_rep_;
@@ -66,6 +68,7 @@ void CollisionReplellingP2PController::setConfig(jaco2_driver::jaco2_driver_conf
     tracking_controller_.setConfig(cfg);
     collision_reaction_.setConfig(cfg);
     reflex_controller_.setConfig(cfg);
+    set_model_ = true;
 }
 
 
@@ -87,6 +90,7 @@ void CollisionReplellingP2PController::setThreshold(double threshold)
 void CollisionReplellingP2PController::setRobotModel(const std::string &robot_model, const std::string &chain_root, const std::string &chain_tip)
 {
      collision_reaction_.setRobotModel(robot_model, chain_root, chain_tip);
+     set_model_ = true;
 }
 
 void CollisionReplellingP2PController::setGainP(const ManipulatorInfo &gains)

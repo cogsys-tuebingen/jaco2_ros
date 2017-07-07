@@ -29,9 +29,11 @@ void Jaco2ResidualVector::setGravity(double x, double y, double z)
     model_.setGravity(x,y,z);
 }
 
-std::size_t Jaco2ResidualVector::getNrOfJoints()const
+int Jaco2ResidualVector::getNrOfJoints()const
 {
-    model_.getNrOfJoints();
+    int val = model_.getNrOfJoints();
+    std::cout << "#Joints: " << val << std::endl;
+    return val;
 }
 
 void Jaco2ResidualVector::setTree(const std::string &robot_model)
