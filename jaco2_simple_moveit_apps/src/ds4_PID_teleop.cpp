@@ -49,7 +49,7 @@ private:
     ros::ServiceClient fk_client_;
     ros::ServiceClient ik_client_;
     ros::Publisher joint_state_pub;
-    moveit::planning_interface::MoveGroupInterface group_;
+    moveit::planning_interface::MoveGroup group_;
     planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
 
     ros::Time prev_time;
@@ -80,7 +80,7 @@ teleopJacoDS4::teleopJacoDS4(std::string group_name, ros::NodeHandle& nh_) : gro
     prev_time = ros::Time::now();   //not Walltime since elapsed time is in reference to simulation (slower than walltime)
     stop_em = false;
 
-    planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+    planning_scene_monitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
 
     joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("/joy", 10, &teleopJacoDS4::joyCallback, this);
     joint_state_sub_ = nh_.subscribe<sensor_msgs::JointState>("/jaco_21_driver/out/joint_states", 10, &teleopJacoDS4::jointStateCallback, this);
