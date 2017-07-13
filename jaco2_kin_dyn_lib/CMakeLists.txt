@@ -31,6 +31,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(orocos_kdl REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -64,6 +65,7 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${orocos_kdl_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
 )
 file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/*.hpp include/*.h)
 ## Declare a C++ library
@@ -74,6 +76,7 @@ file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLIN
    src/jaco2_residual_vector.cpp
    src/kdl_conversion.cpp
    src/joint_vel_pos_estimator.cpp
+   src/jaco2_residual_kalman.cpp
    ${ALL_HEADERS}
 )
 
