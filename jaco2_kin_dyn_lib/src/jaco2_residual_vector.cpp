@@ -123,7 +123,7 @@ void Jaco2ResidualVector::getResidualVector(const ResidualData &data,
                                             Eigen::VectorXd& new_residual)
 {
 
-    if(data.dt < 1e-4 || data.dt > 0.1){
+    if(data.dt < 1e-7 || data.dt > 0.1){
         new_integral = last_integral;
         new_residual = last_residual;
         ROS_WARN_STREAM("Time difference very small or very big: " << data.dt);
@@ -146,7 +146,7 @@ void Jaco2ResidualVector::getResidualVector(const ResidualData &data,
 //    Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - G + last_residual;
     model_.getChainDynInertiaAndGravity(data.joint_positions, H, gravity_torque_);
     Eigen::VectorXd m = H * omega;
-    Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - gravity_torque_ + last_residual;
+    Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega + gravity_torque_ + last_residual;
 
     new_integral = integration_step(data.dt, last_integral, to_integrate);
 

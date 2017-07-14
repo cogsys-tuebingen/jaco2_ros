@@ -443,7 +443,7 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
         highPriQue.push_back(READ_VELOCITY);
     }
     if(config.state_high_pri_acc){
-        highPriQue.push_back(READ_ACCELRATION);
+        highPriQue.push_back(READ_ACCELERATION);
     }
     if(config.state_high_pri_torque){
         highPriQue.push_back(READ_TORQUE);
@@ -468,7 +468,7 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
         lowPriQue.push_back(READ_VELOCITY);
     }
     if(config.state_low_pri_acc){
-        lowPriQue.push_back(READ_ACCELRATION);
+        lowPriQue.push_back(READ_ACCELERATION);
     }
     if(config.state_low_pri_torque){
         lowPriQue.push_back(READ_TORQUE);
@@ -631,7 +631,7 @@ void Jaco2DriverNode::publishJointAngles()
 void Jaco2DriverNode::publishSensorInfo()
 {
     AngularAcceleration acc = driver_.getActuatorAcceleration();
-    std::chrono::time_point<std::chrono::high_resolution_clock>  stamp = driver_.getLastReadUpdate(READ_ACCELRATION);
+    std::chrono::time_point<std::chrono::high_resolution_clock>  stamp = driver_.getLastReadUpdate(READ_ACCELERATION);
 
     if(stamp != lastTimeAccPublished_) {
         std::vector<geometry_msgs::Vector3Stamped> acc_msg(Jaco2DriverConstants::n_Jaco2Joints);

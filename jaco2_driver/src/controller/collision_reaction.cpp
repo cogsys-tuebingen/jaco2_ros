@@ -237,10 +237,10 @@ void CollisionReaction::estimateGravity(double& gx, double &gy, double& gz)
     for(auto v : filter_g_){
         res += v;
     }
-    res *= -9.81 / filter_g_.size();
+    res *= 9.81 / filter_g_.size();
 
-    gx = res(0);
-    gy = res(1);
+    gx = res(1);
+    gy = res(0);
     gz = res(2);
 
 }

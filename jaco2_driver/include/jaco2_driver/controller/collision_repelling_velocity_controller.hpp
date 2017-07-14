@@ -45,7 +45,7 @@ public:
 
         if(collision_reaction_.inCollision() && desired_.Position.HandMode == HAND_NOMOVEMENT ){
             while(collision_reaction_.inCollision()){
-                ROS_INFO_STREAM("Repelling! collision detected: "<< residual);
+                ROS_WARN_STREAM("Repelling! collision detected: "<< residual);
                 auto cmd = collision_reaction_.velocityControlReflex();
 //                for(int i = 0; i < 2; ++i){
                     VelocityController::setVelocity(cmd);
@@ -53,6 +53,7 @@ public:
                     usleep(5000);
 //                }
                 state_.read();
+
                 now = std::chrono::high_resolution_clock::now();
                 last_cmd_rep_ = now;
                 dt = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;

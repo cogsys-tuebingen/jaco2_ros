@@ -22,7 +22,7 @@ Jaco2KinematicModel::Jaco2KinematicModel():
 }
 
 Jaco2KinematicModel::Jaco2KinematicModel(const std::string &robot_model, const std::string& chain_root, const std::string& chain_tip):
-    urdf_param_(robot_model), root_(chain_root), tip_(chain_tip), gravity_(0,0,-9.81)//, solverID_(chain_,gravity_)
+    urdf_param_(robot_model), root_(chain_root), tip_(chain_tip), gravity_(0,0,-9.81)
 {
 
     if(boost::filesystem::exists(robot_model)){

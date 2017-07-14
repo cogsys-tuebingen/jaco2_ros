@@ -99,13 +99,16 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
     )
 file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/jaco2_driver/*.hpp include/jaco2_driver/*.h
-                                                                                   include/jaco2_driver/controller/*.hpp include/jaco2_driver/controller/*.h)
+                                                                                   include/jaco2_driver/controller/*.hpp include/jaco2_driver/controller/*.h
+                                                                                   include/jaco2_driver/data/*.hpp include/jaco2_driver/data/*.h)
 ## Declare a C++ library
 add_library(jaco2_driver
     ${ALL_HEADERS}
     src/jaco2_driver.cpp
     src/jaco2_api.cpp
     src/jaco2_state.cpp
+    src/data/jaco2_joint_state.cpp
+#    src/joint_state_outlier_filter.cpp
     src/controller/collision_reaction.cpp
     src/controller/gripper_controller.cpp
     src/controller/torque_controller.cpp

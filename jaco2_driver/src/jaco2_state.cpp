@@ -13,7 +13,7 @@ Jaco2State::Jaco2State(Jaco2API &api)
 {
     lowPriority_.push_back(READ_QUICK_STATUS);
     lowPriority_.push_back(READ_CURRENT);
-    lowPriority_.push_back(READ_ACCELRATION);
+    lowPriority_.push_back(READ_ACCELERATION);
     lowPriority_.push_back(READ_TORQUE_GRAVITY_FREE);
     lowPriority_.push_back(READ_SENSOR_INFO);
 
@@ -169,7 +169,7 @@ void Jaco2State::read(int dataID)
     case READ_VELOCITY:
         readVelocity();
         break;
-    case READ_ACCELRATION:
+    case READ_ACCELERATION:
         readAcceleration();
         break;
     case READ_TORQUE:
@@ -203,7 +203,7 @@ std::chrono::time_point<std::chrono::high_resolution_clock> Jaco2State::getLastU
     case READ_VELOCITY:
         res = time_velocity_;
         break;
-    case READ_ACCELRATION:
+    case READ_ACCELERATION:
         res = time_acceleration_;
         break;
     case READ_TORQUE:

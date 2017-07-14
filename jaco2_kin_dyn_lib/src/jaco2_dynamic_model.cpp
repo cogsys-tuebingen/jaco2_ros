@@ -11,13 +11,13 @@
 using namespace Jaco2KinDynLib;
 
 Jaco2DynamicModel::Jaco2DynamicModel():
-    gravity_(0,0,-9.81)//, solverID_(chain_,gravity_)
+    gravity_(0,0,9.81)//, solverID_(chain_,gravity_)
 {
 }
 
 Jaco2DynamicModel::Jaco2DynamicModel(const std::string &robot_model, const std::string& chain_root, const std::string& chain_tip):
     Jaco2KinematicModel(robot_model, chain_root, chain_tip),
-    gravity_(0,0,-9.81)
+    gravity_(0,0,9.81)
 {
     initialize();
 }
@@ -753,7 +753,7 @@ void Jaco2DynamicModel::modifiedRNE(const double gx, const double gy, const doub
 
     unsigned int j=0;
     //Sweep from root to leaf
-    KDL::Vector ag(-gx, -gy, -gz);
+    KDL::Vector ag(-gx, -gy, -gz);  // as orocos kdl
 
     std::vector<KDL::Frame> X(ns);
     std::vector<KDL::Twist> S(ns);
