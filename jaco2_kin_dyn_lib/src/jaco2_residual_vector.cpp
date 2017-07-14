@@ -1,4 +1,5 @@
 #include <jaco2_kin_dyn_lib/jaco2_residual_vector.h>
+using namespace Jaco2KinDynLib;
 
 Jaco2ResidualVector::Jaco2ResidualVector()
     : model_()
@@ -121,6 +122,14 @@ void Jaco2ResidualVector::getResidualVector(const ResidualData &data,
                                             Eigen::VectorXd& new_integral,
                                             Eigen::VectorXd& new_residual)
 {
+
+    if(data.dt < 1e-4 || data.dt > 0.1){
+        new_integral = last_integral;
+        new_residual = last_residual;
+        ROS_WARN_STREAM("Time difference very small or very big: " << data.dt);
+        return;
+    }
+
     Eigen::MatrixXd C;
     model_.getMatrixC(data.joint_positions,data.joint_velocities, C);
 

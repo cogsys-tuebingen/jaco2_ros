@@ -57,7 +57,7 @@ void CollisionReaction::setRobotModel(const std::string &robot_model, const std:
 {
     std::cout << robot_model<< " "<< chain_root << " " <<chain_tip<< std::endl;
     ROS_INFO_STREAM(robot_model<< " "<< chain_root << " " <<chain_tip);
-    resiudals_ = Jaco2ResidualVector(robot_model, chain_root, chain_tip);
+    resiudals_ = Jaco2KinDynLib::Jaco2ResidualVector(robot_model, chain_root, chain_tip);
     n_joints_ = resiudals_.getNrOfJoints();
     std::vector<double> r_gains(n_joints_, 10);
     resiudals_.setGains(r_gains);
@@ -170,7 +170,7 @@ std::size_t CollisionReaction::getCollisionCounter() const
 
 void CollisionReaction::updateResiduals()
 {
-    ResidualData data;
+    Jaco2KinDynLib::ResidualData data;
 
 
     getResidualsData(data);
@@ -191,7 +191,7 @@ void CollisionReaction::updateResiduals()
     residualNorm_= new_residual.norm();
 }
 
-void CollisionReaction::getResidualsData(ResidualData &data)
+void CollisionReaction::getResidualsData(Jaco2KinDynLib::ResidualData &data)
 {
 
     auto torques = state_.getAngularForce();

@@ -55,7 +55,7 @@ public:
 
 
 private:
-    void getResidualsData(ResidualData &data);
+    void getResidualsData(Jaco2KinDynLib::ResidualData &data);
     void updateResiduals();
     double energyDisipation(AngularInfo &vel, AngularInfo &lower, AngularInfo &upper, std::size_t id) const;
     TrajectoryPoint calculateVelocity(AngularInfo& cmd);
@@ -72,7 +72,7 @@ private:
     std::string robot_model_;
     std::string base_link_;
     std::string tip_link_;
-    Jaco2ResidualVector resiudals_;
+    Jaco2KinDynLib::Jaco2ResidualVector resiudals_;
     Eigen::VectorXd last_integral_;
     Eigen::VectorXd last_residual_;
     std::deque<Eigen::Vector3d> filter_g_;
