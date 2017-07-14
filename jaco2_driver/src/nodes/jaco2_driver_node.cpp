@@ -577,20 +577,27 @@ void Jaco2DriverNode::publishJointState()
 
 
     jaco2_msgs::Jaco2JointState jaco2JointStateMsg;
-    jaco2JointStateMsg.header.stamp = ros::Time::now();
-    jaco2JointStateMsg.name = jointStateMsg_.name;
-    jaco2JointStateMsg.position = jointStateMsg_.position;
-    jaco2JointStateMsg.velocity = jointStateMsg_.velocity;
-    jaco2JointStateMsg.effort = jointStateMsg_.effort;
+    //    jaco2JointStateMsg.header.stamp = ros::Time::now();
+    std::chrono::time_point<std::chrono::high_resolution_clock>  stamp = driver_.getLastReadUpdate(READ_TORQUE);
+    if(stamp != lastTimeJsPublished_){
 
-    DataConversion::convert(driver_.getAngularAcceleration(), jaco2JointStateMsg.acceleration);
+        DataConversion::convert(stamp, jaco2JointStateMsg.header.stamp );
+        jaco2JointStateMsg.name = jointStateMsg_.name;
+        jaco2JointStateMsg.position = jointStateMsg_.position;
+        jaco2JointStateMsg.velocity = jointStateMsg_.velocity;
+        jaco2JointStateMsg.effort = jointStateMsg_.effort;
 
-    DataConversion::from_degrees(jaco2JointStateMsg.acceleration);
+        DataConversion::convert(driver_.getAngularAcceleration(), jaco2JointStateMsg.acceleration);
 
-    pubJaco2JointState_.publish(jaco2JointStateMsg);
+        DataConversion::from_degrees(jaco2JointStateMsg.acceleration);
+
+        pubJaco2JointState_.publish(jaco2JointStateMsg);
+        lastTimeJsPublished_ = stamp;
+    }
+
     jaco2_msgs::Jaco2GfreeTorques g_msg;
     g_msg.header = jointStateMsg_.header;
-    std::chrono::time_point<std::chrono::high_resolution_clock>  stamp = driver_.getLastReadUpdate(READ_TORQUE_GRAVITY_FREE);
+    stamp = driver_.getLastReadUpdate(READ_TORQUE_GRAVITY_FREE);
     DataConversion::convert(stamp,g_msg.header.stamp);
     DataConversion::convert(driver_.getAngularForceGravityFree(), g_msg.effort_g_free);
     pubGfreeToruqes_.publish(g_msg);

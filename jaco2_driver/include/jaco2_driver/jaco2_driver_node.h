@@ -111,6 +111,7 @@ private:
     dynamic_reconfigure::Server<jaco2_driver::jaco2_driver_configureConfig>::CallbackType f_;
 
     std::chrono::time_point<std::chrono::high_resolution_clock>  lastTimeAccPublished_;
+    std::chrono::time_point<std::chrono::high_resolution_clock>  lastTimeJsPublished_;
 
     double j6o_;
 };
