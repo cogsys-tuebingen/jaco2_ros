@@ -25,6 +25,7 @@ public:
     const Vector3Stamped& operator [](std::size_t i) const;
 
     std::size_t size() const;
+    void resize(std::size_t n, Vector3Stamped val = Vector3Stamped(0,0,0));
 
     void emplace_back(Vector3Stamped&& val);
     void push_back(const Vector3Stamped& val);
