@@ -1,7 +1,8 @@
 #ifndef JOINT_STATE_OUTLIER_FILTER_H
 #define JOINT_STATE_OUTLIER_FILTER_H
 #include <deque>
-#include <jaco2_kin_dyn_lib/jaco2_kin_dyn_data_structs.h>
+#include <jaco2_data/extended_joint_state_data.h>
+
 
 
 class JointStateOutlierFilter
@@ -19,7 +20,7 @@ private:
     std::size_t buffer_size_;
     double threshold_torque_;
     double threshold_acc_;
-//    std::deque<JointState> jstate_buffer_;
+    std::deque<jaco2_data::ExtendedJointStateData> jstate_buffer_;
 
 };
 

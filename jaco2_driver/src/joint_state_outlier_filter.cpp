@@ -1,4 +1,6 @@
 #include <jaco2_driver/joint_state_outlier_filter.h>
+using namespace jaco2_data;
+
 JointStateOutlierFilter::JointStateOutlierFilter(double threshold_torque, double threshold_acc)
     : buffer_size_(3),
       threshold_torque_(threshold_torque),
@@ -9,50 +11,65 @@ JointStateOutlierFilter::JointStateOutlierFilter(double threshold_torque, double
 
 bool JointStateOutlierFilter::doFiltering()
 {
-    std::size_t nlinks = jstate_buffer_.front().name.size();
+    std::size_t nlinks = jstate_buffer_.front().joint_state.names.size();
 
     bool result = false;
     std::vector<bool> tests_acc =  {false,false,false};
     std::vector<bool> tests_js =  {false,false,false};
-    for(std::size_t i = 0; i < nlinks; ++i)
+    //    for(std::size_t i = 0; i < nlinks; ++i)
+    //    {
+
+    JointStateData& js_st = jstate_buffer_[0].joint_state;
+    JointStateData& js_nd = jstate_buffer_[1].joint_state;
+    JointStateData& js_rd = jstate_buffer_[2].joint_state;
+
+    double dt_tau1 = js_nd.stamp.substractionResultInSeconds(js_st.stamp);
+    double dt_tau2 = js_rd.stamp.substractionResultInSeconds(js_nd.stamp);
+    double dt_tau3 = js_rd.stamp.substractionResultInSeconds(js_st.stamp);;
+
+    auto it1 = js_st.torque.begin();
+    auto it2 = js_nd.torque.begin();
+
+    for(auto it3 = js_rd.torque.begin(); it3 < js_rd.torque.end(); ++it3)
     {
-
-
-        double tau1 = jstate_buffer_[0].effort[i];
-        double tau2 = jstate_buffer_[1].effort[i];
-        double tau3 = jstate_buffer_[2].effort[i];
-        double dt_tau1 = (jstate_buffer_[1].stamp_micro_seconds - jstate_buffer_[0].stamp_micro_seconds) * 1e-6;
-        double dt_tau2 = (jstate_buffer_[2].stamp_micro_seconds - jstate_buffer_[1].stamp_micro_seconds) * 1e-6;
-        double dt_tau3 = (jstate_buffer_[2].stamp_micro_seconds - jstate_buffer_[0].stamp_micro_seconds) * 1e-6;
+        double tau1 = *it1;
+        double tau2 = *it2;
+        double tau3 = *it3;
         double delta_tau1 = (tau2 - tau1) / dt_tau1;
         double delta_tau2 = (tau3 - tau2) / dt_tau2;
         double delta_tau3 = (tau3 - tau1) / dt_tau3;
-        tests_js[0] = tests_js[0] || fabs(delta_tau1) > torque_tresh_;
-        tests_js[1] = tests_js[1] || fabs(delta_tau2) > torque_tresh_;
-        tests_js[2] = tests_js[2] || fabs(delta_tau3) > torque_tresh_;
+        tests_js[0] = tests_js[0] || fabs(delta_tau1) > threshold_torque_;
+        tests_js[1] = tests_js[1] || fabs(delta_tau2) > threshold_torque_;
+        tests_js[2] = tests_js[2] || fabs(delta_tau3) > threshold_torque_;
         result |= ( tests_js[0] ||  tests_js[1]  || tests_js[2]);
-
+        ++it1;
+        ++it2;
     }
 
-    for(std::size_t i = 0; i < acc_msg_buffer_.front().lin_acc.size(); ++i){
-        jaco2_msgs::Vector3Stamped v1 = acc_msg_buffer_[0].lin_acc[i];
-        jaco2_msgs::Vector3Stamped v2 = acc_msg_buffer_[1].lin_acc[i];
-        jaco2_msgs::Vector3Stamped v3 = acc_msg_buffer_[2].lin_acc[i];
-
-        double dt1 = (v2.stamp_micro_seconds - v1.stamp_micro_seconds) * 1e-6;
-        double dt2 = (v3.stamp_micro_seconds - v2.stamp_micro_seconds) * 1e-6;
-        double dt3 = (v3.stamp_micro_seconds - v1.stamp_micro_seconds) * 1e-6;
+    //    }
 
 
-        jaco2_msgs::Vector3Stamped delta1 = (v2 - v1) / dt1;
-        jaco2_msgs::Vector3Stamped delta2 = (v3 - v2) / dt2;
-        jaco2_msgs::Vector3Stamped delta3 = (v3 - v1) / dt3;
+    auto it_acc1 = jstate_buffer_[0].lin_acc.begin();
+    auto it_acc2 = jstate_buffer_[1].lin_acc.begin();
+    AccelerometerData& linacc3 = jstate_buffer_[1].lin_acc;
+    for(auto it_acc3 = linacc3.begin(); it_acc3 <linacc3.end(); ++it_acc3){
+        Vector3Stamped& v1 = *it_acc1;
+        Vector3Stamped& v2 = *it_acc2;
+        Vector3Stamped& v3 = *it_acc3;
+
+        double dt1 = v2.stamp.substractionResultInSeconds(v1.stamp);
+        double dt2 = v3.stamp.substractionResultInSeconds(v2.stamp);
+        double dt3 = v3.stamp.substractionResultInSeconds(v1.stamp);;
+
+        Vector3Stamped delta1 = (v2 - v1) / dt1;
+        Vector3Stamped delta2 = (v3 - v2) / dt2;
+        Vector3Stamped delta3 = (v3 - v1) / dt3;
 
 
         for(std::size_t j = 0; j < 3; ++ j){
-            tests_acc[0] = tests_acc[0] || (fabs(delta1.vector[j]) > acc_thres_);
-            tests_acc[1] = tests_acc[1] || (fabs(delta2.vector[j]) > acc_thres_);
-            tests_acc[2] = tests_acc[2] || (fabs(delta3.vector[j]) > acc_thres_);
+            tests_acc[0] = tests_acc[0] || (fabs(delta1.vector[j]) > threshold_acc_);
+            tests_acc[1] = tests_acc[1] || (fabs(delta2.vector[j]) > threshold_acc_);
+            tests_acc[2] = tests_acc[2] || (fabs(delta3.vector[j]) > threshold_acc_);
 
         }
 
@@ -123,35 +140,41 @@ bool JointStateOutlierFilter::doFiltering()
 
 void JointStateOutlierFilter::removeJsOutlier(std::size_t i, std::size_t j, std::size_t outlier)
 {
-    jaco2_msgs::JointState state;
+    JointStateData state;
 
-    state.name = jstate_buffer_[i].name;
-    std::size_t nj =jstate_buffer_[i].position.size();
+    JointStateData& js_i = jstate_buffer_[i].joint_state;
+    JointStateData& js_j = jstate_buffer_[j].joint_state;
+    JointStateData& js_out = jstate_buffer_[outlier].joint_state;
+
+    state.names = js_i.names;
+    std::size_t nj =js_i.position.size();
     state.position.resize(nj);
     state.velocity.resize(nj);
-    state.effort.resize(nj);
+    state.torque.resize(nj);
     state.acceleration.resize(nj);
-    state.stamp_micro_seconds = jstate_buffer_[outlier].stamp_micro_seconds;
-    state.label = jstate_buffer_[outlier].label;
+    state.stamp = js_out.stamp;
+    state.user_defined_label = js_out.user_defined_label;
 
     for(std::size_t k = 0; k < nj; ++k){
-        state.position[k] = 0.5 * (jstate_buffer_[i].position[k] + jstate_buffer_[j].position[k]);
-        state.velocity[k] = 0.5 * (jstate_buffer_[i].velocity[k] + jstate_buffer_[j].velocity[k]);
-        state.acceleration[k] = 0.5 * (jstate_buffer_[i].acceleration[k] + jstate_buffer_[j].acceleration[k]);
-        state.effort[k] = 0.5 * (jstate_buffer_[i].effort[k] + jstate_buffer_[j].effort[k]);
+        state.position[k] = 0.5 * (js_i.position[k] + js_j.position[k]);
+        state.velocity[k] = 0.5 * (js_i.velocity[k] + js_j.velocity[k]);
+        state.acceleration[k] = 0.5 * (js_i.acceleration[k] + js_j.acceleration[k]);
+        state.torque[k] = 0.5 * (js_i.torque[k] + js_j.torque[k]);
     }
 
-    jstate_buffer_[outlier] = state;
+    js_out = state;
 }
 
 void JointStateOutlierFilter::removeAccOutlier(std::size_t i, std::size_t j, std::size_t outlier)
 {
-    std::size_t naccs = acc_msg_buffer_[i].lin_acc.size();
-    jaco2_msgs::Accelerometers accs(naccs);
 
-    accs.label = acc_msg_buffer_[outlier].label;
+    AccelerometerData& a_i = jstate_buffer_[i].lin_acc;
+    AccelerometerData& a_j = jstate_buffer_[j].lin_acc;
+    AccelerometerData& a_out = jstate_buffer_[outlier].lin_acc;
+    std::size_t naccs = a_i.size();
+
     for(std::size_t k = 0; k < naccs; ++k){
-        jaco2_msgs::Vector3Stamped mean = (acc_msg_buffer_[i].lin_acc[k] + acc_msg_buffer_[j].lin_acc[k]) * 0.5;
-        acc_msg_buffer_[outlier].lin_acc[k] = mean;
+        Vector3Stamped mean = (a_i[k] + a_j[k]) * 0.5;
+        a_out[k] = mean;
     }
 }
