@@ -91,7 +91,7 @@ jaco2_data::JointStateData JointStateConversion::jaco2Msg2Data(const jaco2_msgs:
 jaco2_msgs::Jaco2Accelerometers AccelerometerConversion::data2ros(const jaco2_data::AccelerometerData& data)
 {
     jaco2_msgs::Jaco2Accelerometers res;
-    for(auto d : data.lin_acc){
+    for(auto d : data){
         res.lin_acc.emplace_back(Vector3StampedConverion::data2ROS(d));
     }
     return res;
@@ -102,7 +102,7 @@ jaco2_data::AccelerometerData AccelerometerConversion::ros2data(const Jaco2Accel
 {
     jaco2_data::AccelerometerData res;
     for(auto d : msg.lin_acc){
-        res.lin_acc.emplace_back(Vector3StampedConverion::ros2data(d));
+        res.emplace_back(Vector3StampedConverion::ros2data(d));
     }
     return res;
 }
