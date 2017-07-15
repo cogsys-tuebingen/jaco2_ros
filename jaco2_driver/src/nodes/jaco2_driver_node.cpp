@@ -12,7 +12,7 @@
 #include <jaco2_driver/velocity_calibration.hpp>
 #include <jaco2_driver/torque_offset_calibration.hpp>
 #include <jaco2_msgs/Jaco2GfreeTorques.h>
-
+#include <jaco2_msgs_conversion/jaco2_ros_msg_conversion.h>
 
 Jaco2DriverNode::Jaco2DriverNode()
     : private_nh_("~"),
@@ -74,19 +74,21 @@ Jaco2DriverNode::Jaco2DriverNode()
     paramServer_.setCallback(f_);
 
 
-    jointStateMsg_.name.resize(JACO_JOINTS_COUNT);
     jointStateMsg_.position.resize(JACO_JOINTS_COUNT);
     jointStateMsg_.velocity.resize(JACO_JOINTS_COUNT);
     jointStateMsg_.effort.resize(JACO_JOINTS_COUNT);
-    jointStateMsg_.name[0] = tf_prefix_ + "joint_1";
-    jointStateMsg_.name[1] = tf_prefix_ + "joint_2";
-    jointStateMsg_.name[2] = tf_prefix_ + "joint_3";
-    jointStateMsg_.name[3] = tf_prefix_ + "joint_4";
-    jointStateMsg_.name[4] = tf_prefix_ + "joint_5";
-    jointStateMsg_.name[5] = tf_prefix_ + "joint_6";
-    jointStateMsg_.name[6] = tf_prefix_ + "joint_finger_1";
-    jointStateMsg_.name[7] = tf_prefix_ + "joint_finger_2";
-    jointStateMsg_.name[8] = tf_prefix_ + "joint_finger_3";
+    joint_names_.resize(JACO_JOINTS_COUNT);
+    joint_names_[0] = tf_prefix_ + "joint_1";
+    joint_names_[1] = tf_prefix_ + "joint_2";
+    joint_names_[2] = tf_prefix_ + "joint_3";
+    joint_names_[3] = tf_prefix_ + "joint_4";
+    joint_names_[4] = tf_prefix_ + "joint_5";
+    joint_names_[5] = tf_prefix_ + "joint_6";
+    joint_names_[6] = tf_prefix_ + "joint_finger_1";
+    joint_names_[7] = tf_prefix_ + "joint_finger_2";
+    joint_names_[8] = tf_prefix_ + "joint_finger_3";
+    jointStateMsg_.name = joint_names_;
+    driver_.setJointNames(joint_names_);
 
     sensorMsg_.name.resize(Jaco2DriverConstants::n_Jaco2Joints);
     sensorMsg_.temperature.resize(Jaco2DriverConstants::n_Jaco2Joints);
@@ -104,6 +106,7 @@ Jaco2DriverNode::Jaco2DriverNode()
         ROS_ERROR_STREAM("Jaco 2 could not be initialized for device: " << serial_);
     }
     ok_ = init;
+
 
     bool use_accel_calib = private_nh_.param<bool>("jaco_use_accelerometer_calib", false);
     if(use_accel_calib) {
@@ -164,7 +167,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     fingerServer_.start();
     blockingAngleServer_.start();
 
-    lastTimeAccPublished_ = std::chrono::high_resolution_clock ::now();
+    lastTimeAccPublished_.now();
 }
 
 
@@ -564,41 +567,22 @@ void Jaco2DriverNode::stop()
 
 void Jaco2DriverNode::publishJointState()
 {
-    DataConversion::convert(driver_.getAngularVelocity(),jointStateMsg_.velocity);
-    DataConversion::convert(driver_.getAngularPosition(),jointStateMsg_.position);
-    DataConversion::convert(driver_.getAngularForce(), jointStateMsg_.effort);
-
-    DataConversion::from_degrees(jointStateMsg_.position);
-    DataConversion::normalize(jointStateMsg_.position);
-    DataConversion::from_degrees(jointStateMsg_.velocity);
-
-    jointStateMsg_.header.stamp = ros::Time::now();
-    pubJointState_.publish(jointStateMsg_);
+    const jaco2_data::JointStateData& jdata = driver_.getJointStateRef();
 
 
-    jaco2_msgs::Jaco2JointState jaco2JointStateMsg;
-    //    jaco2JointStateMsg.header.stamp = ros::Time::now();
-    std::chrono::time_point<std::chrono::high_resolution_clock>  stamp = driver_.getLastReadUpdate(READ_TORQUE);
-    if(stamp != lastTimeJsPublished_){
+    if(jdata.stamp != lastTimeJsPublished_){
+        jointStateMsg_ = jaco2_msgs::JointStateConversion::data2SensorMsgs(jdata);
+        pubJointState_.publish(jointStateMsg_);
 
-        DataConversion::convert(stamp, jaco2JointStateMsg.header.stamp );
-        jaco2JointStateMsg.name = jointStateMsg_.name;
-        jaco2JointStateMsg.position = jointStateMsg_.position;
-        jaco2JointStateMsg.velocity = jointStateMsg_.velocity;
-        jaco2JointStateMsg.effort = jointStateMsg_.effort;
-
-        DataConversion::convert(driver_.getAngularAcceleration(), jaco2JointStateMsg.acceleration);
-
-        DataConversion::from_degrees(jaco2JointStateMsg.acceleration);
-
+        jaco2_msgs::Jaco2JointState jaco2JointStateMsg = jaco2_msgs::JointStateConversion::datata2Jaco2Msgs(jdata);
         pubJaco2JointState_.publish(jaco2JointStateMsg);
-        lastTimeJsPublished_ = stamp;
+        lastTimeJsPublished_ = jdata.stamp;
     }
 
     jaco2_msgs::Jaco2GfreeTorques g_msg;
     g_msg.header = jointStateMsg_.header;
-    stamp = driver_.getLastReadUpdate(READ_TORQUE_GRAVITY_FREE);
-    DataConversion::convert(stamp,g_msg.header.stamp);
+    auto stamp = driver_.getLastReadUpdate(READ_TORQUE_GRAVITY_FREE);
+    g_msg.header.stamp = jaco2_msgs::TimeConversion::data2ROS(stamp);
     DataConversion::convert(driver_.getAngularForceGravityFree(), g_msg.effort_g_free);
     pubGfreeToruqes_.publish(g_msg);
 }
@@ -607,8 +591,6 @@ void Jaco2DriverNode::publishJointAngles()
 {
 
     AngularPosition pos = driver_.getAngularPosition();
-
-    //        DataConversion::from_degrees(pos);
 
     jointAngleMsg_.joint1 = pos.Actuators.Actuator1;
     jointAngleMsg_.joint2 = pos.Actuators.Actuator2;
@@ -630,23 +612,21 @@ void Jaco2DriverNode::publishJointAngles()
 
 void Jaco2DriverNode::publishSensorInfo()
 {
-    AngularAcceleration acc = driver_.getActuatorAcceleration();
-    std::chrono::time_point<std::chrono::high_resolution_clock>  stamp = driver_.getLastReadUpdate(READ_ACCELERATION);
+    auto stamp = driver_.getLastReadUpdate(READ_ACCELERATION);
 
     if(stamp != lastTimeAccPublished_) {
-        std::vector<geometry_msgs::Vector3Stamped> acc_msg(Jaco2DriverConstants::n_Jaco2Joints);
-        DataConversion::convert(acc,stamp, acc_msg);
-        jaco2_msgs::Jaco2Accelerometers jaco2_acc;
-        jaco2_acc.lin_acc = acc_msg;
+
+        const jaco2_data::AccelerometerData& acc_data = driver_.getAccelerometerDataRef();
+        jaco2_msgs::Jaco2Accelerometers jaco2_acc = jaco2_msgs::AccelerometerConversion::data2ros(acc_data);
+
         pubJaco2LinAcc_.publish(jaco2_acc);
         lastTimeAccPublished_ = stamp;
-
     }
 
     stamp = driver_.getLastReadUpdate(READ_SENSOR_INFO);
 
     SensorsInfo info = driver_.getSensorInfo();
-    DataConversion::convert(stamp,sensorMsg_.temperature_time);
+    DataConversion::convert(stamp.stamp, sensorMsg_.temperature_time);
     sensorMsg_.temperature[0] = info.ActuatorTemp1;
     sensorMsg_.temperature[1] = info.ActuatorTemp2;
     sensorMsg_.temperature[2] = info.ActuatorTemp3;
@@ -655,7 +635,7 @@ void Jaco2DriverNode::publishSensorInfo()
     sensorMsg_.temperature[5] = info.ActuatorTemp6;
     AngularPosition current = driver_.getCurrent();
     stamp = driver_.getLastReadUpdate(READ_CURRENT);
-    DataConversion::convert(stamp,sensorMsg_.current_time);
+    DataConversion::convert(stamp.stamp, sensorMsg_.current_time);
     DataConversion::convert(current.Actuators,sensorMsg_.current);
 
     pubSensorInfo_.publish(sensorMsg_);

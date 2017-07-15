@@ -96,6 +96,7 @@ private:
     ros::Time last_command_;
 
     std::string tf_prefix_;
+    std::vector<std::string> joint_names_;
     sensor_msgs::JointState jointStateMsg_;
     jaco2_msgs::JointAngles jointAngleMsg_;
     jaco2_msgs::Jaco2Sensor sensorMsg_;
@@ -110,8 +111,8 @@ private:
     dynamic_reconfigure::Server<jaco2_driver::jaco2_driver_configureConfig> paramServer_;
     dynamic_reconfigure::Server<jaco2_driver::jaco2_driver_configureConfig>::CallbackType f_;
 
-    std::chrono::time_point<std::chrono::high_resolution_clock>  lastTimeAccPublished_;
-    std::chrono::time_point<std::chrono::high_resolution_clock>  lastTimeJsPublished_;
+    jaco2_data::TimeStamp  lastTimeAccPublished_;
+    jaco2_data::TimeStamp  lastTimeJsPublished_;
 
     double j6o_;
 };

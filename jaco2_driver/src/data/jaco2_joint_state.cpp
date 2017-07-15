@@ -6,26 +6,26 @@ using namespace jaco2_data;
 Jaco2JointState::Jaco2JointState() :
     buffer_size_(10)
 {
-
+    calibrate_acc_.resize(Jaco2DriverConstants::n_Jaco2Joints, false);
 }
 
-void Jaco2JointState::setAngularData(const AngularDataFields type, const AngularPosition &pos)
+void Jaco2JointState::setAngularData(const AngularDataType type, const AngularPosition &pos)
 {
     switch (type) {
-    case POS:{
+    case AngularDataPOS:{
         current_state_.joint_state.position = ConvertAngularData::kinova2data(pos);
         current_state_.joint_state.normalize();
         break;
     }
-    case VEL:{
+    case AngularDataVEL:{
         current_state_.joint_state.velocity = ConvertAngularData::kinova2data(pos);
         break;
     }
-    case ACC:{
+    case AngularDataACC:{
         current_state_.joint_state.acceleration = ConvertAngularData::kinova2data(pos);
         break;
     }
-    case TOR:{
+    case AngularDataTORQUE:{
         current_state_.joint_state.torque = ConvertAngularData::kinova2data(pos);
         break;
     }
@@ -40,46 +40,106 @@ void Jaco2JointState::setLinearData(const AngularAcceleration& accs, const jaco2
     estimateG( accs.Actuator1_Y, accs.Actuator1_X, accs.Actuator1_Z); // jaco_base_link is not accelerometer frame !
 }
 
+jaco2_data::JointStateData Jaco2JointState::getJointState() const
+{
+    return current_state_.joint_state;
+}
 
-AngularInfo Jaco2JointState::getAngularData(const AngularDataFields type) const
+jaco2_data::AccelerometerData Jaco2JointState::getLinearAccelerations() const
+{
+    return current_state_.lin_acc;
+}
+
+jaco2_data::ExtendedJointStateData Jaco2JointState::getExtJointState() const
+{
+    return current_state_;
+}
+
+const jaco2_data::JointStateData& Jaco2JointState::getJointStateRef() const
+{
+    return current_state_.joint_state;
+}
+
+const jaco2_data::AccelerometerData& Jaco2JointState::getLinearAccelerationsRef() const
+{
+    return current_state_.lin_acc;
+}
+
+const jaco2_data::ExtendedJointStateData& Jaco2JointState::getExtJointStateRef() const
+{
+    return current_state_;
+}
+
+AngularInfo Jaco2JointState::getAngularData(const AngularDataType type) const
 {
     switch (type) {
-    case POS:
+    case AngularDataPOS:
         return ConvertAngularData::data2AngularInfo(current_state_.joint_state.position);
         break;
-    case VEL:
+    case AngularDataVEL:
         return ConvertAngularData::data2AngularInfo(current_state_.joint_state.velocity);
         break;
-    case ACC:
+    case AngularDataACC:
         return ConvertAngularData::data2AngularInfo(current_state_.joint_state.acceleration);
         break;
-    case TOR:
+    case AngularDataTORQUE:
         return ConvertAngularData::data2AngularInfo(current_state_.joint_state.torque);
         break;
     }
 }
-std::vector<double> Jaco2JointState::getData(const AngularDataFields type, bool degrees) const
-{
 
+void Jaco2JointState::setJointNames(const std::vector<std::string> &names)
+{
+    current_state_.joint_state.names = names;
+}
+
+void Jaco2JointState::setAccelerometerCalibration(std::vector<Jaco2Calibration::AccelerometerCalibrationParam> params)
+{
+    accCalibParam_.resize(Jaco2DriverConstants::n_Jaco2Joints);
+
+    for(std::size_t i = 0; i < Jaco2DriverConstants::accel_names.size(); ++i) {
+        Jaco2Calibration::AccelerometerCalibrationParam param;
+        bool contains = Jaco2Calibration::getParam(Jaco2DriverConstants::accel_names[i],params,param);
+        if(contains) {
+            calibrate_acc_[i] = true;
+            accCalibParam_[i] = param;
+        }
+        else {
+            calibrate_acc_[i] = false;
+        }
+    }
 }
 
 void Jaco2JointState::set(const KinovaJointState& data)
 {
-    TimeStamp stamp;
-    stamp.stamp = data.acc_stamp;
-    setLinearData(data.accelerometers, stamp);
+    setLinearData(data.accelerometers,  data.acc_stamp);
 
-
-
-    current_state_.joint_state.stamp.stamp = data.stamp;
+    current_state_.joint_state.stamp = data.stamp;
     current_state_.joint_state.position = ConvertAngularData::kinova2data(data.position);
     current_state_.joint_state.velocity = ConvertAngularData::kinova2data(data.velocity);
     current_state_.joint_state.acceleration = ConvertAngularData::kinova2data(data.acceleration);
-    current_state_.joint_state.torque = ConvertAngularData::kinova2data(data.torque);
+    current_state_.joint_state.torque = ConvertAngularData::kinova2data(data.torque, false);
     current_state_.joint_state.normalize();
 
 }
 
+void Jaco2JointState::set(const jaco2_data::TimeStamp& t,
+                          const AngularPosition& pos,
+                          const AngularPosition& vel,
+                          const AngularPosition& acc,
+                          const AngularPosition& tor,
+                          const AngularAcceleration& lacc)
+{
+
+    setLinearData(lacc, t);
+
+    current_state_.joint_state.stamp = t;
+    current_state_.joint_state.position = ConvertAngularData::kinova2data(pos);
+    current_state_.joint_state.velocity = ConvertAngularData::kinova2data(vel);
+    current_state_.joint_state.acceleration = ConvertAngularData::kinova2data(acc);
+    current_state_.joint_state.torque = ConvertAngularData::kinova2data(tor, false);
+    current_state_.joint_state.normalize();
+}
 
 
 
@@ -99,4 +159,23 @@ void Jaco2JointState::estimateG(double x, double y, double z)
 
     current_state_.joint_state.gravity *= 9.81 / g_buffer_.size();
 
+}
+
+void Jaco2JointState::applyCalibration()
+{
+    auto it_calib = calibrate_acc_.begin();
+    auto it_data = current_state_.lin_acc.begin();
+    auto it_param = accCalibParam_.begin();
+
+    for(std::size_t i = 0; i < Jaco2DriverConstants::n_Jaco2Joints; ++i){
+        if(*it_calib){
+            Eigen::Vector3d acc_raw = it_data->vector;
+            Eigen::Matrix3d mat = it_param->misalignment;
+            Eigen::Vector3d acc_calib = mat*(acc_raw - it_param->bias);
+            it_data->vector = acc_calib;
+        }
+        ++it_calib;
+        ++it_data;
+        ++it_param;
+    }
 }

@@ -26,6 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
   trac_ik_lib
   rosbag
   jaco2_msgs
+  jaco2_data
 )
 
 ## System dependencies are found with CMake's conventions
@@ -50,7 +51,7 @@ find_package(Eigen3 REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES jaco2_kin_dyn_lib
-  CATKIN_DEPENDS kdl_parser roscpp tf trac_ik_lib
+  CATKIN_DEPENDS kdl_parser roscpp tf trac_ik_lib jaco2_data
   DEPENDS system_lib orocos_kdl
 )
 

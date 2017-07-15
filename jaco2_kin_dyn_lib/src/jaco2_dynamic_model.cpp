@@ -61,19 +61,20 @@ void Jaco2DynamicModel::initialize()
 int Jaco2DynamicModel::getTorques(const std::vector<double> &q, const std::vector<double> &q_Dot, const std::vector<double> &q_DotDot,
                                   std::vector<double> &torques, const std::vector<Wrench> &wrenches_ext)
 {
-    if(q.size() != q_Dot.size() || q.size() != q_DotDot.size() || q.size() != chain_.getNrOfJoints()){
+    std::size_t njoints = chain_.getNrOfJoints();
+    if(q.size() != q_Dot.size() || q.size() != q_DotDot.size() || q.size() < njoints){
         ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is " << q.size() << ". While q_Dot has dimension " << q_Dot.size() << " and q_DotDot "
-                         << q_DotDot.size()<<". The KDL chain contains " <<  chain_.getNrOfJoints() << "  joints." << std::endl);
+                         << q_DotDot.size()<<". The KDL chain contains " <<  njoints << "  joints." << std::endl);
         return KDL::SolverI::E_UNDEFINED;
     }
 
-    KDL::JntArray qkdl(q.size());
-    KDL::JntArray qkdl_Dot(q.size());
-    KDL::JntArray qkdl_DotDot(q.size());
+    KDL::JntArray qkdl(njoints);
+    KDL::JntArray qkdl_Dot(njoints);
+    KDL::JntArray qkdl_DotDot(njoints);
     KDL::JntArray torques_kdl(chain_.getNrOfJoints());
     KDL::Wrenches wrenches;
     wrenches.resize(chain_.getNrOfSegments());
-    for(std::size_t i = 0; i < q.size(); ++i) {
+    for(std::size_t i = 0; i < njoints; ++i) {
         qkdl(i) = q[i];
         qkdl_Dot(i) = q_Dot[i];
         qkdl_DotDot(i) = q_DotDot[i];
@@ -108,19 +109,20 @@ int Jaco2DynamicModel::getTorques(const std::vector<double> &q,
                                   std::vector<double> &torques,
                                   const std::vector<KDL::Wrench> &wrenches_ext)
 {
-    if(q.size() != q_Dot.size() || q.size() != q_DotDot.size() || q.size() != chain_.getNrOfJoints()){
+    std::size_t njoints = chain_.getNrOfJoints();
+    if(q.size() != q_Dot.size() || q.size() != q_DotDot.size() || q.size() < njoints){
         ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is " << q.size() << ". While q_Dot has dimension " << q_Dot.size() << " and q_DotDot "
                          << q_DotDot.size()<<". The KDL chain contains " <<  chain_.getNrOfJoints() << "  joints." << std::endl);
         return KDL::SolverI::E_UNDEFINED;
     }
 
-    KDL::JntArray qkdl(q.size());
-    KDL::JntArray qkdl_Dot(q.size());
-    KDL::JntArray qkdl_DotDot(q.size());
-    KDL::JntArray torques_kdl(chain_.getNrOfJoints());
+    KDL::JntArray qkdl(njoints);
+    KDL::JntArray qkdl_Dot(njoints);
+    KDL::JntArray qkdl_DotDot(njoints);
+    KDL::JntArray torques_kdl(njoints);
     KDL::Wrenches wrenches;
     wrenches.resize(chain_.getNrOfSegments());
-    for(std::size_t i = 0; i < q.size(); ++i) {
+    for(std::size_t i = 0; i < njoints; ++i) {
         qkdl(i) = q[i];
         qkdl_Dot(i) = q_Dot[i];
         qkdl_DotDot(i) = q_DotDot[i];
@@ -188,18 +190,19 @@ int Jaco2DynamicModel::getAcceleration(const std::vector<double>& q,
                                        std::vector<std::string>& links,
                                        std::vector<KDL::Twist > &spatial_acc )
 {
+    std::size_t njoints = chain_.getNrOfJoints();
 
-    if(q.size() != q_Dot.size() || q.size() != q_DotDot.size() || q.size() != chain_.getNrOfJoints()){
+    if(q.size() != q_Dot.size() || q.size() != q_DotDot.size() || q.size() < njoints){
         ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is " << q.size() << ". While q_Dot has dimension " << q_Dot.size() << " and q_DotDot "
                          << q_DotDot.size()<<". The KDL chain contains " <<  chain_.getNrOfJoints() << "  joints." << std::endl);
         return KDL::SolverI::E_UNDEFINED;
     }
 
-    std::vector<KDL::Frame> X(q.size());
-    std::vector<KDL::Frame> Xij(q.size());
-    std::vector<KDL::Twist> S(q.size());
-    std::vector<KDL::Twist> v(q.size());
-    std::vector<KDL::Twist> a(q.size());
+    std::vector<KDL::Frame> X(njoints);
+    std::vector<KDL::Frame> Xij(njoints);
+    std::vector<KDL::Twist> S(njoints);
+    std::vector<KDL::Twist> v(njoints);
+    std::vector<KDL::Twist> a(njoints);
 
     KDL::Twist ag = -KDL::Twist(gravity_, KDL::Vector::Zero());
     int j = 0;
@@ -271,7 +274,8 @@ int Jaco2DynamicModel::getChainDynParam(const std::vector<double> &q,
                                         const std::vector<double> &q_Dot,
                                         Eigen::MatrixXd &H, Eigen::VectorXd &C, Eigen::VectorXd &G)
 {
-    if(q.size() != q_Dot.size() || q.size() != chain_.getNrOfJoints()){
+    std::size_t njoints = chain_.getNrOfJoints();
+    if(q.size() != q_Dot.size() || q.size() < njoints){
         ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is " << q.size() << ". While q_Dot has dimension " << q_Dot.size()
                          <<". The KDL chain contains " <<  chain_.getNrOfJoints() << "  joints." << std::endl);
         return KDL::SolverI::E_UNDEFINED;
@@ -281,9 +285,9 @@ int Jaco2DynamicModel::getChainDynParam(const std::vector<double> &q,
 
     KDL::JntArray theta;
     KDL::JntArray omega;
-    KDL::JntArray coriolis(q.size());
-    KDL::JntArray gravity(q.size());
-    KDL::JntSpaceInertiaMatrix inertia(q.size());
+    KDL::JntArray coriolis(njoints);
+    KDL::JntArray gravity(njoints);
+    KDL::JntSpaceInertiaMatrix inertia(njoints);
     Jaco2KinDynLib::convert(q,theta);
     Jaco2KinDynLib::convert(q_Dot, omega);
 
@@ -616,7 +620,7 @@ Eigen::MatrixXd Jaco2DynamicModel::getRigidBodyRegressionMatrix(const std::strin
     // determine Matrix dimensions
     int nLinks = tipId - rootId + 1;
 
-    if(q.size() != q_Dot.size() && q.size() != q_DotDot.size() && q.size() != chain_.getNrOfJoints()){
+    if(q.size() != q_Dot.size() && q.size() != q_DotDot.size() && q.size() < chain_.getNrOfJoints()){
         ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is" << q.size() << ". While q_Dot has dimension " << q_Dot.size() << " and q_DotDot "
                          << q_DotDot.size()<<". The KDL chain contains " <<  chain_.getNrOfJoints() << "  joints." << std::endl);
         return Eigen::MatrixXd(0,0);
@@ -737,9 +741,9 @@ void Jaco2DynamicModel::modifiedRNE(const double gx, const double gy, const doub
     if(q1.size() != q2.size()
             || q2.size() != q3.size()
             || q3.size() != q4.size()
-            || q4.size() != chain_.getNrOfJoints()
+            || q4.size() < chain_.getNrOfJoints()
             || res.cols() < 1
-            || res.rows() != q1.size()){
+            || res.rows() > q1.size()){
         ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q1 is " << q1.size()
                          << ". While q2 has dimension " << q2.size() << ", q3 "
                          << q3.size() << " and q4 " << q4.size() <<". The KDL chain contains "
@@ -751,7 +755,7 @@ void Jaco2DynamicModel::modifiedRNE(const double gx, const double gy, const doub
         return;
     }
 
-    unsigned int j=0;
+    unsigned int j = 0;
     //Sweep from root to leaf
     KDL::Vector ag(-gx, -gy, -gz);  // as orocos kdl
 
@@ -838,12 +842,12 @@ void Jaco2DynamicModel::getMatrixC(const std::vector<double> &q,
                                    Eigen::MatrixXd& res)
 {
 
-    if(q.size() != qDot.size() || q.size() != chain_.getNrOfJoints()){
+    std::size_t n_joints = chain_.getNrOfJoints();
+    if(q.size() != qDot.size() || q.size() < n_joints){
         ROS_ERROR_STREAM("Dimension mismatch of input: Dimenion of q is" << q.size() << ". While q_Dot has dimension " << qDot.size()
                          <<". The KDL chain contains " <<  chain_.getNrOfJoints() << "  joints." << std::endl);
         return;
     }
-    std::size_t n_joints = q.size();
     std::vector<double> qDotDot(n_joints, 0);
     res.resize(n_joints, n_joints);
 

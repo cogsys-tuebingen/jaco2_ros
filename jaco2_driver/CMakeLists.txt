@@ -27,11 +27,12 @@ find_package(catkin REQUIRED COMPONENTS
     std_msgs
     tf
     trajectory_msgs
-    jaco2_msgs
     dynamic_reconfigure
-    jaco2_kin_dyn_lib
     rostest
     jaco2_data
+    jaco2_msgs
+    jaco2_msgs_conversion
+    jaco2_kin_dyn_lib
     )
 
 ## System dependencies are found with CMake's conventions

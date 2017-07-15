@@ -44,7 +44,6 @@ public:
     AngularInfo getResiduals() const;
     double getResidualsNorm() const;
 
-    void estimateGravity(double& gx, double &gy, double& gz);
     void resetResiduals();
     void update(double dt);
 
@@ -75,7 +74,6 @@ private:
     Jaco2KinDynLib::Jaco2ResidualVector resiudals_;
     Eigen::VectorXd last_integral_;
     Eigen::VectorXd last_residual_;
-    std::deque<Eigen::Vector3d> filter_g_;
 
 
     AngularInfo kr_;

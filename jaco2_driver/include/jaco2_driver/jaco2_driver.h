@@ -48,8 +48,11 @@ public:
     AngularAcceleration getActuatorAcceleration() const;
     QuickStatus getQuickStatus() const;
     SensorsInfo getSensorInfo() const;
-    std::chrono::time_point<std::chrono::high_resolution_clock> getLastReadUpdate(int read_data) const;
-    std::vector<Jaco2Calibration::AccelerometerCalibrationParam> getAccerlerometerCalibration() const;
+    jaco2_data::TimeStamp getLastReadUpdate(int read_data) const;
+    jaco2_data::JointStateData getJointState() const;
+    jaco2_data::AccelerometerData getAccelerometerData() const;
+    const jaco2_data::JointStateData& getJointStateRef() const;
+    const jaco2_data::AccelerometerData& getAccelerometerDataRef() const;
     Jaco2Calibration::TorqueOffsetLut getTorqueCalibration() const;
 
     int getSetTorqueZeroResult() const;
@@ -80,6 +83,8 @@ public:
 
     void enableForceControl();
     void disableForceControl();
+
+    void setJointNames(const std::vector<std::string>& names);
 
 
 
@@ -133,7 +138,6 @@ private:
     void getJointValues();
     void tick();
     void executeLater(std::function<void()> fn);
-//    void executeLater(std::function<int()> fn);
 
 private:
     std::thread spinner_;

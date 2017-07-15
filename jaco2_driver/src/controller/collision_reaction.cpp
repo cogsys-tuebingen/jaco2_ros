@@ -21,12 +21,6 @@ CollisionReaction::CollisionReaction(Jaco2State &state):
     kr_.Actuator5 = 1.0;
     kr_.Actuator6 = 0.0;
 
-    for(int i = 0; i < 30; ++i)
-    {
-        double gx, gy, gz;
-        estimateGravity(gx, gy, gz);
-    }
-
     max_torques_.Actuator1 = 19.0;
     max_torques_.Actuator2 = 38.0;
     max_torques_.Actuator3 = 19.0;
@@ -194,24 +188,20 @@ void CollisionReaction::updateResiduals()
 void CollisionReaction::getResidualsData(Jaco2KinDynLib::ResidualData &data)
 {
 
-    auto torques = state_.getAngularForce();
-    auto vel = state_.getAngularVelocity();
-    auto pos = state_.getAngularPosition();
+    auto state = state_.getJointStateRef();
 
-    DataConversion::from_degrees(pos);
-    DataConversion::from_degrees(vel);
+    data.gx = state.gravity(0);
+    data.gx = state.gravity(1);
+    data.gy = state.gravity(2);
 
-    estimateGravity(data.gx, data.gy, data.gz);
 
-    if(filter_g_.size() == 1)
-    {
-        return;
-    }
+    data.joint_positions.insert(data.joint_positions.begin(), state.position.begin(), state.position.begin() + Jaco2DriverConstants::n_Jaco2Joints);
+    data.joint_velocities.insert(data.joint_velocities.begin(), state.velocity.begin(), state.velocity.begin() + Jaco2DriverConstants::n_Jaco2Joints);
+    data.torques.insert(data.torques.begin(), state.torque.begin(), state.torque.begin() + Jaco2DriverConstants::n_Jaco2Joints);
+
+
     data.dt = dt_;
 
-    DataConversion::convert(pos.Actuators, data.joint_positions);
-    DataConversion::convert(vel.Actuators, data.joint_velocities);
-    DataConversion::convert(torques.Actuators, data.torques);
 
 }
 
@@ -222,28 +212,6 @@ void CollisionReaction::resetResiduals()
     collision_counter_ = 0;
 }
 
-void CollisionReaction::estimateGravity(double& gx, double &gy, double& gz)
-{
-    auto accs = state_.getLinearAcceleration();
-    Eigen::Vector3d g_vec(accs.Actuator1_X, accs.Actuator1_Y, accs.Actuator1_Z);
-
-    filter_g_.emplace_back(g_vec);
-
-    while(filter_g_.size() > 30){
-        filter_g_.pop_front();
-    }
-    Eigen::Vector3d res;
-    res.setZero(3);
-    for(auto v : filter_g_){
-        res += v;
-    }
-    res *= 9.81 / filter_g_.size();
-
-    gx = res(1);
-    gy = res(0);
-    gz = res(2);
-
-}
 
 TrajectoryPoint CollisionReaction::calculateVelocity(AngularInfo& cmd)
 {

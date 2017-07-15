@@ -49,6 +49,8 @@
   <build_depend>eigen</build_depend>
   <build_depend>rosbag</build_depend>
   <build_depend>jaco2_msgs</build_depend>
+  <build_depend>jaco2_data</build_depend>
+
   <run_depend>kdl_parser</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>tf</run_depend>
@@ -57,6 +59,7 @@
   <run_depend>trac_ik_lib</run_depend>
   <run_depend>rosbag</run_depend>
   <run_depend>jaco2_msgs</run_depend>
+  <run_depend>jaco2_data</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

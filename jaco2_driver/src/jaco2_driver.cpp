@@ -287,11 +287,6 @@ AngularPosition Jaco2Driver::getCurrentTrajError() const
     return res;
 }
 
-std::vector<Jaco2Calibration::AccelerometerCalibrationParam> Jaco2Driver::getAccerlerometerCalibration() const
-{
-    return state_.getAccelerometerCalibration();
-}
-
 Jaco2Calibration::TorqueOffsetLut Jaco2Driver::getTorqueCalibration() const
 {
     return state_.getTorqueCalibration();
@@ -366,9 +361,29 @@ void Jaco2Driver::setStateLowPriorityQue(const std::vector<int> &que)
     state_.setLowPriQue(que);
 }
 
-std::chrono::time_point<std::chrono::high_resolution_clock> Jaco2Driver::getLastReadUpdate(int read_data) const
+jaco2_data::TimeStamp Jaco2Driver::getLastReadUpdate(int read_data) const
 {
     return state_.getLastUpdate(read_data);
+}
+
+jaco2_data::JointStateData Jaco2Driver::getJointState() const
+{
+    return state_,getJointState();
+}
+
+jaco2_data::AccelerometerData Jaco2Driver::getAccelerometerData() const
+{
+    return state_.getAccelerometerData();
+}
+
+const jaco2_data::JointStateData& Jaco2Driver::getJointStateRef() const
+{
+    return state_,getJointStateRef();
+}
+
+const jaco2_data::AccelerometerData& Jaco2Driver::getAccelerometerDataRef() const
+{
+    return state_.getAccelerometerDataRef();
 }
 
 AngularPosition Jaco2Driver::getCurrent() const
@@ -379,11 +394,6 @@ AngularPosition Jaco2Driver::getCurrent() const
 AngularPosition Jaco2Driver::getAngularForceGravityFree() const
 {
     return state_.getTorqueGFree();
-}
-
-AngularAcceleration Jaco2Driver::getActuatorAcceleration() const
-{
-    return state_.getLinearAcceleration();
 }
 
 QuickStatus Jaco2Driver::getQuickStatus() const
@@ -409,6 +419,11 @@ void Jaco2Driver::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut &
 void Jaco2Driver::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetCalibration &calib)
 {
     state_.setTorqueCalibration(calib);
+}
+
+void Jaco2Driver::setJointNames(const std::vector<std::string> &names)
+{
+    state_.setJointNames(names);
 }
 
 bool Jaco2Driver::setGravityParams(const Jaco2Calibration::ApiGravitationalParams& params)

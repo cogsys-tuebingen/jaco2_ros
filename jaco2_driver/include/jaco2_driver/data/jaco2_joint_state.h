@@ -11,10 +11,10 @@
 #include <sensor_msgs/JointState.h>
 /// Jaco2
 #include <jaco2_data/extended_joint_state_data.h>
-
+#include <jaco2_driver/accelerometer_calibration.hpp>
 struct KinovaJointState{
-    std::chrono::time_point<std::chrono::high_resolution_clock> stamp;
-    std::chrono::time_point<std::chrono::high_resolution_clock> acc_stamp;
+    jaco2_data::TimeStamp stamp;
+    jaco2_data::TimeStamp acc_stamp;
     AngularPosition position;
     AngularPosition velocity;
     AngularPosition acceleration;
@@ -23,12 +23,6 @@ struct KinovaJointState{
 };
 
 
-enum AngularDataFields{
-    POS = 0,
-    VEL = 1,
-    ACC = 2,
-    TOR = 3
-};
 /**
  * @brief The Jaco2JointState class normalized joint data in radian
  */
@@ -37,11 +31,22 @@ class Jaco2JointState
 public:
     Jaco2JointState();
 
-    void setAngularData(const AngularDataFields type, const AngularPosition& pos);
+    void setAngularData(const jaco2_data::AngularDataType type, const AngularPosition& pos);
     void setLinearData(const AngularAcceleration& accs, const jaco2_data::TimeStamp &stamp);
 
-    AngularInfo getAngularData(const AngularDataFields type) const;
-    std::vector<double> getData(const AngularDataFields type, bool degrees) const;
+    AngularInfo getAngularData(const jaco2_data::AngularDataType type) const;
+
+    jaco2_data::JointStateData getJointState() const;
+    jaco2_data::AccelerometerData getLinearAccelerations() const;
+    jaco2_data::ExtendedJointStateData getExtJointState() const;
+
+    const jaco2_data::JointStateData& getJointStateRef() const;
+    const jaco2_data::AccelerometerData& getLinearAccelerationsRef() const;
+    const jaco2_data::ExtendedJointStateData& getExtJointStateRef() const;
+
+    void setJointNames(const std::vector<std::string> &names);
+    void setAccelerometerCalibration(std::vector<Jaco2Calibration::AccelerometerCalibrationParam> params);
+
 
     void set(const KinovaJointState& data);
     void set(const jaco2_data::TimeStamp& t,
@@ -54,12 +59,15 @@ public:
 
 private:
     void estimateG(double x, double y, double z);
+    void applyCalibration();
 
 
 private:
     std::size_t buffer_size_;
     std::deque<Eigen::Vector3d> g_buffer_;
     jaco2_data::ExtendedJointStateData current_state_;
+    std::vector<bool> calibrate_acc_;
+    std::vector<Jaco2Calibration::AccelerometerCalibrationParam> accCalibParam_;
 
 
 

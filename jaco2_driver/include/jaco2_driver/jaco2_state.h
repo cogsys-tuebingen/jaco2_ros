@@ -6,6 +6,7 @@
 #include <jaco2_driver/accelerometer_calibration.hpp>
 #include <jaco2_driver/torque_offset_lut.hpp>
 #include <jaco2_driver/torque_offset_calibration.hpp>
+#include <jaco2_driver/data/jaco2_joint_state.h>
 
 #include <deque>
 
@@ -40,16 +41,19 @@ public:
     AngularPosition getAngularForce() const;
     AngularPosition getAngularCurrent() const;
     AngularPosition getTorqueGFree() const;
-    AngularAcceleration getLinearAcceleration() const;
     QuickStatus getQuickStatus() const;
     SensorsInfo getSensorInfo() const;
 
-    std::chrono::time_point<std::chrono::high_resolution_clock> getLastUpdate(int read_data) const;
+    jaco2_data::TimeStamp getLastUpdate(int read_data) const;
+    jaco2_data::JointStateData getJointState() const;
+    jaco2_data::AccelerometerData getAccelerometerData() const;
+    const jaco2_data::JointStateData& getJointStateRef() const;
+    const jaco2_data::AccelerometerData& getAccelerometerDataRef() const;
 
     std::vector<int> getHighPriQue() const;
     std::vector<int> getLowPriQue() const;
 
-    std::vector<Jaco2Calibration::AccelerometerCalibrationParam> getAccelerometerCalibration() const;
+//    std::vector<Jaco2Calibration::AccelerometerCalibrationParam> getAccelerometerCalibration() const;
     Jaco2Calibration::TorqueOffsetLut getTorqueCalibration() const;
 
     void setHighPriQue(std::vector<int> que);
@@ -59,6 +63,7 @@ public:
     void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut& lut);
     void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetCalibration& calib);
     void setVelocitySensorCalibration(const std::vector<double>& factors);
+    void setJointNames(const std::vector<std::string> &names);
 
     ///
     /// \brief readQuickStatus reads the arms status over command layer
@@ -103,6 +108,8 @@ private:
     void applyTorqueOffsets();
     void applyTorqueOffsets2TorqueGFree();
 
+    void updateJointState();
+
 
 private:
     mutable std::recursive_mutex data_mutex_;
@@ -118,33 +125,28 @@ private:
     std::vector<int> highPriority_;
     std::vector<int> lowPriority_;
 
-    AngularPosition current_position_;
-    AngularPosition current_velocity_;
-    AngularPosition current_joint_acceleration_;
-    AngularPosition current_torque_;
+    KinovaJointState kinova_state_;
     AngularPosition current_current_;
     AngularPosition current_torque_gravity_free_;
-    AngularAcceleration current_acceleration_;
     QuickStatus quick_status_;
     SensorsInfo sensor_info_;
-    std::chrono::time_point<std::chrono::high_resolution_clock> time_position_;
-    std::chrono::time_point<std::chrono::high_resolution_clock> time_velocity_;
-    std::chrono::time_point<std::chrono::high_resolution_clock> time_torque_;
-    std::chrono::time_point<std::chrono::high_resolution_clock> time_current_;
-    std::chrono::time_point<std::chrono::high_resolution_clock> time_torque_gravity_free_;
-    std::chrono::time_point<std::chrono::high_resolution_clock> time_acceleration_;
-    std::chrono::time_point<std::chrono::high_resolution_clock> time_quick_status_;
-    std::chrono::time_point<std::chrono::high_resolution_clock> time_sensor_info_;
-    std::vector<Jaco2Calibration::AccelerometerCalibrationParam> accCalibParam_;
+    jaco2_data::TimeStamp time_position_;
+    jaco2_data::TimeStamp time_velocity_;
+    jaco2_data::TimeStamp time_torque_;
+    jaco2_data::TimeStamp time_current_;
+    jaco2_data::TimeStamp time_torque_gravity_free_;
+    jaco2_data::TimeStamp time_acceleration_;
+    jaco2_data::TimeStamp time_quick_status_;
+    jaco2_data::TimeStamp time_sensor_info_;
     Jaco2Calibration::TorqueOffsetLut torque_offset_;
     Jaco2Calibration::TorqueOffsetCalibration torque_offest_fkt_;
-    std::vector<bool> calibrate_acc_;
     bool calibrate_torque_;
     bool calibrate_torque_fkt_;
     std::deque<AngularPosition> lastVelocity_;
     std::deque<double> dt_;
     int acc_counter_;
     std::vector<double> velocityFactors_;
+    Jaco2JointState joint_state_;
 
 
 
