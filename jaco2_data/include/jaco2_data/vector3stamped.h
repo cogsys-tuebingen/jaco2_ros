@@ -4,10 +4,11 @@
 #include <Eigen/Dense>
 
 namespace jaco2_data {
+
 class Vector3Stamped
 {
 public:
-    Vector3Stamped() {}
+    Vector3Stamped();
 
 public:
     TimeStamp stamp;

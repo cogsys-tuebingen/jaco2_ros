@@ -13,13 +13,13 @@ JointStateData::JointStateData(std::size_t n) :
     resize(n);
 }
 
-void JointStateData::resize(std::size_t n)
+void JointStateData::resize(std::size_t n, double val)
 {
-    names.resize(n);
-    position.resize(n);
-    velocity.resize(n);
-    acceleration.resize(n);
-    torque.resize(n);
+    names.resize(n,"");
+    position.resize(n, val);
+    velocity.resize(n, val);
+    acceleration.resize(n, val);
+    torque.resize(n, val);
 }
 
 void JointStateData::normalize(std::size_t offset )
@@ -43,16 +43,16 @@ Eigen::VectorXd JointStateData::getEigenVector(AngularDataType type, std::size_t
 {
     const std::vector<double>* data;
     switch (type) {
-    case AngularPOS:
+    case AngularDataPOS:
         data = &position;
         break;
-    case ANGUlarVEL:
+    case AngularDataVEL:
         data = &velocity;
         break;
-    case AngularACC:
+    case AngularDataACC:
         data = &acceleration;
         break;
-    case TORQUE:
+    case AngularDataTORQUE:
         data = &torque;
         break;
     }

@@ -5,10 +5,10 @@
 namespace jaco2_data {
 
 enum AngularDataType{
-    AngularPOS = 0,
-    ANGUlarVEL = 1,
-    AngularACC = 2,
-    TORQUE = 3
+    AngularDataPOS = 0,
+    AngularDataVEL = 1,
+    AngularDataACC = 2,
+    AngularDataTORQUE = 3
 };
 
 class JointStateData
@@ -17,7 +17,7 @@ public:
     JointStateData();
     JointStateData(std::size_t n);
 
-    void resize(std::size_t n);
+    void resize(std::size_t n, double val = 0);
 
     void normalize(std::size_t offset = 0);
 

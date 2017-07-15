@@ -35,6 +35,9 @@ file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLIN
 add_library(${PROJECT_NAME}
    ${ALL_HEADERS}
    src/joint_state_data.cpp
+   src/accelerometer_data.cpp
+   src/vector3stamped.cpp
+   src/time_stamp.cpp
    )
 
 ## Add cmake target dependencies of the library
