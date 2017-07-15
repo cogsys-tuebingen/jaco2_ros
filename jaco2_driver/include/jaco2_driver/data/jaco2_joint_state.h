@@ -10,10 +10,11 @@
 /// ROS
 #include <sensor_msgs/JointState.h>
 /// Jaco2
-#include <jaco2_data/joint_state_data.h>
+#include <jaco2_data/extended_joint_state_data.h>
 
 struct KinovaJointState{
     std::chrono::time_point<std::chrono::high_resolution_clock> stamp;
+    std::chrono::time_point<std::chrono::high_resolution_clock> acc_stamp;
     AngularPosition position;
     AngularPosition velocity;
     AngularPosition acceleration;
@@ -37,12 +38,18 @@ public:
     Jaco2JointState();
 
     void setAngularData(const AngularDataFields type, const AngularPosition& pos);
-    void setLinearData(const AngularAcceleration& accs);
+    void setLinearData(const AngularAcceleration& accs, const jaco2_data::TimeStamp &stamp);
 
     AngularInfo getAngularData(const AngularDataFields type) const;
     std::vector<double> getData(const AngularDataFields type, bool degrees) const;
 
-    void set(KinovaJointState& data);
+    void set(const KinovaJointState& data);
+    void set(const jaco2_data::TimeStamp& t,
+             const AngularPosition& pos,
+              const AngularPosition& vel,
+              const AngularPosition& acc,
+              const AngularPosition& tor,
+              const AngularAcceleration& lacc);
 
 
 private:
@@ -52,7 +59,7 @@ private:
 private:
     std::size_t buffer_size_;
     std::deque<Eigen::Vector3d> g_buffer_;
-    jaco2_data::JointStateData current_state_;
+    jaco2_data::ExtendedJointStateData current_state_;
 
 
 

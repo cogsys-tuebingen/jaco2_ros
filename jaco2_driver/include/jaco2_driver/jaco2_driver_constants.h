@@ -4,7 +4,7 @@
 #include <vector>
 namespace Jaco2DriverConstants {
 
-const double fingerAngleConversion(9.2028e-3);
+const double fingerAngleConversion(9.2028e-3);         //conversion encoder 2 degrees experimentaly determined
 
 const std::size_t n_Jaco2Joints(6);
 const std::size_t n_Jaco2JointsAndKG3(9);
