@@ -33,7 +33,6 @@ void Jaco2ResidualVector::setGravity(double x, double y, double z)
 int Jaco2ResidualVector::getNrOfJoints()const
 {
     int val = model_.getNrOfJoints();
-    std::cout << "#Joints: " << val << std::endl;
     return val;
 }
 
