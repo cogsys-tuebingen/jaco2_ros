@@ -61,31 +61,23 @@ void Jaco2JointState::set(KinovaJointState& data)
 {
     setLinearData(data.accelerometers);
 
-    current_state_.stamp = data.stamp;
-    DataConversion::convert(pos, current_state_.position);
-    DataConversion::from_degrees(current_state_.position);
-    DataConversion::normalize(current_state_.position);
+    current_state_.stamp.stamp = data.stamp;
+//    DataConversion::convert(pos, current_state_.position);
+//    DataConversion::from_degrees(current_state_.position);
+//    DataConversion::normalize(current_state_.position);
 
-    DataConversion::convert(pos, current_state_.velocity);
-    DataConversion::from_degrees(current_state_.velocity);
+//    DataConversion::convert(pos, current_state_.velocity);
+//    DataConversion::from_degrees(current_state_.velocity);
 
-    DataConversion::convert(pos, current_state_.acceleration);
-    DataConversion::from_degrees(current_state_.acceleration);
+//    DataConversion::convert(pos, current_state_.acceleration);
+//    DataConversion::from_degrees(current_state_.acceleration);
 
-    DataConversion::convert(pos, current_state_.torque);
-
-}
-
-
-sensor_msgs::JointState Jaco2JointState::getROS() const
-{
-    jaco2_msgs::Jaco2JointState j;
-    DataConversion::convert(stamp,j.header.stamp);
-}
-jaco2_msgs::Jaco2JointState Jaco2JointState::getMessage() const
-{
+//    DataConversion::convert(pos, current_state_.torque);
 
 }
+
+
+
 
 void Jaco2JointState::estimateG(double x, double y, double z)
 {

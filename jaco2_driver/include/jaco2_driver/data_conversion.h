@@ -129,6 +129,7 @@ inline void normalize(std::vector<double>& angles)
         while(*it < -2*M_PI){
             *it += 2.0 *M_PI;
         }
+        ++it;
     }
 }
 
