@@ -45,6 +45,7 @@ sensor_msgs::JointState JointStateConversion::data2SensorMsgs(const jaco2_data::
 {
     sensor_msgs::JointState res;
     res.header.stamp = TimeConversion::data2ROS(data.stamp);
+    res.header.frame_id = data.frame_id;
     res.name = data.names;
     res.position = data.position;
     res.velocity = data.velocity;
@@ -56,6 +57,7 @@ jaco2_msgs::Jaco2JointState JointStateConversion::datata2Jaco2Msgs(const jaco2_d
 {
     jaco2_msgs::Jaco2JointState res;
     res.header.stamp = TimeConversion::data2ROS(data.stamp);
+    res.header.frame_id = data.frame_id;
     res.gx = data.gravity(0);
     res.gy = data.gravity(1);
     res.gz = data.gravity(2);
@@ -71,6 +73,7 @@ jaco2_data::JointStateData JointStateConversion::sensorMsgs2Data(const sensor_ms
 {
     jaco2_data::JointStateData res;
     res.stamp = TimeConversion::ros2data(msg.header.stamp);
+    res.frame_id = msg.header.frame_id;
     res.names = msg.name;
     res.position = msg.position;
     res.velocity = msg.velocity;
@@ -80,6 +83,7 @@ jaco2_data::JointStateData JointStateConversion::sensorMsgs2Data(const sensor_ms
 jaco2_data::JointStateData JointStateConversion::jaco2Msg2Data(const jaco2_msgs::Jaco2JointState& msg)
 {
     jaco2_data::JointStateData res;
+    res.frame_id = msg.header.frame_id;
     res.stamp = TimeConversion::ros2data(msg.header.stamp);
     res.gravity = Eigen::Vector3d(msg.gx, msg.gy, msg.gz);
     res.names = msg.name;

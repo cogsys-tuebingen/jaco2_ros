@@ -1,0 +1,111 @@
+#include <jaco2_data/extended_joint_state_data.h>
+using namespace jaco2_data;
+
+ExtendedJointStateData::ExtendedJointStateData(std::size_t nj, std::size_t na)
+    : joint_state(nj),
+      lin_acc(na)
+{
+}
+
+std::shared_ptr<std::vector<double>> ExtendedJointStateData::dataAccess(int type) const
+{
+    switch (type) {
+    case JOINT_POS:
+        return std::make_shared<std::vector<double>>(joint_state.position);
+        break;
+    case JOINT_VEL:
+        return std::make_shared<std::vector<double>>(joint_state.velocity);
+        break;
+    case JOINT_ACC:
+        return std::make_shared<std::vector<double>>(joint_state.acceleration);
+        break;
+    case JOINT_TORQUE:
+        return std::make_shared<std::vector<double>>(joint_state.torque);
+        break;
+    case LIN_ACC:
+        return std::make_shared<std::vector<double>>(lin_acc.toVector());
+    default:
+        return nullptr;
+        break;
+    }
+}
+
+ExtendedJointStateData ExtendedJointStateData::abs() const
+{
+    ExtendedJointStateData res;
+    res.joint_state = this->joint_state.abs();
+    res.lin_acc = this->lin_acc.abs();
+    return res;
+}
+
+std::string ExtendedJointStateData::to_string(const char delimiter) const
+{
+    std::stringstream ss;
+    ss << joint_state.frame_id << delimiter;
+    ss << joint_state.label << delimiter;
+    for(auto val : joint_state.position){
+        ss << val << delimiter;
+    }
+    for(auto val : joint_state.velocity){
+        ss << val << delimiter;
+    }
+    for(auto val : joint_state.acceleration){
+        ss << val << delimiter;
+    }
+    for(auto val : joint_state.torque){
+        ss << val << delimiter;
+    }
+    for(auto acc : lin_acc)
+    {
+        ss << acc.vector[0] << delimiter << acc.vector[1] << delimiter << acc.vector[2] << delimiter;
+    }
+    return ss.str();
+}
+
+void ExtendedJointStateData::setLabel(int i)
+{
+    joint_state.label = i;
+    lin_acc.label = i;
+}
+
+std::vector<double>& ExtendedJointStateData::position()
+{
+    return joint_state.position;
+}
+
+const std::vector<double>& ExtendedJointStateData::position() const
+{
+    return joint_state.position;
+}
+
+std::vector<double>& ExtendedJointStateData::velocity()
+{
+    return joint_state.velocity;
+}
+
+const std::vector<double> &ExtendedJointStateData::velocity() const
+{
+    return joint_state.velocity;
+}
+
+
+std::vector<double>& ExtendedJointStateData::acceleration()
+{
+    return joint_state.acceleration;
+}
+
+const std::vector<double>& ExtendedJointStateData::acceleration() const
+{
+    return joint_state.acceleration;
+}
+
+std::vector<double>& ExtendedJointStateData::torque()
+{
+    return joint_state.torque;
+}
+
+const std::vector<double> &ExtendedJointStateData::torque() const
+{
+    return joint_state.torque;
+}
+

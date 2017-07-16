@@ -31,9 +31,25 @@ void TimeStamp::fromNSec(unsigned long int nsecs)
     stamp = std::chrono::time_point<std::chrono::high_resolution_clock>(tmp);
 }
 
+void TimeStamp::fromMicroSec(unsigned long int musecs)
+{
+    std::chrono::microseconds  tmp = std::chrono::microseconds(musecs);
+    stamp = std::chrono::time_point<std::chrono::high_resolution_clock>(tmp);
+}
+
 bool TimeStamp::operator !=(const TimeStamp& other) const
 {
     return stamp != other.stamp;
+}
+
+bool TimeStamp::operator <=(const TimeStamp& other) const
+{
+    return stamp <= other.stamp;
+}
+
+bool TimeStamp::operator ==(const TimeStamp& other) const
+{
+    return stamp == other.stamp;
 }
 
 double TimeStamp::substractionResultInSeconds(const TimeStamp &lhs) const
@@ -41,4 +57,9 @@ double TimeStamp::substractionResultInSeconds(const TimeStamp &lhs) const
     auto delta = stamp - lhs.stamp;
     double dt = std::chrono::duration_cast<std::chrono::microseconds>(delta).count()*1e-6;
     return dt;
+}
+
+double TimeStamp::timeDiffinSeconds(const TimeStamp &lhs, const TimeStamp &rhs)
+{
+    return lhs.substractionResultInSeconds(rhs);
 }

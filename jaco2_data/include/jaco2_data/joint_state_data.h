@@ -5,10 +5,10 @@
 namespace jaco2_data {
 
 enum AngularDataType{
-    AngularDataPOS = 0,
-    AngularDataVEL = 1,
-    AngularDataACC = 2,
-    AngularDataTORQUE = 3
+    AngularDataPOS = 1,
+    AngularDataVEL = 2,
+    AngularDataACC = 3,
+    AngularDataTORQUE = 4
 };
 
 class JointStateData
@@ -23,11 +23,16 @@ public:
 
     Eigen::VectorXd getEigenVector(AngularDataType type, std::size_t offset = 0) const;
 
+    JointStateData abs() const;
+
+    double norm(int type) const;
+
 private:
     static Eigen::VectorXd convert2eigen(const std::vector<double> *data, std::size_t offset = 0);
 
 public:
-    int user_defined_label;
+    int label;
+    std::string frame_id;
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     Eigen::Vector3d gravity;
 

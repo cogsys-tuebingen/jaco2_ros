@@ -12,6 +12,7 @@ public:
 public:
 
     AccelerometerData();
+    AccelerometerData(std::size_t n);
 
     iterator begin();
     const_iterator begin() const;
@@ -37,8 +38,13 @@ public:
     void emplace_back(Vector3Stamped&& val);
     void push_back(const Vector3Stamped& val);
 
+    std::vector<double> toVector() const;
+    AccelerometerData abs() const;
+
+    double norm() const;
+
 public:
-    int user_defined_label;
+    int label;
 private:
     std::vector<Vector3Stamped> lin_acc;
 };

@@ -38,6 +38,7 @@ add_library(${PROJECT_NAME}
    src/accelerometer_data.cpp
    src/vector3stamped.cpp
    src/time_stamp.cpp
+   src/extended_joint_state_data.cpp
    )
 
 ## Add cmake target dependencies of the library

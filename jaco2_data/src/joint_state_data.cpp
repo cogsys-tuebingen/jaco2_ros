@@ -3,12 +3,12 @@
 using namespace jaco2_data;
 
 JointStateData::JointStateData() :
-    user_defined_label(-1)
+    label(-1)
 {
 }
 
 JointStateData::JointStateData(std::size_t n) :
-    user_defined_label(-1)
+    label(-1)
 {
     resize(n);
 }
@@ -73,4 +73,71 @@ Eigen::VectorXd JointStateData::convert2eigen(const std::vector<double> *data, s
     }
     return res;
 
+}
+
+JointStateData JointStateData::abs() const
+{
+    JointStateData res = *this;
+
+    auto it = res.position.begin();
+    for(auto p : res.position)
+    {
+        *it = fabs(p);
+        ++it;
+    }
+
+    it = res.velocity.begin();
+    for(auto p : res.velocity)
+    {
+        *it = fabs(p);
+        ++it;
+    }
+
+    it = res.acceleration.begin();
+    for(auto p : res.acceleration)
+    {
+        *it = fabs(p);
+        ++it;
+    }
+
+    it = res.torque.begin();
+    for(auto p : res.torque)
+    {
+        *it = fabs(p);
+        ++it;
+    }
+
+    return res;
+}
+
+
+double JointStateData::norm(int type) const
+{
+    const std::vector<double>* data;
+    switch (type) {
+    case AngularDataPOS:
+        data = &position;
+        break;
+    case AngularDataVEL:
+        data = &velocity;
+        break;
+    case AngularDataACC:
+        data = &acceleration;
+        break;
+    case AngularDataTORQUE:
+        data = &torque;
+        break;
+    default:
+        data = nullptr;
+        break;
+    }
+
+    double norm = 0;
+    if(data){
+        for(double val : *data){
+            norm += val*val;
+        }
+        norm = sqrt(norm);
+    }
+    return norm;
 }

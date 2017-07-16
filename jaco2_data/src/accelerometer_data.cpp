@@ -3,8 +3,14 @@
 using namespace jaco2_data;
 
 AccelerometerData::AccelerometerData()
-    : user_defined_label(-1)
+    : label(-1)
 {}
+
+AccelerometerData::AccelerometerData(std::size_t n)
+    : label(-1)
+{
+    resize(n);
+}
 
 AccelerometerData::iterator AccelerometerData::AccelerometerData::begin()
 {
@@ -85,4 +91,38 @@ void AccelerometerData::emplace_back(Vector3Stamped&& val)
 void AccelerometerData::push_back(const Vector3Stamped &val)
 {
     lin_acc.push_back(val);
+}
+
+std::vector<double> AccelerometerData::toVector() const
+{
+    std::vector<double> res;
+    for(auto v : lin_acc){
+        std::vector<double> tmp = v.toVector();
+        res.insert(res.end(),tmp.begin(), tmp.end());
+    }
+    return res;
+}
+
+AccelerometerData AccelerometerData::abs() const
+{
+    AccelerometerData res = *this;
+
+    for(Vector3Stamped& p : res.lin_acc)
+    {
+        p = p.abs();
+    }
+
+    return res;
+}
+
+double AccelerometerData::norm() const
+{
+    double res = 0;
+
+    for(std::size_t i = 0; i < this->lin_acc.size(); ++i)
+    {
+        res += this->lin_acc[i].norm();
+    }
+
+    return res;
 }

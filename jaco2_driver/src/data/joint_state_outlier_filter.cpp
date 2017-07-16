@@ -177,7 +177,7 @@ void JointStateOutlierFilter::removeJsOutlier(std::size_t i, std::size_t j, std:
     state.torque.resize(nj);
     state.acceleration.resize(nj);
     state.stamp = js_out.stamp;
-    state.user_defined_label = js_out.user_defined_label;
+    state.label = js_out.label;
 
     for(std::size_t k = 0; k < nj; ++k){
         state.position[k] = 0.5 * (js_i.position[k] + js_j.position[k]);
