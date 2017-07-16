@@ -458,103 +458,6 @@ void Jaco2State::applyTorqueOffsets2TorqueGFree()
     }
 }
 
-void Jaco2State::getAcceleration(const std::size_t &index, const AngularAcceleration &acc, Eigen::Vector3d &vec)
-{
-    switch (index) {
-    case 0: {
-        vec(0) = acc.Actuator1_X;
-        vec(1) = acc.Actuator1_Y;
-        vec(2) = acc.Actuator1_Z;
-        break;
-    }
-    case 1: {
-        vec(0) = acc.Actuator2_X;
-        vec(1) = acc.Actuator2_Y;
-        vec(2) = acc.Actuator2_Z;
-        break;
-    }
-    case 2: {
-        vec(0) = acc.Actuator3_X;
-        vec(1) = acc.Actuator3_Y;
-        vec(2) = acc.Actuator3_Z;
-        break;
-    }
-    case 3: {
-        vec(0) = acc.Actuator4_X;
-        vec(1) = acc.Actuator4_Y;
-        vec(2) = acc.Actuator4_Z;
-        break;
-    }
-    case 4: {
-        vec(0) = acc.Actuator5_X;
-        vec(1) = acc.Actuator5_Y;
-        vec(2) = acc.Actuator5_Z;
-        break;
-    }
-    case 5: {
-        vec(0) = acc.Actuator6_X;
-        vec(1) = acc.Actuator6_Y;
-        vec(2) = acc.Actuator6_Z;
-        break;
-    }
-    default: {
-        throw std::runtime_error("illegal index!");
-        break;
-    }
-    }
-}
-
-void Jaco2State::setAcceleration(const std::size_t &index, const Eigen::Vector3d vec, AngularAcceleration &acc)
-{
-    switch (index) {
-    case 0:{
-        acc.Actuator1_X = vec(0);
-        acc.Actuator1_Y = vec(1);
-        acc.Actuator1_Z = vec(2);
-        break;
-    }
-    case 1: {
-        acc.Actuator2_X = vec(0);
-        acc.Actuator2_Y = vec(1);
-        acc.Actuator2_Z = vec(2);
-        break;
-    }
-    case 2: {
-        acc.Actuator3_X = vec(0);
-        acc.Actuator3_Y = vec(1);
-        acc.Actuator3_Z = vec(2);
-        break;
-    }
-    case 3: {
-        acc.Actuator4_X = vec(0);
-        acc.Actuator4_Y = vec(1);
-        acc.Actuator4_Z = vec(2);
-        break;
-    }
-    case 4: {
-        acc.Actuator5_X = vec(0);
-        acc.Actuator5_Y = vec(1);
-        acc.Actuator5_Z = vec(2);
-        break;
-    }
-    case 5: {
-        acc.Actuator6_X = vec(0);
-        acc.Actuator6_Y = vec(1);
-        acc.Actuator6_Z = vec(2);
-        break;
-    }
-    default: {
-        throw std::runtime_error("illegal index!");
-        break;
-    }
-    }
-}
-
-//std::vector<Jaco2Calibration::AccelerometerCalibrationParam> Jaco2State::getAccelerometerCalibration() const
-//{
-//    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-//    return accCalibParam_;
-//}
 
 Jaco2Calibration::TorqueOffsetLut Jaco2State::getTorqueCalibration() const
 {
@@ -566,5 +469,5 @@ Jaco2Calibration::TorqueOffsetLut Jaco2State::getTorqueCalibration() const
 void Jaco2State::updateJointState()
 {
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-    joint_state_.set(kinova_state_);
+    joint_state_.update(kinova_state_);
 }

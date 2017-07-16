@@ -3,10 +3,22 @@
 #include <jaco2_driver/data/jaco2_kinova_conversion.h>
 using namespace jaco2_data;
 
-Jaco2JointState::Jaco2JointState() :
-    buffer_size_(10)
+Jaco2JointState::Jaco2JointState()
+    : use_outlier_fiter_(true),
+      buffer_size_(10)
 {
     calibrate_acc_.resize(Jaco2DriverConstants::n_Jaco2Joints, false);
+}
+
+void Jaco2JointState::useOutlierFilter(bool arg)
+{
+    use_outlier_fiter_ = arg;
+}
+
+void Jaco2JointState::setOutlierThreshold(double torque, double acc)
+{
+    filter_.threshold_torque = torque;
+    filter_.threshold_acc = acc;
 }
 
 void Jaco2JointState::setAngularData(const AngularDataType type, const AngularPosition &pos)
@@ -37,7 +49,6 @@ void Jaco2JointState::setAngularData(const AngularDataType type, const AngularPo
 void Jaco2JointState::setLinearData(const AngularAcceleration& accs, const jaco2_data::TimeStamp& stamp)
 {
     current_state_.lin_acc = ConvertAccelerometers::kinova2data(accs, stamp);
-    estimateG( accs.Actuator1_Y, accs.Actuator1_X, accs.Actuator1_Z); // jaco_base_link is not accelerometer frame !
 }
 
 jaco2_data::JointStateData Jaco2JointState::getJointState() const
@@ -110,7 +121,7 @@ void Jaco2JointState::setAccelerometerCalibration(std::vector<Jaco2Calibration::
     }
 }
 
-void Jaco2JointState::set(const KinovaJointState& data)
+void Jaco2JointState::update(const KinovaJointState& data)
 {
     setLinearData(data.accelerometers,  data.acc_stamp);
 
@@ -121,9 +132,15 @@ void Jaco2JointState::set(const KinovaJointState& data)
     current_state_.joint_state.torque = ConvertAngularData::kinova2data(data.torque, false);
     current_state_.joint_state.normalize();
 
+    if(use_outlier_fiter_){
+        filter_.filter(current_state_, current_state_);
+    }
+
+    estimateG();
+
 }
 
-void Jaco2JointState::set(const jaco2_data::TimeStamp& t,
+void Jaco2JointState::update(const jaco2_data::TimeStamp& t,
                           const AngularPosition& pos,
                           const AngularPosition& vel,
                           const AngularPosition& acc,
@@ -139,8 +156,20 @@ void Jaco2JointState::set(const jaco2_data::TimeStamp& t,
     current_state_.joint_state.acceleration = ConvertAngularData::kinova2data(acc);
     current_state_.joint_state.torque = ConvertAngularData::kinova2data(tor, false);
     current_state_.joint_state.normalize();
+
+    if(use_outlier_fiter_){
+        filter_.filter(current_state_, current_state_);
+    }
+
+    estimateG();
+
 }
 
+void Jaco2JointState::estimateG()
+{
+    const Vector3Stamped& a0 = current_state_.lin_acc.front();
+    estimateG(a0.vector(1), a0.vector(0), a0.vector(2)); // jaco_base_link is not accelerometer frame !
+}
 
 
 void Jaco2JointState::estimateG(double x, double y, double z)

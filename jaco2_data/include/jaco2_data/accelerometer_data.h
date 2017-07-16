@@ -1,5 +1,6 @@
 #ifndef ACCELEROMETER_DATA_H
 #define ACCELEROMETER_DATA_H
+#include <vector>
 #include <jaco2_data/vector3stamped.h>
 namespace jaco2_data {
 
@@ -23,6 +24,12 @@ public:
 
     Vector3Stamped& operator[](std::size_t i);
     const Vector3Stamped& operator [](std::size_t i) const;
+
+    Vector3Stamped& front();
+    const Vector3Stamped& front() const;
+
+    Vector3Stamped& back();
+    const Vector3Stamped& back() const;
 
     std::size_t size() const;
     void resize(std::size_t n, Vector3Stamped val = Vector3Stamped(0,0,0));

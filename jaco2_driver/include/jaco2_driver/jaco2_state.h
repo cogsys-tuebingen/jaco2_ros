@@ -90,8 +90,6 @@ public:
     ///
     void readPosVel();
 
-    static void getAcceleration(const std::size_t& index, const AngularAcceleration& acc, Eigen::Vector3d& vec);
-    static void setAcceleration(const std::size_t& index, const Eigen::Vector3d vec, AngularAcceleration& acc);
 
 private:
     void readPosition();

@@ -57,6 +57,26 @@ void AccelerometerData::resize(std::size_t n, Vector3Stamped val)
     lin_acc.resize(n, val);
 }
 
+Vector3Stamped& AccelerometerData::front()
+{
+    return lin_acc.front();
+}
+
+const Vector3Stamped& AccelerometerData::front() const
+{
+    return lin_acc.front();
+}
+
+Vector3Stamped& AccelerometerData::back()
+{
+    return lin_acc.back();
+}
+
+const Vector3Stamped& AccelerometerData::back() const
+{
+    return lin_acc.back();
+}
+
 void AccelerometerData::emplace_back(Vector3Stamped&& val)
 {
     lin_acc.emplace_back(val);
