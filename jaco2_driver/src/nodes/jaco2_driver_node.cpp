@@ -63,7 +63,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     zeroTorqueService_ = private_nh_.advertiseService("in/set_torque_zero", &Jaco2DriverNode::setTorqueZeroCallback, this);
     gravityCompensationService_ = private_nh_.advertiseService("in/enable_gravity_compensation_mode", &Jaco2DriverNode::gravityCompCallback, this);
     admittanceControlService_ = private_nh_.advertiseService("in/enable_admittance_mode", &Jaco2DriverNode::admittanceControlCallback, this);
-
+    shutdownService_ = private_nh_.advertiseService("in/shutdown", &Jaco2DriverNode::shutdownServiceCb, this);
     actionAngleServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::actionAngleGoalCb, this));
     trajServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::trajGoalCb, this));
     graspServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::gripperGoalCb, this));
@@ -309,6 +309,14 @@ bool Jaco2DriverNode::admittanceControlCallback(std_srvs::SetBool::Request &req,
     }
 
     res.success = true;
+    return true;
+}
+
+bool Jaco2DriverNode::shutdownServiceCb(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+{
+    res.success = true;
+    res.message = "Driver shuts down";
+    ok_ = false;
     return true;
 }
 
@@ -574,8 +582,8 @@ void Jaco2DriverNode::publishJointState()
         jointStateMsg_ = jaco2_msgs::JointStateConversion::data2SensorMsgs(jdata);
         pubJointState_.publish(jointStateMsg_);
 
-        jaco2_msgs::Jaco2JointState jaco2JointStateMsg = jaco2_msgs::JointStateConversion::datata2Jaco2Msgs(jdata);
-        pubJaco2JointState_.publish(jaco2JointStateMsg);
+        jaco2JointStateMsg_ = jaco2_msgs::JointStateConversion::datata2Jaco2Msgs(jdata);
+        pubJaco2JointState_.publish(jaco2JointStateMsg_);
         lastTimeJsPublished_ = jdata.stamp;
     }
 
@@ -712,6 +720,8 @@ int main(int argc, char *argv[])
         ros::spinOnce();
         r.sleep();
     }
+
+    node.stop();
 
     return 0;
 }
