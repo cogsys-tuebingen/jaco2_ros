@@ -17,6 +17,7 @@ private:
     bool doFiltering();
     bool checkTorques(std::vector<bool>& test);
     bool checkAccs(std::vector<bool>& test);
+    void removeOutlier(std::size_t i, std::size_t j, std::size_t outlier);
     void removeJsOutlier(std::size_t i, std::size_t j, std::size_t outlier);
     void removeAccOutlier(std::size_t i, std::size_t j, std::size_t outlier);
 public:

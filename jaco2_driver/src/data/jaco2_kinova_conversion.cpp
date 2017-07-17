@@ -1,5 +1,7 @@
 #include <jaco2_driver/data/jaco2_kinova_conversion.h>
 #include <jaco2_driver/jaco2_driver_constants.h>
+#include <iostream>
+
 using namespace jaco2_data;
 
 std::string ex1 = "Vector has not enough values, " + std::to_string(Jaco2DriverConstants::n_Jaco2Joints) + " values expected";

@@ -378,7 +378,7 @@ jaco2_data::AccelerometerData Jaco2Driver::getAccelerometerData() const
 
 const jaco2_data::JointStateData& Jaco2Driver::getJointStateRef() const
 {
-    return state_,getJointStateRef();
+    return state_.getJointStateRef();
 }
 
 const jaco2_data::AccelerometerData& Jaco2Driver::getAccelerometerDataRef() const

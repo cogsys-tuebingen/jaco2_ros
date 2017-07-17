@@ -1,4 +1,5 @@
 #include <jaco2_driver/data/joint_state_outlier_filter.h>
+#include <iostream>
 using namespace jaco2_data;
 
 JointStateOutlierFilter::JointStateOutlierFilter(double threshold_torque, double threshold_acc)
@@ -13,7 +14,15 @@ bool JointStateOutlierFilter::filter(const ExtendedJointStateData &data_in, Exte
 {
     bool success = true;
 
-    jstate_buffer_.push_back(data_in);
+    if(jstate_buffer_.empty()){
+        jstate_buffer_.push_back(data_in);
+    }
+    else{
+        if(data_in.joint_state.stamp != jstate_buffer_.back().joint_state.stamp){
+            jstate_buffer_.push_back(data_in);
+        }
+    }
+
 
     while(jstate_buffer_.size() > buffer_size_){
         jstate_buffer_.pop_front();
@@ -40,53 +49,49 @@ bool JointStateOutlierFilter::doFiltering()
 
     if(result){
         if(tests_js[0] && !tests_js[1] && !tests_js[2]){
-            removeJsOutlier(1,2,0); // first is outlier
+            removeOutlier(1,2,0); // first is outlier
         }
         if(!tests_js[0] && tests_js[1] && !tests_js[2]){
-            removeJsOutlier(0,2,1); // mid is outlier
+            removeOutlier(0,2,1); // mid is outlier
         }
         if(!tests_js[0] && !tests_js[1] && tests_js[2]){
-            removeJsOutlier(0,1,2); // last is outlier
+            removeOutlier(0,1,2); // last is outlier
         }
         if(!tests_js[0] && !tests_js[1] && tests_js[2]){
-            removeJsOutlier(0,1,2); // last is outlier
+            removeOutlier(0,1,2); // last is outlier
         }
         if(tests_js[0] && tests_js[1] && !tests_js[2]){
-            removeJsOutlier(0,2,1); // mid is outlier
+            removeOutlier(0,2,1); // mid is outlier
         }
         if(tests_js[0] && !tests_js[1] && tests_js[2]){
-            removeJsOutlier(1,2,0); // first is outlier
+            removeOutlier(1,2,0); // first is outlier
         }
         if(!tests_js[0] && tests_js[1] && tests_js[2]){
-            removeJsOutlier(0,1,2); // last is outlier
-        }
-        if(!tests_js[0] && !tests_js[1] && !tests_js[2]){
-            // not everything should be an outlier wrong threshold?
-            return false;
+            removeOutlier(0,1,2); // last is outlier
         }
 
         if(tests_acc[0] && !tests_acc[1] && !tests_acc[2]){
-            removeAccOutlier(1,2,0); // first is outlier
+            removeOutlier(1,2,0); // first is outlier
         }
         if(!tests_acc[0] && tests_acc[1] && !tests_acc[2]){
-            removeAccOutlier(0,2,1); // mid is outlier
+            removeOutlier(0,2,1); // mid is outlier
         }
         if(!tests_acc[0] && !tests_acc[1] && tests_acc[2]){
-            removeAccOutlier(0,1,2); // last is outlier
+            removeOutlier(0,1,2); // last is outlier
         }
         if(!tests_acc[0] && !tests_acc[1] && tests_acc[2]){
-            removeAccOutlier(0,1,2); // last is outlier
+            removeOutlier(0,1,2); // last is outlier
         }
         if(tests_acc[0] && tests_acc[1] && !tests_acc[2]){
-            removeAccOutlier(0,2,1); // mid is outlier
+            removeOutlier(0,2,1); // mid is outlier
         }
         if(tests_acc[0] && !tests_acc[1] && tests_acc[2]){
-            removeAccOutlier(1,2,0); // first is outlier
+            removeOutlier(1,2,0); // first is outlier
         }
         if(!tests_acc[0] && tests_acc[1] && tests_acc[2]){
-            removeAccOutlier(0,1,2); // last is outlier
+            removeOutlier(0,1,2); // last is outlier
         }
-        if(!tests_acc[0] && !tests_acc[1] && !tests_acc[2]){
+        if(tests_acc[0] && tests_acc[1] && tests_acc[2]){
             // not everything should be an outlier wrong threshold?
             return false;
         }
@@ -132,7 +137,7 @@ bool JointStateOutlierFilter::checkAccs(std::vector<bool> &test)
     bool result = false;
     auto it_acc1 = jstate_buffer_[0].lin_acc.begin();
     auto it_acc2 = jstate_buffer_[1].lin_acc.begin();
-    AccelerometerData& linacc3 = jstate_buffer_[1].lin_acc;
+    AccelerometerData& linacc3 = jstate_buffer_[2].lin_acc;
     for(auto it_acc3 = linacc3.begin(); it_acc3 <linacc3.end(); ++it_acc3){
         Vector3Stamped& v1 = *it_acc1;
         Vector3Stamped& v2 = *it_acc2;
@@ -145,7 +150,6 @@ bool JointStateOutlierFilter::checkAccs(std::vector<bool> &test)
         Vector3Stamped delta1 = (v2 - v1) / dt1;
         Vector3Stamped delta2 = (v3 - v2) / dt2;
         Vector3Stamped delta3 = (v3 - v1) / dt3;
-
 
         for(std::size_t j = 0; j < 3; ++ j){
             test[0] = test[0] || (fabs(delta1.vector(j)) > threshold_acc);
@@ -162,6 +166,12 @@ bool JointStateOutlierFilter::checkAccs(std::vector<bool> &test)
     return result;
 }
 
+void JointStateOutlierFilter::removeOutlier(std::size_t i, std::size_t j, std::size_t outlier)
+{
+    removeJsOutlier(i, j, outlier);
+    removeAccOutlier(i, j, outlier);
+}
+
 void JointStateOutlierFilter::removeJsOutlier(std::size_t i, std::size_t j, std::size_t outlier)
 {
     JointStateData state;
@@ -176,8 +186,10 @@ void JointStateOutlierFilter::removeJsOutlier(std::size_t i, std::size_t j, std:
     state.velocity.resize(nj);
     state.torque.resize(nj);
     state.acceleration.resize(nj);
-    state.stamp = js_out.stamp;
+    state.stamp.fromNSec(0.5 * (js_i.stamp.toMicroSec() + js_j.stamp.toMicroSec()));
     state.label = js_out.label;
+
+    state.gravity =0.5 * (js_i.gravity + js_j.gravity);
 
     for(std::size_t k = 0; k < nj; ++k){
         state.position[k] = 0.5 * (js_i.position[k] + js_j.position[k]);
@@ -192,13 +204,14 @@ void JointStateOutlierFilter::removeJsOutlier(std::size_t i, std::size_t j, std:
 void JointStateOutlierFilter::removeAccOutlier(std::size_t i, std::size_t j, std::size_t outlier)
 {
 
-    AccelerometerData& a_i = jstate_buffer_[i].lin_acc;
-    AccelerometerData& a_j = jstate_buffer_[j].lin_acc;
+    const AccelerometerData& a_i = jstate_buffer_[i].lin_acc;
+    const AccelerometerData& a_j = jstate_buffer_[j].lin_acc;
     AccelerometerData& a_out = jstate_buffer_[outlier].lin_acc;
     std::size_t naccs = a_i.size();
 
     for(std::size_t k = 0; k < naccs; ++k){
         Vector3Stamped mean = (a_i[k] + a_j[k]) * 0.5;
+        mean.stamp.fromNSec(0.5 * (a_i[k].stamp.toMicroSec() + a_j[k].stamp.toMicroSec()));
         a_out[k] = mean;
     }
 }
