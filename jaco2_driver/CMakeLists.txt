@@ -76,6 +76,7 @@ add_library(jaco2_driver
     src/data/jaco2_joint_state.cpp
     src/data/jaco2_kinova_conversion.cpp
     src/data/joint_state_outlier_filter.cpp
+    src/data/gravity_estimator.cpp
     src/controller/collision_reaction.cpp
     src/controller/gripper_controller.cpp
     src/controller/torque_controller.cpp
