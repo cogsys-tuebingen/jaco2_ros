@@ -13,6 +13,7 @@
 #include <jaco2_data/extended_joint_state_data.h>
 #include <jaco2_driver/accelerometer_calibration.hpp>
 #include <jaco2_driver/data/joint_state_outlier_filter.h>
+#include <jaco2_driver/data/gravity_estimator.h>
 
 struct KinovaJointState{
     jaco2_data::TimeStamp stamp;
@@ -77,17 +78,15 @@ public:
     /**
      * @brief estimateG estimates Gravity. Has to be called if setter are used
      */
+
     void estimateG();
 
 private:
-    void estimateG(double x, double y, double z);
     void applyCalibration();
-
 
 private:
     bool use_outlier_fiter_;
-    std::size_t buffer_size_;
-    std::deque<Eigen::Vector3d> g_buffer_;
+    GravityEstimator gravity_;
     jaco2_data::ExtendedJointStateData current_state_;
     std::vector<bool> calibrate_acc_;
     std::vector<Jaco2Calibration::AccelerometerCalibrationParam> accCalibParam_;

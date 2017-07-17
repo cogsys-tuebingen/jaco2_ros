@@ -5,7 +5,7 @@ using namespace jaco2_data;
 
 Jaco2JointState::Jaco2JointState()
     : use_outlier_fiter_(true),
-      buffer_size_(10)
+      current_state_(Jaco2DriverConstants::n_Jaco2Joints, Jaco2DriverConstants::n_Jaco2Joints)
 {
     calibrate_acc_.resize(Jaco2DriverConstants::n_Jaco2Joints, false);
 }
@@ -49,6 +49,7 @@ void Jaco2JointState::setAngularData(const AngularDataType type, const AngularPo
 void Jaco2JointState::setLinearData(const AngularAcceleration& accs, const jaco2_data::TimeStamp& stamp)
 {
     current_state_.lin_acc = ConvertAccelerometers::kinova2data(accs, stamp);
+    applyCalibration();
 }
 
 jaco2_data::JointStateData Jaco2JointState::getJointState() const
@@ -133,7 +134,9 @@ void Jaco2JointState::update(const KinovaJointState& data)
     current_state_.joint_state.normalize();
 
     if(use_outlier_fiter_){
-        filter_.filter(current_state_, current_state_);
+        jaco2_data::ExtendedJointStateData filtered;
+        filter_.filter(current_state_, filtered);
+        current_state_ = filtered;
     }
 
     estimateG();
@@ -158,7 +161,9 @@ void Jaco2JointState::update(const jaco2_data::TimeStamp& t,
     current_state_.joint_state.normalize();
 
     if(use_outlier_fiter_){
-        filter_.filter(current_state_, current_state_);
+        jaco2_data::ExtendedJointStateData filtered;
+        filter_.filter(current_state_, filtered);
+        current_state_ = filtered;
     }
 
     estimateG();
@@ -167,28 +172,11 @@ void Jaco2JointState::update(const jaco2_data::TimeStamp& t,
 
 void Jaco2JointState::estimateG()
 {
-    const Vector3Stamped& a0 = current_state_.lin_acc.front();
-    estimateG(a0.vector(1), a0.vector(0), a0.vector(2)); // jaco_base_link is not accelerometer frame !
+    Eigen::Vector3d g = gravity_.update(current_state_);
+    current_state_.joint_state.gravity = g;
 }
 
 
-void Jaco2JointState::estimateG(double x, double y, double z)
-{
-    Eigen::Vector3d gnew(x,y,z);
-    g_buffer_.emplace_back(gnew);
-    while(g_buffer_.size() > buffer_size_){
-        g_buffer_.pop_front();
-    }
-
-    current_state_.joint_state.gravity = Eigen::Vector3d(0,0,0);
-
-    for(auto v : g_buffer_){
-        current_state_.joint_state.gravity += v;
-    }
-
-    current_state_.joint_state.gravity *= 9.81 / g_buffer_.size();
-
-}
 
 void Jaco2JointState::applyCalibration()
 {
