@@ -38,21 +38,24 @@ void CollisionReplellingP2PController::write()
         return;
     }
 
-    auto now = std::chrono::high_resolution_clock::now();
-    auto durationLast = now - last_cmd_rep_;
-    last_cmd_rep_ = now;
-    double dt = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
-    collision_reaction_.update(dt);
+//    auto now = std::chrono::high_resolution_clock::now();
+//    auto durationLast = now - last_cmd_rep_;
+//    last_cmd_rep_ = now;
+//    double dt = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
+    collision_reaction_.update();
 
     double residual = collision_reaction_.getResidualsNorm();
 
     if(collision_reaction_.inCollision()){
-        ROS_INFO_STREAM("Repelling! collision detected: "<< residual);
-        auto cmd = collision_reaction_.velocityControlReflex();
-        reflex_controller_.setVelocity(cmd);
-        for(int i = 0; i < 4; ++i){
+        while(collision_reaction_.inCollision()){ // Republish problem?
+            ROS_WARN_STREAM("Repelling! collision detected: "<< residual);
+            auto cmd = collision_reaction_.velocityControlReflex();
+            reflex_controller_.setVelocity(cmd);
             reflex_controller_.write();
             usleep(5000);
+            state_.read();
+            collision_reaction_.update();
+            residual = collision_reaction_.getResidualsNorm();
         }
 
     }

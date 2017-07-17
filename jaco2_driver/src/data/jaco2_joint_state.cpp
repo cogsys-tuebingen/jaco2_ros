@@ -5,6 +5,7 @@ using namespace jaco2_data;
 
 Jaco2JointState::Jaco2JointState()
     : use_outlier_fiter_(true),
+      gravity_(40),
       current_state_(Jaco2DriverConstants::n_Jaco2Joints, Jaco2DriverConstants::n_Jaco2Joints)
 {
     calibrate_acc_.resize(Jaco2DriverConstants::n_Jaco2Joints, false);

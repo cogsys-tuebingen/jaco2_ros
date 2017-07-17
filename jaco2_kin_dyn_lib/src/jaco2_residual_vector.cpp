@@ -122,13 +122,13 @@ void Jaco2ResidualVector::getResidualVector(const ResidualData &data,
                                             Eigen::VectorXd& new_residual)
 {
 
-    if(data.dt < 1e-7 || data.dt > 0.1){
+    if(/*data.dt < 1e-7 || */data.dt > 0.1){
         new_integral = last_integral;
         new_residual = last_residual;
         ROS_WARN_STREAM("Time difference very small or very big: " << data.dt);
         return;
     }
-
+//    ROS_INFO_STREAM("getResidualVector dt: " << data.dt);
     Eigen::MatrixXd C;
     model_.getMatrixC(data.joint_positions,data.joint_velocities, C);
 

@@ -52,14 +52,16 @@ bool TimeStamp::operator ==(const TimeStamp& other) const
     return stamp == other.stamp;
 }
 
-double TimeStamp::substractionResultInSeconds(const TimeStamp &lhs) const
+double TimeStamp::substractionResultInSeconds(const TimeStamp &rhs) const
 {
-    auto delta = stamp - lhs.stamp;
-    double dt = std::chrono::duration_cast<std::chrono::microseconds>(delta).count()*1e-6;
+    auto delta = stamp - rhs.stamp;
+    double dt = std::chrono::duration_cast<std::chrono::nanoseconds>(delta).count()*1e-9;
     return dt;
 }
 
 double TimeStamp::timeDiffinSeconds(const TimeStamp &lhs, const TimeStamp &rhs)
 {
-    return lhs.substractionResultInSeconds(rhs);
+    auto delta = lhs.stamp - rhs.stamp;
+    double dt = std::chrono::duration_cast<std::chrono::nanoseconds>(delta).count()*1e-9;
+    return dt;
 }

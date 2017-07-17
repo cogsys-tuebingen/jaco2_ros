@@ -21,7 +21,7 @@ public:
     bool operator <=(const TimeStamp& other) const;
     bool operator ==(const TimeStamp& other) const;
 
-    double substractionResultInSeconds(const TimeStamp& lhs) const;
+    double substractionResultInSeconds(const TimeStamp& rhs) const;
 
     static double timeDiffinSeconds(const TimeStamp& lhs, const TimeStamp& rhs);
 

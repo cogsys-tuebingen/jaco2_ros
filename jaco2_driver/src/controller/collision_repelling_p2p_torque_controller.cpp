@@ -48,11 +48,11 @@ void CollisionReplellingP2PTorqueController::setConfig(jaco2_driver::jaco2_drive
 void CollisionReplellingP2PTorqueController::write()
 {
 
-    auto now = std::chrono::high_resolution_clock::now();
-    auto durationLast = now - last_cmd_rep_;
-    last_cmd_rep_ = now;
-    double dt = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
-    collision_reaction_.update(dt);
+//    auto now = std::chrono::high_resolution_clock::now();
+//    auto durationLast = now - last_cmd_rep_;
+//    last_cmd_rep_ = now;
+//    double dt = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
+    collision_reaction_.update();
 
     double residual = collision_reaction_.getResidualsNorm();
 

@@ -186,7 +186,7 @@ void JointStateOutlierFilter::removeJsOutlier(std::size_t i, std::size_t j, std:
     state.velocity.resize(nj);
     state.torque.resize(nj);
     state.acceleration.resize(nj);
-    state.stamp.fromNSec(0.5 * (js_i.stamp.toMicroSec() + js_j.stamp.toMicroSec()));
+    state.stamp.fromNSec(0.5 * (js_i.stamp.toNSec() + js_j.stamp.toNSec()));
     state.label = js_out.label;
 
     state.gravity =0.5 * (js_i.gravity + js_j.gravity);
@@ -211,7 +211,7 @@ void JointStateOutlierFilter::removeAccOutlier(std::size_t i, std::size_t j, std
 
     for(std::size_t k = 0; k < naccs; ++k){
         Vector3Stamped mean = (a_i[k] + a_j[k]) * 0.5;
-        mean.stamp.fromNSec(0.5 * (a_i[k].stamp.toMicroSec() + a_j[k].stamp.toMicroSec()));
+        mean.stamp.fromNSec(0.5 * (a_i[k].stamp.toNSec() + a_j[k].stamp.toNSec()));
         a_out[k] = mean;
     }
 }
