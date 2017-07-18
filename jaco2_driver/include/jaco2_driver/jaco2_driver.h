@@ -12,10 +12,10 @@
 #include <jaco2_msgs/JointVelocity.h>
 #include <jaco2_driver/jaco2_api.h>
 #include <jaco2_driver/joint_trajectory.h>
-#include <jaco2_driver/accelerometer_calibration.hpp>
-#include <jaco2_driver/torque_offset_lut.hpp>
-#include <jaco2_driver/gravity_params.hpp>
-#include <jaco2_driver/torque_offset_calibration.hpp>
+#include <jaco2_data/accelerometer_calibration.hpp>
+#include <jaco2_data/torque_offset_lut.hpp>
+#include <jaco2_data/gravity_params.hpp>
+#include <jaco2_data/torque_offset_calibration.hpp>
 #include <jaco2_driver/jaco2_driver_configureConfig.h>
 //Jaco2 Controller
 #include <jaco2_driver/controller/jaco2_controller.h>

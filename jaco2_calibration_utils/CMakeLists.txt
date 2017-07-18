@@ -18,7 +18,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  jaco2_driver
+  jaco2_data
   jaco2_kin_dyn_lib
   jaco2_msgs
   moveit_core
@@ -49,7 +49,7 @@ find_package(NLOPT REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES jaco2_calibration_utils
-  CATKIN_DEPENDS jaco2_driver jaco2_kin_dyn_lib jaco2_msgs roscpp sensor_msgs tf
+  CATKIN_DEPENDS jaco2_data jaco2_kin_dyn_lib jaco2_msgs roscpp sensor_msgs tf
   DEPENDS system_lib
 )
 

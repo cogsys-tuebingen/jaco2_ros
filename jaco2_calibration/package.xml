@@ -40,7 +40,7 @@
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>jaco2_driver</build_depend>
+  <build_depend>jaco2_data</build_depend>
   <build_depend>jaco2_kin_dyn_lib</build_depend>
   <build_depend>jaco2_msgs</build_depend>
   <build_depend>jaco2_calibration_utils</build_depend>
@@ -52,7 +52,7 @@
   <build_depend>moveit_ros_planning</build_depend>
   <build_depend>moveit_ros_planning_interface</build_depend>
   <build_depend>imu_tk</build_depend>
-  <run_depend>jaco2_driver</run_depend>
+  <run_depend>jaco2_data</run_depend>
   <run_depend>jaco2_kin_dyn_lib</run_depend>
   <run_depend>jaco2_msgs</run_depend>
   <run_depend>jaco2_calibration_utils</run_depend>

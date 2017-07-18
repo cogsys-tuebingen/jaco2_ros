@@ -7,10 +7,10 @@
 #include <jaco2_msgs/Jaco2JointState.h>
 #include <jaco2_msgs/Jaco2Accelerometers.h>
 #include <jaco2_driver/jaco2_driver_constants.h>
-#include <jaco2_driver/torque_offset_lut.hpp>
-#include <jaco2_driver/gravity_params.hpp>
-#include <jaco2_driver/velocity_calibration.hpp>
-#include <jaco2_driver/torque_offset_calibration.hpp>
+#include <jaco2_data/torque_offset_lut.hpp>
+#include <jaco2_data/gravity_params.hpp>
+#include <jaco2_data/velocity_calibration.hpp>
+#include <jaco2_data/torque_offset_calibration.hpp>
 #include <jaco2_msgs/Jaco2GfreeTorques.h>
 #include <jaco2_msgs_conversion/jaco2_ros_msg_conversion.h>
 

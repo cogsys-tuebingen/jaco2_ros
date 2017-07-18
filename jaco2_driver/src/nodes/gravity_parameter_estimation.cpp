@@ -1,6 +1,6 @@
 #include <ros/ros.h>
 #include <jaco2_driver/jaco2_api.h>
-#include <jaco2_driver/gravity_params.hpp>
+#include <jaco2_data/gravity_params.hpp>
 int main(int argc, char *argv[])
 {
     ros::init (argc, argv, "jaco2_gravity_parameter_estimation");

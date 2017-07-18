@@ -3,9 +3,9 @@
 
 #include <jaco2_driver/jaco2_api.h>
 #include <kinova/KinovaTypes.h>
-#include <jaco2_driver/accelerometer_calibration.hpp>
-#include <jaco2_driver/torque_offset_lut.hpp>
-#include <jaco2_driver/torque_offset_calibration.hpp>
+#include <jaco2_data/accelerometer_calibration.hpp>
+#include <jaco2_data/torque_offset_lut.hpp>
+#include <jaco2_data/torque_offset_calibration.hpp>
 #include <jaco2_driver/data/jaco2_joint_state.h>
 
 #include <deque>

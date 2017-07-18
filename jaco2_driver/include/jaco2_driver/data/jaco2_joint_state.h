@@ -11,7 +11,7 @@
 #include <sensor_msgs/JointState.h>
 /// Jaco2
 #include <jaco2_data/extended_joint_state_data.h>
-#include <jaco2_driver/accelerometer_calibration.hpp>
+#include <jaco2_data/accelerometer_calibration.hpp>
 #include <jaco2_driver/data/joint_state_outlier_filter.h>
 #include <jaco2_driver/data/gravity_estimator.h>
 
