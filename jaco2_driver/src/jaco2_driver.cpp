@@ -1,17 +1,19 @@
 #include <jaco2_driver/jaco2_driver.h>
 #include <jaco2_driver/controller/controller_factory.hpp>
 
+
 Jaco2Driver::Jaco2Driver():
+    t_(Jaco2Controller::TerminationCallback(this, &Jaco2Driver::controllerTerminated)),
     initialized_(false),
     state_(jaco_api_),
 
     active_controller_(nullptr),
 
-    position_controller_(state_, jaco_api_),
-    empty_controller_(state_,jaco_api_),
-    gripper_controller_(state_,jaco_api_),
-    gravity_comp_controller_(state_, jaco_api_),
-    torque_controller_(state_, jaco_api_),
+    position_controller_(state_, jaco_api_, t_),
+    empty_controller_(state_,jaco_api_, t_),
+    gripper_controller_(state_,jaco_api_, t_),
+    gravity_comp_controller_(state_, jaco_api_, t_),
+    torque_controller_(state_, jaco_api_, t_),
     paused_(false),
     serviceDone_(true)
 {
@@ -93,8 +95,23 @@ void Jaco2Driver::setActiveController(Jaco2Controller* controller)
     active_controller_ = controller;
     if(active_controller_){
         active_controller_->start();
+        controller_done_ = false;
+        result_ = Jaco2Controller::Result::WORKING;
     }
 
+}
+
+void Jaco2Driver::controllerTerminated(const Jaco2Controller::Result res)
+{
+    std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
+    if(res != Jaco2Controller::Result::WORKING){
+        controller_done_ = true;
+        result_ = res;
+        if(active_controller_){
+            active_controller_->stop();
+            finish();
+        }
+    }
 }
 
 void Jaco2Driver::setAngularVelocity(const AngularPosition &velocity)
@@ -143,7 +160,7 @@ void Jaco2Driver::enableGravityCompensation()
 
 void Jaco2Driver::disableGravityCompensation()
 {
-    setActiveController(nullptr);
+    gravity_comp_controller_.finishService();
 }
 
 void Jaco2Driver::finish()
@@ -246,16 +263,17 @@ void Jaco2Driver::tick()
         active_controller_->read();
         if(active_controller_)
         {
-            controller_done_ = active_controller_->isDone();
-            if(controller_done_){
-                result_ = active_controller_->getResult();
-                active_controller_->stop();
-                setActiveController(&empty_controller_);
-            }
-            else{
+//            controller_done_ = active_controller_->isDone();
+//            if(controller_done_){
+//                result_ = active_controller_->getResult();
+//                ROS_INFO_STREAM("Result: "<< result_);
+//                active_controller_->stop();
+//                setActiveController(&empty_controller_);
+//            }
+//            else{
                 active_controller_->execute();
                 usleep(U_SlEEP_TIME);
-            }
+//            }
         }
     }
     else
@@ -273,14 +291,25 @@ void Jaco2Driver::tick()
 
 }
 
-bool Jaco2Driver::reachedGoal(ControllerResult& result_type) const
+bool Jaco2Driver::controllerFinished(Jaco2Controller::Result &result_type) const
 {
-    if(active_controller_) {
-        result_type = result_;
-        return active_controller_->isDone();
-    } else {
-        return false;
-    }
+    std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
+    result_type = result_;
+    return controller_done_;
+//    if(active_controller_) {
+//        result_type = active_controller_->getResult();
+
+//        if(active_controller_->isDone() && active_controller_ == &empty_controller_ && controller_done_){
+//            result_type = result_;
+//        }
+
+//        ROS_INFO_STREAM("reachedGoal Result: "<< result_type);
+//        return active_controller_->isDone();
+//    } else {
+//        result_type = Jaco2Controller::Result::WORKING;
+//        ROS_INFO_STREAM("reachedGoal Result: "<< result_type);
+//        return false;
+//    }
 }
 
 AngularPosition Jaco2Driver::getCurrentTrajError() const
@@ -461,8 +490,9 @@ void Jaco2Driver::enableForceControl()
 
 void Jaco2Driver::setVelocityController(const std::string &type)
 {
+
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
-    velocity_controller_ = ControllerFactory::makeVelocityController(state_, jaco_api_, type);
+    velocity_controller_ = ControllerFactory::makeVelocityController(state_, jaco_api_, t_, type);
     if(!velocity_controller_){
         std::string msg = "Can not create velocity controller. Wrong Input? Valid types are: "
                 + Jaco2DriverConstants::velocity_controller + " & "
@@ -474,7 +504,7 @@ void Jaco2Driver::setVelocityController(const std::string &type)
 void Jaco2Driver::setTrajectoryController(const std::string &type)
 {
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
-    trajectory_controller_ = ControllerFactory::makeTrajectoryTrackingController(state_, jaco_api_, type);
+    trajectory_controller_ = ControllerFactory::makeTrajectoryTrackingController(state_, jaco_api_, t_, type);
     if(!trajectory_controller_){
         std::string msg = "Can not create trajactory controller. Wrong Input? Valid types are: "
                 + Jaco2DriverConstants::trajectory_p2p_velocity_controller + ", "

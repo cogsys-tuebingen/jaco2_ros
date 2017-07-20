@@ -8,7 +8,7 @@
 class TorqueController : public Jaco2Controller
 {
 public:
-    TorqueController(Jaco2State &state, Jaco2API &api);
+    TorqueController(Jaco2State &state, Jaco2API &api, TerminationCallback& t);
 
     virtual void start() override;
 

@@ -17,6 +17,7 @@
 #include <jaco2_data/gravity_params.hpp>
 #include <jaco2_data/torque_offset_calibration.hpp>
 #include <jaco2_driver/jaco2_driver_configureConfig.h>
+#include <jaco2_driver/utility/delegate.hpp>
 //Jaco2 Controller
 #include <jaco2_driver/controller/jaco2_controller.h>
 #include <jaco2_driver/controller/empty_controller.h>
@@ -30,11 +31,12 @@
 
 class Jaco2Driver
 {
+
 public:
     Jaco2Driver();
     ~Jaco2Driver();
 
-    bool reachedGoal(ControllerResult &result_type) const;
+    bool controllerFinished(Jaco2Controller::Result &result_type) const;
     bool serviceDone() const;
     bool initialize(std::string serial = std::string(""), bool right = true, bool move_home = true);
     // GET
@@ -110,7 +112,10 @@ public:
 private:
     void setActiveController(Jaco2Controller* controller);
 
+    void controllerTerminated(const Jaco2Controller::Result res);
+
 private:
+    Jaco2Controller::TerminationCallback t_;
     bool initialized_;
     bool controller_done_;
     Jaco2API jaco_api_;
@@ -118,7 +123,7 @@ private:
     std::string serial_;
     bool right_arm_;
     Jaco2Controller* active_controller_;
-    ControllerResult result_;
+    Jaco2Controller::Result result_;
     AngularPositionController position_controller_;
     EmptyController empty_controller_;
     GripperController gripper_controller_;
@@ -147,6 +152,7 @@ private:
     int setTorqueZeroResult_;
     bool paused_;
     bool serviceDone_;
+
 
 };
 

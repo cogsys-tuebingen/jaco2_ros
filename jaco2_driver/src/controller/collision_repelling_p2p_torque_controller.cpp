@@ -2,10 +2,10 @@
 #include <jaco2_driver/jaco2_driver_constants.h>
 #include <kinova/KinovaArithmetics.hpp>
 
-CollisionReplellingP2PTorqueController::CollisionReplellingP2PTorqueController(Jaco2State &state, Jaco2API &api):
-    TrajectoryTrackingController(state, api),
-    reflex_controller_(state, api),
-    tracking_controller_(state, api),
+CollisionReplellingP2PTorqueController::CollisionReplellingP2PTorqueController(Jaco2State &state, Jaco2API &api, TerminationCallback &t):
+    TrajectoryTrackingController(state, api, t),
+    reflex_controller_(state, api, t),
+    tracking_controller_(state, api, t),
     collision_reaction_(state)
 {
     collision_reaction_.setRobotModel("/robot_description", "jaco_link_base", "jaco_link_hand");

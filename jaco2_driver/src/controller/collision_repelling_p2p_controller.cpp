@@ -2,11 +2,11 @@
 #include <jaco2_driver/jaco2_driver_constants.h>
 #include <kinova/KinovaArithmetics.hpp>
 
-CollisionReplellingP2PController::CollisionReplellingP2PController(Jaco2State &state, Jaco2API &api):
-    TrajectoryTrackingController(state, api),
+CollisionReplellingP2PController::CollisionReplellingP2PController(Jaco2State &state, Jaco2API &api, TerminationCallback &t):
+    TrajectoryTrackingController(state, api, t),
     set_model_(false),
-    reflex_controller_(state, api),
-    tracking_controller_(state, api),
+    reflex_controller_(state, api, t),
+    tracking_controller_(state, api, t),
     collision_reaction_(state)
 {
     last_cmd_rep_  = std::chrono::high_resolution_clock::now();
@@ -30,7 +30,7 @@ void CollisionReplellingP2PController::setTrajectory(const JointTrajectory& traj
     collision_reaction_.resetResiduals();
     last_cmd_rep_  = std::chrono::high_resolution_clock::now();
     done_ = false;
-    result_ = ControllerResult::WORKING;
+    result_ = Result::WORKING;
 }
 
 
@@ -40,10 +40,6 @@ void CollisionReplellingP2PController::write()
         return;
     }
 
-//    auto now = std::chrono::high_resolution_clock::now();
-//    auto durationLast = now - last_cmd_rep_;
-//    last_cmd_rep_ = now;
-//    double dt = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
     collision_reaction_.update();
 
     double residual = collision_reaction_.getResidualsNorm();
@@ -61,12 +57,18 @@ void CollisionReplellingP2PController::write()
         }
 
         done_ = true;
+        tracking_controller_.stopMotion();
+        result_ = Result::COLLISION;
+        t_(result_);
         return;
     }
     else{  // for now do not use energy dissipation
         tracking_controller_.write();
         done_ = tracking_controller_.isDone();
         result_ = tracking_controller_.getResult();
+        if(done_){
+            t_(result_);
+        }
     }
 
 

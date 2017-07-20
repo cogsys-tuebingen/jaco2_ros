@@ -9,11 +9,11 @@
 class EmptyController : public Jaco2Controller
 {
 public:
-    EmptyController(Jaco2State &state, Jaco2API &api)
-        : Jaco2Controller(state, api),
+    EmptyController(Jaco2State &state, Jaco2API &api, TerminationCallback& t )
+        : Jaco2Controller(state, api, t),
           done_(true)
     {
-        result_ = ControllerResult::SUCCESS;
+        result_ = Result::SUCCESS;
     }
 
     virtual void write() override

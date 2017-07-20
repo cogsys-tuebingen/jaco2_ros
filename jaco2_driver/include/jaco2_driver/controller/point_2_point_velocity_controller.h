@@ -7,7 +7,7 @@
 class Point2PointVelocityController : public TrajectoryTrackingController
 {
 public:
-    Point2PointVelocityController(Jaco2State &state, Jaco2API& api);
+    Point2PointVelocityController(Jaco2State &state, Jaco2API& api, TerminationCallback &t);
 
     virtual void write() override;
     virtual void start() override;

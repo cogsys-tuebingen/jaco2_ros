@@ -1,8 +1,8 @@
 #include <jaco2_driver/controller/point_2_point_velocity_controller.h>
 #include <math.h>
 
-Point2PointVelocityController::Point2PointVelocityController(Jaco2State &state, Jaco2API& api)
-    : TrajectoryTrackingController(state, api)
+Point2PointVelocityController::Point2PointVelocityController(Jaco2State &state, Jaco2API& api, TerminationCallback& t )
+    : TrajectoryTrackingController(state, api, t)
 {
     tp_.InitStruct();
     tp_.Position.Type = ANGULAR_VELOCITY;
@@ -31,7 +31,7 @@ void Point2PointVelocityController::setTrajectory(const JointTrajectory &traject
     done_ = false;
     start_command_ = std::chrono::high_resolution_clock::now();
     last_command_ = start_command_;
-    result_ = ControllerResult::WORKING;
+    result_ = Result::WORKING;
 }
 
 void Point2PointVelocityController::write()
@@ -56,9 +56,9 @@ void Point2PointVelocityController::write()
             stopMotion();
             trajectoryWrapper_.evaluationOutput();
 
-            result_ = ControllerResult::SUCCESS;
-
+            result_ = Result::SUCCESS;
             trajectoryWrapper_.clear();
+            t_(result_);
 
             return;
         }
@@ -91,7 +91,7 @@ void Point2PointVelocityController::stopMotion()
     tp_.InitStruct();
     tp_.Position.Type = ANGULAR_VELOCITY;
     for(int i = 0; i < 2; ++i){
-        api_.setAngularVelocity(cmd_);
+        api_.setAngularVelocity(tp_);
         usleep(5000);
     }
 }

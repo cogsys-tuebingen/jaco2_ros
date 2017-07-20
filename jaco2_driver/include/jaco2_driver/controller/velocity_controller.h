@@ -9,8 +9,8 @@ using namespace KinovaArithmetics;
 class VelocityController : public Jaco2Controller
 {
 public:
-    VelocityController(Jaco2State &state, Jaco2API &api)
-        : Jaco2Controller(state, api),
+    VelocityController(Jaco2State &state, Jaco2API &api, TerminationCallback& t)
+        : Jaco2Controller(state, api, t),
           //          last_command_(std::time(nullptr)),
           last_command_(std::chrono::high_resolution_clock::now()),
           kp_(1.2),
@@ -47,7 +47,7 @@ public:
 
         last_command_ = std::chrono::high_resolution_clock::now();
         done_ = false;
-        result_ = ControllerResult::WORKING;
+        result_ = Result::WORKING;
     }
 
     void setGains(double p, double i, double d)
@@ -92,9 +92,10 @@ public:
             last_diff_.InitStruct();
             counter_ = 0;
             done_ = true;
-            result_ = ControllerResult::SUCCESS;
+            result_ = Result::SUCCESS;
             desired_.Position.InitStruct();
             desired_.Position.Type = ANGULAR_VELOCITY;
+            t_(result_);
             return;
         }
         else if(desired_.Position.HandMode == HAND_NOMOVEMENT && sum > 0.01){

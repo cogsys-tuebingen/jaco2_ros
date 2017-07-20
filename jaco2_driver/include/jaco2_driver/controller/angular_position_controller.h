@@ -7,8 +7,8 @@
 class AngularPositionController : public Jaco2Controller
 {
 public:
-    AngularPositionController(Jaco2State &state, Jaco2API &api)
-        : Jaco2Controller(state, api),
+    AngularPositionController(Jaco2State &state, Jaco2API &api, TerminationCallback& t)
+        : Jaco2Controller(state, api, t),
           moveToAngularPos_(false),
           reachedAngularPos_(false),
           handMode_(false),
@@ -35,7 +35,7 @@ public:
         tp_.Position.HandMode = HAND_NOMOVEMENT;
         reachedAngularPos_ = false;
         moveToAngularPos_ = false;
-        result_ = ControllerResult::WORKING;
+        result_ = Result::WORKING;
     }
 
     void setFingerPosition(const TrajectoryPoint& tp)
@@ -62,7 +62,8 @@ public:
         if(reachedAngularPos_)
         {
             moveToAngularPos_ = false;
-            result_ = ControllerResult::SUCCESS;
+            result_ = Result::SUCCESS;
+            t_(result_);
         }
         counter_ = (counter_ + 1) % 10;
 

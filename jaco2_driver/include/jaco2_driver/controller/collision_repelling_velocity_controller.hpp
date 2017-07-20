@@ -6,8 +6,8 @@
 class CollisionRepellingVelocityController : public VelocityController
 {
 public:
-    CollisionRepellingVelocityController(Jaco2State &state, Jaco2API &api)
-        : VelocityController(state, api),
+    CollisionRepellingVelocityController(Jaco2State &state, Jaco2API &api, TerminationCallback& t)
+        : VelocityController(state, api, t),
           set_model_(false),
           collision_reaction_(state)
     {
@@ -21,6 +21,7 @@ public:
             VelocityController::setVelocity(tp);
             last_cmd_rep_  = std::chrono::high_resolution_clock::now();
             done_ = false;
+            result_ = Result::WORKING;
         }
     }
 
@@ -29,7 +30,6 @@ public:
         VelocityController::setConfig(cfg);
         collision_reaction_.setConfig(cfg);
         set_model_ = true;
-        result_ = ControllerResult::WORKING;
     }
 
     virtual void write() override

@@ -325,7 +325,7 @@ bool Jaco2DriverNode::tick()
     publishJointState();
     publishJointAngles();
     publishSensorInfo();
-    ControllerResult c_res;
+    Jaco2Controller::Result c_res;
     if(actionAngleServerRunning_)
     {
         jaco2_msgs::ArmJointAnglesFeedback feedback;
@@ -333,7 +333,7 @@ bool Jaco2DriverNode::tick()
         AngularPosition angles = driver_.getAngularPosition();
         DataConversion::convert(angles,feedback.angles);
         actionAngleServer_.publishFeedback(feedback);
-        if(driver_.reachedGoal(c_res))
+        if(driver_.controllerFinished(c_res))
         {
             actionAngleServerRunning_ = false;
             result.val = jaco2_msgs::ArmJointAnglesResult::SUCCESSFUL;
@@ -346,7 +346,7 @@ bool Jaco2DriverNode::tick()
             actionAngleServerRunning_ = false;
             actionAngleServer_.setPreempted();
             ROS_INFO_STREAM("Preempt!!!");
-            driver_.finish();
+//            driver_.finish();
         }
     }
     if(blockingAngleServer_.isActive())
@@ -356,17 +356,17 @@ bool Jaco2DriverNode::tick()
         AngularPosition angles = driver_.getAngularPosition();
         DataConversion::convert(angles,feedback.angles);
         blockingAngleServer_.publishFeedback(feedback);
-        if(driver_.reachedGoal(c_res))
+        if(driver_.controllerFinished(c_res))
         {
             result.val = jaco2_msgs::ArmJointAnglesResult::SUCCESSFUL;
             blockingAngleServer_.setSucceeded(result);
-            driver_.finish();
+//            driver_.finish();
 
         } else if(blockingAngleServer_.isPreemptRequested() )
         {
             result.val = jaco2_msgs::ArmJointAnglesResult::PREEMPT;
             blockingAngleServer_.setPreempted();
-
+            ROS_INFO_STREAM("Preempt!!!");
             driver_.finish();
         }
     }
@@ -379,17 +379,20 @@ bool Jaco2DriverNode::tick()
         angles = driver_.getCurrentTrajError();
         DataConversion::convert(angles,feedback.error.positions);
         trajServer_.publishFeedback(feedback);
-        if(driver_.reachedGoal(c_res))
+        if(driver_.controllerFinished(c_res))
         {
+            ROS_INFO_STREAM("trajServer result " << c_res);
             switch (c_res) {
-            case ControllerResult::SUCCESS:
+            case Jaco2Controller::Result::SUCCESS:{
                 result.error_code = control_msgs::FollowJointTrajectoryResult::SUCCESSFUL;
+                result.error_string = "Success, goal reached.";
                 break;
-            case ControllerResult::COLLISION:{
+            }
+            case Jaco2Controller::Result::COLLISION:{
                 result.error_code = control_msgs::FollowJointTrajectoryResult::INVALID_GOAL;
                 result.error_string = "Trajectory lead to collision";
-            }
                 break;
+            }
             default:
                 result.error_code = control_msgs::FollowJointTrajectoryResult::PATH_TOLERANCE_VIOLATED;
                 break;
@@ -397,14 +400,13 @@ bool Jaco2DriverNode::tick()
             trajServerRunning_ = false;
             trajServer_.setSucceeded(result);
 
-            driver_.finish();
 
         } else if(actionAngleServer_.isPreemptRequested() )
         {
             result.error_code = control_msgs::FollowJointTrajectoryResult::INVALID_GOAL;
             trajServerRunning_ = false;
             trajServer_.setPreempted();
-
+            ROS_INFO_STREAM("Preempt!!!");
             driver_.finish();
         }
     }
@@ -412,12 +414,11 @@ bool Jaco2DriverNode::tick()
     {
         //        jaco2_msgs::GripperControlFeedback feedback; // TODO
         jaco2_msgs::GripperControlResult result;
-        if(driver_.reachedGoal(c_res))
+        if(driver_.controllerFinished(c_res))
         {
             result.val = jaco2_msgs::GripperControlResult::SUCCESSFUL;
             gripperServerRunning_ = false;
             graspServer_.setSucceeded(result);
-            driver_.finish();
         }
         else if(graspServer_.isPreemptRequested())
         {
@@ -436,18 +437,18 @@ bool Jaco2DriverNode::tick()
         feedback.fingers.finger2 = pos.Fingers.Finger2;
         feedback.fingers.finger3 = pos.Fingers.Finger3;
         fingerServer_.publishFeedback(feedback);
-        if(driver_.reachedGoal(c_res))
+        if(driver_.controllerFinished(c_res))
         {
             result.error_code = jaco2_msgs::SetFingersPositionResult::SUCCESS;
             fingerServerRunning_ = false;
             fingerServer_.setSucceeded(result);
-            driver_.finish();
         }
         else if(fingerServer_.isPreemptRequested())
         {
             result.error_code = jaco2_msgs::SetFingersPositionResult::PREMPTED;
             fingerServerRunning_ = false;
             fingerServer_.setSucceeded(result);
+            ROS_INFO_STREAM("Preempt!!!");
             driver_.finish();
         }
     }
