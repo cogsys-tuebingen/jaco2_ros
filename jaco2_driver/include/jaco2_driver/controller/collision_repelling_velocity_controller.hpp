@@ -20,6 +20,7 @@ public:
 //            collision_reaction_.resetResiduals();
             VelocityController::setVelocity(tp);
             last_cmd_rep_  = std::chrono::high_resolution_clock::now();
+            done_ = false;
         }
     }
 

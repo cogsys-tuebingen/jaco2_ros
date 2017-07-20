@@ -20,6 +20,7 @@ Point2PointVelocityController::Point2PointVelocityController(Jaco2State &state, 
 
 void Point2PointVelocityController::start()
 {
+    api_.disableTorque();
 }
 
 
@@ -52,9 +53,13 @@ void Point2PointVelocityController::write()
             done_ = true;
             // publish zero velocity
             tp_.InitStruct();
-            tp_.Position.Type = ANGULAR_VELOCITY;
-            api_.setAngularVelocity(tp_);
+            for(int i = 0; i < 2; ++ i){
+                tp_.Position.Type = ANGULAR_VELOCITY;
+                api_.setAngularVelocity(tp_);
+                usleep(5000);
+            }
             trajectoryWrapper_.evaluationOutput();
+            trajectoryWrapper_.clear();
             return;
         }
     }
