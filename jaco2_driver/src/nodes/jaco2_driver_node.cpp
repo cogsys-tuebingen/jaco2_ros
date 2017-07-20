@@ -301,7 +301,7 @@ bool Jaco2DriverNode::admittanceControlCallback(std_srvs::SetBool::Request &req,
 {
     if(req.data){
         driver_.enableForceControl();
-        res.message = "Admittance control aktive.";
+        res.message = "Admittance control active.";
     }
     else{
         driver_.disableForceControl();
