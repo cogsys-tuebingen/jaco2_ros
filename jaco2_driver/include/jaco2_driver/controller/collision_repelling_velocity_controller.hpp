@@ -20,6 +20,7 @@ public:
 //            collision_reaction_.resetResiduals();
             VelocityController::setVelocity(tp);
             last_cmd_rep_  = std::chrono::high_resolution_clock::now();
+            done_ = false;
         }
     }
 
@@ -36,11 +37,6 @@ public:
         if(!set_model_){
             return;
         }
-//        auto now = std::chrono::high_resolution_clock::now();
-//        auto durationLast = now - last_cmd_rep_;
-//        last_cmd_rep_ = now;
-//        double dt = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
-//        collision_reaction_.update(dt);
         collision_reaction_.update();
 
         double residual = collision_reaction_.getResidualsNorm();
@@ -56,9 +52,6 @@ public:
                     VelocityController::write();
                     usleep(5000);
                 state_.read();
-//                now = std::chrono::high_resolution_clock::now();
-//                last_cmd_rep_ = now;
-//                dt = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
 
                 collision_reaction_.update();
                 residual = collision_reaction_.getResidualsNorm();

@@ -9,14 +9,11 @@ P2PJointTrajactoryControllerHelper::P2PJointTrajactoryControllerHelper():
 
 void P2PJointTrajactoryControllerHelper::setTrajectory(const JointTrajectory& trajectory)
 {
+    clear();
     trajectory_ = trajectory;
-    paramsConst_.clear();
     paramsConst_.resize(trajectory_.size());
-    paramsLinear_.clear();
     paramsLinear_.resize(trajectory_.size());
-    paramsSquare_.clear();
     paramsSquare_.resize(trajectory_.size());
-    paramsCube_.clear();
     paramsCube_.resize(trajectory_.size());
     timeDiff_.resize(trajectory_.size());
     posDiff_.resize(trajectory_.size());
@@ -52,6 +49,17 @@ void P2PJointTrajactoryControllerHelper::setTrajectory(const JointTrajectory& tr
 
 }
 
+void P2PJointTrajactoryControllerHelper::clear()
+{
+    paramsConst_.clear();
+    paramsLinear_.clear();
+    paramsSquare_.clear();
+    paramsCube_.clear();
+    posDiff_.clear();
+    timeDiff_.clear();
+    trajectory_.clear();
+}
+
 void P2PJointTrajactoryControllerHelper::setPositionDifference(const AngularInfo &current_position)
 {
     ManipulatorInfo diff = diffTrajectoryPoint(current_position);
@@ -81,6 +89,7 @@ double P2PJointTrajactoryControllerHelper::jointPosition(const double dt, const 
             0.5*paramsSquare_[current_point_][joint] * dt2 +
             paramsCube_[current_point_][joint]/3.0 * dt3 ;
 }
+
 
 
 AngularInfo P2PJointTrajactoryControllerHelper::getJointError() const

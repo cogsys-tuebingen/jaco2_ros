@@ -509,13 +509,13 @@ void Jaco2API::startForceControl()
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     int res = StartForceControl();
-    std::cout << res << std::endl;
+    std::cout <<  "stop force control " << res << std::endl;
 }
 
 void Jaco2API::stopForceControl()
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     int res = StopForceControl();
-    std::cout << res << std::endl;
+    std::cout << "stop force control " << res << std::endl;
 }
 

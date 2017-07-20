@@ -87,8 +87,7 @@ public:
 
         if(samplingPeriod_ > 0.05)
         {
-            cmd_.InitStruct();
-            cmd_.Position.Type = ANGULAR_VELOCITY;
+            stopMotion();
             esum_.InitStruct();
             last_diff_.InitStruct();
             counter_ = 0;
@@ -96,6 +95,7 @@ public:
             result_ = ControllerResult::SUCCESS;
             desired_.Position.InitStruct();
             desired_.Position.Type = ANGULAR_VELOCITY;
+            return;
         }
         else if(desired_.Position.HandMode == HAND_NOMOVEMENT && sum > 0.01){
             auto vel = pidControl();
@@ -114,6 +114,17 @@ public:
     {
         return done_;
     }
+
+    void stopMotion()
+    {
+        cmd_.InitStruct();
+        cmd_.Position.Type = ANGULAR_VELOCITY;
+        for(int i = 0; i < 2; ++i){
+            api_.setAngularVelocity(cmd_);
+            usleep(5000);
+        }
+    }
+
 private:
     AngularInfo pidControl()
     {

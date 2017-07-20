@@ -20,6 +20,7 @@ public:
     void setGainI(const ManipulatorInfo &gains);
     void setGainD(const ManipulatorInfo &gains);
     void setConfig(jaco2_driver::jaco2_driver_configureConfig &cfg) override;
+    void stopMotion();
 
 protected:
     void pidController(const double dt);
