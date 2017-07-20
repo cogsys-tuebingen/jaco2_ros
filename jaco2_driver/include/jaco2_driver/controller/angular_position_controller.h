@@ -35,6 +35,7 @@ public:
         tp_.Position.HandMode = HAND_NOMOVEMENT;
         reachedAngularPos_ = false;
         moveToAngularPos_ = false;
+        result_ = ControllerResult::WORKING;
     }
 
     void setFingerPosition(const TrajectoryPoint& tp)
@@ -61,6 +62,7 @@ public:
         if(reachedAngularPos_)
         {
             moveToAngularPos_ = false;
+            result_ = ControllerResult::SUCCESS;
         }
         counter_ = (counter_ + 1) % 10;
 

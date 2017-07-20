@@ -13,6 +13,7 @@ public:
         : Jaco2Controller(state, api),
           done_(true)
     {
+        result_ = ControllerResult::SUCCESS;
     }
 
     virtual void write() override

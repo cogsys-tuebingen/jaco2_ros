@@ -30,6 +30,7 @@ void Point2PointVelocityController::setTrajectory(const JointTrajectory &traject
     done_ = false;
     start_command_ = std::chrono::high_resolution_clock::now();
     last_command_ = start_command_;
+    result_ = ControllerResult::WORKING;
 }
 
 void Point2PointVelocityController::write()
@@ -55,6 +56,7 @@ void Point2PointVelocityController::write()
             tp_.Position.Type = ANGULAR_VELOCITY;
             api_.setAngularVelocity(tp_);
             trajectoryWrapper_.evaluationOutput();
+            result_ = ControllerResult::SUCCESS;
             return;
         }
     }

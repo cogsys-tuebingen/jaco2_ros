@@ -35,6 +35,7 @@ void GripperController::grabObj(const bool& useFinger1, const bool& useFinger2, 
     counter_ = 1;
     lastPosition_ = state_.getAngularPosition();
     done_ = false;
+    result_ = ControllerResult::WORKING;
     last_command_ = std::chrono::high_resolution_clock::now();
 }
 
@@ -74,6 +75,7 @@ void GripperController::write()
           tp_.Position.Fingers.Finger3 = 0;
           api_.setAngularVelocity(tp_);
 //          std::cout << "done" << std::endl;
+          result_ = ControllerResult::SUCCESS;
           return;
     }
     else{

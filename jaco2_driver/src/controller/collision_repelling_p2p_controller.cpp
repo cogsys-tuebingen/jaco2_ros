@@ -29,6 +29,7 @@ void CollisionReplellingP2PController::setTrajectory(const JointTrajectory& traj
     tracking_controller_.setTrajectory(trajectory);
     collision_reaction_.resetResiduals();
     last_cmd_rep_  = std::chrono::high_resolution_clock::now();
+    result_ = ControllerResult::WORKING;
 }
 
 
@@ -61,6 +62,7 @@ void CollisionReplellingP2PController::write()
     }
     else{  // for now do not use energy dissipation
         tracking_controller_.write();
+        result_ = tracking_controller_.getResult();
     }
 
 

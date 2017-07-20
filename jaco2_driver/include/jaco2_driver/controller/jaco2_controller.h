@@ -5,6 +5,12 @@
 #include <jaco2_driver/jaco2_api.h>
 #include <jaco2_driver/jaco2_state.h>
 #include <jaco2_driver/jaco2_driver_configureConfig.h>
+enum ControllerResult{
+    WORKING = 1,
+    SUCCESS = 0,
+    UNKNOWN_FAILURE = -1,
+    COLLISION = -2
+};
 
 class Jaco2Controller
 {
@@ -31,6 +37,12 @@ public:
 
     }
 
+    virtual ControllerResult getResult() const
+    {
+        return result_;
+    }
+
+
     virtual void setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg) = 0;
 
 protected:
@@ -47,6 +59,7 @@ protected:
     Jaco2State &state_;
     Jaco2API &api_;
     bool done_;
+    ControllerResult result_;
 };
 #endif // JACO2_CONTROLLER_H
 

@@ -246,7 +246,9 @@ void Jaco2Driver::tick()
         active_controller_->read();
         if(active_controller_)
         {
-            if(active_controller_->isDone()){
+            controller_done_ = active_controller_->isDone();
+            if(controller_done_){
+                result_ = active_controller_->getResult();
                 active_controller_->stop();
                 setActiveController(&empty_controller_);
             }
@@ -271,9 +273,10 @@ void Jaco2Driver::tick()
 
 }
 
-bool Jaco2Driver::reachedGoal() const
+bool Jaco2Driver::reachedGoal(ControllerResult& result_type) const
 {
     if(active_controller_) {
+        result_type = result_;
         return active_controller_->isDone();
     } else {
         return false;

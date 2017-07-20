@@ -28,6 +28,7 @@ public:
         VelocityController::setConfig(cfg);
         collision_reaction_.setConfig(cfg);
         set_model_ = true;
+        result_ = ControllerResult::WORKING;
     }
 
     virtual void write() override

@@ -47,6 +47,7 @@ public:
 
         last_command_ = std::chrono::high_resolution_clock::now();
         done_ = false;
+        result_ = ControllerResult::WORKING;
     }
 
     void setGains(double p, double i, double d)
@@ -92,6 +93,7 @@ public:
             last_diff_.InitStruct();
             counter_ = 0;
             done_ = true;
+            result_ = ControllerResult::SUCCESS;
             desired_.Position.InitStruct();
             desired_.Position.Type = ANGULAR_VELOCITY;
         }

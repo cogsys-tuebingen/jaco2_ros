@@ -34,7 +34,7 @@ public:
     Jaco2Driver();
     ~Jaco2Driver();
 
-    bool reachedGoal() const;
+    bool reachedGoal(ControllerResult &result_type) const;
     bool serviceDone() const;
     bool initialize(std::string serial = std::string(""), bool right = true, bool move_home = true);
     // GET
@@ -112,14 +112,13 @@ private:
 
 private:
     bool initialized_;
+    bool controller_done_;
     Jaco2API jaco_api_;
 
     std::string serial_;
     bool right_arm_;
     Jaco2Controller* active_controller_;
-
-
-
+    ControllerResult result_;
     AngularPositionController position_controller_;
     EmptyController empty_controller_;
     GripperController gripper_controller_;
@@ -128,10 +127,6 @@ private:
     // Variable Controller
     std::shared_ptr<VelocityController> velocity_controller_;
     std::shared_ptr<TrajectoryTrackingController> trajectory_controller_;
-
-    std::vector<double> jointAngles_;
-    std::vector<double> jointVelocities_;
-    std::vector<double> jointEffort_;
 
     QuickStatus quickStatus_;
 

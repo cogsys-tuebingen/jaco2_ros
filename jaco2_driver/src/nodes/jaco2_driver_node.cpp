@@ -325,6 +325,7 @@ bool Jaco2DriverNode::tick()
     publishJointState();
     publishJointAngles();
     publishSensorInfo();
+    ControllerResult c_res;
     if(actionAngleServerRunning_)
     {
         jaco2_msgs::ArmJointAnglesFeedback feedback;
@@ -332,7 +333,7 @@ bool Jaco2DriverNode::tick()
         AngularPosition angles = driver_.getAngularPosition();
         DataConversion::convert(angles,feedback.angles);
         actionAngleServer_.publishFeedback(feedback);
-        if(driver_.reachedGoal())
+        if(driver_.reachedGoal(c_res))
         {
             actionAngleServerRunning_ = false;
             result.val = jaco2_msgs::ArmJointAnglesResult::SUCCESSFUL;
@@ -355,7 +356,7 @@ bool Jaco2DriverNode::tick()
         AngularPosition angles = driver_.getAngularPosition();
         DataConversion::convert(angles,feedback.angles);
         blockingAngleServer_.publishFeedback(feedback);
-        if(driver_.reachedGoal())
+        if(driver_.reachedGoal(c_res))
         {
             result.val = jaco2_msgs::ArmJointAnglesResult::SUCCESSFUL;
             blockingAngleServer_.setSucceeded(result);
@@ -378,9 +379,21 @@ bool Jaco2DriverNode::tick()
         angles = driver_.getCurrentTrajError();
         DataConversion::convert(angles,feedback.error.positions);
         trajServer_.publishFeedback(feedback);
-        if(driver_.reachedGoal())
+        if(driver_.reachedGoal(c_res))
         {
-            result.error_code = control_msgs::FollowJointTrajectoryResult::SUCCESSFUL;
+            switch (c_res) {
+            case ControllerResult::SUCCESS:
+                result.error_code = control_msgs::FollowJointTrajectoryResult::SUCCESSFUL;
+                break;
+            case ControllerResult::COLLISION:{
+                result.error_code = control_msgs::FollowJointTrajectoryResult::INVALID_GOAL;
+                result.error_string = "Trajectory lead to collision";
+            }
+                break;
+            default:
+                result.error_code = control_msgs::FollowJointTrajectoryResult::PATH_TOLERANCE_VIOLATED;
+                break;
+            }
             trajServerRunning_ = false;
             trajServer_.setSucceeded(result);
 
@@ -399,7 +412,7 @@ bool Jaco2DriverNode::tick()
     {
         //        jaco2_msgs::GripperControlFeedback feedback; // TODO
         jaco2_msgs::GripperControlResult result;
-        if(driver_.reachedGoal())
+        if(driver_.reachedGoal(c_res))
         {
             result.val = jaco2_msgs::GripperControlResult::SUCCESSFUL;
             gripperServerRunning_ = false;
@@ -423,7 +436,7 @@ bool Jaco2DriverNode::tick()
         feedback.fingers.finger2 = pos.Fingers.Finger2;
         feedback.fingers.finger3 = pos.Fingers.Finger3;
         fingerServer_.publishFeedback(feedback);
-        if(driver_.reachedGoal())
+        if(driver_.reachedGoal(c_res))
         {
             result.error_code = jaco2_msgs::SetFingersPositionResult::SUCCESS;
             fingerServerRunning_ = false;

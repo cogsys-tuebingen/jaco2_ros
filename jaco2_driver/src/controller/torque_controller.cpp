@@ -95,6 +95,7 @@ void TorqueController::setTorque(const AngularPosition& tp)
     api_.enableDirectTorqueMode(1.0);
 
     done_ = false;
+    result_ = ControllerResult::WORKING;
     //    std::cout << "new target." << std::endl;
 }
 

@@ -14,6 +14,7 @@ void TorqueTrajectoryController::setTrajectory(const JointTrajectory& trajectory
 {
     api_.enableDirectTorqueMode(1.0,0.5);
     trajectoryWrapper_.setTrajectory(trajectory);
+    result_ = ControllerResult::WORKING;
 }
 
 
@@ -53,6 +54,7 @@ void TorqueTrajectoryController::write()
             trajectoryWrapper_.evaluationOutput();
             //            api_.setAngularTorque(tp_.Position.Actuators);
             api_.disableTorque();
+            result_ = ControllerResult::SUCCESS;
             return;
         }
     }
