@@ -6,6 +6,7 @@
 class StaticDataGenerator
 {
 public:
+
     StaticDataGenerator();
     void generateData(std::size_t depth);
 
@@ -20,6 +21,8 @@ private:
     std::size_t steps_;
     std::vector<double> upper_limits_;
     std::vector<double> lower_limits_;
+    static const std::size_t steps = 5;
+    static const std::size_t n_joints = 6;
 };
 
 #endif // STATIC_DATA_GENERATOR_H

@@ -1,4 +1,5 @@
 #include "static_data_generator.h"
+#include "tree.hpp"
 
 StaticDataGenerator::StaticDataGenerator():
     depth_(1),
@@ -10,37 +11,20 @@ StaticDataGenerator::StaticDataGenerator():
 
 void StaticDataGenerator::generateData(std::size_t depth)
 {
-    depth_ = depth;
-    steps_ = 1;
-    while(run_ <= depth_)
-    {
-        for(int i = 0; i <= steps; ++i)
-        {
+    Node<n_joints, steps> tree;
+//    int steps = 5;
 
-            for(int j = 0; j <= n_joints_; ++j)
-            {
-                angles[j] = lower_limits_[j] + (double)i*(upper_limits_[j] - lower_limits_[j])/double(steps);
-                for(int j = 0; j <= steps; ++j)
-                {
-                    angles[2] = lowerLimits_[1] + (double)j*(upperLimits_[1] - lowerLimits_[1])/double(steps);
-                    for(int k = 0; k <= steps; ++k)
-                    {
+    std::vector<std::vector<int>> index = Node<n_joints, steps>::getIndeces(tree);
+    std::vector<double> goal(6,0);
+    for(auto id : index){
+        for(std::size_t i = 0; i < 6; ++i){
+            goal[i] = lower_limits_[i] + (double)id[i]*(upper_limits_[i] - lower_limits_[i])/double(steps);
 
-                    }
-                }
-
-            }
         }
-        steps_ *= 2;
+        //TODO everything else
     }
+
 }
 
 
-void StaticDataGenerator::genData(std::size_t nj)
-{
-    if(nj = n_joints_ -1){
-        for(int n = 0; n < steps_; ++ n ){
-            angles[nj] = lowerLimits_[1] + (double)j*(upperLimits_[1] - lowerLimits_[1])/double(steps);
-        }
-    }
-}
+

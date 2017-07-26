@@ -73,9 +73,9 @@ add_library(jaco2_calibration_utils
     include/jaco2_calibration_utils/dynamic_calibration_sample.hpp
     include/jaco2_calibration_utils/acceleration_samples.hpp
     include/jaco2_calibration_utils/dynamic_calibrated_parameters.hpp
-#    include/jaco2_calibration_utils/torque_offset_lut.hpp
     src/dynamic_residual.cpp
     src/jaco2_calibration_io.cpp
+    src/static_data_generator.cpp
     ${ALL_HEADERS}
 )
 
