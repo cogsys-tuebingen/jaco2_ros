@@ -105,6 +105,9 @@ public:
 //            std::cout << "controller command vel: " << KinovaArithmetics::to_string(cmd_.Position.Actuators ) <<std::endl;
 
         }
+        else if(desired_.Position.HandMode == VELOCITY_MODE){
+            cmd_ = desired_;
+        }
 //        std::cout << "desired vel: "<< desired_.Position.Actuators.Actuator6 <<std::endl;
 //        std::cout << "cmd vel: "<< cmd_.Position.Actuators.Actuator6 <<std::endl;
         api_.setAngularVelocity(cmd_);
