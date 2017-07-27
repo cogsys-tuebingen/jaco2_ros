@@ -114,3 +114,13 @@ jaco2_data::AccelerometerData AccelerometerConversion::ros2data(const Jaco2Accel
     }
     return res;
 }
+
+jaco2_msgs::JointAngles JointAngleConversion::data2ros(const jaco2_data::JointAngles &data)
+{
+
+}
+
+jaco2_data::JointAngles JointAngleConversion::ros2data(const JointAngles &data)
+{
+
+}

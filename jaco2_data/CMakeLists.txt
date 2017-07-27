@@ -39,6 +39,7 @@ add_library(${PROJECT_NAME}
    src/vector3stamped.cpp
    src/time_stamp.cpp
    src/extended_joint_state_data.cpp
+   src/joint_angles.cpp
    )
 
 ## Add cmake target dependencies of the library
