@@ -1,27 +1,31 @@
 #include <jaco2_data/joint_angles.h>
-
+#include <math.h>
 using namespace jaco2_data;
 
-iterator JointAngles::begin();
-const_iterator begin() const;
+JointAngles::JointAngles()
+    : normalized_(false)
+{
 
-iterator end();
-const_iterator end() const;
+}
 
-double& at(std::size_t i);
-const double& at(std::size_t i) const;
+JointAngles JointAngles::normalize() const
+{
+    JointAngles res;
+    res.normalized_ = true;
+    for(auto val : data){
+        res.emplace_back(normalize(val));
+    }
+    return res;
+}
 
-double& operator[](std::size_t i);
-const double& operator [](std::size_t i) const;
-
-double& front();
-const double& front() const;
-
-double& back();
-const double& back() const;
-
-std::size_t size() const;
-void resize(std::size_t n, double val = 0);
-
-void emplace_back(double&& val);
-void push_back(const double& val);
+double JointAngles::normalize(double angle)
+{
+    double result = angle;
+    while(result < -M_PI){
+        result += 2.0 * M_PI;
+    }
+    while(result > M_PI){
+        result -= 2.0 * M_PI;
+    }
+    return result;
+}

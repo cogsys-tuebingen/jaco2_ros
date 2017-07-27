@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   jaco2_data
   jaco2_kin_dyn_lib
   jaco2_msgs
+  jaco2_msgs_conversion
   moveit_core
   moveit_msgs
   moveit_ros_planning

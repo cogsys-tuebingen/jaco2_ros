@@ -40,6 +40,7 @@ add_library(${PROJECT_NAME}
    src/time_stamp.cpp
    src/extended_joint_state_data.cpp
    src/joint_angles.cpp
+   src/joint_data.cpp
    )
 
 ## Add cmake target dependencies of the library
