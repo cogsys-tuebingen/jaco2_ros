@@ -5,7 +5,7 @@ using namespace jaco2_data;
 
 StaticDataGenerator::StaticDataGenerator(ros::NodeHandle &nh):
     nh_(nh),
-    buffer_length_(20),
+    buffer_length_(40),
     group_("manipulator")
 {
     group_.setPlannerId("RRTkConfigDefault");
@@ -35,6 +35,8 @@ void StaticDataGenerator::generateData(std::size_t depth)
 
     std::vector<std::vector<int>> index = Node<n_joints, steps>::getIndeces(tree);
     std::vector<double> goal(6,0);
+    std::size_t n_points = index.size();
+    std::size_t run = 0;
     for(auto id : index){
         for(std::size_t i = 0; i < 6; ++i){
             goal[i] = lower_limits_[i] + (double)id[i]*(upper_limits_[i] - lower_limits_[i])/double(steps);
@@ -51,10 +53,23 @@ void StaticDataGenerator::generateData(std::size_t depth)
 
             success = group_.move();
         }
+        ROS_INFO_STREAM("Progress: " << run/((float) n_points) * 100 << "%");
+        ++run;
 
-        //TODO everything else
+        saveStaticData();
     }
 
+    bag_.close();
+
+}
+
+void StaticDataGenerator::saveStaticData()
+{
+    //TODO everything else
+    ros::Duration d(1);
+    ros::Rate r(30);
+//    std::vector<
+//    for()
 }
 
 void StaticDataGenerator::anglesCb(const jaco2_msgs::JointAnglesConstPtr& msg)

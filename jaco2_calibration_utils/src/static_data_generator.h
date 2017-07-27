@@ -21,7 +21,6 @@
 class StaticDataGenerator
 {
 public:
-
     StaticDataGenerator(ros::NodeHandle& nh);
     void generateData(std::size_t depth);
 
@@ -35,6 +34,8 @@ private:
     void tempCb(const jaco2_msgs::Jaco2SensorConstPtr& msg);
     void exeCb(const actionlib_msgs::GoalStatusArrayConstPtr& msg);
     void accCb(const jaco2_msgs::Jaco2AccelerometersConstPtr& msg);
+
+    void saveStaticData();
 
 private:
     ros::NodeHandle nh_;
