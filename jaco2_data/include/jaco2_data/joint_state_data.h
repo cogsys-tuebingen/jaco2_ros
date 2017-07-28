@@ -27,6 +27,11 @@ public:
 
     double norm(int type) const;
 
+    JointStateData operator+(const JointStateData &other) const;
+    JointStateData& operator+=(const JointStateData &other);
+    JointStateData& operator*=(const double &b);
+    JointStateData& operator/=(const double &b);
+
 private:
     static Eigen::VectorXd convert2eigen(const std::vector<double> *data, std::size_t offset = 0);
 

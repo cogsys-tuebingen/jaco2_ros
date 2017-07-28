@@ -8,6 +8,13 @@ JointAngles::JointAngles()
 
 }
 
+JointAngles::JointAngles(std::size_t n)
+    : JointData(n),
+       normalized_(false)
+{
+
+}
+
 JointAngles JointAngles::normalize() const
 {
     JointAngles res;

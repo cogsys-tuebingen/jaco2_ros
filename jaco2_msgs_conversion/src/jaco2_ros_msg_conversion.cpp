@@ -142,3 +142,21 @@ jaco2_data::JointAngles JointAngleConversion::ros2data(const jaco2_msgs::JointAn
     res[5] = data.joint6;
     return res;
 }
+
+jaco2_data::JointData JointDataConversion::ros2data(const JointData &data)
+{
+    jaco2_data::JointData res;
+    res.frame_id = data.header.frame_id;
+    res.stamp.fromNSec(data.header.stamp.toNSec());
+    res.data = data.data;
+    return res;
+}
+
+jaco2_msgs::JointData JointDataConversion::data2ros(const jaco2_data::JointData &data)
+{
+    jaco2_msgs::JointData res;
+    res.header.stamp.fromNSec(data.stamp.toNSec());
+    res.header.frame_id = data.frame_id;
+    res.data = data.data;
+    return res;
+}

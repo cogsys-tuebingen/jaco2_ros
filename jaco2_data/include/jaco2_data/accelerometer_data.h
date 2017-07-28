@@ -43,6 +43,12 @@ public:
 
     double norm() const;
 
+    AccelerometerData operator+(const AccelerometerData &other) const;
+    AccelerometerData& operator+=(const AccelerometerData &other);
+    AccelerometerData& operator*=(const double &b);
+    AccelerometerData& operator/=(const double &b);
+
+
 public:
     int label;
 private:

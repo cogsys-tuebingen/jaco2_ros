@@ -141,3 +141,126 @@ double JointStateData::norm(int type) const
     }
     return norm;
 }
+
+JointStateData JointStateData::operator+(const JointStateData &other) const
+{
+    JointStateData res(this->position.size());
+    auto it_res = res.position.begin();
+    auto it_other = other.position.begin();
+
+    res.gravity = this->gravity + other.gravity;
+    res.stamp.fromNSec(0.5* (this->stamp.toNSec() + other.stamp.toNSec()));
+    for(auto d : this->position){
+        *it_res = d + *it_other;
+        ++it_res;
+        ++it_other;
+    }
+
+    it_res = res.velocity.begin();
+    it_other = other.velocity.begin();
+
+    for(auto d : this->velocity){
+        *it_res = d + *it_other;
+        ++it_res;
+        ++it_other;
+    }
+
+    it_res = res.acceleration.begin();
+    it_other = other.acceleration.begin();
+
+    for(auto d : this->acceleration){
+        *it_res = d + *it_other;
+        ++it_res;
+        ++it_other;
+    }
+
+    it_res = res.torque.begin();
+    it_other = other.torque.begin();
+
+    for(auto d : this->torque){
+        *it_res = d + *it_other;
+        ++it_res;
+        ++it_other;
+    }
+    return res;
+
+}
+JointStateData& JointStateData::operator+=(const JointStateData &other)
+{
+    auto it_other = other.position.begin();
+
+    this->gravity += other.gravity;
+    this->stamp.fromNSec(0.5* (this->stamp.toNSec() + other.stamp.toNSec()));
+    for(double& d  : this->position){
+        d += *it_other;
+        ++it_other;
+    }
+
+    it_other = other.velocity.begin();
+
+    for(double& d : this->velocity){
+        d += *it_other;
+        ++it_other;
+    }
+
+    it_other = other.acceleration.begin();
+
+    for(double& d : this->acceleration){
+        d += *it_other;
+        ++it_other;
+    }
+
+    it_other = other.torque.begin();
+
+    for(double& d : this->torque){
+        d += *it_other;
+        ++it_other;
+    }
+    return *this;
+}
+
+JointStateData& JointStateData::operator*=(const double &b)
+{
+    this->gravity *= b;
+
+    for(double& d  : this->position){
+        d *= b;
+    }
+
+    for(double& d : this->velocity){
+        d *= b;
+    }
+
+    for(double& d : this->acceleration){
+        d *= b;
+    }
+
+
+    for(double& d : this->torque){
+        d *= b;
+    }
+    return *this;
+}
+
+JointStateData& JointStateData::operator/=(const double &b)
+{
+    this->gravity *= b;
+
+    for(double& d  : this->position){
+        d /= b;
+    }
+
+    for(double& d : this->velocity){
+        d /= b;
+    }
+
+    for(double& d : this->acceleration){
+        d /= b;
+    }
+
+
+    for(double& d : this->torque){
+        d /= b;
+    }
+    return *this;
+}

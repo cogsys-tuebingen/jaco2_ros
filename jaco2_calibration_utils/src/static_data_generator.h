@@ -18,14 +18,24 @@
 #include <jaco2_msgs/Jaco2GfreeTorques.h>
 #include <jaco2_msgs/Jaco2Sensor.h>
 #include <jaco2_msgs/Jaco2Accelerometers.h>
+struct RecordedData
+{
+    jaco2_data::ExtendedJointStateData state;
+    jaco2_data::JointAngles angles;
+    jaco2_data::JointData temps;
+    jaco2_data::JointData torques_g_free;
+};
+
 class StaticDataGenerator
 {
 public:
     StaticDataGenerator(ros::NodeHandle& nh);
-    void generateData(std::size_t depth);
+    void generateData();
 
     void setUpperLimit(int id, double val){upper_limits_[id] = val;}
     void setLowerLimit(int id, double val){lower_limits_[id] = val;}
+
+    void saveBag();
 
 private:
     void anglesCb(const jaco2_msgs::JointAnglesConstPtr& msg);
@@ -52,7 +62,7 @@ private:
     rosbag::Bag bag_;
 
 
-    static const std::size_t steps = 5;
+    static const std::size_t steps = 3;
     static const std::size_t n_joints = 6;
     std::deque<jaco2_data::ExtendedJointStateData> state_buffer_;
     std::deque<jaco2_data::JointAngles> angle_buffer_;

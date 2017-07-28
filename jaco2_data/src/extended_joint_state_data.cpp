@@ -109,3 +109,30 @@ const std::vector<double> &ExtendedJointStateData::torque() const
     return joint_state.torque;
 }
 
+ExtendedJointStateData ExtendedJointStateData::operator+(const ExtendedJointStateData &other) const
+{
+    ExtendedJointStateData res;
+    res.joint_state = this->joint_state + other.joint_state;
+    res.lin_acc = this->lin_acc + other.lin_acc;
+    return res;
+}
+ExtendedJointStateData& ExtendedJointStateData::operator+=(const ExtendedJointStateData &other)
+{
+    this->joint_state += other.joint_state;
+    this->lin_acc += other.lin_acc;
+    return *this;
+}
+
+ExtendedJointStateData& ExtendedJointStateData::operator*=(const double &b)
+{
+    this->joint_state *= b;
+    this->lin_acc *=b;
+    return *this;
+}
+
+ExtendedJointStateData& ExtendedJointStateData::operator/=(const double &b)
+{
+    this->joint_state /= b;
+    this->lin_acc /=b;
+    return *this;
+}

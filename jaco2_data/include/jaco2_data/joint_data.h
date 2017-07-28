@@ -12,7 +12,7 @@ public:
     typedef std::vector<double>::const_iterator const_iterator;
 public:
     JointData() {}
-
+    JointData(std::size_t n);
     iterator begin();
     const_iterator begin() const;
 
@@ -37,6 +37,10 @@ public:
     void emplace_back(double&& val);
     void push_back(const double& val);
 
+    JointData operator+(const JointData &other) const;
+    JointData& operator+=(const JointData &other);
+    JointData& operator*=(const double &b);
+    JointData& operator/=(const double &b);
 
 public:
     std::string frame_id;

@@ -12,6 +12,7 @@ class JointAngles : public JointData
 //    typedef std::vector<double>::const_iterator const_iterator;
 public:
     JointAngles();
+    JointAngles(std::size_t n);
 
     JointAngles normalize() const;
 
