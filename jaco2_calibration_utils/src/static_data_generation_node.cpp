@@ -1,19 +1,19 @@
 #include "static_data_generator.h"
 
-void spinThread()
-{
-    ros::spin();
-}
+//void spinThread()
+//{
+//    ros::spin();
+//}
 
-std::shared_ptr<StaticDataGenerator> node_ptr;
+//std::shared_ptr<StaticDataGenerator> node_ptr;
 
-void mySigintHandler(int sig)
-{
-    if(node_ptr){
-        node_ptr->saveBag();
-    }
-    ros::shutdown();
-}
+//void mySigintHandler(int sig)
+//{
+//    if(node_ptr){
+//        node_ptr->saveBag();
+//    }
+//    ros::shutdown();
+//}
 int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "static_data_generator_node");
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     ros::NodeHandle nh("~");
 
     StaticDataGenerator node(nh);
-    node_ptr = std::make_shared<StaticDataGenerator>(node);
+//    node_ptr = std::make_shared<StaticDataGenerator>(node);
 
     //    ros::MultiThreadedSpinner mspin(2);
     ros::AsyncSpinner spinner(1);

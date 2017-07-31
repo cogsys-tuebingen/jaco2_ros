@@ -2,6 +2,7 @@
 #define STATIC_DATA_GENERATOR_H
 /// SYSTEM
 #include <deque>
+#include <mutex>
 /// ROS
 #include <ros/ros.h>
 #include <rosbag/bag.h>
@@ -30,6 +31,7 @@ class StaticDataGenerator
 {
 public:
     StaticDataGenerator(ros::NodeHandle& nh);
+    ~StaticDataGenerator();
     void generateData();
 
     void setUpperLimit(int id, double val){upper_limits_[id] = val;}
@@ -46,12 +48,14 @@ private:
     void accCb(const jaco2_msgs::Jaco2AccelerometersConstPtr& msg);
 
     void saveStaticData();
+    bool moving();
 
 private:
     ros::NodeHandle nh_;
     std::size_t buffer_length_;
     std::vector<double> upper_limits_;
     std::vector<double> lower_limits_;
+    std::size_t valid_counter_;
     moveit::planning_interface::MoveGroup group_;
     ros::Subscriber sub_angles_;
     ros::Subscriber sub_jaco_state_;
@@ -60,9 +64,10 @@ private:
     ros::Subscriber sub_execution_;
     ros::Subscriber sub_accs_;
     rosbag::Bag bag_;
+    rosbag::Bag valid_bag_;
+    mutable std::recursive_mutex data_mutex_;
 
-
-    static const std::size_t steps = 3;
+    static const std::size_t steps = 4;
     static const std::size_t n_joints = 6;
     std::deque<jaco2_data::ExtendedJointStateData> state_buffer_;
     std::deque<jaco2_data::JointAngles> angle_buffer_;

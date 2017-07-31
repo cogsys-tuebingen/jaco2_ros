@@ -8,6 +8,7 @@ StaticDataGenerator::StaticDataGenerator(ros::NodeHandle &nh):
     buffer_length_(40),
     upper_limits_(n_joints),
     lower_limits_(n_joints),
+    valid_counter_(0),
     group_("manipulator")
 {
     group_.setPlannerId("RRTkConfigDefault");
@@ -44,15 +45,21 @@ StaticDataGenerator::StaticDataGenerator(ros::NodeHandle &nh):
     nh.param<double>("joint_6_lower_limit",lower_limits_[5], 1.32 - 0.3);
 
     std::string bagName = nh_.param<std::string>("bag_name","/tmp/static_data.bag");
+    std::string bagValidName = nh_.param<std::string>("bag_name","/tmp/static_data_validation.bag");
     bag_.open(bagName, rosbag::bagmode::Write);
+    valid_bag_.open(bagValidName, rosbag::bagmode::Write);
 
 }
 
+StaticDataGenerator::~StaticDataGenerator()
+{
+
+}
 
 void StaticDataGenerator::generateData()
 {
     Node<n_joints, steps> tree;
-//    int steps = 5;
+    //    int steps = 5;
 
     std::vector<std::vector<int>> index = Node<n_joints, steps>::getIndeces(tree);
     std::vector<double> goal(6,0);
@@ -60,48 +67,53 @@ void StaticDataGenerator::generateData()
     std::size_t run = 0;
     ros::Time start = ros::Time::now();
     for(auto id : index){
-        std::string cfg;
-        for(auto i : id){
-            cfg += std::to_string(i) + ",";
+        bool ismoving = moving();
+        if(!ismoving){
+            std::string cfg;
+            for(auto i : id){
+                cfg += std::to_string(i) + ",";
+            }
+            cfg.pop_back();
+            ROS_INFO_STREAM("Config: " << cfg);
+            for(std::size_t i = 0; i < 6; ++i){
+                goal[i] = lower_limits_[i] + (double)id[i]*(upper_limits_[i] - lower_limits_[i])/double(steps);
+
+            }
+            for(int i = 0; i <5; ++i){
+                group_.getCurrentState();
+            }
+            group_.setJointValueTarget(goal);
+            moveit::planning_interface::MoveGroup::Plan my_plan;
+            moveit_msgs::MoveItErrorCodes success = group_.plan(my_plan);
+            if(success.val == moveit_msgs::MoveItErrorCodes::SUCCESS) {
+                ROS_INFO("Success! Now move");
+
+                success = group_.move();
+            }
+            ros::Duration dur = ros::Time::now() - start;
+
+            ROS_INFO_STREAM("Progress: " << run/((float) n_points) * 100 << "% | Steps: ("
+                            << run << "/ "
+                            << index.size() << ") | time since start (h:min:sec): "
+                            << (int)dur.toSec()/3600 << ":"
+                            << ((int)dur.toSec()/60)  % 60 << ":"
+                            << ((int)dur.toSec()) % 60);
+
+
+            ++run;
+
+            saveStaticData();
         }
-        cfg.pop_back();
-        ROS_INFO_STREAM("Config: " << cfg);
-        for(std::size_t i = 0; i < 6; ++i){
-            goal[i] = lower_limits_[i] + (double)id[i]*(upper_limits_[i] - lower_limits_[i])/double(steps);
-
-        }
-        for(int i = 0; i <5; ++i){
-            group_.getCurrentState();
-        }
-        group_.setJointValueTarget(goal);
-        moveit::planning_interface::MoveGroup::Plan my_plan;
-        moveit_msgs::MoveItErrorCodes success = group_.plan(my_plan);
-        if(success.val == moveit_msgs::MoveItErrorCodes::SUCCESS) {
-            ROS_INFO("Success! Now move");
-
-            success = group_.move();
-        }
-        ros::Duration dur = ros::Time::now() - start;
-
-        ROS_INFO_STREAM("Progress: " << run/((float) n_points) * 100 << "% | Steps: ("
-                        << run << "/ "
-                        << index.size() << ") | time since start (h:min:sec): "
-                        << (int)dur.toSec()/3600 << ":"
-                        << ((int)dur.toSec()/60)  % 60 << ":"
-                        << ((int)dur.toSec()) % 60);
-
-
-        ++run;
-
-        saveStaticData();
     }
 
     bag_.close();
+    valid_bag_.close();
 
 }
 
 void StaticDataGenerator::saveStaticData()
 {
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     ros::Duration(0.5).sleep();
     ros::Duration d(1);
     ros::Rate r(30);
@@ -171,26 +183,38 @@ void StaticDataGenerator::saveStaticData()
         ROS_WARN("Did not get any TorqueGFree data!");
     }
     ros::Time wtime = ros::Time::now();
-    bag_.write("/joint_state", wtime, jaco2_msgs::JointStateConversion::datata2Jaco2Msgs(state_m.joint_state));
-    bag_.write("/acceleration", wtime, jaco2_msgs::AccelerometerConversion::data2ros(state_m.lin_acc));
-    bag_.write("/angles", wtime, jaco2_msgs::JointAngleConversion::data2ros(angle_m));
-    bag_.write("/torques_g_free", wtime, jaco2_msgs::JointDataConversion::data2ros(tau_m));
-    bag_.write("/temperature", wtime, jaco2_msgs::JointDataConversion::data2ros(temp_m));
-//    std::vector<
-//    for()
+//    if(valid_counter_ == 2){
+//        valid_bag_.write("/joint_state", wtime, jaco2_msgs::JointStateConversion::datata2Jaco2Msgs(state_m.joint_state));
+//        valid_bag_.write("/acceleration", wtime, jaco2_msgs::AccelerometerConversion::data2ros(state_m.lin_acc));
+//        valid_bag_.write("/angles", wtime, jaco2_msgs::JointAngleConversion::data2ros(angle_m));
+//        valid_bag_.write("/torques_g_free", wtime, jaco2_msgs::JointDataConversion::data2ros(tau_m));
+//        valid_bag_.write("/temperature", wtime, jaco2_msgs::JointDataConversion::data2ros(temp_m));
+//    }
+//    else{
+        bag_.write("/joint_state", wtime, jaco2_msgs::JointStateConversion::datata2Jaco2Msgs(state_m.joint_state));
+        bag_.write("/acceleration", wtime, jaco2_msgs::AccelerometerConversion::data2ros(state_m.lin_acc));
+        bag_.write("/angles", wtime, jaco2_msgs::JointAngleConversion::data2ros(angle_m));
+        bag_.write("/torques_g_free", wtime, jaco2_msgs::JointDataConversion::data2ros(tau_m));
+        bag_.write("/temperature", wtime, jaco2_msgs::JointDataConversion::data2ros(temp_m));
+//    }
+//    valid_counter_ = (valid_counter_ + 1) % 3;
+    //    std::vector<
+    //    for()
 }
 
 void StaticDataGenerator::anglesCb(const jaco2_msgs::JointAnglesConstPtr& msg)
 {
-   JointAngles angles = jaco2_msgs::JointAngleConversion::ros2data(*msg);
-   angle_buffer_.emplace_back(angles);
-   while(angle_buffer_.size() > buffer_length_){
-       angle_buffer_.pop_front();
-   }
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
+    JointAngles angles = jaco2_msgs::JointAngleConversion::ros2data(*msg);
+    angle_buffer_.emplace_back(angles);
+    while(angle_buffer_.size() > buffer_length_){
+        angle_buffer_.pop_front();
+    }
 }
 
 void StaticDataGenerator::stateCb(const jaco2_msgs::Jaco2JointStateConstPtr& msg)
 {
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     ExtendedJointStateData ex;
     ex.joint_state = jaco2_msgs::JointStateConversion::jaco2Msg2Data(*msg);
     ex.lin_acc = last_accs_;
@@ -202,6 +226,7 @@ void StaticDataGenerator::stateCb(const jaco2_msgs::Jaco2JointStateConstPtr& msg
 
 void StaticDataGenerator::tauGfreeCb(const jaco2_msgs::Jaco2GfreeTorquesConstPtr& msg)
 {
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     JointData d;
     d.data = msg->effort_g_free;
     d.frame_id = msg->header.frame_id;
@@ -214,6 +239,7 @@ void StaticDataGenerator::tauGfreeCb(const jaco2_msgs::Jaco2GfreeTorquesConstPtr
 
 void StaticDataGenerator::tempCb(const jaco2_msgs::Jaco2SensorConstPtr& msg)
 {
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     JointData d;
     d.data = msg->temperature;
     d.stamp.fromNSec(msg->temperature_time.toNSec());
@@ -225,6 +251,10 @@ void StaticDataGenerator::tempCb(const jaco2_msgs::Jaco2SensorConstPtr& msg)
 
 void StaticDataGenerator::exeCb(const actionlib_msgs::GoalStatusArrayConstPtr& msg)
 {
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
+    if(msg->status_list.empty()){
+        return;
+    }
     status_buffer_.emplace_back(msg->status_list.front().status);
     while(status_buffer_.size() > buffer_length_){
         status_buffer_.pop_front();
@@ -233,10 +263,23 @@ void StaticDataGenerator::exeCb(const actionlib_msgs::GoalStatusArrayConstPtr& m
 
 void StaticDataGenerator::accCb(const jaco2_msgs::Jaco2AccelerometersConstPtr& msg)
 {
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     last_accs_ = jaco2_msgs::AccelerometerConversion::ros2data(*msg);
 }
 
 void StaticDataGenerator::saveBag()
 {
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     bag_.close();
+    valid_bag_.close();
+}
+
+bool StaticDataGenerator::moving()
+{
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
+    if(status_buffer_.empty()){
+        return false;
+    }
+    bool is_moving = status_buffer_.back() != actionlib_msgs::GoalStatus::SUCCEEDED;
+    return is_moving;
 }

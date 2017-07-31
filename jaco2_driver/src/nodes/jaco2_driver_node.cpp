@@ -702,7 +702,8 @@ bool Jaco2DriverNode::setTorqueZeroCallback(jaco2_msgs::SetTorqueZero::Request &
 
 namespace {
 Jaco2DriverNode* g_driver = nullptr;
-void siginthandler(int){
+void siginthandler(int sig){
+    std::cout << sig << std::endl;
     std::terminate();
 }
 }

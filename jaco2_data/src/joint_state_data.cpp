@@ -191,29 +191,29 @@ JointStateData& JointStateData::operator+=(const JointStateData &other)
 
     this->gravity += other.gravity;
     this->stamp.fromNSec(0.5* (this->stamp.toNSec() + other.stamp.toNSec()));
-    for(double& d  : this->position){
-        d += *it_other;
+    for(auto it_p = this->position.begin();  it_p < this->position.end(); ++it_p){
+        *it_p += *it_other;
         ++it_other;
     }
 
     it_other = other.velocity.begin();
 
-    for(double& d : this->velocity){
-        d += *it_other;
+    for(auto it_v = this->velocity.begin();  it_v < this->velocity.end(); ++it_v){
+        *it_v += *it_other;
         ++it_other;
     }
 
     it_other = other.acceleration.begin();
 
-    for(double& d : this->acceleration){
-        d += *it_other;
+    for(auto it_v = this->acceleration.begin();  it_v < this->acceleration.end(); ++it_v){
+        *it_v += *it_other;
         ++it_other;
     }
 
     it_other = other.torque.begin();
 
-    for(double& d : this->torque){
-        d += *it_other;
+    for(auto it_v = this->torque.begin();  it_v < this->torque.end(); ++it_v){
+        *it_v += *it_other;
         ++it_other;
     }
     return *this;
