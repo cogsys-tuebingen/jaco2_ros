@@ -83,10 +83,10 @@ const Vector3Stamped& AccelerometerData::back() const
     return lin_acc.back();
 }
 
-void AccelerometerData::emplace_back(Vector3Stamped&& val)
-{
-    lin_acc.emplace_back(val);
-}
+//void AccelerometerData::emplace_back(Vector3Stamped&& val)
+//{
+//    lin_acc.emplace_back(val);
+//}
 
 void AccelerometerData::push_back(const Vector3Stamped &val)
 {
