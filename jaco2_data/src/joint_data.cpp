@@ -76,10 +76,10 @@ void JointData::resize(std::size_t n, double val)
     data.resize(n,val);
 }
 
-void JointData::emplace_back(double&& val)
-{
-    data.emplace_back(val);
-}
+//void JointData::emplace_back(double&& val)
+//{
+//    data.emplace_back(val);
+//}
 
 void JointData::push_back(const double& val)
 {

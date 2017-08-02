@@ -13,8 +13,10 @@ class JointAngles : public JointData
 public:
     JointAngles();
     JointAngles(std::size_t n);
+    JointAngles(const JointData& d);
 
     JointAngles normalize() const;
+    JointAngles& operator =(const JointData &other);
 
 private:
     static double normalize(double angle);

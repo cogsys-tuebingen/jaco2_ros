@@ -15,12 +15,20 @@ JointAngles::JointAngles(std::size_t n)
 
 }
 
+JointAngles::JointAngles(const JointData &d)
+    : JointData(d),
+      normalized_(false)
+{
+
+}
+
+
 JointAngles JointAngles::normalize() const
 {
     JointAngles res;
     res.normalized_ = true;
     for(auto val : data){
-        res.emplace_back(normalize(val));
+        res.push_back(normalize(val));
     }
     return res;
 }
@@ -36,3 +44,9 @@ double JointAngles::normalize(double angle)
     }
     return result;
 }
+
+JointAngles& JointAngles::operator =(const JointData &other)
+{
+    this->data = other.data;
+}
+

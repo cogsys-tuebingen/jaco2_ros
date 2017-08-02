@@ -34,7 +34,7 @@ public:
     std::size_t size() const;
     void resize(std::size_t n, double val = 0);
 
-    void emplace_back(double&& val);
+//    void emplace_back(double&& val);
     void push_back(const double& val);
 
     JointData operator+(const JointData &other) const;

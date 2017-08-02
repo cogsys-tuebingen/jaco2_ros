@@ -1,5 +1,6 @@
 #ifndef JOINT_STATE_DATA_H
 #define JOINT_STATE_DATA_H
+#include <vector>
 #include <Eigen/Core>
 #include <jaco2_data/time_stamp.h>
 namespace jaco2_data {
