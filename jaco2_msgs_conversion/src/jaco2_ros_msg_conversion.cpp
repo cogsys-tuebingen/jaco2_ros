@@ -110,7 +110,7 @@ jaco2_data::AccelerometerData AccelerometerConversion::ros2data(const Jaco2Accel
 {
     jaco2_data::AccelerometerData res;
     for(auto d : msg.lin_acc){
-        res.emplace_back(Vector3StampedConverion::ros2data(d));
+        res.push_back(Vector3StampedConverion::ros2data(d));
     }
     return res;
 }
@@ -160,3 +160,14 @@ jaco2_msgs::JointData JointDataConversion::data2ros(const jaco2_data::JointData 
     res.data = data.data;
     return res;
 }
+
+jaco2_msgs::JointAngles JointDataConversion::data2rosAngles(const jaco2_data::JointData &data)
+{
+    jaco2_data::JointAngles d = data;
+//    d.frame_id = data.frame_id;
+//    d.stamp = data.stamp;
+//    d.data = data.data;
+    jaco2_msgs::JointAngles res = JointAngleConversion::data2ros(d);
+    return res;
+}
+

@@ -49,6 +49,7 @@ struct JointAngleConversion{
 struct JointDataConversion{
     static jaco2_msgs::JointData data2ros(const jaco2_data::JointData& data);
     static jaco2_data::JointData ros2data(const jaco2_msgs::JointData& data);
+    static jaco2_msgs::JointAngles data2rosAngles(const jaco2_data::JointData &data);
 };
 }
 #endif // JACO2_ROS_MSG_CONVERSION_H
