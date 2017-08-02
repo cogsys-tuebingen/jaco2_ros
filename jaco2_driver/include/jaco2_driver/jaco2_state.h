@@ -47,8 +47,8 @@ public:
     jaco2_data::TimeStamp getLastUpdate(int read_data) const;
     jaco2_data::JointStateData getJointState() const;
     jaco2_data::AccelerometerData getAccelerometerData() const;
-    const jaco2_data::JointStateData& getJointStateRef() const;
-    const jaco2_data::AccelerometerData& getAccelerometerDataRef() const;
+//    const jaco2_data::JointStateData& getJointStateRef() const;
+//    const jaco2_data::AccelerometerData& getAccelerometerDataRef() const;
 
     std::vector<int> getHighPriQue() const;
     std::vector<int> getLowPriQue() const;

@@ -592,7 +592,7 @@ void Jaco2DriverNode::stop()
 
 void Jaco2DriverNode::publishJointState()
 {
-    const jaco2_data::JointStateData& jdata = driver_.getJointStateRef();
+    const jaco2_data::JointStateData& jdata = driver_.getJointState();
 
 
     if(jdata.stamp != lastTimeJsPublished_){
@@ -641,7 +641,7 @@ void Jaco2DriverNode::publishSensorInfo()
 
     if(stamp != lastTimeAccPublished_) {
 
-        const jaco2_data::AccelerometerData& acc_data = driver_.getAccelerometerDataRef();
+        const jaco2_data::AccelerometerData& acc_data = driver_.getAccelerometerData();
         jaco2_msgs::Jaco2Accelerometers jaco2_acc = jaco2_msgs::AccelerometerConversion::data2ros(acc_data);
 
         pubJaco2LinAcc_.publish(jaco2_acc);

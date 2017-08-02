@@ -177,7 +177,7 @@ void CollisionReaction::updateResiduals()
 {
     Jaco2KinDynLib::ResidualData data;
 
-    auto state = state_.getJointStateRef();
+    auto state = state_.getJointState();
 
     data.gx = state.gravity(0);
     data.gy = state.gravity(1);

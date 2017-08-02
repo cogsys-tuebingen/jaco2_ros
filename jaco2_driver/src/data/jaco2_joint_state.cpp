@@ -68,20 +68,20 @@ jaco2_data::ExtendedJointStateData Jaco2JointState::getExtJointState() const
     return current_state_;
 }
 
-const jaco2_data::JointStateData& Jaco2JointState::getJointStateRef() const
-{
-    return current_state_.joint_state;
-}
+//const jaco2_data::JointStateData& Jaco2JointState::getJointStateRef() const
+//{
+//    return current_state_.joint_state;
+//}
 
-const jaco2_data::AccelerometerData& Jaco2JointState::getLinearAccelerationsRef() const
-{
-    return current_state_.lin_acc;
-}
+//const jaco2_data::AccelerometerData& Jaco2JointState::getLinearAccelerationsRef() const
+//{
+//    return current_state_.lin_acc;
+//}
 
-const jaco2_data::ExtendedJointStateData& Jaco2JointState::getExtJointStateRef() const
-{
-    return current_state_;
-}
+//const jaco2_data::ExtendedJointStateData& Jaco2JointState::getExtJointStateRef() const
+//{
+//    return current_state_;
+//}
 
 AngularInfo Jaco2JointState::getAngularData(const AngularDataType type) const
 {

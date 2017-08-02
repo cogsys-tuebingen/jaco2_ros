@@ -400,7 +400,7 @@ jaco2_data::TimeStamp Jaco2Driver::getLastReadUpdate(int read_data) const
 
 jaco2_data::JointStateData Jaco2Driver::getJointState() const
 {
-    return state_,getJointState();
+    return state_.getJointState();
 }
 
 jaco2_data::AccelerometerData Jaco2Driver::getAccelerometerData() const
@@ -408,15 +408,15 @@ jaco2_data::AccelerometerData Jaco2Driver::getAccelerometerData() const
     return state_.getAccelerometerData();
 }
 
-const jaco2_data::JointStateData& Jaco2Driver::getJointStateRef() const
-{
-    return state_.getJointStateRef();
-}
+//const jaco2_data::JointStateData& Jaco2Driver::getJointStateRef() const
+//{
+//    return state_.getJointStateRef();
+//}
 
-const jaco2_data::AccelerometerData& Jaco2Driver::getAccelerometerDataRef() const
-{
-    return state_.getAccelerometerDataRef();
-}
+//const jaco2_data::AccelerometerData& Jaco2Driver::getAccelerometerDataRef() const
+//{
+//    return state_.getAccelerometerDataRef();
+//}
 
 AngularPosition Jaco2Driver::getCurrent() const
 {
