@@ -53,6 +53,8 @@ private:
 private:
     ros::NodeHandle nh_;
     std::size_t buffer_length_;
+    std::size_t n_steps_;
+    std::size_t n_joints_;
     std::vector<double> upper_limits_;
     std::vector<double> lower_limits_;
     std::size_t valid_counter_;
@@ -66,9 +68,9 @@ private:
     rosbag::Bag bag_;
     rosbag::Bag valid_bag_;
     mutable std::recursive_mutex data_mutex_;
-
-    static const std::size_t steps = 4;
-    static const std::size_t n_joints = 6;
+    std::vector<std::vector<int>> steps_;
+//    static const std::size_t steps = 4;
+//    static const std::size_t n_joints = 6;
     std::deque<jaco2_data::ExtendedJointStateData> state_buffer_;
     std::deque<jaco2_data::JointAngles> angle_buffer_;
     std::deque<jaco2_data::JointData> tau_g_buffer_;

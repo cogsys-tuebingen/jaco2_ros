@@ -6,8 +6,8 @@ using namespace jaco2_data;
 StaticDataGenerator::StaticDataGenerator(ros::NodeHandle &nh):
     nh_(nh),
     buffer_length_(40),
-    upper_limits_(n_joints),
-    lower_limits_(n_joints),
+    n_joints_(6),
+    n_steps_(4),
     valid_counter_(0),
     group_("manipulator")
 {
@@ -15,7 +15,7 @@ StaticDataGenerator::StaticDataGenerator(ros::NodeHandle &nh):
     group_.setStartStateToCurrentState();
     group_.setPlanningTime(5.0);
 
-    std::string driver_name = nh_.param<std::string>("driver_name","jaco_22_driver");
+    std::string driver_name = nh_.param<std::string>("driver_name","jaco_arm_driver");
     std::string prefix = "/" + driver_name + "/";
 
     sub_angles_ = nh_.subscribe(prefix + "out/joint_angles", 1, &StaticDataGenerator::anglesCb, this);
@@ -25,25 +25,29 @@ StaticDataGenerator::StaticDataGenerator(ros::NodeHandle &nh):
     sub_execution_ = nh_.subscribe(prefix + "follow_joint_trajectory/manipulator/status", 1,&StaticDataGenerator::exeCb, this);
     sub_accs_ = nh_.subscribe(prefix + "out/accelerometers", 1, &StaticDataGenerator::accCb,this);
 
+    n_joints_ = nh.param<double>("number_joints",6);
+    n_steps_ = nh.param<double>("number_steps",4);
 
-    nh.param<double>("joint_1_upper_limit",upper_limits_[0],4.808 + 0.3);
-    nh.param<double>("joint_1_lower_limit",lower_limits_[0],4.808 - 0.3);
+    upper_limits_.resize(n_joints_);
+    lower_limits_.resize(n_joints_);
 
-    nh.param<double>("joint_2_upper_limit",upper_limits_[1], 2.96 + 0.3);
-    nh.param<double>("joint_2_lower_limit",lower_limits_[1], 2.96 - 0.3);
+    std::vector<double> default_start;
+    if(n_joints_ <= 6){
+        default_start = {4.808, 2.96, 1.00, 4.20, 1.45, 1.32};
+    }
+    else{
+        default_start.resize(n_joints_, 0);
+    }
 
-    nh.param<double>("joint_3_upper_limit",upper_limits_[2], 1.00 + 0.3);
-    nh.param<double>("joint_3_lower_limit",lower_limits_[2], 1.00 - 0.3);
+    for(std::size_t i = 0; i < n_joints_; ++i){
+        std::string param_name_upper= "joint_"+ std::to_string(i+1) + "_upper_limit";
+        std::string param_name_lower= "joint_"+ std::to_string(i+1) + "_lower_limit";
+        nh.param<double>(param_name_upper, upper_limits_[i], default_start[i] + M_PI_4);
+        nh.param<double>(param_name_lower, lower_limits_[i], default_start[i] - M_PI_4);
+    }
 
-    nh.param<double>("joint_4_upper_limit",upper_limits_[3], 4.20 + 0.3);
-    nh.param<double>("joint_4_lower_limit",lower_limits_[3], 4.20 - 0.3);
-
-    nh.param<double>("joint_5_upper_limit",upper_limits_[4], 1.45 + 0.3);
-    nh.param<double>("joint_5_lower_limit",lower_limits_[4], 1.45 - 0.3);
-
-    nh.param<double>("joint_6_upper_limit",upper_limits_[5], 1.32 + 0.3);
-    nh.param<double>("joint_6_lower_limit",lower_limits_[5], 1.32 - 0.3);
-
+    TreeNode tree(n_joints_, n_steps_);
+    steps_ = TreeNode::getIndeces(tree);
     std::string bagName = nh_.param<std::string>("bag_name","/tmp/static_data.bag");
     std::string bagValidName = nh_.param<std::string>("bag_name","/tmp/static_data_validation.bag");
     bag_.open(bagName, rosbag::bagmode::Write);
@@ -58,15 +62,11 @@ StaticDataGenerator::~StaticDataGenerator()
 
 void StaticDataGenerator::generateData()
 {
-    Node<n_joints, steps> tree;
-    //    int steps = 5;
-
-    std::vector<std::vector<int>> index = Node<n_joints, steps>::getIndeces(tree);
     std::vector<double> goal(6,0);
-    std::size_t n_points = index.size();
+    std::size_t n_points = steps_.size();
     std::size_t run = 0;
     ros::Time start = ros::Time::now();
-    for(auto id : index){
+    for(auto id : steps_){
         bool ismoving = moving();
         if(!ismoving){
             std::string cfg;
@@ -76,7 +76,7 @@ void StaticDataGenerator::generateData()
             cfg.pop_back();
             ROS_INFO_STREAM("Config: " << cfg);
             for(std::size_t i = 0; i < 6; ++i){
-                goal[i] = lower_limits_[i] + (double)id[i]*(upper_limits_[i] - lower_limits_[i])/double(steps);
+                goal[i] = lower_limits_[i] + (double)id[i]*(upper_limits_[i] - lower_limits_[i])/double(n_steps_);
 
             }
             for(int i = 0; i <5; ++i){
@@ -94,7 +94,7 @@ void StaticDataGenerator::generateData()
 
             ROS_INFO_STREAM("Progress: " << run/((float) n_points) * 100 << "% | Steps: ("
                             << run << "/ "
-                            << index.size() << ") | time since start (h:min:sec): "
+                            << n_points << ") | time since start (h:min:sec): "
                             << (int)dur.toSec()/3600 << ":"
                             << ((int)dur.toSec()/60)  % 60 << ":"
                             << ((int)dur.toSec()) % 60);
@@ -130,10 +130,10 @@ void StaticDataGenerator::saveStaticData()
     std::size_t angle_counter = 0;
     std::size_t temp_counter = 0;
     std::size_t tau_counter = 0;
-    ExtendedJointStateData state_m(n_joints, n_joints);
-    JointAngles angle_m(n_joints);
-    JointData temp_m(n_joints);
-    JointData tau_m(n_joints);
+    ExtendedJointStateData state_m(n_joints_, n_joints_);
+    JointAngles angle_m(n_joints_);
+    JointData temp_m(n_joints_);
+    JointData tau_m(n_joints_);
     for(auto v : status_buffer_)
     {
         if(v == actionlib_msgs::GoalStatus::SUCCEEDED){

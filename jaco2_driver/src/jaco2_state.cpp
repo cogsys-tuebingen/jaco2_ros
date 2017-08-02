@@ -29,7 +29,7 @@ Jaco2State::Jaco2State(Jaco2API &api)
     current_torque_gravity_free_.InitStruct();
 
 //    calibrate_acc_ = {false, false, false, false, false, false};
-    velocityFactors_ = {2.0, 2.0, 2.0, 2.0, 2.0, 2.0};
+    velocityFactors_ = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
     acc_counter_ =0;
 }
 

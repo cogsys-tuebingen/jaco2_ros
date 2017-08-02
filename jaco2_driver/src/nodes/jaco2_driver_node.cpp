@@ -112,6 +112,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     if(use_accel_calib) {
         ROS_INFO_STREAM("Using accelerometer calibration.");
         std::string acc_calib_file;
+//        private_nh_.param<std::string>("jaco_accelerometer_calibration_file", acc_calib_file, "/localhome/zwiener/workspace/jaco_ws/src/jaco2_ros/jaco2_driver/config/acc_calib_jaco2-2.yaml");
         private_nh_.param<std::string>("jaco_accelerometer_calibration_file", acc_calib_file, "");
         std::vector<Jaco2Calibration::AccelerometerCalibrationParam> acc_params;
         Jaco2Calibration::loadAccCalib(acc_calib_file, acc_params);
@@ -139,6 +140,7 @@ Jaco2DriverNode::Jaco2DriverNode()
         }
     }
 
+//    std::string velocity_calib_file = private_nh_.param<std::string>("jaco_velocity_calibration_file", "/localhome/zwiener/workspace/jaco_ws/src/jaco2_ros/jaco2_driver/config/velocity_calibration_jaco2-2.yaml");
     std::string velocity_calib_file = private_nh_.param<std::string>("jaco_velocity_calibration_file", "");
     if(velocity_calib_file != ""){
         ROS_INFO_STREAM("Using velocity calibration");
@@ -147,6 +149,7 @@ Jaco2DriverNode::Jaco2DriverNode()
         driver_.setVelocitySensorCalibration(v_params.parameter);
     }
 
+//    std::string gravity_calib_file = private_nh_.param<std::string>("jaco_gravity_calibration_file", "/localhome/zwiener/workspace/jaco_ws/src/jaco2_ros/jaco2_driver/config/jaco2-2_g_params_service.yaml");
     std::string gravity_calib_file = private_nh_.param<std::string>("jaco_gravity_calibration_file", "");
     if(gravity_calib_file != ""){
         ROS_INFO_STREAM("Using optimal gravity parameters.");
@@ -703,7 +706,7 @@ bool Jaco2DriverNode::setTorqueZeroCallback(jaco2_msgs::SetTorqueZero::Request &
 namespace {
 Jaco2DriverNode* g_driver = nullptr;
 void siginthandler(int sig){
-    std::cout << sig << std::endl;
+    std::cout << "shutdown due to signal: "<< sig << std::endl;
     std::terminate();
 }
 }
