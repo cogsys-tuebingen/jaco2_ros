@@ -1,7 +1,8 @@
 #ifndef VECTOR3STAMPED_H
 #define VECTOR3STAMPED_H
-#include <jaco2_data/time_stamp.h>
+#include <vector>
 #include <Eigen/Dense>
+#include <jaco2_data/time_stamp.h>
 
 namespace jaco2_data {
 
@@ -38,9 +39,9 @@ public:
     std::vector<double> toVector() const;
 
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     TimeStamp stamp;
     std::string frame_id;
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     Eigen::Vector3d vector;
 
 };
