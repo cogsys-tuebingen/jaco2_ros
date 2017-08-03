@@ -183,23 +183,12 @@ void StaticDataGenerator::saveStaticData()
         ROS_WARN("Did not get any TorqueGFree data!");
     }
     ros::Time wtime = ros::Time::now();
-//    if(valid_counter_ == 2){
-//        valid_bag_.write("/joint_state", wtime, jaco2_msgs::JointStateConversion::datata2Jaco2Msgs(state_m.joint_state));
-//        valid_bag_.write("/acceleration", wtime, jaco2_msgs::AccelerometerConversion::data2ros(state_m.lin_acc));
-//        valid_bag_.write("/angles", wtime, jaco2_msgs::JointAngleConversion::data2ros(angle_m));
-//        valid_bag_.write("/torques_g_free", wtime, jaco2_msgs::JointDataConversion::data2ros(tau_m));
-//        valid_bag_.write("/temperature", wtime, jaco2_msgs::JointDataConversion::data2ros(temp_m));
-//    }
-//    else{
-        bag_.write("/joint_state", wtime, jaco2_msgs::JointStateConversion::datata2Jaco2Msgs(state_m.joint_state));
-        bag_.write("/acceleration", wtime, jaco2_msgs::AccelerometerConversion::data2ros(state_m.lin_acc));
-        bag_.write("/angles", wtime, jaco2_msgs::JointAngleConversion::data2ros(angle_m));
-        bag_.write("/torques_g_free", wtime, jaco2_msgs::JointDataConversion::data2ros(tau_m));
-        bag_.write("/temperature", wtime, jaco2_msgs::JointDataConversion::data2ros(temp_m));
-//    }
-//    valid_counter_ = (valid_counter_ + 1) % 3;
-    //    std::vector<
-    //    for()
+    bag_.write("/joint_state", wtime, jaco2_msgs::JointStateConversion::datata2Jaco2Msgs(state_m.joint_state));
+    bag_.write("/acceleration", wtime, jaco2_msgs::AccelerometerConversion::data2ros(state_m.lin_acc));
+    bag_.write("/angles", wtime, jaco2_msgs::JointAngleConversion::data2ros(angle_m));
+    bag_.write("/torques_g_free", wtime, jaco2_msgs::JointDataConversion::data2ros(tau_m));
+    bag_.write("/temperature", wtime, jaco2_msgs::JointDataConversion::data2ros(temp_m));
+
 }
 
 void StaticDataGenerator::anglesCb(const jaco2_msgs::JointAnglesConstPtr& msg)

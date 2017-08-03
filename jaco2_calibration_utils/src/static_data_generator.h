@@ -19,13 +19,7 @@
 #include <jaco2_msgs/Jaco2GfreeTorques.h>
 #include <jaco2_msgs/Jaco2Sensor.h>
 #include <jaco2_msgs/Jaco2Accelerometers.h>
-struct RecordedData
-{
-    jaco2_data::ExtendedJointStateData state;
-    jaco2_data::JointAngles angles;
-    jaco2_data::JointData temps;
-    jaco2_data::JointData torques_g_free;
-};
+#include <jaco2_data/types.h>
 
 class StaticDataGenerator
 {
@@ -69,9 +63,8 @@ private:
     rosbag::Bag valid_bag_;
     mutable std::recursive_mutex data_mutex_;
     std::vector<std::vector<int>> steps_;
-//    static const std::size_t steps = 4;
-//    static const std::size_t n_joints = 6;
-    std::deque<jaco2_data::ExtendedJointStateData> state_buffer_;
+
+    jaco2_data::ExtendedJointStateDeque state_buffer_;
     std::deque<jaco2_data::JointAngles> angle_buffer_;
     std::deque<jaco2_data::JointData> tau_g_buffer_;
     std::deque<jaco2_data::JointData> temp_buffer_;

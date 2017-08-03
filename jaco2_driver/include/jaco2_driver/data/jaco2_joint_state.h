@@ -45,7 +45,7 @@ public:
      * @param type type of data
      * @param pos the data
      */
-    void setAngularData(const jaco2_data::AngularDataType type, const AngularPosition& pos);
+    void setAngularData(const jaco2_data::JointStateData::DataType type, const AngularPosition& pos);
 
     /**
      * @brief setLinearData set linear acceleration (accelerometer) data.  No gravity estimation, no filtering.
@@ -54,15 +54,11 @@ public:
      */
     void setLinearData(const AngularAcceleration& accs, const jaco2_data::TimeStamp &stamp);
 
-    AngularInfo getAngularData(const jaco2_data::AngularDataType type) const;
+    AngularInfo getAngularData(const jaco2_data::JointStateData::DataType type) const;
 
     jaco2_data::JointStateData getJointState() const;
     jaco2_data::AccelerometerData getLinearAccelerations() const;
     jaco2_data::ExtendedJointStateData getExtJointState() const;
-
-//    const jaco2_data::JointStateData& getJointStateRef() const;
-//    const jaco2_data::AccelerometerData& getLinearAccelerationsRef() const;
-//    const jaco2_data::ExtendedJointStateData& getExtJointStateRef() const;
 
     void setJointNames(const std::vector<std::string> &names);
     void setAccelerometerCalibration(std::vector<Jaco2Calibration::AccelerometerCalibrationParam> params);

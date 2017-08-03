@@ -3,12 +3,14 @@
 using namespace jaco2_data;
 
 JointStateData::JointStateData() :
-    label(-1)
+    label(-1),
+    gravity(0,0,0)
 {
 }
 
 JointStateData::JointStateData(std::size_t n) :
-    label(-1)
+    label(-1),
+    gravity(0,0,0)
 {
     resize(n);
 }
@@ -25,9 +27,6 @@ void JointStateData::resize(std::size_t n, double val)
 void JointStateData::normalize(std::size_t offset )
 {
 
-//    std::size_t end = position.end() - offset;
-//    auto it = position.begin();
-
     for(auto it = position.begin(); it < position.end() - offset; ++it){
         while(*it > 2*M_PI){
             *it -= 2.0*M_PI;
@@ -39,20 +38,20 @@ void JointStateData::normalize(std::size_t offset )
     }
 }
 
-Eigen::VectorXd JointStateData::getEigenVector(AngularDataType type, std::size_t offset) const
+Eigen::VectorXd JointStateData::getEigenVector(DataType type, std::size_t offset) const
 {
     const std::vector<double>* data;
     switch (type) {
-    case AngularDataPOS:
+    case DataType::JOINT_POS:
         data = &position;
         break;
-    case AngularDataVEL:
+    case DataType::JOINT_VEL:
         data = &velocity;
         break;
-    case AngularDataACC:
+    case DataType::JOINT_ACC:
         data = &acceleration;
         break;
-    case AngularDataTORQUE:
+    case DataType::JOINT_TORQUE:
         data = &torque;
         break;
     }
@@ -115,16 +114,16 @@ double JointStateData::norm(int type) const
 {
     const std::vector<double>* data;
     switch (type) {
-    case AngularDataPOS:
+    case (int) DataType::JOINT_POS:
         data = &position;
         break;
-    case AngularDataVEL:
+    case (int) DataType::JOINT_VEL:
         data = &velocity;
         break;
-    case AngularDataACC:
+    case (int) DataType::JOINT_ACC:
         data = &acceleration;
         break;
-    case AngularDataTORQUE:
+    case (int) DataType::JOINT_TORQUE:
         data = &torque;
         break;
     default:

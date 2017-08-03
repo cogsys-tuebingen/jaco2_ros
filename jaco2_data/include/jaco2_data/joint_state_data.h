@@ -5,16 +5,17 @@
 #include <jaco2_data/time_stamp.h>
 namespace jaco2_data {
 
-enum AngularDataType{
-    AngularDataPOS = 1,
-    AngularDataVEL = 2,
-    AngularDataACC = 3,
-    AngularDataTORQUE = 4
-};
 
 class JointStateData
-{
+{    
 public:
+    enum class DataType{
+        JOINT_POS = 1,
+        JOINT_VEL = 2,
+        JOINT_ACC = 3,
+        JOINT_TORQUE = 4
+    };
+
     JointStateData();
     JointStateData(std::size_t n);
 
@@ -22,7 +23,7 @@ public:
 
     void normalize(std::size_t offset = 0);
 
-    Eigen::VectorXd getEigenVector(AngularDataType type, std::size_t offset = 0) const;
+    Eigen::VectorXd getEigenVector(DataType type, std::size_t offset = 0) const;
 
     JointStateData abs() const;
 
