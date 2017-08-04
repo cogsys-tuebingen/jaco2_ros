@@ -60,10 +60,6 @@ public:
     jaco2_data::AccelerometerData getLinearAccelerations() const;
     jaco2_data::ExtendedJointStateData getExtJointState() const;
 
-//    const jaco2_data::JointStateData& getJointStateRef() const;
-//    const jaco2_data::AccelerometerData& getLinearAccelerationsRef() const;
-//    const jaco2_data::ExtendedJointStateData& getExtJointStateRef() const;
-
     void setJointNames(const std::vector<std::string> &names);
     void setAccelerometerCalibration(std::vector<Jaco2Calibration::AccelerometerCalibrationParam> params);
 

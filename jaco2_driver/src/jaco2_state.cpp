@@ -235,17 +235,6 @@ jaco2_data::AccelerometerData Jaco2State::getAccelerometerData() const
     return joint_state_.getLinearAccelerations();
 }
 
-//const jaco2_data::JointStateData& Jaco2State::getJointStateRef() const
-//{
-//    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-//    return joint_state_.getJointStateRef();
-//}
-
-//const jaco2_data::AccelerometerData& Jaco2State::getAccelerometerDataRef() const
-//{
-//    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-//    return joint_state_.getLinearAccelerationsRef();
-//}
 
 void Jaco2State::readPosVel()
 {

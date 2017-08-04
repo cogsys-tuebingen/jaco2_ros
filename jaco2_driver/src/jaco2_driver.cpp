@@ -408,16 +408,6 @@ jaco2_data::AccelerometerData Jaco2Driver::getAccelerometerData() const
     return state_.getAccelerometerData();
 }
 
-//const jaco2_data::JointStateData& Jaco2Driver::getJointStateRef() const
-//{
-//    return state_.getJointStateRef();
-//}
-
-//const jaco2_data::AccelerometerData& Jaco2Driver::getAccelerometerDataRef() const
-//{
-//    return state_.getAccelerometerDataRef();
-//}
-
 AngularPosition Jaco2Driver::getCurrent() const
 {
     return state_.getAngularCurrent();

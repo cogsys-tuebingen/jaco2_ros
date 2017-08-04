@@ -53,8 +53,6 @@ public:
     jaco2_data::TimeStamp getLastReadUpdate(int read_data) const;
     jaco2_data::JointStateData getJointState() const;
     jaco2_data::AccelerometerData getAccelerometerData() const;
-//    const jaco2_data::JointStateData& getJointStateRef() const;
-//    const jaco2_data::AccelerometerData& getAccelerometerDataRef() const;
     Jaco2Calibration::TorqueOffsetLut getTorqueCalibration() const;
 
     int getSetTorqueZeroResult() const;

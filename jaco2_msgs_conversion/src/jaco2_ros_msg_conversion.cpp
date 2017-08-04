@@ -164,9 +164,6 @@ jaco2_msgs::JointData JointDataConversion::data2ros(const jaco2_data::JointData 
 jaco2_msgs::JointAngles JointDataConversion::data2rosAngles(const jaco2_data::JointData &data)
 {
     jaco2_data::JointAngles d = data;
-//    d.frame_id = data.frame_id;
-//    d.stamp = data.stamp;
-//    d.data = data.data;
     jaco2_msgs::JointAngles res = JointAngleConversion::data2ros(d);
     return res;
 }
