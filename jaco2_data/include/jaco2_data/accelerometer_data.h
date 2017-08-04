@@ -1,16 +1,17 @@
 #ifndef ACCELEROMETER_DATA_H
 #define ACCELEROMETER_DATA_H
+#include <jaco2_data/types.h>
 #include <vector>
 #include <Eigen/StdVector>
 #include <jaco2_data/vector3stamped.h>
+
 namespace jaco2_data {
 
 class AccelerometerData
 {
 public:
-    typedef Eigen::aligned_allocator<Eigen::Vector3d> vector_3_stamped_aligned_allocator ;
-    typedef std::vector<Vector3Stamped, vector_3_stamped_aligned_allocator>::iterator iterator;
-    typedef std::vector<Vector3Stamped, vector_3_stamped_aligned_allocator>::const_iterator const_iterator;
+    typedef Vector3StampedCollection::iterator iterator;
+    typedef Vector3StampedCollection::const_iterator const_iterator;
 public:
 
     AccelerometerData();
@@ -54,7 +55,7 @@ public:
 public:
     int label;
 private:
-    std::vector<Vector3Stamped, vector_3_stamped_aligned_allocator> lin_acc;
+    Vector3StampedCollection lin_acc;
 };
 }
 #endif // ACCELEROMETER_DATA_H

@@ -5,17 +5,18 @@
 #include <memory>
 namespace jaco2_data {
 
-enum Jaco2JointStateDataType{
-    JOINT_POS = 1,
-    JOINT_VEL = 2,
-    JOINT_ACC = 3,
-    JOINT_TORQUE = 4,
-    LIN_ACC = 5
-};
-
 class ExtendedJointStateData
 {
 public:
+
+    enum class DataType {
+        JOINT_POS = 1,
+        JOINT_VEL = 2,
+        JOINT_ACC = 3,
+        JOINT_TORQUE = 4,
+        LIN_ACC = 5
+    };
+
     ExtendedJointStateData() {}
 
     ExtendedJointStateData(std::size_t nj, std::size_t na);

@@ -10,19 +10,19 @@ ExtendedJointStateData::ExtendedJointStateData(std::size_t nj, std::size_t na)
 std::shared_ptr<std::vector<double>> ExtendedJointStateData::dataAccess(int type) const
 {
     switch (type) {
-    case JOINT_POS:
+    case (int) DataType::JOINT_POS:
         return std::make_shared<std::vector<double>>(joint_state.position);
         break;
-    case JOINT_VEL:
+    case (int) DataType::JOINT_VEL:
         return std::make_shared<std::vector<double>>(joint_state.velocity);
         break;
-    case JOINT_ACC:
+    case (int) DataType::JOINT_ACC:
         return std::make_shared<std::vector<double>>(joint_state.acceleration);
         break;
-    case JOINT_TORQUE:
+    case (int) DataType::JOINT_TORQUE:
         return std::make_shared<std::vector<double>>(joint_state.torque);
         break;
-    case LIN_ACC:
+    case (int) DataType::LIN_ACC:
         return std::make_shared<std::vector<double>>(lin_acc.toVector());
     default:
         return nullptr;
