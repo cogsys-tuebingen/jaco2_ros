@@ -16,6 +16,7 @@ public:
 
     void fromNSec(unsigned long int nsecs);
     void fromMicroSec(unsigned long int musecs);
+    void fromSec(double sec);
 
     bool operator !=(const TimeStamp& other) const;
     bool operator <=(const TimeStamp& other) const;

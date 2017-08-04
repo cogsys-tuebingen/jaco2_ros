@@ -127,7 +127,7 @@
   <xacro:property name="link_2_Ixx" value=" 0.0097" />
   <xacro:property name="link_2_Ixy" value=" 0.0000" />
   <xacro:property name="link_2_Ixz" value="-0.0186" />
-  <xacro:property name="link_2_Iyy" value="-0.0500" />
+  <xacro:property name="link_2_Iyy" value="-0.0500" /> <!-- actually -Iyy ??? -->
   <xacro:property name="link_2_Iyz" value=" 0.0000" />
   <xacro:property name="link_2_Izz" value=" 0.0407" />
 

@@ -2,6 +2,7 @@
 #define JOINT_STATE_DATA_H
 #include <vector>
 #include <Eigen/Core>
+#include <jaco2_data/types.h>
 #include <jaco2_data/time_stamp.h>
 namespace jaco2_data {
 
@@ -33,6 +34,9 @@ public:
     JointStateData& operator+=(const JointStateData &other);
     JointStateData& operator*=(const double &b);
     JointStateData& operator/=(const double &b);
+
+    std::string toString(std::string delimiter = std::string(";")) const;
+    void popToSize(std::size_t n);
 
 private:
     static Eigen::VectorXd convert2eigen(const std::vector<double> *data, std::size_t offset = 0);

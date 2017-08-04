@@ -37,6 +37,7 @@ public:
 
     double norm() const;
     std::vector<double> toVector() const;
+    std::string to_string(const std::string delimiter = std::string(";")) const;
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW

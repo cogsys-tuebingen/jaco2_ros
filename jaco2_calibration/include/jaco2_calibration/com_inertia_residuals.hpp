@@ -2,6 +2,7 @@
 #define COM_INERTIA_RESIDUALS_HPP
 #include <ceres/ceres.h>
 #include <tf/tf.h>
+#include <jaco2_data/joint_state_data.h>
 #include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 #include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
 
@@ -11,7 +12,7 @@ typedef ceres::Jet<double,6> Vector6d;
 class ComInetriaResiduals
 {
 public:
-    ComInetriaResiduals(Jaco2KinDynLib::Jaco2DynamicModel* solver, DynamicCalibrationSample sample, std::string& link)
+    ComInetriaResiduals(Jaco2KinDynLib::Jaco2DynamicModel* solver, const jaco2_data::JointStateData& sample, const std::string& link)
         : solver_(solver),
           sample_(sample),
           link_(link)//,
@@ -28,18 +29,16 @@ public:
                params[4], params[6], params[7],
                params[5], params[7], params[8];
 
-//        solver_->changeDynamicParams(link_ ,mass, vect, mat);
         solver_->changeDynamicParams(link_, mass, vect, mat, sample_.gravity(0), sample_.gravity(1), sample_.gravity(2));
         std::vector<double> modelTorques;
-        int ec = solver_->getTorques(sample_.jointPos, sample_.jointVel, sample_.jointAcc, modelTorques);
+        int ec = solver_->getTorques(sample_.position, sample_.velocity, sample_.acceleration, modelTorques);
         if(ec >= 0)
         {
             double sum = 0;
             std::size_t endJoint = solver_->getKDLSegmentIndex(link_);
             for(std::size_t i = 0; i <= endJoint; ++i){
-//                sum += fabs(modelTorques[i] - sample_.jointTorque[i]);
 
-                double diff = modelTorques[i] - sample_.jointTorque[i];
+                double diff = modelTorques[i] - sample_.torque[i];
                 //sum of Mahalanobis-Distance
                 sum += sqrt(diff*(1.4/0.16)*diff);
             }
@@ -55,7 +54,7 @@ public:
 
     }
 
-    static ceres::CostFunction* Create (Jaco2KinDynLib::Jaco2DynamicModel* solver, DynamicCalibrationSample sample, std::string& link )
+    static ceres::CostFunction* Create (Jaco2KinDynLib::Jaco2DynamicModel* solver, const jaco2_data::JointStateData& sample, const std::string& link )
     {
         return ( new ceres::NumericDiffCostFunction< ComInetriaResiduals, ceres::CENTRAL, 1, 9 > (
                      new ComInetriaResiduals( solver, sample, link ), ceres::TAKE_OWNERSHIP ) );
@@ -63,7 +62,7 @@ public:
 
 private:
     Jaco2KinDynLib::Jaco2DynamicModel* solver_;
-    const DynamicCalibrationSample sample_;
+    const jaco2_data::JointStateData& sample_;
     const std::string link_;
 
 

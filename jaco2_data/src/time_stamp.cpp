@@ -37,6 +37,13 @@ void TimeStamp::fromMicroSec(unsigned long int musecs)
     stamp = std::chrono::time_point<std::chrono::high_resolution_clock>(tmp);
 }
 
+void TimeStamp::fromSec(double sec)
+{
+    unsigned long int nsec = sec *1e9;
+    std::chrono::nanoseconds  tmp = std::chrono::nanoseconds(nsec);
+    stamp = std::chrono::time_point<std::chrono::high_resolution_clock>(tmp);
+}
+
 bool TimeStamp::operator !=(const TimeStamp& other) const
 {
     return stamp != other.stamp;

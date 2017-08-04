@@ -5,7 +5,7 @@
 //    ros::spin();
 //}
 
-//std::shared_ptr<StaticDataGenerator> node_ptr;
+//StaticDataGenerator* node_ptr;
 
 //void mySigintHandler(int sig)
 //{
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     ros::NodeHandle nh("~");
 
     StaticDataGenerator node(nh);
-//    node_ptr = std::make_shared<StaticDataGenerator>(node);
+//    node_ptr = &node;
 
     //    ros::MultiThreadedSpinner mspin(2);
     ros::AsyncSpinner spinner(1);

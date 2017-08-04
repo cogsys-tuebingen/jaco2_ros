@@ -243,7 +243,7 @@ JointStateData& JointStateData::operator*=(const double &b)
 
 JointStateData& JointStateData::operator/=(const double &b)
 {
-    this->gravity *= b;
+    this->gravity /= b;
 
     for(double& d  : this->position){
         d /= b;
@@ -262,4 +262,50 @@ JointStateData& JointStateData::operator/=(const double &b)
         d /= b;
     }
     return *this;
+}
+
+std::string JointStateData::toString(std::string delimiter) const
+{
+//    std::string res;
+    std::stringstream ss;
+    ss << std::to_string(stamp.toNSec()) + delimiter;
+    for(auto val : position)
+    {
+        ss << std::to_string(val) + delimiter;
+    }
+    for(auto val : velocity)
+    {
+        ss << std::to_string(val) + delimiter;
+    }
+    for(auto val : acceleration)
+    {
+        ss << std::to_string(val) + delimiter;
+    }
+    for(auto val : torque)
+    {
+        ss << std::to_string(val) + delimiter;
+    }
+    ss << std::to_string(gravity(0)) + delimiter +
+          std::to_string(gravity(1)) + delimiter +
+          std::to_string(gravity(2)) + delimiter;
+    return ss.str();
+}
+
+void JointStateData::popToSize(std::size_t n)
+{
+    while(names.size() > n){
+        names.pop_back();
+    }
+    while(position.size() > n){
+        position.pop_back();
+    }
+    while(velocity.size() > n){
+        velocity.pop_back();
+    }
+    while(acceleration.size() > n){
+        acceleration.pop_back();
+    }
+    while(torque.size() > n){
+        torque.pop_back();
+    }
 }

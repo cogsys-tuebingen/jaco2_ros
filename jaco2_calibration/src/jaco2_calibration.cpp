@@ -16,7 +16,7 @@ Jaco2Calibration::~Jaco2Calibration()
 
 
 
-int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibrationSample> &samples)
+int Jaco2Calibration::calibrateCoMandInertia(const jaco2_data::JointStateDataCollection &samples)
 {
     //    dynParams_.resize(model_.getNrOfSegments());
     std::vector<std::string> links = model_.getLinkNames();
@@ -92,7 +92,7 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
             }
 
 
-            for(auto sample : samples)
+            for(const jaco2_data::JointStateData& sample : samples)
             {
                 ceres::CostFunction* cost_function = ComInetriaResiduals::Create(&model_, sample, link);
                 problem.AddResidualBlock(cost_function, new ceres::CauchyLoss(0.1), dyn_calib_params.data());
@@ -263,9 +263,9 @@ void Jaco2Calibration::convert(const std::size_t &idx, const AccelerationSamples
     std::size_t nElem = samples.samples[idx].size();
     data.resize(nElem);
     if(nElem > 0) {
-        double t0 = samples.samples[0].at(0).time;
+        double t0 = samples.samples[0].at(0).stamp.toSec();
         for(std::size_t i = 0; i < nElem; ++i){
-            double t = samples.samples[idx][i].time -t0;
+            double t = samples.samples[idx][i].stamp.toSec() - t0;
             double x = samples.samples[idx][i].vector[0];
             double y = samples.samples[idx][i].vector[1];
             double z = samples.samples[idx][i].vector[2];
@@ -287,14 +287,15 @@ void Jaco2Calibration::convert(const std::size_t &idx, const std::vector<imu_tk:
         double x = data[i].x();
         double y = data[i].y();
         double z = data[i].z();
-        AccelerationData samp(t, x, y,z);
+        jaco2_data::Vector3Stamped samp(x, y,z);
+        samp.stamp.fromSec(t);
         samples.push_back(idx,samp);
     }
 }
 
-std::vector<DynamicCalibratedParameters> Jaco2Calibration::getDynamicUrdfParam() const
+DynamicCalibratedParametersCollection Jaco2Calibration::getDynamicUrdfParam() const
 {
-    std::vector<DynamicCalibratedParameters> result;
+    DynamicCalibratedParametersCollection result;
     for(auto link : model_.getLinkNames())
     {
         DynamicCalibratedParameters param;
