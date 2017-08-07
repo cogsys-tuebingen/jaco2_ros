@@ -37,6 +37,8 @@ public:
 
     std::string toString(std::string delimiter = std::string(";")) const;
     void popToSize(std::size_t n);
+    std::vector<double> gravity2std() const;
+    void setGravityFrom(const std::vector<double>& data);
 
 private:
     static Eigen::VectorXd convert2eigen(const std::vector<double> *data, std::size_t offset = 0);

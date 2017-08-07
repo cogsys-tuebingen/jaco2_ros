@@ -309,3 +309,18 @@ void JointStateData::popToSize(std::size_t n)
         torque.pop_back();
     }
 }
+
+std::vector<double> JointStateData::gravity2std() const
+{
+    std::vector<double> res;
+    res.push_back(gravity(0));
+    res.push_back(gravity(1));
+    res.push_back(gravity(2));
+}
+void JointStateData::setGravityFrom(const std::vector<double>& data)
+{
+    gravity(0) = data.at(0);
+    gravity(1) = data.at(1);
+    gravity(2) = data.at(2);
+}
+
