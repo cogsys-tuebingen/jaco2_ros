@@ -28,6 +28,7 @@ Jaco2DriverNode::Jaco2DriverNode()
       rightArm_(true),
       ok_(true)
 {
+
     pubJointState_ = private_nh_.advertise<sensor_msgs::JointState>("out/joint_states", 2);
     pubJointAngles_ = private_nh_.advertise<jaco2_msgs::JointAngles>("out/joint_angles",2);
     pubFingerPositions_ = private_nh_.advertise<jaco2_msgs::FingerPosition>("out/finger_positions",2);
@@ -69,6 +70,11 @@ Jaco2DriverNode::Jaco2DriverNode()
     graspServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::gripperGoalCb, this));
     fingerServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::fingerGoalCb,this));
     blockingAngleServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::blockingAngleGoalCb, this));
+
+    dyn_model_calib_file_path_ = private_nh_.param<std::string>("jaco_dynamic_model_calibration_file", "/localhome/zwiener/workspace/jaco_ws/src/jaco2_contact_detection_evaluation/configs/regression_rb_param_better.txt");
+    if(dyn_model_calib_file_path_ != ""){
+        ROS_INFO_STREAM("Using dynamic model calibration.");
+    }
 
     f_ = boost::bind(&Jaco2DriverNode::dynamicReconfigureCb, this, _1, _2);
     paramServer_.setCallback(f_);
@@ -161,10 +167,6 @@ Jaco2DriverNode::Jaco2DriverNode()
                              <<". Or setting the parameters failed. Using default parameters instead.");
 
         }
-    }
-    dyn_model_calib_file_path_ = private_nh_.param<std::string>("jaco_dynamic_model_calibration_file", "");
-    if(dyn_model_calib_file_path_ != ""){
-        ROS_INFO_STREAM("Using dynamic model calibration.");
     }
 
 

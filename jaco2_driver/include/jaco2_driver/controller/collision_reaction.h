@@ -5,7 +5,7 @@
 #include <jaco2_driver/jaco2_state.h>
 #include <jaco2_kin_dyn_lib/jaco2_residual_vector.h>
 #include <jaco2_driver/jaco2_driver_configureConfig.h>
-
+#include <jaco2_data/dynamic_calibrated_parameters.hpp>
 /**
  * @brief The CollisionReaction class
  *
@@ -47,7 +47,8 @@ public:
 
     void resetResiduals();
     void update();
-    void setDynModelCalibration(std::string file_name);
+    void loadDynModelCalibration(std::string file_name);
+    void setDynModelCalibration();
 
     bool inCollision() const;
     bool energyDisipation() const;
@@ -84,5 +85,6 @@ private:
     AngularInfo vel_bound_;
     AngularInfo max_torques_;
     AngularInfo velocity_threshold_;
+    Jaco2Calibration::DynamicCalibratedParametersCollection model_calib_;
 };
 #endif // COLLISION_REACTION_H
