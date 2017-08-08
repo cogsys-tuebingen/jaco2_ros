@@ -11,6 +11,7 @@
 #include <jaco2_data/gravity_params.hpp>
 #include <jaco2_data/velocity_calibration.hpp>
 #include <jaco2_data/torque_offset_calibration.hpp>
+#include <jaco2_data/dynamic_calibration_io.h>
 #include <jaco2_msgs/Jaco2GfreeTorques.h>
 #include <jaco2_msgs_conversion/jaco2_ros_msg_conversion.h>
 
@@ -161,6 +162,10 @@ Jaco2DriverNode::Jaco2DriverNode()
                              <<". Or setting the parameters failed. Using default parameters instead.");
 
         }
+    }
+    dyn_model_calib_file_path_ = private_nh_.param<std::string>("jaco_dynamic_model_calibration_file", "");
+    if(dyn_model_calib_file_path_ != ""){
+        ROS_INFO_STREAM("Using dynamic model calibration.");
     }
 
 
@@ -460,7 +465,12 @@ bool Jaco2DriverNode::tick()
 
 void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureConfig &config, uint32_t level)
 {
+
+    if(config.dynamic_model_calibration_file == "" && dyn_model_calib_file_path_ != ""){
+        config.dynamic_model_calibration_file = dyn_model_calib_file_path_;
+    }
     driver_.updateControllerConfig(config);
+
 
     std::vector<int> highPriQue;
     std::vector<int> lowPriQue;

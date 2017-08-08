@@ -120,6 +120,7 @@ private:
     jaco2_data::TimeStamp  lastTimeJsPublished_;
 
     double j6o_;
+    std::string dyn_model_calib_file_path_;
 };
 #endif // JACO2_DRIVER_NODE_H
 

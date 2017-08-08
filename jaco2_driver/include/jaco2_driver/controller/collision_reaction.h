@@ -5,6 +5,7 @@
 #include <jaco2_driver/jaco2_state.h>
 #include <jaco2_kin_dyn_lib/jaco2_residual_vector.h>
 #include <jaco2_driver/jaco2_driver_configureConfig.h>
+
 /**
  * @brief The CollisionReaction class
  *
@@ -46,6 +47,7 @@ public:
 
     void resetResiduals();
     void update();
+    void setDynModelCalibration(std::string file_name);
 
     bool inCollision() const;
     bool energyDisipation() const;

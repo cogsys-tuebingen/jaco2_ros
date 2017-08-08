@@ -2,6 +2,7 @@
 #include <jaco2_driver/data_conversion.h>
 #include <kinova/KinovaArithmetics.hpp>
 #include <iostream>
+#include <jaco2_data/dynamic_calibration_io.h>
 using namespace KinovaArithmetics;
 
 CollisionReaction::CollisionReaction(Jaco2State &state):
@@ -284,6 +285,8 @@ void CollisionReaction::setConfig(jaco2_driver::jaco2_driver_configureConfig &cf
         setRobotModel(robot_model_,base_link_, tip_link_);
     }
 
+    setDynModelCalibration(cfg.dynamic_model_calibration_file);
+
 
 }
 
@@ -348,5 +351,16 @@ double CollisionReaction::energyDisipation(AngularInfo& velocity, AngularInfo& l
     }
     if(vel <= - threshold){
         return upper;
+    }
+}
+
+
+
+void CollisionReaction::setDynModelCalibration(std::string file_name)
+{
+    Jaco2Calibration::DynamicCalibratedParametersCollection model;
+    Jaco2Calibration::loadDynParm(file_name, model);
+    for(const Jaco2Calibration::DynamicCalibratedParameters& p : model){
+        resiudals_.changeDynamicParams(p.linkName, p.mass, p.coM, p.inertia);
     }
 }

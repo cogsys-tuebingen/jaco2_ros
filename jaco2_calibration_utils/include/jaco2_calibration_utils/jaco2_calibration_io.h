@@ -6,7 +6,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <jaco2_calibration_utils/dynamic_calibrated_parameters.hpp>
+#include <jaco2_data/dynamic_calibrated_parameters.hpp>
 #include <jaco2_data/joint_state_data.h>
 #include <jaco2_data/accelerometer_data.h>
 #include <jaco2_calibration_utils/acceleration_samples.hpp>
