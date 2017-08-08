@@ -3,6 +3,7 @@
 #include <kinova/KinovaArithmetics.hpp>
 #include <iostream>
 #include <jaco2_data/dynamic_calibration_io.h>
+#include <jaco2_data/dynamic_calibrated_parameters.hpp>
 using namespace KinovaArithmetics;
 
 CollisionReaction::CollisionReaction(Jaco2State &state):
@@ -359,7 +360,7 @@ double CollisionReaction::energyDisipation(AngularInfo& velocity, AngularInfo& l
 void CollisionReaction::setDynModelCalibration(std::string file_name)
 {
     Jaco2Calibration::DynamicCalibratedParametersCollection model;
-    Jaco2Calibration::loadDynParm(file_name, model);
+    Jaco2Calibration::DynCalibrationIO::loadDynParm(file_name, model);
     for(const Jaco2Calibration::DynamicCalibratedParameters& p : model){
         resiudals_.changeDynamicParams(p.linkName, p.mass, p.coM, p.inertia);
     }

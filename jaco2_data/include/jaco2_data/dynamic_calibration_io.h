@@ -3,8 +3,12 @@
 #include <jaco2_data/dynamic_calibrated_parameters.hpp>
 
 namespace Jaco2Calibration {
+class DynCalibrationIO{
+public:
+    DynCalibrationIO() {}
 
-    void save(std::string name, const DynamicCalibratedParametersCollection &params);
-    void loadDynParm(std::string filename, DynamicCalibratedParametersCollection& params);
+    static void save(std::string name, const DynamicCalibratedParametersCollection &params);
+    static void loadDynParm(std::string filename, DynamicCalibratedParametersCollection& params);
+};
 }
 #endif // DYNAMIC_CALIBRATION_IO_H

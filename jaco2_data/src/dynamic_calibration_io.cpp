@@ -1,10 +1,10 @@
 #include <jaco2_data/dynamic_calibration_io.h>
-#include <yaml-cpp/yaml.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <yaml-cpp/yaml.h>
 using namespace Jaco2Calibration;
-void save(std::string name, const DynamicCalibratedParametersCollection &params)
+void DynCalibrationIO::save(std::string name, const DynamicCalibratedParametersCollection &params)
 {
     std::ofstream file(name);
     YAML::Emitter yamlEmit(file);
@@ -32,7 +32,7 @@ void save(std::string name, const DynamicCalibratedParametersCollection &params)
 }
 
 
-void loadDynParm(std::string filename, DynamicCalibratedParametersCollection& params)
+void DynCalibrationIO::loadDynParm(std::string filename, DynamicCalibratedParametersCollection& params)
 {
     YAML::Node doc = YAML::LoadFile(filename);
     doc = doc["parameter"];

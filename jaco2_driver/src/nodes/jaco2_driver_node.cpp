@@ -11,7 +11,6 @@
 #include <jaco2_data/gravity_params.hpp>
 #include <jaco2_data/velocity_calibration.hpp>
 #include <jaco2_data/torque_offset_calibration.hpp>
-#include <jaco2_data/dynamic_calibration_io.h>
 #include <jaco2_msgs/Jaco2GfreeTorques.h>
 #include <jaco2_msgs_conversion/jaco2_ros_msg_conversion.h>
 
