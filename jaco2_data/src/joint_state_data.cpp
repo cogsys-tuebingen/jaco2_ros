@@ -316,6 +316,7 @@ std::vector<double> JointStateData::gravity2std() const
     res.push_back(gravity(0));
     res.push_back(gravity(1));
     res.push_back(gravity(2));
+    return res;
 }
 void JointStateData::setGravityFrom(const std::vector<double>& data)
 {
