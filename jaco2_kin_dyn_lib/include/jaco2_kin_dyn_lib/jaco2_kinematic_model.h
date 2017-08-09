@@ -89,18 +89,12 @@ public:
     std::string getRootLink() const {return root_;}
     std::string getTipLink() const {return tip_;}
 
-    double getUpperJointLimit(const std::size_t id);
-    double getLowerJointLimit(const std::size_t id);
+    double getUpperJointLimit(const std::size_t id) const;
+    double getLowerJointLimit(const std::size_t id) const;
 
 
     Eigen::Vector3d getLinkFixedTranslation(const std::string &link) const;
     Eigen::Matrix3d getLinkFixedRotation(const std::string &link) const;
-
-    //    static void convert(const KDL::JntArray& in, std::vector<double>& out);
-    //    static void convert(const std::vector<double>& in, KDL::JntArray& out);
-    //    static void PoseTFToKDL(const tf::Pose& t, KDL::Frame& k);
-
-
 
     /**
      * @brief getRotationAxis gets the rotation axis of the link in the link frame
