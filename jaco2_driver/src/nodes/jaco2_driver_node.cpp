@@ -71,7 +71,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     fingerServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::fingerGoalCb,this));
     blockingAngleServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::blockingAngleGoalCb, this));
 
-    dyn_model_calib_file_path_ = private_nh_.param<std::string>("jaco_dynamic_model_calibration_file", "/localhome/zwiener/workspace/jaco_ws/src/jaco2_contact_detection_evaluation/configs/regression_rb_param_better.txt");
+    dyn_model_calib_file_path_ = private_nh_.param<std::string>("jaco_dynamic_model_calibration_file", "");
     if(dyn_model_calib_file_path_ != ""){
         ROS_INFO_STREAM("Using dynamic model calibration.");
     }
