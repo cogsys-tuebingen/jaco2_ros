@@ -60,7 +60,6 @@ private:
     ros::Subscriber sub_execution_;
     ros::Subscriber sub_accs_;
     rosbag::Bag bag_;
-    rosbag::Bag valid_bag_;
     mutable std::recursive_mutex data_mutex_;
     std::vector<std::vector<int>> steps_;
 

@@ -48,10 +48,10 @@ StaticDataGenerator::StaticDataGenerator(ros::NodeHandle &nh):
 
     TreeNode tree(n_joints_, n_steps_);
     steps_ = TreeNode::getIndeces(tree);
-    std::string bagName = nh_.param<std::string>("bag_name","/tmp/static_data.bag");
-    std::string bagValidName = nh_.param<std::string>("bag_name","/tmp/static_data_validation.bag");
+    std::string bagName = nh_.param<std::string>("bag_name","/tmp/static_data");
+    bagName += "_" + std::to_string(ros::Time::now().toNSec()) + ".bag";
+
     bag_.open(bagName, rosbag::bagmode::Write);
-    valid_bag_.open(bagValidName, rosbag::bagmode::Write);
 
 }
 
@@ -107,7 +107,6 @@ void StaticDataGenerator::generateData()
     }
 
     bag_.close();
-    valid_bag_.close();
 
 }
 
@@ -260,7 +259,6 @@ void StaticDataGenerator::saveBag()
 {
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     bag_.close();
-    valid_bag_.close();
 }
 
 bool StaticDataGenerator::moving()
