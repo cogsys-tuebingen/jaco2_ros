@@ -43,6 +43,9 @@ private:
 
     void saveStaticData();
     bool moving();
+    std::size_t searchStart() const;
+    bool discreteVectorEqual(const std::vector<int> first,
+                             const std::vector<int>& second) const;
 
 private:
     ros::NodeHandle nh_;
@@ -70,6 +73,7 @@ private:
     std::deque<int> status_buffer_;
 
     jaco2_data::AccelerometerData last_accs_;
+    std::vector<int> start_vec_;
 };
 
 #endif // STATIC_DATA_GENERATOR_H

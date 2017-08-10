@@ -20,6 +20,8 @@ struct ConfigurationList{
 
     void add(const Configuration& c);
 
+    void clear();
+
     void save(std::string filename) const;
     bool load(std::string filename);
 

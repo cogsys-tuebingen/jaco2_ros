@@ -38,12 +38,14 @@ StaticDataGenerator::StaticDataGenerator(ros::NodeHandle &nh):
     else{
         default_start.resize(n_joints_, 0);
     }
-
+    start_vec_.resize(n_joints_);
     for(std::size_t i = 0; i < n_joints_; ++i){
-        std::string param_name_upper= "joint_"+ std::to_string(i+1) + "_upper_limit";
-        std::string param_name_lower= "joint_"+ std::to_string(i+1) + "_lower_limit";
+        std::string param_name_upper = "joint_"+ std::to_string(i+1) + "_upper_limit";
+        std::string param_name_lower = "joint_"+ std::to_string(i+1) + "_lower_limit";
+        std::string param_start_dist = "discrete_start_" + std::to_string(i+1);
         nh.param<double>(param_name_upper, upper_limits_[i], default_start[i] + M_PI_4);
         nh.param<double>(param_name_lower, lower_limits_[i], default_start[i] - M_PI_4);
+        nh.param<int>(param_start_dist, start_vec_[i], 0);
     }
 
     TreeNode tree(n_joints_, n_steps_);
@@ -64,9 +66,12 @@ void StaticDataGenerator::generateData()
 {
     std::vector<double> goal(6,0);
     std::size_t n_points = steps_.size();
-    std::size_t run = 0;
     ros::Time start = ros::Time::now();
-    for(auto id : steps_){
+    std::size_t start_id = searchStart();
+//    std::size_t run = 0;
+//    for(auto id : steps_){
+    for(std::size_t iter = start_id; iter < n_points; ++iter){
+        const std::vector<int>& id = steps_[iter];
         bool ismoving = moving();
         if(!ismoving){
             std::string cfg;
@@ -92,15 +97,14 @@ void StaticDataGenerator::generateData()
             }
             ros::Duration dur = ros::Time::now() - start;
 
-            ROS_INFO_STREAM("Progress: " << run/((float) n_points) * 100 << "% | Steps: ("
-                            << run << "/ "
+            ROS_INFO_STREAM("Progress: " << iter/((float) n_points) * 100 << "% | Steps: ("
+                            << iter << "/ "
                             << n_points << ") | time since start (h:min:sec): "
                             << (int)dur.toSec()/3600 << ":"
                             << ((int)dur.toSec()/60)  % 60 << ":"
                             << ((int)dur.toSec()) % 60);
 
 
-            ++run;
 
             saveStaticData();
         }
@@ -269,4 +273,32 @@ bool StaticDataGenerator::moving()
     }
     bool is_moving = status_buffer_.back() != actionlib_msgs::GoalStatus::SUCCEEDED;
     return is_moving;
+}
+
+std::size_t StaticDataGenerator::searchStart() const
+{
+    std::size_t i = 0;
+    for(auto id : steps_){
+        if(discreteVectorEqual(id, start_vec_)){
+            return i;
+        }
+        ++i;
+    }
+    return 0;
+}
+
+bool StaticDataGenerator::discreteVectorEqual(const std::vector<int> first,
+                                              const std::vector<int> &second) const
+{
+    if(first.size() != second.size()){
+        return false;
+    }
+
+    auto it_sec = second.begin();
+    bool test = true;
+    for(auto v : first){
+        test &= (v == *it_sec);
+        ++it_sec;
+    }
+    return test;
 }
