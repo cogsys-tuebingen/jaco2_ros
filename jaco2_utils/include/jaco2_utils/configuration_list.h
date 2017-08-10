@@ -22,6 +22,9 @@ struct ConfigurationList{
 
     void clear();
 
+    std::size_t size() const {return configurations.size();}
+
+
     void save(std::string filename) const;
     bool load(std::string filename);
 
