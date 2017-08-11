@@ -74,30 +74,27 @@ public:
         ros::Duration dt = now-lastTime_;
         lastTime_ = now;
         dt_ = dt.toSec();
-        Jaco2Calibration::DynamicCalibrationSample sample;
-        sample.time = dt_;
+        jaco2_data::JointStateData sample;
+        sample.stamp.fromNSec(now.toNSec());
 
         double tdiff = dt_;
-        if (samples_.size() > 2) {
-            tdiff = samples_.at(samples_.size() -1).time + samples_.at(samples_.size() -2).time;
-        }
+
         for(std::size_t i = 0; i < 6; ++i){
-            sample.jointPos[i] = msg->position[i];
-            sample.jointVel[i] = msg->velocity[i];
-            //            sample.jointTorque[i] = msg->effort[i];
-            //            sample.jointAcc[i] = msg->acceleration[i];
+            sample.position[i] = msg->position[i];
+            sample.velocity[i] = msg->velocity[i];
+
             if(samples_.size() > 2 && dt_ !=0)
             {
-                sample.jointAcc[i] = (sample.jointVel[i] - samples_.at(samples_.size() -2).jointVel[i])/(tdiff);
+                sample.acceleration[i] = (sample.velocity[i] - samples_.at(samples_.size() -2).velocity[i])/(tdiff);
             }
             else{
-                sample.jointAcc[i] = 0;
+                sample.acceleration[i] = 0;
             }
         }
-        dynSolver_.getTorques(sample.jointPos, sample.jointVel, sample.jointAcc,sample.jointTorque);
+        dynSolver_.getTorques(sample.position, sample.velocity, sample.acceleration,sample.torque);
         // add white noise
         for(std::size_t i = 0; i < 6; ++i) {
-            sample.jointTorque[i] += (double) distribution_(generator_);
+            sample.torque[i] += (double) distribution_(generator_);
         }
 
         //estimate jaco's base acceleration
@@ -108,19 +105,6 @@ public:
         //        ROS_INFO_STREAM("Recoding_Data");
     }
 
-
-    //    bool changeCalibCallback(jaco2_msgs::CalibAcc::Request & req, jaco2_msgs::CalibAcc::Response& res)
-    //    {
-    //        calibAcc_ = req.calib_acc;
-    //        if(calibAcc_){
-    //            res.calib_acc_result = "Starting Accelerometer Calibration.";
-    //        }
-    //        else{
-    //            res.calib_acc_result = "Starting Dynamic Parameter Calibration.";
-    //        }
-    //        notCalib_ = true;
-    //        return true;
-    //    }
 
 
     bool checkCollision(const planning_scene_monitor::PlanningSceneMonitorPtr& plm, const robot_state::RobotState& rstate )
@@ -217,7 +201,7 @@ public:
             else{
                 Jaco2Calibration::Jaco2CalibrationIO::save("/tmp/dyn_samples_sim.txt", samples_);
                 int ec = calibration_.calibrateCoMandInertia(samples_);
-                std::vector<Jaco2Calibration::DynamicCalibratedParameters> dynparams;
+                Jaco2Calibration::DynamicCalibratedParametersCollection dynparams;
                 if(ec > -1){
                     dynparams = calibration_.getDynamicCalibration();
                 }
@@ -349,14 +333,14 @@ private:
     ros::Subscriber subJointState_;
     ros::Subscriber subSensors_;
     ros::Subscriber subJointAcc_;
-    std::vector<Jaco2Calibration::DynamicCalibrationSample> samples_;
-    std::vector<Eigen::Vector3d> gravity_;
-    //    Jaco2Calibration::AccelerationSamples accSamples_;
+    jaco2_data::JointStateDataCollection samples_;
+    std::vector<Eigen::Vector3d, EV3dAllocator> gravity_;
+
     ros::Time lastTime_;
     double dt_;
     jaco2_msgs::Jaco2Sensor jacoSensorMsg_;
     ros::ServiceServer calibServiceServer_;
-    std::vector<Eigen::Vector3d> gsum_;
+    std::vector<Eigen::Vector3d, EV3dAllocator> gsum_;
     std::vector<std::string> jointGroupNames_;
     moveit::planning_interface::MoveGroup moveGroup_;
     moveit::planning_interface::PlanningSceneInterface planningSceneInterface_;
@@ -364,8 +348,7 @@ private:
     Jaco2KinDynLib::Jaco2DynamicModel dynSolver_;
     std::default_random_engine generator_;
     std::normal_distribution<double> distribution_;
-    //    ros::Publisher display_publisher_;
-    //    moveit_msgs::DisplayTrajectory display_trajectory_;
+
 };
 
 int main(int argc, char *argv[])

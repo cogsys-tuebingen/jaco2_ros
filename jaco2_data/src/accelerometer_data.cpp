@@ -83,10 +83,10 @@ const Vector3Stamped& AccelerometerData::back() const
     return lin_acc.back();
 }
 
-void AccelerometerData::emplace_back(Vector3Stamped&& val)
-{
-    lin_acc.emplace_back(val);
-}
+//void AccelerometerData::emplace_back(Vector3Stamped&& val)
+//{
+//    lin_acc.emplace_back(val);
+//}
 
 void AccelerometerData::push_back(const Vector3Stamped &val)
 {
@@ -125,4 +125,45 @@ double AccelerometerData::norm() const
     }
 
     return res;
+}
+
+AccelerometerData AccelerometerData::operator+(const AccelerometerData &other) const
+{
+    AccelerometerData res;
+    res.resize(this->size());
+    auto it = other.begin();
+    auto it_res = res.begin();
+    for(auto v : lin_acc){
+        *it_res = v + *it;
+        ++it_res;
+        ++it;
+    }
+
+    return res;
+}
+
+AccelerometerData& AccelerometerData::operator+=(const AccelerometerData &other)
+{
+    auto it = other.begin();
+    for(Vector3Stamped& v : lin_acc){
+        v += *it;
+        ++it;
+    }
+    return *this;
+}
+
+AccelerometerData& AccelerometerData::operator*=(const double &b)
+{
+    for(Vector3Stamped& v : lin_acc){
+        v *= b;
+    }
+    return *this;
+}
+
+AccelerometerData& AccelerometerData::operator/=(const double &b)
+{
+    for(Vector3Stamped& v : lin_acc){
+        v /= b;
+    }
+    return *this;
 }

@@ -1,19 +1,22 @@
 #ifndef JOINT_STATE_DATA_H
 #define JOINT_STATE_DATA_H
+#include <vector>
 #include <Eigen/Core>
+#include <jaco2_data/types.h>
 #include <jaco2_data/time_stamp.h>
 namespace jaco2_data {
 
-enum AngularDataType{
-    AngularDataPOS = 1,
-    AngularDataVEL = 2,
-    AngularDataACC = 3,
-    AngularDataTORQUE = 4
-};
 
 class JointStateData
-{
+{    
 public:
+    enum class DataType{
+        JOINT_POS = 1,
+        JOINT_VEL = 2,
+        JOINT_ACC = 3,
+        JOINT_TORQUE = 4
+    };
+
     JointStateData();
     JointStateData(std::size_t n);
 
@@ -21,11 +24,21 @@ public:
 
     void normalize(std::size_t offset = 0);
 
-    Eigen::VectorXd getEigenVector(AngularDataType type, std::size_t offset = 0) const;
+    Eigen::VectorXd getEigenVector(DataType type, std::size_t offset = 0) const;
 
     JointStateData abs() const;
 
     double norm(int type) const;
+
+    JointStateData operator+(const JointStateData &other) const;
+    JointStateData& operator+=(const JointStateData &other);
+    JointStateData& operator*=(const double &b);
+    JointStateData& operator/=(const double &b);
+
+    std::string toString(std::string delimiter = std::string(";")) const;
+    void popToSize(std::size_t n);
+    std::vector<double> gravity2std() const;
+    void setGravityFrom(const std::vector<double>& data);
 
 private:
     static Eigen::VectorXd convert2eigen(const std::vector<double> *data, std::size_t offset = 0);

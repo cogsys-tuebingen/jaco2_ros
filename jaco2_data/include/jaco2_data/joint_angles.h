@@ -1,45 +1,29 @@
 #ifndef JOINT_ANGLES_H
 #define JOINT_ANGLES_H
 #include <vector>
-#include "time_stamp.h"
+#include <jaco2_data/joint_data.h>
+
 namespace jaco2_data {
 
-class JointAngles
+class JointAngles : public JointData
 {
+//public:
+//    typedef std::vector<double>::iterator iterator;
+//    typedef std::vector<double>::const_iterator const_iterator;
 public:
-    typedef std::vector<double>::iterator iterator;
-    typedef std::vector<double>::const_iterator const_iterator;
-public:
-    JointAngles() {}
+    JointAngles();
+    JointAngles(std::size_t n);
+    JointAngles(const JointData& d);
 
-    iterator begin();
-    const_iterator begin() const;
+    JointAngles normalize() const;
+    JointAngles& operator =(const JointData &other);
 
-    iterator end();
-    const_iterator end() const;
+private:
+    static double normalize(double angle);
 
-    double& at(std::size_t i);
-    const double& at(std::size_t i) const;
-
-    double& operator[](std::size_t i);
-    const double& operator [](std::size_t i) const;
-
-    double& front();
-    const double& front() const;
-
-    double& back();
-    const double& back() const;
-
-    std::size_t size() const;
-    void resize(std::size_t n, double val = 0);
-
-    void emplace_back(double&& val);
-    void push_back(const double& val);
+    bool normalized_;
 
 
-public:
-    TimeStamp stamp;
-    std::vector<double> angles;
 };
 }
 #endif // JOINT_ANGLES_H

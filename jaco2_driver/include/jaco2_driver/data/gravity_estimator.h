@@ -12,6 +12,8 @@ public:
     Eigen::Vector3d update(const jaco2_data::ExtendedJointStateData& data);
     Eigen::Vector3d update(const jaco2_data::AccelerometerData& data);
 
+public:
+    bool static_base;
 private:
     std::size_t buffer_size_;
     std::deque<Eigen::Vector3d> g_buffer_;

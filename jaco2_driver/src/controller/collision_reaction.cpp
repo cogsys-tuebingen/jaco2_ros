@@ -2,6 +2,8 @@
 #include <jaco2_driver/data_conversion.h>
 #include <kinova/KinovaArithmetics.hpp>
 #include <iostream>
+#include <jaco2_data/dynamic_calibration_io.h>
+#include <jaco2_data/dynamic_calibrated_parameters.hpp>
 using namespace KinovaArithmetics;
 
 CollisionReaction::CollisionReaction(Jaco2State &state):
@@ -11,7 +13,7 @@ CollisionReaction::CollisionReaction(Jaco2State &state):
     collision_counter_(0),
     threshold_(std::sqrt(6)*2),
     stop_threshold_(0),
-//    dt_(0),
+    //    dt_(0),
     residualNorm_(0)
 {
     kr_.InitStruct();
@@ -60,6 +62,7 @@ void CollisionReaction::setRobotModel(const std::string &robot_model, const std:
     resiudals_.setGains(r_gains);
     resetResiduals();
     bias_.setZero(n_joints_);
+    setDynModelCalibration();
 }
 
 void CollisionReaction::update()
@@ -100,12 +103,12 @@ AngularInfo CollisionReaction::torqueControlReflex()
 
     Eigen::VectorXd unbiased = last_residual_ - bias_;
 
-//    cmd.Actuator1 = kr_.Actuator1 * last_residual_(0);
-//    cmd.Actuator2 = kr_.Actuator2 * last_residual_(1);
-//    cmd.Actuator3 = kr_.Actuator3 * last_residual_(2);
-//    cmd.Actuator4 = kr_.Actuator4 * last_residual_(3);
-//    cmd.Actuator5 = kr_.Actuator5 * last_residual_(4);
-//    cmd.Actuator6 = kr_.Actuator6 * last_residual_(5);
+    //    cmd.Actuator1 = kr_.Actuator1 * last_residual_(0);
+    //    cmd.Actuator2 = kr_.Actuator2 * last_residual_(1);
+    //    cmd.Actuator3 = kr_.Actuator3 * last_residual_(2);
+    //    cmd.Actuator4 = kr_.Actuator4 * last_residual_(3);
+    //    cmd.Actuator5 = kr_.Actuator5 * last_residual_(4);
+    //    cmd.Actuator6 = kr_.Actuator6 * last_residual_(5);
 
     cmd.Actuator1 = kr_.Actuator1 * unbiased(0);
     cmd.Actuator2 = kr_.Actuator2 * unbiased(1);
@@ -177,7 +180,7 @@ void CollisionReaction::updateResiduals()
 {
     Jaco2KinDynLib::ResidualData data;
 
-    auto state = state_.getJointStateRef();
+    auto state = state_.getJointState();
 
     data.gx = state.gravity(0);
     data.gy = state.gravity(1);
@@ -188,7 +191,7 @@ void CollisionReaction::updateResiduals()
     data.joint_velocities.insert(data.joint_velocities.begin(), state.velocity.begin(), state.velocity.begin() + n_joints_);
     data.torques.insert(data.torques.begin(), state.torque.begin(), state.torque.begin() + n_joints_);
 
-//    data.dt = dt_;
+    //    data.dt = dt_;
     if(initial_){
         data.dt = 1./65;
         initial_ = false;
@@ -196,7 +199,7 @@ void CollisionReaction::updateResiduals()
     else{
         data.dt = std::abs(jaco2_data::TimeStamp::timeDiffinSeconds(state.stamp, last_state_.stamp));
     }
-//    std::cout << "collision rreaction: dt = " << data.dt <<" | " << jaco2_data::TimeStamp::timeDiffinSeconds(state.stamp, last_state_.stamp) << std::endl;
+    //    std::cout << "collision rreaction: dt = " << data.dt <<" | " << jaco2_data::TimeStamp::timeDiffinSeconds(state.stamp, last_state_.stamp) << std::endl;
     last_state_ = state;
 
     if(data.dt == 0 ){
@@ -210,13 +213,13 @@ void CollisionReaction::updateResiduals()
     Eigen::VectorXd new_residual(Jaco2DriverConstants::n_Jaco2Joints);
     new_residual.setZero(Jaco2DriverConstants::n_Jaco2Joints);
 
-//    resiudals_.setGravity(data.gx, data.gy, data.gz);
+    //    resiudals_.setGravity(data.gx, data.gy, data.gz);
     resiudals_.getResidualVector(data, last_residual_, last_integral_, new_integral, new_residual);
 
     last_integral_ = new_integral;
     last_residual_ = new_residual;
 
-//    std::cout << "resiudals "<< last_residual_ << std::endl;
+    //    std::cout << "resiudals "<< last_residual_ << std::endl;
     residualNorm_= new_residual.norm();
 }
 
@@ -241,7 +244,7 @@ TrajectoryPoint CollisionReaction::calculateVelocity(AngularInfo& cmd)
     tp.InitStruct();
     tp.Position.Type = ANGULAR_VELOCITY;
     tp.Position.HandMode = HAND_NOMOVEMENT;
-//    tp.Position.Actuators = kpq_ * diffQ + kdq_ * diffV;
+    //    tp.Position.Actuators = kpq_ * diffQ + kdq_ * diffV;
     tp.Position.Actuators = cmd;
     DataConversion::to_degrees(tp.Position.Actuators);
     std::cout << "cmd:\t" << KinovaArithmetics::to_string(cmd) <<std::endl;
@@ -283,6 +286,8 @@ void CollisionReaction::setConfig(jaco2_driver::jaco2_driver_configureConfig &cf
         tip_link_ = tip;
         setRobotModel(robot_model_,base_link_, tip_link_);
     }
+
+    loadDynModelCalibration(cfg.dynamic_model_calibration_file);
 
 
 }
@@ -348,5 +353,20 @@ double CollisionReaction::energyDisipation(AngularInfo& velocity, AngularInfo& l
     }
     if(vel <= - threshold){
         return upper;
+    }
+}
+
+void CollisionReaction::loadDynModelCalibration(std::string file_name)
+{
+    if( file_name != ""){
+        model_calib_.clear();
+        Jaco2Calibration::DynCalibrationIO::loadDynParm(file_name, model_calib_);
+    }
+}
+
+void CollisionReaction::setDynModelCalibration()
+{
+    for(const Jaco2Calibration::DynamicCalibratedParameters& p : model_calib_){
+        resiudals_.changeDynamicParams(p.linkName, p.mass, p.coM, p.inertia);
     }
 }

@@ -4,11 +4,13 @@
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 /// JACO2 ROS MSGS
+#include <jaco2_msgs/JointData.h>
 #include <jaco2_msgs/JointAngles.h>
 #include <jaco2_msgs/Jaco2JointState.h>
 #include <jaco2_msgs/Jaco2Accelerometers.h>
 /// JACO2 DATA
 #include <jaco2_data/time_stamp.h>
+#include <jaco2_data/joint_data.h>
 #include <jaco2_data/joint_angles.h>
 #include <jaco2_data/vector3stamped.h>
 #include <jaco2_data/joint_state_data.h>
@@ -42,6 +44,12 @@ struct AccelerometerConversion{
 struct JointAngleConversion{
     static jaco2_msgs::JointAngles data2ros(const jaco2_data::JointAngles& data);
     static jaco2_data::JointAngles ros2data(const jaco2_msgs::JointAngles& data);
+};
+
+struct JointDataConversion{
+    static jaco2_msgs::JointData data2ros(const jaco2_data::JointData& data);
+    static jaco2_data::JointData ros2data(const jaco2_msgs::JointData& data);
+    static jaco2_msgs::JointAngles data2rosAngles(const jaco2_data::JointData &data);
 };
 }
 #endif // JACO2_ROS_MSG_CONVERSION_H

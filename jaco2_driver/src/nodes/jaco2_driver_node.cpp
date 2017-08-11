@@ -28,6 +28,7 @@ Jaco2DriverNode::Jaco2DriverNode()
       rightArm_(true),
       ok_(true)
 {
+
     pubJointState_ = private_nh_.advertise<sensor_msgs::JointState>("out/joint_states", 2);
     pubJointAngles_ = private_nh_.advertise<jaco2_msgs::JointAngles>("out/joint_angles",2);
     pubFingerPositions_ = private_nh_.advertise<jaco2_msgs::FingerPosition>("out/finger_positions",2);
@@ -69,6 +70,11 @@ Jaco2DriverNode::Jaco2DriverNode()
     graspServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::gripperGoalCb, this));
     fingerServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::fingerGoalCb,this));
     blockingAngleServer_.registerGoalCallback(boost::bind(&Jaco2DriverNode::blockingAngleGoalCb, this));
+
+    dyn_model_calib_file_path_ = private_nh_.param<std::string>("jaco_dynamic_model_calibration_file", "");
+    if(dyn_model_calib_file_path_ != ""){
+        ROS_INFO_STREAM("Using dynamic model calibration.");
+    }
 
     f_ = boost::bind(&Jaco2DriverNode::dynamicReconfigureCb, this, _1, _2);
     paramServer_.setCallback(f_);
@@ -112,6 +118,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     if(use_accel_calib) {
         ROS_INFO_STREAM("Using accelerometer calibration.");
         std::string acc_calib_file;
+//        private_nh_.param<std::string>("jaco_accelerometer_calibration_file", acc_calib_file, "/localhome/zwiener/workspace/jaco_ws/src/jaco2_ros/jaco2_driver/config/acc_calib_jaco2-2.yaml");
         private_nh_.param<std::string>("jaco_accelerometer_calibration_file", acc_calib_file, "");
         std::vector<Jaco2Calibration::AccelerometerCalibrationParam> acc_params;
         Jaco2Calibration::loadAccCalib(acc_calib_file, acc_params);
@@ -139,6 +146,7 @@ Jaco2DriverNode::Jaco2DriverNode()
         }
     }
 
+//    std::string velocity_calib_file = private_nh_.param<std::string>("jaco_velocity_calibration_file", "/localhome/zwiener/workspace/jaco_ws/src/jaco2_ros/jaco2_driver/config/velocity_calibration_jaco2-2.yaml");
     std::string velocity_calib_file = private_nh_.param<std::string>("jaco_velocity_calibration_file", "");
     if(velocity_calib_file != ""){
         ROS_INFO_STREAM("Using velocity calibration");
@@ -147,6 +155,7 @@ Jaco2DriverNode::Jaco2DriverNode()
         driver_.setVelocitySensorCalibration(v_params.parameter);
     }
 
+//    std::string gravity_calib_file = private_nh_.param<std::string>("jaco_gravity_calibration_file", "/localhome/zwiener/workspace/jaco_ws/src/jaco2_ros/jaco2_driver/config/jaco2-2_g_params_service.yaml");
     std::string gravity_calib_file = private_nh_.param<std::string>("jaco_gravity_calibration_file", "");
     if(gravity_calib_file != ""){
         ROS_INFO_STREAM("Using optimal gravity parameters.");
@@ -457,7 +466,12 @@ bool Jaco2DriverNode::tick()
 
 void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureConfig &config, uint32_t level)
 {
+
+    if(config.dynamic_model_calibration_file == "" && dyn_model_calib_file_path_ != ""){
+        config.dynamic_model_calibration_file = dyn_model_calib_file_path_;
+    }
     driver_.updateControllerConfig(config);
+
 
     std::vector<int> highPriQue;
     std::vector<int> lowPriQue;
@@ -589,7 +603,7 @@ void Jaco2DriverNode::stop()
 
 void Jaco2DriverNode::publishJointState()
 {
-    const jaco2_data::JointStateData& jdata = driver_.getJointStateRef();
+    const jaco2_data::JointStateData& jdata = driver_.getJointState();
 
 
     if(jdata.stamp != lastTimeJsPublished_){
@@ -638,7 +652,7 @@ void Jaco2DriverNode::publishSensorInfo()
 
     if(stamp != lastTimeAccPublished_) {
 
-        const jaco2_data::AccelerometerData& acc_data = driver_.getAccelerometerDataRef();
+        const jaco2_data::AccelerometerData& acc_data = driver_.getAccelerometerData();
         jaco2_msgs::Jaco2Accelerometers jaco2_acc = jaco2_msgs::AccelerometerConversion::data2ros(acc_data);
 
         pubJaco2LinAcc_.publish(jaco2_acc);
@@ -702,7 +716,8 @@ bool Jaco2DriverNode::setTorqueZeroCallback(jaco2_msgs::SetTorqueZero::Request &
 
 namespace {
 Jaco2DriverNode* g_driver = nullptr;
-void siginthandler(int){
+void siginthandler(int sig){
+    std::cout << "shutdown due to signal: "<< sig << std::endl;
     std::terminate();
 }
 }

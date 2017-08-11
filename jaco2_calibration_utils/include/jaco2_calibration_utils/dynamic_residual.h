@@ -3,6 +3,7 @@
 
 #include <string>
 #include <Eigen/Dense>
+#include <jaco2_data/joint_state_data.h>
 #include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 #include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
 #include <jaco2_calibration_utils/dynamic_calibrated_parameters.hpp>
@@ -81,8 +82,8 @@ public:
     static void paramEigen2Vector(const Eigen::MatrixXd& mat, std::vector<double>& result, int type);
 
 private:
-    bool staticSample(const Jaco2Calibration::DynamicCalibrationSample& sample) const;
-    void selectData(std::vector<Jaco2Calibration::DynamicCalibrationSample>& selected);
+    bool staticSample(const jaco2_data::JointStateData& sample) const;
+    void selectData( jaco2_data::JointStateDataCollection& selected);
 
 private:
     Jaco2KinDynLib::Jaco2DynamicModel model_;
@@ -98,7 +99,7 @@ private:
     Eigen::MatrixXd initial_params_;
     Eigen::MatrixXd init_scale_;
     Eigen::MatrixXd uncertainty_scale_;
-    std::vector<Jaco2Calibration::DynamicCalibrationSample> samples_;
+    jaco2_data::JointStateDataCollection samples_;
     std::size_t n_samples_;
     const static std::size_t n_param_;
     const static std::size_t n_param_static_;

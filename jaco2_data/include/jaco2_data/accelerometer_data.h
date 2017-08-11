@@ -1,14 +1,17 @@
 #ifndef ACCELEROMETER_DATA_H
 #define ACCELEROMETER_DATA_H
+#include <jaco2_data/types.h>
 #include <vector>
+#include <Eigen/StdVector>
 #include <jaco2_data/vector3stamped.h>
+
 namespace jaco2_data {
 
 class AccelerometerData
 {
 public:
-    typedef std::vector<Vector3Stamped>::iterator iterator;
-    typedef std::vector<Vector3Stamped>::const_iterator const_iterator;
+    typedef Vector3StampedCollection::iterator iterator;
+    typedef Vector3StampedCollection::const_iterator const_iterator;
 public:
 
     AccelerometerData();
@@ -35,7 +38,7 @@ public:
     std::size_t size() const;
     void resize(std::size_t n, Vector3Stamped val = Vector3Stamped(0,0,0));
 
-    void emplace_back(Vector3Stamped&& val);
+//    void emplace_back(Vector3Stamped&& val);
     void push_back(const Vector3Stamped& val);
 
     std::vector<double> toVector() const;
@@ -43,10 +46,16 @@ public:
 
     double norm() const;
 
+    AccelerometerData operator+(const AccelerometerData &other) const;
+    AccelerometerData& operator+=(const AccelerometerData &other);
+    AccelerometerData& operator*=(const double &b);
+    AccelerometerData& operator/=(const double &b);
+
+
 public:
     int label;
 private:
-    std::vector<Vector3Stamped> lin_acc;
+    Vector3StampedCollection lin_acc;
 };
 }
 #endif // ACCELEROMETER_DATA_H

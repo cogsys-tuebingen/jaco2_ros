@@ -22,23 +22,23 @@ void Jaco2JointState::setOutlierThreshold(double torque, double acc)
     filter_.threshold_acc = acc;
 }
 
-void Jaco2JointState::setAngularData(const AngularDataType type, const AngularPosition &pos)
+void Jaco2JointState::setAngularData(const jaco2_data::JointStateData::DataType type, const AngularPosition &pos)
 {
     switch (type) {
-    case AngularDataPOS:{
+    case JointStateData::DataType::JOINT_POS:{
         current_state_.joint_state.position = ConvertAngularData::kinova2data(pos);
         current_state_.joint_state.normalize();
         break;
     }
-    case AngularDataVEL:{
+    case JointStateData::DataType::JOINT_VEL:{
         current_state_.joint_state.velocity = ConvertAngularData::kinova2data(pos);
         break;
     }
-    case AngularDataACC:{
+    case JointStateData::DataType::JOINT_ACC:{
         current_state_.joint_state.acceleration = ConvertAngularData::kinova2data(pos);
         break;
     }
-    case AngularDataTORQUE:{
+    case JointStateData::DataType::JOINT_TORQUE:{
         current_state_.joint_state.torque = ConvertAngularData::kinova2data(pos);
         break;
     }
@@ -68,34 +68,19 @@ jaco2_data::ExtendedJointStateData Jaco2JointState::getExtJointState() const
     return current_state_;
 }
 
-const jaco2_data::JointStateData& Jaco2JointState::getJointStateRef() const
-{
-    return current_state_.joint_state;
-}
-
-const jaco2_data::AccelerometerData& Jaco2JointState::getLinearAccelerationsRef() const
-{
-    return current_state_.lin_acc;
-}
-
-const jaco2_data::ExtendedJointStateData& Jaco2JointState::getExtJointStateRef() const
-{
-    return current_state_;
-}
-
-AngularInfo Jaco2JointState::getAngularData(const AngularDataType type) const
+AngularInfo Jaco2JointState::getAngularData(const jaco2_data::JointStateData::DataType type) const
 {
     switch (type) {
-    case AngularDataPOS:
+    case JointStateData::DataType::JOINT_POS:
         return ConvertAngularData::data2AngularInfo(current_state_.joint_state.position);
         break;
-    case AngularDataVEL:
+    case JointStateData::DataType::JOINT_VEL:
         return ConvertAngularData::data2AngularInfo(current_state_.joint_state.velocity);
         break;
-    case AngularDataACC:
+    case JointStateData::DataType::JOINT_ACC:
         return ConvertAngularData::data2AngularInfo(current_state_.joint_state.acceleration);
         break;
-    case AngularDataTORQUE:
+    case JointStateData::DataType::JOINT_TORQUE:
         return ConvertAngularData::data2AngularInfo(current_state_.joint_state.torque);
         break;
     }

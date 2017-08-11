@@ -111,3 +111,13 @@ std::vector<double> Vector3Stamped::toVector() const
 
 }
 
+std::string Vector3Stamped::to_string(const std::string delimiter) const
+{
+    std::string res;
+
+    for(std::size_t i = 0; i < 3; ++i)
+    {
+        res += std::to_string(vector[i]) + delimiter;
+    }
+    return res;
+}

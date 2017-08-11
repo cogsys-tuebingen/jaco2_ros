@@ -29,7 +29,7 @@ Jaco2State::Jaco2State(Jaco2API &api)
     current_torque_gravity_free_.InitStruct();
 
 //    calibrate_acc_ = {false, false, false, false, false, false};
-    velocityFactors_ = {2.0, 2.0, 2.0, 2.0, 2.0, 2.0};
+    velocityFactors_ = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
     acc_counter_ =0;
 }
 
@@ -235,17 +235,6 @@ jaco2_data::AccelerometerData Jaco2State::getAccelerometerData() const
     return joint_state_.getLinearAccelerations();
 }
 
-const jaco2_data::JointStateData& Jaco2State::getJointStateRef() const
-{
-    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-    return joint_state_.getJointStateRef();
-}
-
-const jaco2_data::AccelerometerData& Jaco2State::getAccelerometerDataRef() const
-{
-    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-    return joint_state_.getLinearAccelerationsRef();
-}
 
 void Jaco2State::readPosVel()
 {

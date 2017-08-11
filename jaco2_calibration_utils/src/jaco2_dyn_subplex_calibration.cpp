@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
         }
 
 
-            Jaco2Calibration::Jaco2ManipulatorDynParams optimized_params;
+            Jaco2Calibration::DynamicCalibratedParametersCollection optimized_params;
             Jaco2Calibration::to_Jaco2ManipulatorDynParams(final_param, model.getLinkNames(), optimized_params);
             Jaco2Calibration::Jaco2CalibrationIO::save(output,optimized_params);
 

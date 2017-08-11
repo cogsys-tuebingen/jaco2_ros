@@ -2,7 +2,8 @@
 
 #include <jaco2_calibration_utils/jaco2_calibration_io.h>
 
-
+using namespace jaco2_data;
+using namespace Jaco2Calibration;
 const std::size_t DynamicResidual::n_param_ = 10;
 const std::size_t DynamicResidual::n_param_static_ = 4;
 const std::size_t DynamicResidual::n_param_dynamic_ = 6;
@@ -16,7 +17,7 @@ DynamicResidual::DynamicResidual(const std::string &robot_model, const std::stri
     n_opt_(n_param_)
 {
     //initial parameters
-    std::vector<Jaco2Calibration::DynamicCalibratedParameters> init_param;
+    DynamicCalibratedParametersCollection init_param;
     for(auto link : model_.getLinkNames())
     {
         Jaco2Calibration::DynamicCalibratedParameters param;
@@ -104,8 +105,8 @@ bool DynamicResidual::calculteMatrix()
     std::string first_link = links.front();
     std::string last_link = links.back();
 
-    std::vector<Jaco2Calibration::DynamicCalibrationSample>* used_samples;
-    std::vector<Jaco2Calibration::DynamicCalibrationSample> selected;
+    JointStateDataCollection* used_samples;
+    JointStateDataCollection selected;
     if(residual_type_ != ALL){
         selectData(selected);
         used_samples = &selected;
@@ -132,22 +133,22 @@ bool DynamicResidual::calculteMatrix()
     auto it = used_samples->begin();
     for(std::size_t n = 0; n < n_samples_; ++ n) {
 
-        Jaco2Calibration::DynamicCalibrationSample sample = *it;
+        const JointStateData& sample = *it;
         ++it;
 
-        if(sample.jointPos.size() == n_links_) {
+        if(sample.position.size() == n_links_) {
             Eigen::MatrixXd sample_mat  =
                     model_.getRigidBodyRegressionMatrix(first_link, last_link,
-                                                        sample.jointPos,
-                                                        sample.jointVel,
-                                                        sample.jointAcc,
+                                                        sample.position,
+                                                        sample.velocity,
+                                                        sample.acceleration,
                                                         sample.gravity(0),
                                                         sample.gravity(1),
                                                         sample.gravity(2));
 
             Eigen::MatrixXd sample_tau = Eigen::MatrixXd::Zero(n_links_, 1);
             for(std::size_t i = 0; i < n_links_; ++i) {
-                sample_tau(i) = sample.jointTorque[i];
+                sample_tau(i) = sample.torque[i];
             }
 
             reg_mat_.block(n * n_links_, 0, n_links_, n_cols_) =  uncertainty_scale_ * sample_mat;
@@ -174,16 +175,16 @@ bool DynamicResidual::calculteMatrix()
     return true;
 }
 
-bool DynamicResidual::staticSample(const Jaco2Calibration::DynamicCalibrationSample &sample) const
+bool DynamicResidual::staticSample(const jaco2_data::JointStateData &sample) const
 {
     double vel_norm = 0;
-    for(auto vel : sample.jointVel){
+    for(auto vel : sample.velocity){
         vel_norm += vel *vel;
     }
     vel_norm = std::sqrt(vel_norm);
 
     double acc_norm = 0;
-    for(auto acc : sample.jointAcc){
+    for(auto acc : sample.acceleration){
         acc_norm += acc *acc;
     }
     acc_norm = sqrt(acc_norm);
@@ -191,7 +192,7 @@ bool DynamicResidual::staticSample(const Jaco2Calibration::DynamicCalibrationSam
     return vel_norm < static_vel_thresold_ && acc_norm < static_acc_thresold_;
 }
 
-void DynamicResidual::selectData(std::vector<Jaco2Calibration::DynamicCalibrationSample>& selected)
+void DynamicResidual::selectData(jaco2_data::JointStateDataCollection &selected)
 {
     for(auto data : samples_){
         bool is_static = staticSample(data);

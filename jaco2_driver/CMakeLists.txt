@@ -110,6 +110,7 @@ target_link_libraries(jaco2_driver_node
     jaco2_driver
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
+    yaml-cpp
     )
 
 target_link_libraries(gravity_parameter_estimation

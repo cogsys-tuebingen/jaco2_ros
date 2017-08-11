@@ -312,7 +312,7 @@ std::vector<std::string> Jaco2KinematicModel::getLinkNames() const
     return result;
 }
 
-double  Jaco2KinematicModel::getUpperJointLimit(const std::size_t id)
+double  Jaco2KinematicModel::getUpperJointLimit(const std::size_t id) const
 {
     if(upperLimits_.rows() > id){
         return upperLimits_(id);
@@ -322,7 +322,7 @@ double  Jaco2KinematicModel::getUpperJointLimit(const std::size_t id)
     }
 }
 
-double  Jaco2KinematicModel::getLowerJointLimit(const std::size_t id)
+double  Jaco2KinematicModel::getLowerJointLimit(const std::size_t id) const
 {
     if(lowerLimits_.rows() > id){
         return lowerLimits_(id);

@@ -22,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   jaco2_kin_dyn_lib
   jaco2_msgs
   jaco2_calibration_utils
+  jaco2_msgs_conversion
   roscpp
   sensor_msgs
   tf

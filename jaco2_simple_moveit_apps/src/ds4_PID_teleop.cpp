@@ -1,9 +1,7 @@
-#include <moveit/move_group_interface/move_group.h>
-//#include <moveit/move_group/move_group_interface.h>
+﻿#include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
-#include <moveit_msgs/GetPositionIK.h>
 #include <geometry_msgs/PoseStamped.h>
 
 #include <sensor_msgs/Joy.h>
@@ -26,6 +24,19 @@
 #include <moveit/rdf_loader/rdf_loader.h>
 #include <moveit/robot_model/robot_model.h>
 
+#include <std_msgs/Bool.h>
+#include <std_srvs/SetBool.h>
+
+//FollowJointTrajectory action server
+#include <actionlib/client/simple_action_client.h>
+#include <control_msgs/FollowJointTrajectoryActionGoal.h>
+#include <control_msgs/FollowJointTrajectoryAction.h>
+#include <control_msgs/FollowJointTrajectoryGoal.h>
+
+#include <jaco2_msgs/Jaco2JointState.h>
+#include <jaco2_msgs/Start.h>
+#include <jaco2_msgs/Stop.h>
+
 
 //TODO: ROS parameters (currently factory default)
 const std::vector<double> K_P (6, 2);
@@ -39,17 +50,28 @@ public:
 
     bool move_cart(double x, double y, double z, double roll, double pitch, double yaw);
     void publish_states(std::vector<double> vel);
+    void move_torque_teaching(bool button_pressed);
+    moveit_msgs::MoveItErrorCodes move_to_trajectory_start();
 
 private:
     void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
-    void jointStateCallback(const sensor_msgs::JointState::ConstPtr& state);
+    void jointStateJacoCallback(const jaco2_msgs::Jaco2JointState::ConstPtr& state);
 
     ros::Subscriber joy_sub_;
     ros::Subscriber joint_state_sub_;
     ros::ServiceClient fk_client_;
     ros::ServiceClient ik_client_;
+    ros::ServiceClient gravity_client_;
+    ros::ServiceClient emergency_stop_client_;
+    ros::ServiceClient emergency_start_client_;
+    ros::ServiceClient admittance_mode_client_;
     ros::Publisher joint_state_pub;
-    moveit::planning_interface::MoveGroup group_;
+
+    //action server
+    actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> goal_action_client_;
+    trajectory_msgs::JointTrajectory goal_joint_trajectory;            //add points (ie states from statecallback) to trajectory to follow, slightly overfitted since it interpolates
+
+    moveit::planning_interface::MoveGroupInterface group_;
     planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
 
     ros::Time prev_time;
@@ -59,31 +81,48 @@ private:
 
     sensor_msgs::JointState current_state;
     sensor_msgs::JointState first_state;
-    bool stop_em;
+    bool emergency_stop;
 
     //fake controller
     std::vector<double> position_;
-    std::vector<double> lastPosition_;
+    std::vector<double> last_position_;
     std::vector<double> velocity_;
     std::vector<double> effort_;
-    std::vector<std::string> jointNames_;
+    std::vector<std::string> joint_names_;
     ros::Time now_;
     ros::Time last_;
     srdf::Model::Group manipulatorGroup_;
     srdf::Model::Group gripperGroup_;
 
+    //teaching torque control
+    std::vector< sensor_msgs::JointState > saved_trajectory;
+    bool isRecording;
+    bool doneRecording;
+    bool useTeaching;
+
 };
 
-teleopJacoDS4::teleopJacoDS4(std::string group_name, ros::NodeHandle& nh_) : group_(group_name) {
+teleopJacoDS4::teleopJacoDS4(std::string group_name, ros::NodeHandle& nh_)
+    : group_(group_name), goal_action_client_("/jaco_21_driver/follow_joint_trajectory/manipulator",true)
+
+{
+    ROS_INFO_STREAM("Waiting for Action Server.");
+    goal_action_client_.waitForServer();
+    ROS_INFO_STREAM("Action Server Found.");
+
+    isRecording= false;
+    doneRecording = false;
     prev_error = 0;
     sum_error = 0;
     prev_time = ros::Time::now();   //not Walltime since elapsed time is in reference to simulation (slower than walltime)
-    stop_em = false;
+    emergency_stop = false;
+    useTeaching = false;
 
     planning_scene_monitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
 
     joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("/joy", 10, &teleopJacoDS4::joyCallback, this);
-    joint_state_sub_ = nh_.subscribe<sensor_msgs::JointState>("/jaco_21_driver/out/joint_states", 10, &teleopJacoDS4::jointStateCallback, this);
+//    joint_state_sub_ = nh_.subscribe<sensor_msgs::JointState>("/jaco_21_driver/out/joint_states", 10, &teleopJacoDS4::jointStateCallback, this);
+    joint_state_sub_ = nh_.subscribe<jaco2_msgs::Jaco2JointState>("/jaco_21_driver/out/joint_state_acc", 10, &teleopJacoDS4::jointStateJacoCallback, this); //use this for accelerations
 
     fk_client_ = nh_.serviceClient<moveit_msgs::GetPositionFK>("/compute_fk");
     ros::service::waitForService("/compute_fk");
@@ -92,6 +131,25 @@ teleopJacoDS4::teleopJacoDS4(std::string group_name, ros::NodeHandle& nh_) : gro
     ros::service::waitForService("/compute_ik");
     ROS_INFO("IK Service ready");
 
+    gravity_client_ = nh_.serviceClient<std_srvs::SetBool>("/jaco_21_driver/in/enable_gravity_compensation_mode");
+    emergency_start_client_ = nh_.serviceClient<jaco2_msgs::Start>("/jaco_21_driver/in/start");
+    emergency_stop_client_ = nh_.serviceClient<jaco2_msgs::Stop>("/jaco_21_driver/in/stop");
+
+    jaco2_msgs::StartRequest req;
+    jaco2_msgs::StartResponse res;
+    emergency_start_client_.call(req,res);  //make sure at start emergency stop is disabled
+
+    std_srvs::SetBoolRequest req_g;
+    std_srvs::SetBoolResponse res_g;
+    req_g.data = false;                   //at start no gravity compensation mode
+    gravity_client_.call(req_g, res_g); //TODO catch error
+
+    admittance_mode_client_ = nh_.serviceClient<std_srvs::SetBool>("/jaco_21_driver/in/enable_admittance_mode");
+    std_srvs::SetBoolRequest req_a;
+    std_srvs::SetBoolResponse res_a;
+    req_a.data = true;                   //at start (PID) admittance mode enabled
+    admittance_mode_client_.call(req_a, res_a); //TODO catch error
+    ROS_INFO("Admittance control active.");
 
     //saves joint_bounds
     const moveit::core::JointModelGroup* model_group (group_.getRobotModel()->getJointModelGroup("manipulator"));
@@ -107,7 +165,6 @@ teleopJacoDS4::teleopJacoDS4(std::string group_name, ros::NodeHandle& nh_) : gro
     }
 
     //fake controller
-
     std::string jointStateTopic = "/jaco_21_driver/in/joint_velocity";
     std::string robot_description = "robot_description";
     joint_state_pub = nh_.advertise<jaco2_msgs::JointVelocity>(jointStateTopic, 1);
@@ -115,30 +172,25 @@ teleopJacoDS4::teleopJacoDS4(std::string group_name, ros::NodeHandle& nh_) : gro
 
     manipulatorGroup_ = rdf_loader.getSRDF()->getGroups()[0];
 
-    if(rdf_loader.getSRDF()->getGroups().size() > 1)
-    {
+    if(rdf_loader.getSRDF()->getGroups().size() > 1) {
         gripperGroup_ = rdf_loader.getSRDF()->getGroups()[1];
     }
 
     int nJoints = manipulatorGroup_.joints_.size() + gripperGroup_.joints_.size();
     position_.resize(nJoints,0);
-    lastPosition_.resize(nJoints,0);
+    last_position_.resize(nJoints,0);
     velocity_.resize(nJoints, 0);
     effort_.resize(nJoints, 0);
-    jointNames_.resize(nJoints);
+    joint_names_.resize(nJoints);
 
     last_= ros::Time::now();
 
-    for(std::size_t i = 0; i < manipulatorGroup_.joints_.size(); ++i)
-    {
-        jointNames_[i] = manipulatorGroup_.joints_[i];
+    for(std::size_t i = 0; i < manipulatorGroup_.joints_.size(); ++i) {
+        joint_names_[i] = manipulatorGroup_.joints_[i];
     }
-    for(std::size_t i = 0; i < gripperGroup_.joints_.size(); ++i)
-    {
-        jointNames_[i + manipulatorGroup_.joints_.size()] = gripperGroup_.joints_[i];
+    for(std::size_t i = 0; i < gripperGroup_.joints_.size(); ++i) {
+        joint_names_[i + manipulatorGroup_.joints_.size()] = gripperGroup_.joints_[i];
     }
-
-
 
 }
 
@@ -180,7 +232,7 @@ void teleopJacoDS4::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     int touchpad_button = joy->buttons[13]; //anywhere on touchpad is pressed
 
 
-    double factor = 100;        //scaling factor ie max movement on joystick = 1 cm robot movement
+    double factor = 50;        //scaling factor ie max movement on joystick = 1 cm robot movement
     double factor_roll = 2;
     double y = left_trigger_L1 ? 0 : left_analog_up_down/factor;
     double x = - left_analog_left_right/factor;
@@ -189,49 +241,82 @@ void teleopJacoDS4::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     double roll = right_analog_up_down;
     double pitch = right_trigger_R1 ? -right_analog_left_right : 0; //R1 + right analog left/right = yaw
 
-    if (right_x) { //move home
-        moveit::planning_interface::MoveGroup::Plan my_plan;
-
+    if (right_x && !emergency_stop) { //move home
+        moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 
         group_.setPlannerId("RRTkConfigDefault");
         group_.setStartStateToCurrentState();
         group_.setPlanningTime(5.0);
         group_.setNamedTarget("home");
 
-
         moveit_msgs::MoveItErrorCodes success = group_.plan(my_plan);
         if(success.val == moveit_msgs::MoveItErrorCodes::SUCCESS) {
             ROS_INFO("Success! Moved home");
-    //        group.execute(my_plan);
+//        group.execute(my_plan);
             success = group_.move();
         }
         return;
     }
-    if (right_o) { //emergency stop (doesnt work yet)
-        std::vector<double> new_vel(6,0);
-        teleopJacoDS4::publish_states(new_vel);
-        stop_em = stop_em ? false : true; //toggle value (ie resume)
+    if (right_o) { //emergency stop
+        if (emergency_stop) {//has been stopped, start it up
+            emergency_stop = false;
+            ROS_INFO_STREAM("Removing emergency stop");
+            jaco2_msgs::StartRequest req;
+            jaco2_msgs::StartResponse res;
+            emergency_start_client_.call(req,res);
+
+        } else { //perform emergency stop
+            emergency_stop = true;
+            ROS_INFO_STREAM("Performing emergency stop.");
+            jaco2_msgs::StopRequest req;
+            jaco2_msgs::StopResponse res;
+            emergency_stop_client_.call(req,res);
+        }
+        sleep(1);//at least one second between button presses
         return;
     }
-
-
-    if (current_state.position.size() > 1 && !stop_em){ //only if jointstatecallback has been called
+    ros::Rate sr(2);
+    if (current_state.position.size() > 1  && !useTeaching && !emergency_stop){ //only if jointstatecallback has been called
         teleopJacoDS4::move_cart(x, y, z, roll, pitch, yaw);
+        if (right_triangle) {
+            useTeaching = true;
+            ROS_INFO_STREAM("Using torque control");
+            ROS_INFO_STREAM("Setting gravity compensation mode...");
+            ROS_INFO_STREAM("Press square to start/play recording ");
+            std_srvs::SetBoolRequest req;
+            std_srvs::SetBoolResponse res;
+            req.data = true;
+            gravity_client_.call(req, res); //TODO catch error
+//            sleep(1);
+            sr.sleep();
+        }
+    } else if (useTeaching && !emergency_stop) {
+        if (right_triangle) {
+            useTeaching = false;
+            ROS_INFO_STREAM("Using joystick control");
+            ROS_INFO_STREAM("Turning off gravity compensation mode...");
+            std_srvs::SetBoolRequest req;
+            std_srvs::SetBoolResponse res;
+            req.data = false;
+            gravity_client_.call(req, res); //TODO catch error
+
+            std_srvs::SetBoolRequest req_a;
+            std_srvs::SetBoolResponse res_a;
+            req_a.data = true;                   //at start (PID) admittance mode enabled
+            admittance_mode_client_.call(req_a, res_a); //TODO catch error
+            ROS_INFO_STREAM("Admittance control active.");
+
+//            sleep(1);
+            sr.sleep();
+            doneRecording = false;
+            isRecording = false;
+            saved_trajectory.clear(); //deletes traj.
+            goal_joint_trajectory.points.clear();
+            ROS_INFO_STREAM("trajectory size " << saved_trajectory.size());
+        }
+        teleopJacoDS4::move_torque_teaching(right_square);        //(un)comment to enable/disable teaching input
     }
 
-}
-
-void teleopJacoDS4::jointStateCallback(const sensor_msgs::JointState::ConstPtr& state) {
-    if (first_state.position.size() == 0) {
-
-        first_state.position = state->position;
-        first_state.velocity = state->velocity;
-        first_state.effort = state->effort;
-    }
-
-    current_state.position = state->position;
-    current_state.velocity = state->velocity;
-    current_state.effort = state->effort;
 }
 
 
@@ -288,7 +373,7 @@ bool teleopJacoDS4::move_cart(double x, double y, double z, double roll, double 
     bool valid_goal = true;
     for (int i = 0; i < joint_bounds.size(); i++) {
         if (!(joint_bounds[i].first <= goal_q[i] <= joint_bounds[i].second)) {
-           valid_goal = false;
+            valid_goal = false;
         }
     }
     planning_scene_monitor::LockedPlanningSceneRW ps(planning_scene_monitor_);
@@ -314,7 +399,43 @@ bool teleopJacoDS4::move_cart(double x, double y, double z, double roll, double 
     }
 
     teleopJacoDS4::publish_states(new_vel);
+
 }
+
+
+void teleopJacoDS4::jointStateJacoCallback(const jaco2_msgs::Jaco2JointState::ConstPtr& state) {
+    if (first_state.position.size() == 0) {
+        first_state.position.clear();       //always only save first 6 joints, not fingers
+        first_state.velocity.clear();
+        first_state.effort.clear();
+        first_state.position.insert(first_state.position.end(), state->position.begin(),state->position.begin() + 6) ;
+        first_state.velocity.insert(first_state.velocity.end(), state->velocity.begin(),state->velocity.begin() + 6);
+        first_state.effort.insert(first_state.effort.end(), state->effort.begin(),state->effort.begin() + 6);
+    }
+
+    current_state.position.clear();
+    current_state.velocity.clear();
+    current_state.effort.clear();
+    current_state.position.insert(current_state.position.end(), state->position.begin(),state->position.begin() + 6) ;
+    current_state.velocity.insert(current_state.velocity.end(), state->velocity.begin(),state->velocity.begin() + 6);
+    current_state.effort.insert(current_state.effort.end(), state->effort.begin(),state->effort.begin() + 6);
+
+    current_state.header = state->header;
+    current_state.name = state->name;
+
+    if (isRecording) {
+        saved_trajectory.push_back(current_state);
+        trajectory_msgs::JointTrajectoryPoint current_point;
+        current_point.positions.insert(current_point.positions.end(), state->position.begin(),state->position.begin() + 6) ;
+        current_point.velocities.insert(current_point.velocities.end(), state->velocity.begin(),state->velocity.begin() + 6);
+        current_point.effort.insert(current_point.effort.end(), state->effort.begin(),state->effort.begin() + 6);
+        current_point.accelerations.insert(current_point.accelerations.end(), state->acceleration.begin(),state->acceleration.begin() + 6);
+        current_point.time_from_start = ros::Time::now() - saved_trajectory[0].header.stamp;
+        goal_joint_trajectory.points.push_back(current_point);
+    }
+
+}
+
 
 void teleopJacoDS4::publish_states(std::vector<double> vel) {
 
@@ -329,6 +450,98 @@ void teleopJacoDS4::publish_states(std::vector<double> vel) {
 
 }
 
+moveit_msgs::MoveItErrorCodes teleopJacoDS4::move_to_trajectory_start(){
+    if (saved_trajectory[0].position != current_state.position) {
+        moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+
+        group_.setPlannerId("RRTConnectkConfigDefault");
+        group_.setStartStateToCurrentState();
+        group_.setPlanningTime(1.0);
+        group_.setNamedTarget("startState");
+
+        moveit_msgs::MoveItErrorCodes success = group_.plan(my_plan);
+        if(success.val == moveit_msgs::MoveItErrorCodes::SUCCESS) {
+            ROS_INFO("Success! Moved to start");
+//        group.execute(my_plan);
+            success = group_.move();
+        }
+        return success;
+    }
+}
+
+void teleopJacoDS4::move_torque_teaching(bool button_pressed) { //button press starts, stops and plays recording
+    //call service torque control
+    ros::Rate sr(2); //sleep rate
+    //wait for record, record velocity, wait for end record
+    if (!isRecording && !doneRecording && button_pressed) {
+        sr.sleep();
+        std::cout << "Starting recording... "<< std::endl;
+        isRecording= true;
+        group_.rememberJointValues("startState");
+        return;
+    } else if (isRecording && !doneRecording && button_pressed) {
+        std::cout<<"... recording finished."<<std::endl;
+        isRecording = false;
+        doneRecording = true;
+        sr.sleep();
+        ros::Duration dur(1/2);
+        dur.sleep();
+        move_to_trajectory_start();
+        return;
+    }
+
+    //on button press play recorded data (moves back to start of trajectory first)
+
+    else if (doneRecording && button_pressed) {
+        std::cout << "Starting playback of recording..."<<std::endl;
+
+//        std_srvs::SetBoolRequest req;
+//        std_srvs::SetBoolResponse res;
+//        req.data = true;
+//        gravity_client_.call(req, res); //TODO catch error
+
+        moveit_msgs::MoveItErrorCodes moved_to_start = move_to_trajectory_start();
+        if (moved_to_start.val != moveit_msgs::MoveItErrorCodes::SUCCESS) {
+            ROS_INFO_STREAM("Could not plan to start pose.");   //do not execute trajectory if not at start pose
+            return;
+        }
+
+        ROS_INFO_STREAM("Size of saved trajectory "<< saved_trajectory.size());
+
+        //playback of trajectory using velocity @60hz
+//        ros::Rate r(60);
+//        for (int i = 0; i < saved_trajectory.size(); i++) {
+//            teleopJacoDS4::publish_states(saved_trajectory[i].velocity);
+//            r.sleep();
+//        }
+//        ROS_INFO_STREAM("Playback Finished.");
+
+        //playback using Action Server
+        if (goal_action_client_.isServerConnected()) {
+            ROS_INFO_STREAM("Starting Playback...");
+            control_msgs::FollowJointTrajectoryGoal goal_action_msg;
+            goal_joint_trajectory.header.stamp = saved_trajectory[0].header.stamp;          //time_from_start is relative to this timestamp (should be only one needed)
+            goal_joint_trajectory.joint_names.clear();  //prevent adding of multiple sets of joint names
+            goal_joint_trajectory.joint_names.insert(goal_joint_trajectory.joint_names.end(), saved_trajectory[0].name.begin(),saved_trajectory[0].name.begin() + 6);            //set joint names
+
+            goal_action_msg.trajectory = goal_joint_trajectory;
+
+            goal_action_client_.sendGoal(goal_action_msg);
+            if ((goal_action_client_.getResult())->error_code == 0) {
+                ros::Duration traj_dur = goal_joint_trajectory.points.back().time_from_start;
+                traj_dur.sleep();
+                ros::Duration dur(1); //wait extra 1 second after execution before moving back
+                dur.sleep();
+                ROS_INFO_STREAM("Playback Finished. Moving to start.");
+                move_to_trajectory_start();
+            }
+
+        } else {
+            ROS_INFO_STREAM("Action Server not connected, cannot execute trajectory.");
+        }
+    }
+}
+
 
 
 int main(int argc, char *argv[])
@@ -339,13 +552,8 @@ int main(int argc, char *argv[])
     ros::AsyncSpinner spinner(1);
     spinner.start();
 
-    ros::Duration sleep_time (1.0);
-    sleep_time.sleep();
-    sleep_time.sleep();
-
     teleopJacoDS4 teleop_jaco("manipulator", nh_);
     ros::Rate r(20);
-    sleep_time.sleep();
     while (ros::ok()) {
         ros::spinOnce();
         r.sleep();

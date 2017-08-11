@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 
 
     if(calib_mode == "dynamic"){
-        std::vector<Jaco2Calibration::DynamicCalibrationSample> samples;
+        jaco2_data::JointStateDataCollection samples;
         Jaco2Calibration::Jaco2CalibrationIO::importAsciiDataWithGravity(file,samples);
         if(addNoise)
         {
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
             std::normal_distribution<double> distribution(0,0.4);
             //TODO TEST
             for(auto sample = samples.begin(); sample != samples.end(); ++sample) {
-                for(auto tau = sample->jointTorque.begin(); tau != sample->jointTorque.end(); ++tau)
+                for(auto tau = sample->torque.begin(); tau != sample->torque.end(); ++tau)
                 {
                     double white_noise = distribution(generator);
                     (*tau) += white_noise;
@@ -37,12 +37,11 @@ int main(int argc, char *argv[])
         }
         Jaco2Calibration::Jaco2CalibrationIO::save("/tmp/dyn_calib_with_noise.txt",samples);
         calib.calibrateCoMandInertia(samples);
-//        calib.calibrateArmDynamic(samples);
-        std::vector<Jaco2Calibration::DynamicCalibratedParameters> param = calib.getDynamicCalibration();
+
+        Jaco2Calibration::DynamicCalibratedParametersCollection param = calib.getDynamicCalibration();
         Jaco2Calibration::Jaco2CalibrationIO::save("/tmp/param_sim.txt",param);
-        std::vector<Jaco2Calibration::DynamicCalibratedParameters> org_param = calib.getDynamicUrdfParam();
-//        Jaco2Calibration::save("/tmp/param_org.txt",org_param);
-        std::vector<Jaco2Calibration::DynamicCalibratedParameters> diff;
+        Jaco2Calibration::DynamicCalibratedParametersCollection org_param = calib.getDynamicUrdfParam();
+        Jaco2Calibration::DynamicCalibratedParametersCollection diff;
         for(std::size_t i = 0; i < param.size(); ++i)
         {
             Jaco2Calibration::DynamicCalibratedParameters tmp;

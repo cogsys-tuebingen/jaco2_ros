@@ -11,6 +11,7 @@
 #include <jaco2_msgs/CalibAcc.h>
 #include <jaco2_msgs/JointAngles.h>
 #include <jaco2_msgs/Jaco2JointState.h>
+#include <jaco2_msgs_conversion/jaco2_ros_msg_conversion.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <jaco2_calibration/jaco2_calibration.h>
 #include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
@@ -73,27 +74,15 @@ public:
         ros::Duration dt = now-lastTime_;
         lastTime_ = now;
         dt_ = dt.toSec();
-        Jaco2Calibration::DynamicCalibrationSample sample;
-        for(std::size_t i = 0; i < 6; ++i){
-            sample.jointPos[i] = msg->position[i];
-            sample.jointVel[i] = msg->velocity[i];
-            sample.jointTorque[i] = -msg->effort[i];
-            sample.jointAcc[i] = msg->acceleration[i];
-            //                if(currentSamples_ > 0 && dt_ !=0)
-            //                {
-            //                    sample.jointAcc[i] = (sample.jointVel[i] - samples_.back().jointVel[i])/dt_;
-            //                }
-            //                else{
-            //                    sample.jointAcc[i] = 0;
-            //                }
-        }
+        jaco2_data::JointStateData sample = jaco2_msgs::JointStateConversion::jaco2Msg2Data(*msg);
+        sample.popToSize(6);
 
         //        }
         double thres = 0.008;
         if(!initialSensor_ /*&& currentSamples_ < numberOfSamples_*/){
             bool test = true;
-            for(std::size_t i = 0; i <6;++i)
-            {
+//            for(std::size_t i = 0; i <6;++i)
+//            {
                 //                if(fabs(samples_[currentSamples_].jointVel[i]) < thres && fabs(samples_[currentSamples_].jointAcc[i]) < thres)
                 //                {
                 //                    geometry_msgs::Vector3Stamped acc = jacoSensorMsg_.acceleration[i];
@@ -102,40 +91,19 @@ public:
                 //                    accSamples_.push_back(i,data);
                 //                test &= fabs(samples_[currentSamples_].jointVel[i]) < thres && fabs(samples_[currentSamples_].jointAcc[i]) < thres;
                 //                }
-            }
+//            }
             //            if(test){
             for(std::size_t i = 0; i <6;++i)
             {
-                geometry_msgs::Vector3Stamped acc = jacoAccMsg_.lin_acc[i];
+                jaco2_data::Vector3Stamped acc = jacoAccMsg_[i];
 
-                Jaco2Calibration::AccelerationData data(acc.header.stamp.toSec(), acc.vector.x, acc.vector.y, acc.vector.z);
-                accSamples_.push_back(i,data);
+
+                accSamples_.push_back(i,acc);
             }
 
-            //estimate jaco's base acceleration
-            Eigen::Vector3d g(jacoAccMsg_.lin_acc[0].vector.y, jacoAccMsg_.lin_acc[0].vector.x, jacoAccMsg_.lin_acc[0].vector.z );
-            g *= -9.81;
-            gsum_.push_back(g);
-            Eigen::Vector3d mean(0,0,0);
-            int counter = 0;
-            for(auto i = gsum_.rbegin(); i != gsum_.rend(); ++i)
-            {
-                if( counter < 5)
-                {
-                    mean += *i;
-                    ++counter;
-                }
-                if(counter == 5)
-                {
-                    break;
-                }
-            }
-            mean *= 1.0/((double)counter);
-            sample.gravity = mean;
         }
         if(currentSamples_ > 10) {
             samples_.push_back(sample);
-
         }
         ++currentSamples_;
         //        ROS_INFO_STREAM("Recoding_Data");
@@ -143,7 +111,7 @@ public:
 
     void sensorCb(const jaco2_msgs::Jaco2AccelerometersConstPtr& msg)
     {
-        jacoAccMsg_ = *msg;
+        jacoAccMsg_ = jaco2_msgs::AccelerometerConversion::ros2data(*msg);
 
         if(initialSensor_)
         {
@@ -259,7 +227,7 @@ public:
             else{
                 Jaco2Calibration::Jaco2CalibrationIO::save("/tmp/dyn_samples.txt", samples_);
                 int ec = calibration_.calibrateCoMandInertia(samples_);
-                std::vector<Jaco2Calibration::DynamicCalibratedParameters> dynparams;
+                Jaco2Calibration::DynamicCalibratedParametersCollection dynparams;
                 if(ec > -1){
                     dynparams = calibration_.getDynamicCalibration();
                 }
@@ -391,20 +359,18 @@ private:
     ros::Subscriber subJointState_;
     ros::Subscriber subaccs_;
     ros::Subscriber subJointAcc_;
-    std::vector<Jaco2Calibration::DynamicCalibrationSample> samples_;
+    jaco2_data::JointStateDataCollection samples_;
     std::vector<Eigen::Vector3d> gravity_;
     Jaco2Calibration::AccelerationSamples accSamples_;
     ros::Time lastTime_;
     double dt_;
-    jaco2_msgs::Jaco2Accelerometers jacoAccMsg_;
+    jaco2_data::AccelerometerData jacoAccMsg_;
     ros::ServiceServer calibServiceServer_;
     std::vector<Eigen::Vector3d> gsum_;
     std::vector<std::string> jointGroupNames_;
     moveit::planning_interface::MoveGroup moveGroup_;
     moveit::planning_interface::PlanningSceneInterface planningSceneInterface_;
     planning_scene_monitor::PlanningSceneMonitorPtr  planningMonitor_;
-    //    ros::Publisher display_publisher_;
-    //    moveit_msgs::DisplayTrajectory display_trajectory_;
 };
 
 int main(int argc, char *argv[])

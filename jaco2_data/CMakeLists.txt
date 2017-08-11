@@ -40,6 +40,8 @@ add_library(${PROJECT_NAME}
    src/time_stamp.cpp
    src/extended_joint_state_data.cpp
    src/joint_angles.cpp
+   src/joint_data.cpp
+   src/dynamic_calibration_io.cpp
    )
 
 ## Add cmake target dependencies of the library
@@ -50,6 +52,7 @@ add_library(${PROJECT_NAME}
 ## Specify libraries to link a library or executable target against
  target_link_libraries(${PROJECT_NAME}
    ${catkin_LIBRARIES}
+   yaml-cpp
  )
 
 #############

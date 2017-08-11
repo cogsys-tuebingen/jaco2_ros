@@ -61,5 +61,62 @@ struct Node<0, NodeSize> {
     }
 };
 
+struct TreeNode {
+    TreeNode(std::size_t joints, std::size_t steps)
+        : level(joints),
+          node_size(steps)
+
+    {
+        if(joints > 0){
+            for(std::size_t i = 0; i < steps; ++i){
+                children.push_back(std::shared_ptr<TreeNode>(new TreeNode(joints - 1, steps)));
+            }
+        }
+    }
+
+    void print(std::string buff = "")
+    {
+        if(level == 0){
+            std::cout << buff /*<< data << ";"*/ << std::endl;
+        }
+        else{
+            for(std::size_t i = 0 ; i < node_size ; ++i)
+                children[i]->print(buff + std::to_string(i) + ",");
+        }
+    }
+
+
+    void getIndeces(std::vector<std::vector<int>>& result, std::vector<int>& id)
+    {
+
+        if(level == 0){
+            result.push_back(id);
+            id.pop_back();
+        }
+        else{
+            for(std::size_t i = 0; i < node_size; ++i){
+                id.push_back(i);
+                children[i]->getIndeces(result, id);
+            }
+
+            id.pop_back();
+        }
+
+    }
+
+    static std::vector<std::vector<int>> getIndeces(TreeNode& node)
+    {
+        std::vector<int> id;
+        std::vector<std::vector<int>> res;
+        node.getIndeces(res, id);
+        return res;
+    }
+
+    std::size_t level;
+    std::size_t node_size;
+    std::vector<std::shared_ptr<TreeNode>> children;
+
+};
+
 
 #endif // TREE_HPP

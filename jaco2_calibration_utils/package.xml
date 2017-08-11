@@ -30,6 +30,8 @@
   <build_depend>jaco2_data</build_depend>
   <build_depend>jaco2_kin_dyn_lib</build_depend>
   <build_depend>jaco2_msgs</build_depend>
+  <build_depend>jaco2_msgs_conversion</build_depend>
+  <build_depend>jaco2_driver</build_depend>
   <build_depend>moveit_core</build_depend>
   <build_depend>moveit_msgs</build_depend>
   <build_depend>moveit_ros_planning</build_depend>
@@ -43,6 +45,8 @@
   <run_depend>jaco2_data</run_depend>
   <run_depend>jaco2_kin_dyn_lib</run_depend>
   <run_depend>jaco2_msgs</run_depend>
+  <run_depend>jaco2_msgs_conversion</run_depend>
+  <run_depend>jaco2_driver</run_depend>
   <run_depend>moveit_core</run_depend>
   <run_depend>moveit_msgs</run_depend>
   <run_depend>moveit_ros_planning</run_depend>
@@ -52,7 +56,6 @@
   <run_depend>tf</run_depend>
   <run_depend>rosbag</run_depend>
   <run_depend>actionlib_msgs</run_depend>
-
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
