@@ -2,17 +2,10 @@
 #define JACO2RESIDUALVECTOR_H
 #include <string>
 #include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
-struct ResidualData
-{
-    double dt;
-    double gx;
-    double gy;
-    double gz;
-    std::vector<double> joint_positions;
-    std::vector<double> joint_velocities;
-    std::vector<double> torques;
-};
+#include <jaco2_kin_dyn_lib/jaco2_kin_dyn_data_structs.h>
+#include <jaco2_data/joint_state_data.h>
 
+namespace Jaco2KinDynLib {
 /**
  * @brief The Jaco2ResidualVector class
  * Calculates external torques - Torques due to contacts !
@@ -41,6 +34,12 @@ public:
                            Eigen::VectorXd& new_integral,
                            Eigen::VectorXd& new_residual);
 
+    void getResidualVector(const jaco2_data::JointStateData &data,
+                           const Eigen::VectorXd& last_residual,
+                           const Eigen::VectorXd& last_integral,
+                           Eigen::VectorXd& new_integral,
+                           Eigen::VectorXd& new_residual);
+
     std::vector<double> getGravityTorque() const;
 
     int getNrOfJoints() const;
@@ -59,9 +58,11 @@ private:
 
 
 private:
+    mutable bool initial_;
     mutable Jaco2KinDynLib::Jaco2DynamicModel model_;
     Eigen::MatrixXd gains_;
     Eigen::VectorXd gravity_torque_;
+    mutable jaco2_data::TimeStamp last_stamp_;
 };
-
+}
 #endif // JACO2RESIDUALVECTOR_H

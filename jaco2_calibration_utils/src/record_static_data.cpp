@@ -25,7 +25,7 @@
 #include <jaco2_calibration_utils/acceleration_samples.hpp>
 #include <jaco2_calibration_utils/jaco2_calibration_io.h>
 #include <jaco2_kin_dyn_lib/jaco2_kinematic_model.h>
-#include <jaco2_driver/torque_offset_lut.hpp>
+#include <jaco2_data/torque_offset_lut.hpp>
 
 struct OffsetData{
     OffsetData()

@@ -2,8 +2,8 @@
 #include <ros/ros.h>
 #include <ceres/ceres.h>
 
-#include <jaco2_driver/torque_offset_lut.hpp>
-#include <jaco2_driver/torque_offset_calibration.hpp>
+#include <jaco2_data/torque_offset_lut.hpp>
+#include <jaco2_data/torque_offset_calibration.hpp>
 #include <jaco2_calibration_utils/fft_analysis.hpp>
 
 class QuadraticCostFunction

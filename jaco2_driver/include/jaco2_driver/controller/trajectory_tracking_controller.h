@@ -9,7 +9,7 @@
 class TrajectoryTrackingController : public Jaco2Controller
 {
 public:
-    TrajectoryTrackingController(Jaco2State &state, Jaco2API &api);
+    TrajectoryTrackingController(Jaco2State &state, Jaco2API &api, TerminationCallback &t);
 
 
     virtual bool isDone() const = 0;

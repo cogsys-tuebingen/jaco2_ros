@@ -1,5 +1,7 @@
 std_msgs/Header header
-
+float64 gx
+float64 gy
+float64 gz
 string[] name
 float64[] position
 float64[] velocity

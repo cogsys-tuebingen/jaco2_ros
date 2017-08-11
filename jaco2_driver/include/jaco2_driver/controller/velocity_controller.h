@@ -9,8 +9,8 @@ using namespace KinovaArithmetics;
 class VelocityController : public Jaco2Controller
 {
 public:
-    VelocityController(Jaco2State &state, Jaco2API &api)
-        : Jaco2Controller(state, api),
+    VelocityController(Jaco2State &state, Jaco2API &api, TerminationCallback& t)
+        : Jaco2Controller(state, api, t),
           //          last_command_(std::time(nullptr)),
           last_command_(std::chrono::high_resolution_clock::now()),
           kp_(1.2),
@@ -47,6 +47,7 @@ public:
 
         last_command_ = std::chrono::high_resolution_clock::now();
         done_ = false;
+        result_ = Result::WORKING;
     }
 
     void setGains(double p, double i, double d)
@@ -86,14 +87,16 @@ public:
 
         if(samplingPeriod_ > 0.05)
         {
-            cmd_.InitStruct();
-            cmd_.Position.Type = ANGULAR_VELOCITY;
+            stopMotion();
             esum_.InitStruct();
             last_diff_.InitStruct();
             counter_ = 0;
             done_ = true;
+            result_ = Result::SUCCESS;
             desired_.Position.InitStruct();
             desired_.Position.Type = ANGULAR_VELOCITY;
+            t_(result_);
+            return;
         }
         else if(desired_.Position.HandMode == HAND_NOMOVEMENT && sum > 0.01){
             auto vel = pidControl();
@@ -101,6 +104,9 @@ public:
 //            cmd_.Position.Actuators = desired_.Position.Actuators;
 //            std::cout << "controller command vel: " << KinovaArithmetics::to_string(cmd_.Position.Actuators ) <<std::endl;
 
+        }
+        else if(desired_.Position.HandMode == VELOCITY_MODE){
+            cmd_ = desired_;
         }
 //        std::cout << "desired vel: "<< desired_.Position.Actuators.Actuator6 <<std::endl;
 //        std::cout << "cmd vel: "<< cmd_.Position.Actuators.Actuator6 <<std::endl;
@@ -112,6 +118,17 @@ public:
     {
         return done_;
     }
+
+    void stopMotion()
+    {
+        cmd_.InitStruct();
+        cmd_.Position.Type = ANGULAR_VELOCITY;
+        for(int i = 0; i < 2; ++i){
+            api_.setAngularVelocity(cmd_);
+            usleep(5000);
+        }
+    }
+
 private:
     AngularInfo pidControl()
     {

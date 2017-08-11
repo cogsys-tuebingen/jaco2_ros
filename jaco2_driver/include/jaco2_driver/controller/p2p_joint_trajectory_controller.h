@@ -13,6 +13,7 @@ public:
     void setTrajectory(const JointTrajectory& trajectory);
     AngularInfo getJointError() const;
 
+    void clear();
     double jointAcceleration(const double dt, const std::size_t joint) const;
     double jointVelocity(const double dt, const std::size_t joint) const;
     double jointPosition(const double dt, const std::size_t joint) const;

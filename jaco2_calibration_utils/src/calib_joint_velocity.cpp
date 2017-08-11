@@ -3,7 +3,7 @@
 #include <sensor_msgs/JointState.h>
 #include <jaco2_msgs/JointVelocity.h>
 #include <jaco2_msgs/ArmJointAnglesAction.h>
-#include <jaco2_driver/velocity_calibration.hpp>
+#include <jaco2_data/velocity_calibration.hpp>
 #include <Eigen/Core>
 
 double getMean(const std::vector<double>& vec)

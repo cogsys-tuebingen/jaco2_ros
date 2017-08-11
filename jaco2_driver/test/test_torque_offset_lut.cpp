@@ -5,7 +5,7 @@
 #include <ros/ros.h>
 #include <gtest/gtest.h>
 #include <Eigen/Core>
-#include <jaco2_driver/torque_offset_lut.hpp>
+#include <jaco2_data/torque_offset_lut.hpp>
 using namespace Jaco2Calibration;
 TorqueOffsetLut lut;
 

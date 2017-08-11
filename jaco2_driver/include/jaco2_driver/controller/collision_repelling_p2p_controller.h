@@ -9,7 +9,7 @@
 class CollisionReplellingP2PController : public TrajectoryTrackingController
 {
 public:
-    CollisionReplellingP2PController(Jaco2State &state, Jaco2API &api);
+    CollisionReplellingP2PController(Jaco2State &state, Jaco2API &api, TerminationCallback& t);
 
     virtual void write() override;
     virtual void start() override;

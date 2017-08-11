@@ -1,5 +1,5 @@
-#include <jaco2_driver/torque_offset_lut.hpp>
-#include <jaco2_driver/torque_offset_calibration.hpp>
+#include <jaco2_data/torque_offset_lut.hpp>
+#include <jaco2_data/torque_offset_calibration.hpp>
 #include <nlopt.hpp>
 #include <ros/ros.h>
 

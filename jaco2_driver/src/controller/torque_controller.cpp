@@ -7,8 +7,8 @@
 
 using namespace KinovaArithmetics;
 
-TorqueController::TorqueController(Jaco2State &state, Jaco2API &api)
-    : Jaco2Controller(state, api),
+TorqueController::TorqueController(Jaco2State &state, Jaco2API &api, TerminationCallback& t)
+    : Jaco2Controller(state, api, t),
       last_command_(std::chrono::high_resolution_clock::now()),
       kp_(1.2),
       ki_(0.0),
@@ -95,6 +95,7 @@ void TorqueController::setTorque(const AngularPosition& tp)
     api_.enableDirectTorqueMode(1.0);
 
     done_ = false;
+    result_ = Result::WORKING;
     //    std::cout << "new target." << std::endl;
 }
 
@@ -143,6 +144,7 @@ void TorqueController::write()
         done_ = true;
         desired_.InitStruct();
         api_.disableTorque();
+        t_(result_);
         //        std::cout << "torque control done: " <<  now.time_since_epoch().count() << std::endl;
     }
     else{

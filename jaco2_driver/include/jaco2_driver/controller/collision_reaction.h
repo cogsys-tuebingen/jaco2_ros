@@ -44,9 +44,8 @@ public:
     AngularInfo getResiduals() const;
     double getResidualsNorm() const;
 
-    void estimateGravity(double& gx, double &gy, double& gz);
     void resetResiduals();
-    void update(double dt);
+    void update();
 
     bool inCollision() const;
     bool energyDisipation() const;
@@ -55,7 +54,6 @@ public:
 
 
 private:
-    void getResidualsData(ResidualData &data);
     void updateResiduals();
     double energyDisipation(AngularInfo &vel, AngularInfo &lower, AngularInfo &upper, std::size_t id) const;
     TrajectoryPoint calculateVelocity(AngularInfo& cmd);
@@ -63,19 +61,21 @@ private:
 private:
     Jaco2State &state_;
     bool in_collision_;
+    bool initial_;
     std::size_t collision_counter_;
     double threshold_;
     double stop_threshold_;
-    double dt_;
+//    double dt_;
+    jaco2_data::JointStateData last_state_;
     double residualNorm_;
     int n_joints_;
     std::string robot_model_;
     std::string base_link_;
     std::string tip_link_;
-    Jaco2ResidualVector resiudals_;
+    Jaco2KinDynLib::Jaco2ResidualVector resiudals_;
     Eigen::VectorXd last_integral_;
     Eigen::VectorXd last_residual_;
-    std::deque<Eigen::Vector3d> filter_g_;
+    Eigen::VectorXd bias_;
 
 
     AngularInfo kr_;

@@ -18,7 +18,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  jaco2_driver
+  jaco2_data
   jaco2_kin_dyn_lib
   jaco2_msgs
   moveit_core
@@ -29,6 +29,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   tf
   rosbag
+  actionlib_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -49,7 +50,7 @@ find_package(NLOPT REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES jaco2_calibration_utils
-  CATKIN_DEPENDS jaco2_driver jaco2_kin_dyn_lib jaco2_msgs roscpp sensor_msgs tf
+  CATKIN_DEPENDS jaco2_data jaco2_kin_dyn_lib jaco2_msgs roscpp sensor_msgs tf
   DEPENDS system_lib
 )
 
@@ -73,9 +74,9 @@ add_library(jaco2_calibration_utils
     include/jaco2_calibration_utils/dynamic_calibration_sample.hpp
     include/jaco2_calibration_utils/acceleration_samples.hpp
     include/jaco2_calibration_utils/dynamic_calibrated_parameters.hpp
-#    include/jaco2_calibration_utils/torque_offset_lut.hpp
     src/dynamic_residual.cpp
     src/jaco2_calibration_io.cpp
+    src/static_data_generator.cpp
     ${ALL_HEADERS}
 )
 

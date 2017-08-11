@@ -6,8 +6,8 @@
 class GravityCompensationController : public Jaco2Controller
 {
 public:
-    GravityCompensationController(Jaco2State &state, Jaco2API &api)
-        : Jaco2Controller(state, api),
+    GravityCompensationController(Jaco2State &state, Jaco2API &api, TerminationCallback& t )
+        : Jaco2Controller(state, api, t),
           last_command_(std::time(nullptr)),
           done_(false)
     {
@@ -20,6 +20,7 @@ public:
         api_.stopForceControl();
         api_.enableDirectTorqueMode(1.0);
         done_ = false;
+        result_ = Result::WORKING;
     }
 
     virtual void write() override
@@ -31,10 +32,16 @@ public:
 
     }
 
+    void finishService()
+    {
+        done_ = true;
+        result_ = Result::SUCCESS;
+        t_(result_);
+    }
+
     virtual void stop() override
     {
         api_.disableTorque();
-        done_ = true;
     }
 
     virtual bool isDone() const override

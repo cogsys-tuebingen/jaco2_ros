@@ -1,10 +1,10 @@
 #include <jaco2_driver/controller/torque_trajectory_controller.h>
 #include <kinova/KinovaArithmetics.hpp>
 
-TorqueTrajectoryController::TorqueTrajectoryController(Jaco2State &state, Jaco2API &api):
-    TrajectoryTrackingController(state, api),
-    model_("/robot_description","jaco_link_base","jaco_link_hand"),
-    nh("~")
+TorqueTrajectoryController::TorqueTrajectoryController(Jaco2State &state, Jaco2API &api, TerminationCallback& t)
+    : TrajectoryTrackingController(state, api, t),
+      model_("/robot_description","jaco_link_base","jaco_link_hand"),
+      nh("~")
 {
     pub = nh.advertise<sensor_msgs::JointState>("/torque_control_cmd",2);
     pub2 = nh.advertise<sensor_msgs::JointState>("/torque_control_cmd2",2);
@@ -14,6 +14,7 @@ void TorqueTrajectoryController::setTrajectory(const JointTrajectory& trajectory
 {
     api_.enableDirectTorqueMode(1.0,0.5);
     trajectoryWrapper_.setTrajectory(trajectory);
+    result_ = Result::WORKING;
 }
 
 
@@ -53,6 +54,7 @@ void TorqueTrajectoryController::write()
             trajectoryWrapper_.evaluationOutput();
             //            api_.setAngularTorque(tp_.Position.Actuators);
             api_.disableTorque();
+            result_ =   Result::SUCCESS;
             return;
         }
     }

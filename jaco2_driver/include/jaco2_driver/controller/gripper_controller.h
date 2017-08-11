@@ -8,7 +8,7 @@
 class GripperController : public Jaco2Controller
 {
 public:
-    GripperController(Jaco2State &state, Jaco2API& api);
+    GripperController(Jaco2State &state, Jaco2API& api, TerminationCallback &t);
 //    ~GripperController();
 
     virtual void write() override;

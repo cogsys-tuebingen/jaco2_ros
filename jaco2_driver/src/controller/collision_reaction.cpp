@@ -7,10 +7,11 @@ using namespace KinovaArithmetics;
 CollisionReaction::CollisionReaction(Jaco2State &state):
     state_(state),
     in_collision_(false),
+    initial_(true),
     collision_counter_(0),
     threshold_(std::sqrt(6)*2),
     stop_threshold_(0),
-    dt_(0),
+//    dt_(0),
     residualNorm_(0)
 {
     kr_.InitStruct();
@@ -20,12 +21,6 @@ CollisionReaction::CollisionReaction(Jaco2State &state):
     kr_.Actuator4 = 1.0;
     kr_.Actuator5 = 1.0;
     kr_.Actuator6 = 0.0;
-
-    for(int i = 0; i < 30; ++i)
-    {
-        double gx, gy, gz;
-        estimateGravity(gx, gy, gz);
-    }
 
     max_torques_.Actuator1 = 19.0;
     max_torques_.Actuator2 = 38.0;
@@ -40,6 +35,7 @@ void CollisionReaction::start()
 {
     in_collision_ = false;
     collision_counter_ = 0;
+    resetResiduals();
 }
 
 void CollisionReaction::setThreshold(double threshold)
@@ -57,17 +53,17 @@ void CollisionReaction::setRobotModel(const std::string &robot_model, const std:
 {
     std::cout << robot_model<< " "<< chain_root << " " <<chain_tip<< std::endl;
     ROS_INFO_STREAM(robot_model<< " "<< chain_root << " " <<chain_tip);
-    resiudals_ = Jaco2ResidualVector(robot_model, chain_root, chain_tip);
+    resiudals_ = Jaco2KinDynLib::Jaco2ResidualVector(robot_model, chain_root, chain_tip);
     n_joints_ = resiudals_.getNrOfJoints();
+    ROS_INFO_STREAM("#joints: " << n_joints_);
     std::vector<double> r_gains(n_joints_, 10);
     resiudals_.setGains(r_gains);
     resetResiduals();
-
+    bias_.setZero(n_joints_);
 }
 
-void CollisionReaction::update(double dt)
+void CollisionReaction::update()
 {
-    dt_ = dt;
 
     updateResiduals();
 
@@ -77,6 +73,7 @@ void CollisionReaction::update(double dt)
         ++collision_counter_;
     }
     else if(collision_counter_ > 0){
+        bias_ = last_residual_;
         collision_counter_ = 0;
     }
 }
@@ -101,13 +98,21 @@ AngularInfo CollisionReaction::torqueControlReflex()
     AngularInfo cmd;
     cmd.InitStruct();
 
+    Eigen::VectorXd unbiased = last_residual_ - bias_;
 
-    cmd.Actuator1 = kr_.Actuator1 * last_residual_(0);
-    cmd.Actuator2 = kr_.Actuator2 * last_residual_(1);
-    cmd.Actuator3 = kr_.Actuator3 * last_residual_(2);
-    cmd.Actuator4 = kr_.Actuator4 * last_residual_(3);
-    cmd.Actuator5 = kr_.Actuator5 * last_residual_(4);
-    cmd.Actuator6 = kr_.Actuator6 * last_residual_(5);
+//    cmd.Actuator1 = kr_.Actuator1 * last_residual_(0);
+//    cmd.Actuator2 = kr_.Actuator2 * last_residual_(1);
+//    cmd.Actuator3 = kr_.Actuator3 * last_residual_(2);
+//    cmd.Actuator4 = kr_.Actuator4 * last_residual_(3);
+//    cmd.Actuator5 = kr_.Actuator5 * last_residual_(4);
+//    cmd.Actuator6 = kr_.Actuator6 * last_residual_(5);
+
+    cmd.Actuator1 = kr_.Actuator1 * unbiased(0);
+    cmd.Actuator2 = kr_.Actuator2 * unbiased(1);
+    cmd.Actuator3 = kr_.Actuator3 * unbiased(2);
+    cmd.Actuator4 = kr_.Actuator4 * unbiased(3);
+    cmd.Actuator5 = kr_.Actuator5 * unbiased(4);
+    cmd.Actuator6 = kr_.Actuator6 * unbiased(5);
 
     return cmd;
 }
@@ -170,10 +175,34 @@ std::size_t CollisionReaction::getCollisionCounter() const
 
 void CollisionReaction::updateResiduals()
 {
-    ResidualData data;
+    Jaco2KinDynLib::ResidualData data;
+
+    auto state = state_.getJointStateRef();
+
+    data.gx = state.gravity(0);
+    data.gy = state.gravity(1);
+    data.gz = state.gravity(2);
 
 
-    getResidualsData(data);
+    data.joint_positions.insert(data.joint_positions.begin(), state.position.begin(), state.position.begin() + n_joints_);
+    data.joint_velocities.insert(data.joint_velocities.begin(), state.velocity.begin(), state.velocity.begin() + n_joints_);
+    data.torques.insert(data.torques.begin(), state.torque.begin(), state.torque.begin() + n_joints_);
+
+//    data.dt = dt_;
+    if(initial_){
+        data.dt = 1./65;
+        initial_ = false;
+    }
+    else{
+        data.dt = std::abs(jaco2_data::TimeStamp::timeDiffinSeconds(state.stamp, last_state_.stamp));
+    }
+//    std::cout << "collision rreaction: dt = " << data.dt <<" | " << jaco2_data::TimeStamp::timeDiffinSeconds(state.stamp, last_state_.stamp) << std::endl;
+    last_state_ = state;
+
+    if(data.dt == 0 ){
+        return;
+    }
+
 
     Eigen::VectorXd new_integral(Jaco2DriverConstants::n_Jaco2Joints);
     new_integral.setZero(Jaco2DriverConstants::n_Jaco2Joints);
@@ -181,69 +210,30 @@ void CollisionReaction::updateResiduals()
     Eigen::VectorXd new_residual(Jaco2DriverConstants::n_Jaco2Joints);
     new_residual.setZero(Jaco2DriverConstants::n_Jaco2Joints);
 
-    resiudals_.setGravity(data.gx, data.gy, data.gz);
+//    resiudals_.setGravity(data.gx, data.gy, data.gz);
     resiudals_.getResidualVector(data, last_residual_, last_integral_, new_integral, new_residual);
 
     last_integral_ = new_integral;
     last_residual_ = new_residual;
 
-
+//    std::cout << "resiudals "<< last_residual_ << std::endl;
     residualNorm_= new_residual.norm();
 }
 
-void CollisionReaction::getResidualsData(ResidualData &data)
-{
-
-    auto torques = state_.getAngularForce();
-    auto vel = state_.getAngularVelocity();
-    auto pos = state_.getAngularPosition();
-
-    DataConversion::from_degrees(pos);
-    DataConversion::from_degrees(vel);
-
-    estimateGravity(data.gx, data.gy, data.gz);
-
-    if(filter_g_.size() == 1)
-    {
-        return;
-    }
-    data.dt = dt_;
-
-    DataConversion::convert(pos.Actuators, data.joint_positions);
-    DataConversion::convert(vel.Actuators, data.joint_velocities);
-    DataConversion::convert(torques.Actuators, data.torques);
-
-}
 
 void CollisionReaction::resetResiduals()
 {
-    last_integral_ = Eigen::VectorXd::Zero(n_joints_);
-    last_residual_ = Eigen::VectorXd::Zero(n_joints_);
+    last_state_ = jaco2_data::JointStateData(Jaco2DriverConstants::n_Jaco2Joints);
+    last_integral_ = Eigen::VectorXd(n_joints_);
+    last_integral_.setZero(n_joints_);
+
+    last_residual_ = Eigen::VectorXd(n_joints_);
+    last_residual_.setZero(n_joints_);
     collision_counter_ = 0;
+    initial_ = true;
+    ROS_INFO("Rest Residuals");
 }
 
-void CollisionReaction::estimateGravity(double& gx, double &gy, double& gz)
-{
-    auto accs = state_.getLinearAcceleration();
-    Eigen::Vector3d g_vec(accs.Actuator1_X, accs.Actuator1_Y, accs.Actuator1_Z);
-
-    filter_g_.emplace_back(g_vec);
-
-    while(filter_g_.size() > 30){
-        filter_g_.pop_front();
-    }
-    Eigen::Vector3d res;
-    res.setZero(3);
-    for(auto v : filter_g_){
-        res += v;
-    }
-    res *= -9.81 / filter_g_.size();
-
-    gx = res(0);
-    gy = res(1);
-    gz = res(2);
-
-}
 
 TrajectoryPoint CollisionReaction::calculateVelocity(AngularInfo& cmd)
 {

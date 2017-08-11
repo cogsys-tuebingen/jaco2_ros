@@ -19,3 +19,6 @@ trajectory_controller|string|TRAJ_P2P_VEL|Changes the trajactory traking control
 |jaco_torque_calibration_file|string|""|Under development. Provides a calibration for the torque sensors.|
 |jaco_velocity_calibration_file|string|""| Provides a velocity sensor calibration. For some API versions the sensed velocity is smaller than the actual. Calibration can be optianed using jaco2_calibration_utils.|
 |jaco_gravity_calibration_file|string|""|Gravitiy parameter parameter calibration, provided by the Jaco2 API. Get parameters by running: rosrun jaco2_driver gravity_parameter_estimation.
+
+##Warning
+Using the collision repelling controllers in a debugger might be a problem, since due to very long sampling periods the collision estimation might get numerically instable.  Be extra careful and just turn the Jaco2 of if something unexpected happens.
