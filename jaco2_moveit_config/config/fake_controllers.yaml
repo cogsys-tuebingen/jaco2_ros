@@ -1,4 +1,4 @@
-rate: 10 (Hz, used for interpolation controller)
+rate: 40 (Hz, used for interpolation controller)
 controller_list:
   - name: fake_base_group_controller
     joints:
