@@ -1,4 +1,5 @@
-﻿#include <moveit/move_group_interface/move_group_interface.h>
+﻿//#include <moveit/move_group_interface/move_group_interface.h>
+#include <moveit/move_group_interface/move_group.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
@@ -71,7 +72,7 @@ private:
     actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> goal_action_client_;
     trajectory_msgs::JointTrajectory goal_joint_trajectory;            //add points (ie states from statecallback) to trajectory to follow, slightly overfitted since it interpolates
 
-    moveit::planning_interface::MoveGroupInterface group_;
+    moveit::planning_interface::MoveGroup group_;
     planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
 
     ros::Time prev_time;
@@ -242,7 +243,7 @@ void teleopJacoDS4::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     double pitch = right_trigger_R1 ? -right_analog_left_right : 0; //R1 + right analog left/right = yaw
 
     if (right_x && !emergency_stop) { //move home
-        moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+        moveit::planning_interface::MoveGroup::Plan my_plan;
 
         group_.setPlannerId("RRTkConfigDefault");
         group_.setStartStateToCurrentState();
@@ -452,7 +453,7 @@ void teleopJacoDS4::publish_states(std::vector<double> vel) {
 
 moveit_msgs::MoveItErrorCodes teleopJacoDS4::move_to_trajectory_start(){
     if (saved_trajectory[0].position != current_state.position) {
-        moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+        moveit::planning_interface::MoveGroup::Plan my_plan;
 
         group_.setPlannerId("RRTConnectkConfigDefault");
         group_.setStartStateToCurrentState();
