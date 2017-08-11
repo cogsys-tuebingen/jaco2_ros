@@ -26,7 +26,7 @@ before_script:
   - cd ceres
   - git clone https://ceres-solver.googlesource.com/ceres-solver
   - cd ceres-solver
-  - mdkir build
+  - mkdir build
   - cd build
   - cmake ..
   - make -j4
