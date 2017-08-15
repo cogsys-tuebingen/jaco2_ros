@@ -78,6 +78,7 @@ jaco2_data::JointStateData JointStateConversion::sensorMsgs2Data(const sensor_ms
     res.position = msg.position;
     res.velocity = msg.velocity;
     res.torque = msg.effort;
+    return res;
 }
 
 jaco2_data::JointStateData JointStateConversion::jaco2Msg2Data(const jaco2_msgs::Jaco2JointState& msg)
