@@ -20,7 +20,7 @@ Eigen::Vector3d GravityEstimator::update(const jaco2_data::ExtendedJointStateDat
 Eigen::Vector3d GravityEstimator::update(const jaco2_data::AccelerometerData& data)
 {
     const Vector3Stamped& a0 = data.front();
-    Eigen::Vector3d gnew(a0.vector(1), a0.vector(0), a0.vector(2)); // jaco_base_link is not accelerometer frame !
+    Eigen::Vector3d gnew(a0.vector(1), a0.vector(0), a0.vector(2)); // jaco_base_link is not accelerometer frame ! // TODO: actually g should be -g ???
     if(static_base){
         gnew.normalize();
     }
