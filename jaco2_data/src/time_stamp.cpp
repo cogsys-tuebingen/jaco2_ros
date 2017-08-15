@@ -3,7 +3,9 @@
 using namespace jaco2_data;
 
 
-TimeStamp::TimeStamp() {}
+TimeStamp::TimeStamp()
+    : stamp()
+{}
 
 void TimeStamp::now()
 {
@@ -52,6 +54,11 @@ bool TimeStamp::operator !=(const TimeStamp& other) const
 bool TimeStamp::operator <=(const TimeStamp& other) const
 {
     return stamp <= other.stamp;
+}
+
+bool TimeStamp::operator >=(const TimeStamp& other) const
+{
+    return stamp >= other.stamp;
 }
 
 bool TimeStamp::operator ==(const TimeStamp& other) const
