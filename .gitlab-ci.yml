@@ -3,7 +3,7 @@ before_script:
   # (change apt-get to yum if you use a CentOS-based image)
   - 'apt-get -qq update -y'
   - 'apt-get -qq install build-essential openssh-client libeigen3-dev libyaml-cpp-dev libtbb-dev libopencv-dev sudo -y'
-  - 'apt-get -qq install ros-kinetic-moveit-* -y'
+  - 'apt-get -qq install ros-jade-moveit-* -y'
   - 'apt-get -qq install libgoogle-glog-dev libatlas-base-dev -y'
 
   # Run ssh-agent (inside the build environment)
@@ -45,16 +45,6 @@ before_script:
 stages:
   - build
 
-indigo:
-  stage: build
-  image: ros:indigo
-  script:
-    - source /opt/ros/$(ls /opt/ros/ | sort -r | head -n 1)/setup.bash
-    - rosdep install -y -r -i --from-paths src
-    - catkin_make
-#    - catkin_make tests
-#    - catkin_make run_tests_muse_mcl
-    
 jade:
   stage: build
   image: ros:jade
@@ -62,13 +52,6 @@ jade:
     - source /opt/ros/$(ls /opt/ros/ | sort -r | head -n 1)/setup.bash
     - rosdep install -y -r -i --from-paths src
     - catkin_make
-#    - catkin_make tests
-#    - catkin_make run_tests_muse_mcl
 
-#kinetic:
-#  stage: build
-#  image: ros:kinetic
-#  script:
-#    - source /opt/ros/$(ls /opt/ros/ | sort -r | head -n 1)/setup.bash
-#    - rosdep install -y -r -i --from-paths src
-#    - catkin_make
+
+
