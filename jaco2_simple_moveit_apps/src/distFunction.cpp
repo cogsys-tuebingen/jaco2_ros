@@ -3,7 +3,7 @@
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit_msgs/PlanningScene.h>
-#include <moveit/move_group_interface/move_group.h>
+#include <moveit/move_group_interface/move_group_interface.h>
 
 #include <moveit/collision_detection_fcl/collision_robot_fcl.h>
 #include <moveit/collision_detection_fcl/collision_world_fcl.h>
@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
     spinner.start();
     //    sleep(4.0);
 
-    moveit::planning_interface::MoveGroup group_("manipulator");
+    moveit::planning_interface::MoveGroupInterface group_("manipulator");
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
     planning_scene_monitor::PlanningSceneMonitorPtr planningMonitor_;
 

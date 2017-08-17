@@ -1,5 +1,4 @@
-#include <moveit/move_group_interface/move_group.h>
-//#include <moveit/move_group/move_group_interface.h>
+#include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
@@ -190,7 +189,7 @@ void teleopJacoDS4::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     double pitch = right_trigger_R1 ? -right_analog_left_right : 0; //R1 + right analog left/right = yaw
 
     if (right_x) { //move home
-        moveit::planning_interface::MoveGroup::Plan my_plan;
+        moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 
 
         group_.setPlannerId("RRTkConfigDefault");

@@ -2,7 +2,7 @@
 #include <random>
 
 #include <ros/ros.h>
-#include <moveit/move_group_interface/move_group.h>
+#include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
@@ -172,7 +172,7 @@ public:
 
                 if(!collision) {
 
-                    moveit::planning_interface::MoveGroup::Plan my_plan;
+                    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
                     moveGroup_.setJointValueTarget(jvalues);
                     //                    moveGroup_.setStartStateToCurrentState();
                     moveGroup_.setPlanningTime(3.0);
@@ -358,7 +358,7 @@ private:
     ros::ServiceServer calibServiceServer_;
     std::vector<Eigen::Vector3d> gsum_;
     std::vector<std::string> jointGroupNames_;
-    moveit::planning_interface::MoveGroup moveGroup_;
+    moveit::planning_interface::MoveGroupInterface moveGroup_;
     moveit::planning_interface::PlanningSceneInterface planningSceneInterface_;
     planning_scene_monitor::PlanningSceneMonitorPtr  planningMonitor_;
     Jaco2KinDynLib::Jaco2DynamicModel dynSolver_;

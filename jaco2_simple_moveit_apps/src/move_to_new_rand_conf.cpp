@@ -1,6 +1,10 @@
 #include <jaco2_utils/configuration_list.h>
 #include <ros/ros.h>
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+#include <moveit/move_group_interface/move_group_interface.h>
+#else
 #include <moveit/move_group_interface/move_group.h>
+#endif
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
@@ -104,7 +108,11 @@ public:
             if(!collision && !contains) {
 
 
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+                moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+#else
                 moveit::planning_interface::MoveGroup::Plan my_plan;
+#endif
                 my_plan.trajectory_.joint_trajectory;
 
                 group_.setJointValueTarget(rand.angles);
@@ -162,7 +170,7 @@ public:
         primitive.dimensions[1] = 2.0;
         primitive.dimensions[2] = 0.01;
 
-//        /* A pose for the box (specified relative to frame_id) */
+        //        /* A pose for the box (specified relative to frame_id) */
         geometry_msgs::Pose box_pose;
         box_pose.orientation.w = 1.0;
         box_pose.position.x =  0.0;
@@ -251,18 +259,18 @@ public:
 
         collision_objects.push_back(collision_object);
 
-//        primitive.type = primitive.CYLINDER;
-//        primitive.dimensions[primitive.CYLINDER_RADIUS] = 0.05;
-//        primitive.dimensions[primitive.CYLINDER_HEIGHT]  = 1.0;
-//        geometry_msgs::Pose c_pose;
-//        c_pose.orientation.w = 1.0;
-//        c_pose.position.x = 0.3;
-//        c_pose.position.y = 0.2;
-//        c_pose.position.z = 0.5;
-//        collision_object.id = "cylinder";
-//        collision_object.primitives.push_back(primitive);
-//        collision_object.primitive_poses.push_back(c_pose);
-//        collision_object.operation = collision_object.ADD;
+        //        primitive.type = primitive.CYLINDER;
+        //        primitive.dimensions[primitive.CYLINDER_RADIUS] = 0.05;
+        //        primitive.dimensions[primitive.CYLINDER_HEIGHT]  = 1.0;
+        //        geometry_msgs::Pose c_pose;
+        //        c_pose.orientation.w = 1.0;
+        //        c_pose.position.x = 0.3;
+        //        c_pose.position.y = 0.2;
+        //        c_pose.position.z = 0.5;
+        //        collision_object.id = "cylinder";
+        //        collision_object.primitives.push_back(primitive);
+        //        collision_object.primitive_poses.push_back(c_pose);
+        //        collision_object.operation = collision_object.ADD;
 
         // Now, let's add the collision object into the world
         ROS_INFO("Add an object into the world");
@@ -283,7 +291,11 @@ public:
 private:
 
     std::vector<std::string> jointNames_;
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+    moveit::planning_interface::MoveGroupInterface group_;
+#else
     moveit::planning_interface::MoveGroup group_;
+#endif
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
 
     planning_scene_monitor::PlanningSceneMonitorPtr planningMonitor_;

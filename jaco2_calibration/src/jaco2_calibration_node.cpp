@@ -1,7 +1,11 @@
 #include <vector>
 
 #include <ros/ros.h>
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+#include <moveit/move_group_interface/move_group_interface.h>
+#else
 #include <moveit/move_group_interface/move_group.h>
+#endif
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
@@ -215,7 +219,11 @@ public:
 
                 if(!collision) {
 
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+                    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+#else
                     moveit::planning_interface::MoveGroup::Plan my_plan;
+#endif
                     moveGroup_.setJointValueTarget(jvalues);
                     //                    moveGroup_.setStartStateToCurrentState();
                     moveGroup_.setPlanningTime(3.0);
@@ -400,7 +408,11 @@ private:
     ros::ServiceServer calibServiceServer_;
     std::vector<Eigen::Vector3d> gsum_;
     std::vector<std::string> jointGroupNames_;
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+    moveit::planning_interface::MoveGroupInterface moveGroup_;
+#else
     moveit::planning_interface::MoveGroup moveGroup_;
+#endif
     moveit::planning_interface::PlanningSceneInterface planningSceneInterface_;
     planning_scene_monitor::PlanningSceneMonitorPtr  planningMonitor_;
     //    ros::Publisher display_publisher_;

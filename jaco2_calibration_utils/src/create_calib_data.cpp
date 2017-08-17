@@ -3,11 +3,6 @@
 #include <ros/ros.h>
 #include <std_srvs/Trigger.h>
 #include <std_msgs/Bool.h>
-#include <moveit/move_group_interface/move_group.h>
-#include <moveit/planning_scene_monitor/planning_scene_monitor.h>
-#include <moveit/planning_scene_interface/planning_scene_interface.h>
-#include <moveit/planning_scene_monitor/planning_scene_monitor.h>
-#include <moveit_msgs/DisplayTrajectory.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 
