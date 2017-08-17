@@ -20,6 +20,7 @@ public:
 
     bool operator !=(const TimeStamp& other) const;
     bool operator <=(const TimeStamp& other) const;
+    bool operator >=(const TimeStamp& other) const;
     bool operator ==(const TimeStamp& other) const;
 
     double substractionResultInSeconds(const TimeStamp& rhs) const;

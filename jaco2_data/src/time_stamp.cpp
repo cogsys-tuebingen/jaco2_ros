@@ -54,6 +54,11 @@ bool TimeStamp::operator <=(const TimeStamp& other) const
     return stamp <= other.stamp;
 }
 
+bool TimeStamp::operator >=(const TimeStamp& other) const
+{
+    return stamp >= other.stamp;
+}
+
 bool TimeStamp::operator ==(const TimeStamp& other) const
 {
     return stamp == other.stamp;
