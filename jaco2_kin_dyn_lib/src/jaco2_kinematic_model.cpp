@@ -123,7 +123,7 @@ int Jaco2KinematicModel::getFKPose(const std::vector<double> &q_in, KDL::Frame &
         return error_code;
     }
     else{
-        ROS_ERROR_STREAM("Link " << link << "is not part of KDL chain.");
+        ROS_ERROR_STREAM("Link " << link << " is not part of KDL chain.");
         return KDL::SolverI::E_UNDEFINED;
     }
 }
