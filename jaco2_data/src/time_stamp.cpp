@@ -3,9 +3,7 @@
 using namespace jaco2_data;
 
 
-TimeStamp::TimeStamp()
-    : stamp()
-{}
+TimeStamp::TimeStamp() {}
 
 void TimeStamp::now()
 {

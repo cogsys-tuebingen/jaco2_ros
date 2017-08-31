@@ -3,36 +3,33 @@
 void Jaco2KinDynLib::convert(const KDL::JntArray &in, std::vector<double> &out)
 {
     out.resize(in.rows());
-    for(std::size_t i = 0; i < out.size(); ++i)
-    {
+    for(std::size_t i = 0; i < out.size(); ++i){
         out[i] = in(i);
     }
 }
 
-void Jaco2KinDynLib::convert(const std::vector<double> &in, KDL::JntArray &out)
+void Jaco2KinDynLib::convert(const std::vector<double> &in, KDL::JntArray &out, std::size_t ignore_end)
 {
-    out.resize(in.size());
-    for(std::size_t i = 0; i < out.rows(); ++i)
-    {
+    out.resize(in.size() - ignore_end);
+    for(std::size_t i = 0; i < out.rows(); ++i){
         out(i) = in[i];
     }
 }
 
-void Jaco2KinDynLib::convert(const std::vector<double> &in, Eigen::VectorXd &out)
+void Jaco2KinDynLib::convert(const std::vector<double> &in, Eigen::VectorXd &out, std::size_t ignore_end)
 {
-    out.resize(in.size());
+    out.resize(in.size() - ignore_end);
     std::size_t i = 0;
-    for(auto data : in)
-    {
-        out(i) = data;
+    for(auto it = in.begin(); it < in.end() - ignore_end; ++i){
+        out(i) = *it;
         ++i;
     }
 }
 
-void Jaco2KinDynLib::convert(const Eigen::VectorXd &in, std::vector<double> &out)
+void Jaco2KinDynLib::convert(const Eigen::VectorXd &in, std::vector<double> &out, std::size_t ignore_end)
 {
-    out.resize(in.rows());
-    for(std::size_t i = 0; i < in.rows(); ++i){
+    out.resize(in.rows() -ignore_end);
+    for(std::size_t i = 0; i < out.size(); ++i){
         out[i] = in(i);
     }
 }

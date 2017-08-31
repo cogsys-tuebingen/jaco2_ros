@@ -53,7 +53,9 @@ Jaco2KinematicModel::Jaco2KinematicModel(const std::string &robot_model, const s
     }
     initialize();
 
-    std::cout << "Number of Joints: " << chain_.getNrOfJoints() << " | Number of Segments: " << chain_.getNrOfSegments() << std::endl;
+    ROS_DEBUG_STREAM_NAMED("Jaco2KinematicModel",
+                           "Number of Joints: " << chain_.getNrOfJoints() <<
+                           " | Number of Segments: " << chain_.getNrOfSegments());
 }
 
 Jaco2KinematicModel::~Jaco2KinematicModel()
