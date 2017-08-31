@@ -115,8 +115,16 @@ void::Jaco2KinematicModel::setRootAndTip(const std::string &chain_root, const st
 
 int Jaco2KinematicModel::getFKPose(const std::vector<double> &q_in, KDL::Frame &out, const std::string link) const
 {
+    if(q_in.size() < chain_.getNrOfJoints()){
+//        std::string error = std::to_string(chain_.getNrOfJoints()) + " joint values expected got only " + std::to_string(q_in.size()) + "!";
+//        throw std::runtime_error(error);
+        ROS_ERROR_STREAM(chain_.getNrOfJoints() << " joint values expected got only " << q_in.size() << "!");
+        return KDL::SolverI::E_UNDEFINED;
+    }
+
     KDL::JntArray q;
-    Jaco2KinDynLib::convert(q_in,q);
+    Jaco2KinDynLib::convert(q_in, q, q_in.size() - chain_.getNrOfJoints());
+
 
     int segId = getKDLSegmentIndexFK(link);
 
