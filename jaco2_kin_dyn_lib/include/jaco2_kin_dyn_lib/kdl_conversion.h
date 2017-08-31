@@ -12,9 +12,9 @@
 namespace Jaco2KinDynLib {
 
      void convert(const KDL::JntArray& in, std::vector<double>& out);
-     void convert(const std::vector<double>& in, KDL::JntArray& out);
-     void convert(const std::vector<double> &in, Eigen::VectorXd &out);
-     void convert(const Eigen::VectorXd &in, std::vector<double> &out);
+     void convert(const std::vector<double>& in, KDL::JntArray& out, std::size_t ignore_end = 0);
+     void convert(const std::vector<double> &in, Eigen::VectorXd &out, std::size_t ignore_end = 0 );
+     void convert(const Eigen::VectorXd &in, std::vector<double> &out, std::size_t ignore_end = 0);
      void poseTFToKDL(const tf::Pose& t, KDL::Frame& k);
      Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
      Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);

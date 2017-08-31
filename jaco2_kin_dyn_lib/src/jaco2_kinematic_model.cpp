@@ -53,7 +53,9 @@ Jaco2KinematicModel::Jaco2KinematicModel(const std::string &robot_model, const s
     }
     initialize();
 
-    std::cout << "Number of Joints: " << chain_.getNrOfJoints() << " | Number of Segments: " << chain_.getNrOfSegments() << std::endl;
+    ROS_DEBUG_STREAM_NAMED("Jaco2KinematicModel",
+                           "Number of Joints: " << chain_.getNrOfJoints() <<
+                           " | Number of Segments: " << chain_.getNrOfSegments());
 }
 
 Jaco2KinematicModel::~Jaco2KinematicModel()
@@ -113,8 +115,13 @@ void::Jaco2KinematicModel::setRootAndTip(const std::string &chain_root, const st
 
 int Jaco2KinematicModel::getFKPose(const std::vector<double> &q_in, KDL::Frame &out, const std::string link) const
 {
+    if(q_in.size() < chain_.getNrOfJoints()){
+        std::string error = std::to_string(chain_.getNrOfJoints()) + " joint values expected got only " + std::to_string(q_in.size()) + "!";
+        throw std::runtime_error(error);
+    }
+
     KDL::JntArray q;
-    Jaco2KinDynLib::convert(q_in,q);
+    Jaco2KinDynLib::convert(q_in, q, q_in.size() - chain_.getNrOfJoints());
 
     int segId = getKDLSegmentIndexFK(link);
 
