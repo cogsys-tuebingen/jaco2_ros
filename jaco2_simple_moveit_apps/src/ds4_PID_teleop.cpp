@@ -26,6 +26,7 @@
 
 #include <std_msgs/Bool.h>
 #include <std_srvs/SetBool.h>
+#include <std_srvs/Trigger.h>
 
 //FollowJointTrajectory action server
 #include <actionlib/client/simple_action_client.h>
@@ -52,6 +53,7 @@ public:
     void publish_states(std::vector<double> vel);
     void move_torque_teaching(bool button_pressed);
     moveit_msgs::MoveItErrorCodes move_to_trajectory_start();
+    void play_trajectory();
 
 private:
     void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
@@ -65,6 +67,8 @@ private:
     ros::ServiceClient emergency_stop_client_;
     ros::ServiceClient emergency_start_client_;
     ros::ServiceClient admittance_mode_client_;
+    ros::ServiceClient random_configuration_sampling_client_;
+    ros::ServiceClient random_configuration_saving_client_;
     ros::Publisher joint_state_pub;
 
     //action server
@@ -100,6 +104,9 @@ private:
     bool doneRecording;
     bool useTeaching;
 
+    bool randomConfigurationMode;
+    std::vector<double> random_sampled_configuration_;
+
 };
 
 teleopJacoDS4::teleopJacoDS4(std::string group_name, ros::NodeHandle& nh_)
@@ -117,6 +124,7 @@ teleopJacoDS4::teleopJacoDS4(std::string group_name, ros::NodeHandle& nh_)
     prev_time = ros::Time::now();   //not Walltime since elapsed time is in reference to simulation (slower than walltime)
     emergency_stop = false;
     useTeaching = false;
+    randomConfigurationMode = false;
 
     planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
 
@@ -134,6 +142,8 @@ teleopJacoDS4::teleopJacoDS4(std::string group_name, ros::NodeHandle& nh_)
     gravity_client_ = nh_.serviceClient<std_srvs::SetBool>("/jaco_21_driver/in/enable_gravity_compensation_mode");
     emergency_start_client_ = nh_.serviceClient<jaco2_msgs::Start>("/jaco_21_driver/in/start");
     emergency_stop_client_ = nh_.serviceClient<jaco2_msgs::Stop>("/jaco_21_driver/in/stop");
+    random_configuration_sampling_client_ = nh_.serviceClient<std_srvs::Trigger>("/jaco_2_random_sampling/new_configuration");
+    random_configuration_saving_client_ = nh_.serviceClient<std_srvs::Trigger>("/jaco_2_random_sampling/save_configurations");
 
     jaco2_msgs::StartRequest req;
     jaco2_msgs::StartResponse res;
@@ -241,7 +251,7 @@ void teleopJacoDS4::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     double roll = right_analog_up_down;
     double pitch = right_trigger_R1 ? -right_analog_left_right : 0; //R1 + right analog left/right = yaw
 
-    if (right_x && !emergency_stop) { //move home
+    if (right_x && !emergency_stop && !randomConfigurationMode) { //move home
         moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 
         group_.setPlannerId("RRTkConfigDefault");
@@ -276,7 +286,7 @@ void teleopJacoDS4::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
         return;
     }
     ros::Rate sr(2);
-    if (current_state.position.size() > 1  && !useTeaching && !emergency_stop){ //only if jointstatecallback has been called
+    if (current_state.position.size() > 1  && !useTeaching && !emergency_stop && !randomConfigurationMode){ //only if jointstatecallback has been called
         teleopJacoDS4::move_cart(x, y, z, roll, pitch, yaw);
         if (right_triangle) {
             useTeaching = true;
@@ -290,7 +300,7 @@ void teleopJacoDS4::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
 //            sleep(1);
             sr.sleep();
         }
-    } else if (useTeaching && !emergency_stop) {
+    } else  if (useTeaching && !emergency_stop && !randomConfigurationMode) {
         if (right_triangle) {
             useTeaching = false;
             ROS_INFO_STREAM("Using joystick control");
@@ -315,6 +325,98 @@ void teleopJacoDS4::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
             ROS_INFO_STREAM("trajectory size " << saved_trajectory.size());
         }
         teleopJacoDS4::move_torque_teaching(right_square);        //(un)comment to enable/disable teaching input
+    }
+    //move to random configuration mode
+    if (options_button) {
+        if (randomConfigurationMode) {
+            ROS_INFO_STREAM("Turning off random configuration sampling mode.");
+            randomConfigurationMode = false;
+
+            std_srvs::SetBoolRequest req_a;
+            std_srvs::SetBoolResponse res_a;
+            req_a.data = true;                   //at start admittance mode enabled
+            admittance_mode_client_.call(req_a, res_a); //TODO catch error
+            ROS_INFO_STREAM("Admittance control active.");
+            sr.sleep();
+            doneRecording = false;
+            isRecording = false;
+            saved_trajectory.clear(); //deletes traj.
+            goal_joint_trajectory.points.clear();
+        } else {
+            ROS_INFO_STREAM("Turning on random configuration sampling mode.");
+            randomConfigurationMode = true;
+            std_srvs::SetBoolRequest req_a;
+            std_srvs::SetBoolResponse res_a;
+            req_a.data = true;                   //at start admittance mode enabled
+            admittance_mode_client_.call(req_a, res_a); //TODO catch error
+            ROS_INFO_STREAM("Admittance control active.");
+             sr.sleep();
+        }
+    }
+    if (randomConfigurationMode) {
+        if (right_triangle) {
+            if (doneRecording) {    //reset
+                doneRecording = false;
+                isRecording = false;
+                saved_trajectory.clear(); //deletes traj.
+                goal_joint_trajectory.points.clear();
+            }
+            //move to and save random configuration
+            ROS_INFO_STREAM("Moving to random configuration.");
+            std_srvs::TriggerRequest req_r;
+            std_srvs::TriggerResponse res_r;
+
+            isRecording= true;
+            group_.rememberJointValues("startState");
+
+            random_configuration_sampling_client_.call(req_r, res_r); //TODO catch error
+            if (res_r.success) {
+                ROS_INFO_STREAM("...reached configuration.");
+
+                std_srvs::TriggerRequest req_s;
+                std_srvs::TriggerResponse res_s;
+                random_configuration_saving_client_.call(req_s, res_s); //saves configuration (prevents same conf. being used multiple times
+
+                isRecording = false;
+                doneRecording = true;
+                sr.sleep();
+                ros::Duration dur(1/2);
+                dur.sleep();
+                move_to_trajectory_start();
+                ROS_INFO_STREAM("Moved to start.");
+            } else {    //probably "rosrun jaco2_simple_moveit_apps move_to_new_rand_configuration " was not called
+                ROS_INFO_STREAM("Failed to move to random configuration.");
+                ROS_INFO_STREAM("Check that move_to_new_rand_configuration server is running.");
+                doneRecording = false;
+                isRecording = false;
+                saved_trajectory.clear(); //deletes traj.
+                goal_joint_trajectory.points.clear();
+            }
+
+            std::string s = res_r.message;  //get configuration, parse it and save it
+            std::string delimiter = ";";
+            size_t pos = 0;
+            std::string token;
+            std::vector<double> configuration;
+            while ((pos = s.find(delimiter)) != std::string::npos) {
+                token = s.substr(0, pos);
+                //            ROS_INFO_STREAM("token: " << token);
+                configuration.push_back(std::stod(token));
+                s.erase(0, pos + delimiter.length());
+            }
+            random_sampled_configuration_ = configuration;
+            for (int i = 0; i < configuration.size(); i++) {
+//                ROS_INFO_STREAM("conf: "<< random_sampled_configuration_[i]);
+            }
+            sr.sleep();
+        }
+        if (right_square && !doneRecording) {
+            ROS_INFO_STREAM("No trajectory saved!");
+            sr.sleep();
+        } else if (right_square && doneRecording && !isRecording) {
+            play_trajectory();
+        }
+
     }
 
 }
@@ -493,22 +595,33 @@ void teleopJacoDS4::move_torque_teaching(bool button_pressed) { //button press s
     //on button press play recorded data (moves back to start of trajectory first)
 
     else if (doneRecording && button_pressed) {
-        std::cout << "Starting playback of recording..."<<std::endl;
+        play_trajectory();
+    }
+}
+
+//enters addmittance mode, plays back saved trajectory and moves back to trajectory start
+void teleopJacoDS4::play_trajectory() {
+    std_srvs::SetBoolRequest req_a;
+    std_srvs::SetBoolResponse res_a;
+    req_a.data = true;                   //at start (PID) admittance mode enabled
+    admittance_mode_client_.call(req_a, res_a); //TODO catch error
+    ROS_INFO_STREAM("Admittance control active.");
+    std::cout << "Starting playback of recording..."<<std::endl;
 
 //        std_srvs::SetBoolRequest req;
 //        std_srvs::SetBoolResponse res;
 //        req.data = true;
 //        gravity_client_.call(req, res); //TODO catch error
 
-        moveit_msgs::MoveItErrorCodes moved_to_start = move_to_trajectory_start();
-        if (moved_to_start.val != moveit_msgs::MoveItErrorCodes::SUCCESS) {
-            ROS_INFO_STREAM("Could not plan to start pose.");   //do not execute trajectory if not at start pose
-            return;
-        }
+    moveit_msgs::MoveItErrorCodes moved_to_start = move_to_trajectory_start();
+    if (moved_to_start.val != moveit_msgs::MoveItErrorCodes::SUCCESS) {
+        ROS_INFO_STREAM("Could not plan to start pose.");   //do not execute trajectory if not at start pose
+        return;
+    }
 
-        ROS_INFO_STREAM("Size of saved trajectory "<< saved_trajectory.size());
+    ROS_INFO_STREAM("Size of saved trajectory "<< saved_trajectory.size());
 
-        //playback of trajectory using velocity @60hz
+    //playback of trajectory using velocity @60hz
 //        ros::Rate r(60);
 //        for (int i = 0; i < saved_trajectory.size(); i++) {
 //            teleopJacoDS4::publish_states(saved_trajectory[i].velocity);
@@ -516,29 +629,28 @@ void teleopJacoDS4::move_torque_teaching(bool button_pressed) { //button press s
 //        }
 //        ROS_INFO_STREAM("Playback Finished.");
 
-        //playback using Action Server
-        if (goal_action_client_.isServerConnected()) {
-            ROS_INFO_STREAM("Starting Playback...");
-            control_msgs::FollowJointTrajectoryGoal goal_action_msg;
-            goal_joint_trajectory.header.stamp = saved_trajectory[0].header.stamp;          //time_from_start is relative to this timestamp (should be only one needed)
-            goal_joint_trajectory.joint_names.clear();  //prevent adding of multiple sets of joint names
-            goal_joint_trajectory.joint_names.insert(goal_joint_trajectory.joint_names.end(), saved_trajectory[0].name.begin(),saved_trajectory[0].name.begin() + 6);            //set joint names
+    //playback using Action Server
+    if (goal_action_client_.isServerConnected()) {
+        ROS_INFO_STREAM("Starting Playback...");
+        control_msgs::FollowJointTrajectoryGoal goal_action_msg;
+        goal_joint_trajectory.header.stamp = saved_trajectory[0].header.stamp;          //time_from_start is relative to this timestamp (should be only one needed)
+        goal_joint_trajectory.joint_names.clear();  //prevent adding of multiple sets of joint names
+        goal_joint_trajectory.joint_names.insert(goal_joint_trajectory.joint_names.end(), saved_trajectory[0].name.begin(),saved_trajectory[0].name.begin() + 6);            //set joint names
 
-            goal_action_msg.trajectory = goal_joint_trajectory;
+        goal_action_msg.trajectory = goal_joint_trajectory;
 
-            goal_action_client_.sendGoal(goal_action_msg);
-            if ((goal_action_client_.getResult())->error_code == 0) {
-                ros::Duration traj_dur = goal_joint_trajectory.points.back().time_from_start;
-                traj_dur.sleep();
-                ros::Duration dur(1); //wait extra 1 second after execution before moving back
-                dur.sleep();
-                ROS_INFO_STREAM("Playback Finished. Moving to start.");
-                move_to_trajectory_start();
-            }
-
-        } else {
-            ROS_INFO_STREAM("Action Server not connected, cannot execute trajectory.");
+        goal_action_client_.sendGoal(goal_action_msg);
+        if ((goal_action_client_.getResult())->error_code == 0) {
+            ros::Duration traj_dur = goal_joint_trajectory.points.back().time_from_start;
+            traj_dur.sleep();
+            ros::Duration dur(1); //wait extra 1 second after execution before moving back
+            dur.sleep();
+            ROS_INFO_STREAM("Playback Finished. Moving to start.");
+            move_to_trajectory_start();
         }
+
+    } else {
+        ROS_INFO_STREAM("Action Server not connected, cannot execute trajectory.");
     }
 }
 
