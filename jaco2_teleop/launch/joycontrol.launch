@@ -1,7 +1,16 @@
+<?xml version="1.0"?>
 <launch>
-  <node pkg="jaco2_teleop" type="ds4drv.sh" name="ds4drv" />
+  <!-- <node pkg="jaco2_teleop" type="ds4drv.sh" name="ds4drv" /> -->
   <node pkg="joy" type="joy_node" name="ds4joy" output="screen">
 	<param name="/dev" value="/dev/input/js1"/>
   </node>
-  <!--<node name="jaco2_teleop" pkg="jaco2_teleop" type="teleop_joy_node.py" />-->
+ <!--<node name="jaco2_teleop" pkg="jaco2_teleop" type="jaco2_teleop_node" output="screen">
+    <param name="state_topic" value="/jaco_22_driver/out/joint_states" />
+    <param name="joy_topic" value="/joy"/>
+    <param name="vel_topic" value="/jaco_22_driver/in/joint_velocity"/>
+    <param name="start_service" value="/jaco_22_driver/in/start"/>
+    <param name="stop_service" value="/jaco_22_driver/in/stop"/>
+    <param name="gcomp_service" value="/jaco_22_driver/in/enable_gravity_compensation_mode"/>
+    <param name="admitance_service" value="/jaco_22_driver/in/enable_admittance_mode"/>
+ </node>-->
 </launch>
