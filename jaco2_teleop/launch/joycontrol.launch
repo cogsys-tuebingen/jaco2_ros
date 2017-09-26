@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="jaco2_teleop" type="ds4drv.sh" name="ds4drv" />
+  <node pkg="joy" type="joy_node" name="ds4joy" output="screen">
+	<param name="/dev" value="/dev/input/js1"/>
+  </node>
+  <!--<node name="jaco2_teleop" pkg="jaco2_teleop" type="teleop_joy_node.py" />-->
+</launch>

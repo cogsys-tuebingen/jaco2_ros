@@ -42,7 +42,7 @@ def normalize(val):
 def pose_client():
     pub = rospy.Publisher('/jaco_21_driver/in/joint_velocity',jaco2_msgs.msg.JointVelocity, queue_size=10)
     sub22 = rospy.Subscriber("/jaco_22_driver/out/joint_states", sensor_msgs.msg.JointState, cb_master)
-	sub21 = rospy.Subscriber("/jaco_21_driver/out/joint_states", sensor_msgs.msg.JointState, cb_slave)
+    sub21 = rospy.Subscriber("/jaco_21_driver/out/joint_states", sensor_msgs.msg.JointState, cb_slave)
 
     goal = jaco2_msgs.msg.JointVelocity()
     rate = rospy.Rate(65) # 10hz
