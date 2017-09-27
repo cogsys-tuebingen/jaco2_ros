@@ -90,6 +90,11 @@ void Jaco2KinematicModel::initialize()
         // forward kinematic
         solverFK_.reset(new KDL::ChainFkSolverPos_recursive(chain_));
 
+        // jacobian solver (calculates jacobian for given joint configuration)
+        solverJac_.reset(new KDL::ChainJntToJacSolver(chain_));
+        // inverse vel solver
+        solverIKVel_.reset(new KDL::ChainIkSolverVel_pinv(chain_));
+
         //initialize TRAC_IK solver: inverse kinematics
         solverIK_.reset(new TRAC_IK::TRAC_IK(root_, tip_, urdf_param_));
 
@@ -355,4 +360,37 @@ void Jaco2KinematicModel::getRotationAxis(const std::string &link, Eigen::Vector
     rot_axis(0) = v(0);
     rot_axis(1) = v(1);
     rot_axis(2) = v(2);
+}
+
+KDL::Jacobian Jaco2KinematicModel::getJacobian(const std::vector<double> &q)
+{
+    std::size_t nj = chain_.getNrOfJoints();
+    if(q.size() > nj ){
+        throw std::logic_error("Dimension mismatch. More joint values expected");
+    }
+    KDL::Jacobian jac(nj);
+
+    KDL::JntArray qvals;
+    Jaco2KinDynLib::convert(q, qvals, q.size() - nj);
+
+    solverJac_->JntToJac(qvals,jac);
+    return jac;
+}
+
+int Jaco2KinematicModel::getJointVelocities(const std::vector<double> &q, const KDL::Twist &v_in, std::vector<double>& v_out)
+{
+    std::size_t nj = chain_.getNrOfJoints();
+    if(q.size() > nj ){
+        throw std::logic_error("Dimension mismatch. More joint values expected");
+    }
+    KDL::JntArray qvals;
+    Jaco2KinDynLib::convert(q, qvals, q.size() - nj);
+
+    KDL::JntArray out;
+    out.resize(nj);
+    int ec = solverIKVel_->CartToJnt(qvals,v_in, out);
+    Jaco2KinDynLib::convert(out, v_out);
+
+    return ec;
+
 }
