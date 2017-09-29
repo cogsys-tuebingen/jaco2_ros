@@ -114,17 +114,17 @@ public:
                 jaco2_msgs::JointVelocity vel;
                 vel.joint1 = 0;
                 vel.joint2 = 0;
-                vel.joint3 = getCmd(msg->axes[2]);
-                vel.joint4 = getCmd(msg->axes[5]);
+                vel.joint3 = getCmd(msg->axes[2], joystick_threshold_);
+                vel.joint4 = getCmd(msg->axes[5], joystick_threshold_);
                 vel.joint5 = 0;
                 vel.joint6 = 0;
                 if(!msg->buttons[4]){ // L1
-                    vel.joint1 = getCmd(msg->axes[0]);
-                    vel.joint2 = getCmd(msg->axes[1]);
+                    vel.joint1 = getCmd(msg->axes[0], joystick_threshold_);
+                    vel.joint2 = getCmd(msg->axes[1], joystick_threshold_);
                 }
                 else{
-                    vel.joint5 = getCmd(msg->axes[0]);
-                    vel.joint6 = getCmd(msg->axes[1]);
+                    vel.joint5 = getCmd(msg->axes[0], joystick_threshold_);
+                    vel.joint6 = getCmd(msg->axes[1], joystick_threshold_);
                 }
                 pub_joint_vel.publish(vel);
             }
@@ -132,24 +132,37 @@ public:
                 KDL::Twist v;
                 v.rot.Zero();
                 v.vel.Zero();
-                KDL::Vector input(getCmd(msg->axes[0]),
-                                  getCmd(msg->axes[1]),
-                                  getCmd(msg->axes[2]));
+                KDL::Frame trans;
+                model_.getFKPose(state_.position, trans, model_.getTipLink());
                 if(!msg->buttons[4]){ // L1
+                    KDL::Vector input(getCmd(msg->axes[0], joystick_threshold_),
+                                      getCmd(msg->axes[1], joystick_threshold_),
+                                      getCmd(msg->axes[2], joystick_threshold_));
                     v.vel = input;
                     ROS_INFO_STREAM("lin vel: " << v.vel.x() << ", " << v.vel.y() << ", " << v.vel.z());
+                    v = trans * v;
                 }
                 else{
-                    v.rot = input;
+                    KDL::Vector vec = trans * KDL::Vector(0,0,1);
+                    double r = vec.Norm();
+                    double phi = std::atan2(vec.y(), vec.x());
+                    double theta = std::acos(vec.z() / r);
+                    double vx = getCmd(msg->axes[1], joystick_threshold_) * cos(theta) * cos(phi) -
+                                getCmd(msg->axes[0], joystick_threshold_) * sin(theta) * sin(phi);
+                    double vy = getCmd(msg->axes[1], joystick_threshold_) * cos(theta) * sin(phi) +
+                                getCmd(msg->axes[0], joystick_threshold_) * sin(theta) * cos(phi);
+                    vx /= 10.0;
+                    vy /= 10.0;
+                    v.rot = KDL::Vector(vx, vy, 0);
                     ROS_INFO_STREAM("rot vel: " << v.rot.x() << ", " << v.rot.y() << ", " << v.rot.z());
                 }
 
-                KDL::Frame trans;
-                model_.getFKPose(state_.position, trans, model_.getTipLink());
-                v = trans * v;
 
                 jaco2_data::JointData jd;
                 int ec = model_.getJointVelocities(state_.position, v, jd.data);
+                 if(!msg->buttons[4]){ // L1
+                     jd.data[5] += getCmd(msg->axes[2], joystick_threshold_);
+                 }
                 jaco2_msgs::JointVelocity vel = jaco2_msgs::JointDataConversion::data2Velocity(jd);
                 pub_joint_vel.publish(vel);
 
@@ -183,15 +196,17 @@ public:
     }
 
 
-    double getCmd(double cmd) const
+    double getCmd(double cmd, double thresh) const
     {
-        if(std::abs(cmd) > joystick_threshold_ ){
+        if(std::abs(cmd) > thresh ){
             return cmd;
         }
         else{
             return 0;
         }
     }
+
+
 
 
 
