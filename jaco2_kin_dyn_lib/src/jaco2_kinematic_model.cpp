@@ -380,7 +380,7 @@ KDL::Jacobian Jaco2KinematicModel::getJacobian(const std::vector<double> &q)
 int Jaco2KinematicModel::getJointVelocities(const std::vector<double> &q, const KDL::Twist &v_in, std::vector<double>& v_out)
 {
     std::size_t nj = chain_.getNrOfJoints();
-    if(q.size() > nj ){
+    if(q.size() < nj ){
         throw std::logic_error("Dimension mismatch. More joint values expected");
     }
     KDL::JntArray qvals;
