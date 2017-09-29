@@ -144,12 +144,16 @@ public:
                     ROS_INFO_STREAM("rot vel: " << v.rot.x() << ", " << v.rot.y() << ", " << v.rot.z());
                 }
 
+                KDL::Frame trans;
+                model_.getFKPose(state_.position, trans, model_.getTipLink());
+                v = trans * v;
+
                 jaco2_data::JointData jd;
-                int ec = model_.getJointVelocities(state_.position,v, jd.data);
+                int ec = model_.getJointVelocities(state_.position, v, jd.data);
                 jaco2_msgs::JointVelocity vel = jaco2_msgs::JointDataConversion::data2Velocity(jd);
                 pub_joint_vel.publish(vel);
 
-                ROS_INFO_STREAM("joint velocities: \n" << vel);
+                ROS_INFO_STREAM("inverse vel error: " << ec <<" : joint velocities: \n" << vel);
 
             }
             send_zero_ =false;
