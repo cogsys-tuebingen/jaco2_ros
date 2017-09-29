@@ -220,7 +220,13 @@ int main(int argc, char *argv[])
     std::string ad_srv      = nh.param<std::string>("admitance_service", "/jaco2_arm_driver/in/enable_admittance_mode");
 
     ROS_INFO_STREAM( start_srv << " | " << stop_srv);
-    Jaco2Teleop telenode(state_topic, joy_topic, vel_topic, start_srv, stop_srv, gcomp_srv, ad_srv);
+    Jaco2Teleop telenode(state_topic,
+                         joy_topic,
+                         vel_topic,
+                         start_srv,
+                         stop_srv,
+                         gcomp_srv,
+                         ad_srv);
 
     ros::Rate r(50);
     while(ros::ok()){
