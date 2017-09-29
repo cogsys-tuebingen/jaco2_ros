@@ -25,6 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
   jaco2_msgs
   jaco2_utils
   tf
+  dynamic_reconfigure
 )
 
 message("################################### ROS VERSION: ${roscpp_VERSION_MAJOR}.${roscpp_VERSION_MINOR}.${roscpp_VERSION_PATCH}")
@@ -32,6 +33,10 @@ message("################################### ROS VERSION: ${roscpp_VERSION_MAJOR
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+
+generate_dynamic_reconfigure_options(
+  cfg/ds4_PID_teleop.cfg
+)
 
 ###################################
 ## catkin specific configuration ##

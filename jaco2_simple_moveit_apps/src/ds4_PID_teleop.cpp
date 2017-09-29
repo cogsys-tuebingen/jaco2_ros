@@ -39,10 +39,14 @@
 #include <jaco2_msgs/Stop.h>
 
 
+//PID values
+#include <dynamic_reconfigure/server.h>
+#include <jaco2_simple_moveit_apps/ds4_PID_teleopConfig.h>
+
 //TODO: ROS parameters (currently factory default)
-const std::vector<double> K_P (6, 2);
-const std::vector<double> K_I (6, 0);
-const std::vector<double> K_D (6, 0.05);
+//const std::vector<double> K_P (6, 2);
+//const std::vector<double> K_I (6, 0);
+//const std::vector<double> K_D (6, 0.05);
 
 
 class teleopJacoDS4 {
@@ -104,13 +108,22 @@ private:
     bool doneRecording;
     bool useTeaching;
 
+    //random configuration
     bool randomConfigurationMode;
     std::vector<double> random_sampled_configuration_;
+
+    //dynamic reconfigure
+    void dynamicReconfigure(jaco2_simple_moveit_apps::ds4_PID_teleopConfig &config, uint32_t level);
+    dynamic_reconfigure::Server<jaco2_simple_moveit_apps::ds4_PID_teleopConfig> paramServer_;
+    dynamic_reconfigure::Server<jaco2_simple_moveit_apps::ds4_PID_teleopConfig>::CallbackType f_;
+    std::vector<double> K_P;
+    std::vector<double> K_I;
+    std::vector<double> K_D;
 
 };
 
 teleopJacoDS4::teleopJacoDS4(std::string group_name, ros::NodeHandle& nh_)
-    : group_(group_name), goal_action_client_("/jaco_21_driver/follow_joint_trajectory/manipulator",true)
+    : group_(group_name), goal_action_client_("/jaco_21_driver/follow_joint_trajectory/manipulator",true), K_P (6,0), K_I (6,0), K_D(6,0)
 
 {
     ROS_INFO_STREAM("Waiting for Action Server.");
@@ -161,6 +174,10 @@ teleopJacoDS4::teleopJacoDS4(std::string group_name, ros::NodeHandle& nh_)
     admittance_mode_client_.call(req_a, res_a); //TODO catch error
     ROS_INFO("Admittance control active.");
 
+    //dynamic reconfigure pid
+    f_ = boost::bind(&teleopJacoDS4::dynamicReconfigure, this, _1, _2);
+    paramServer_.setCallback(f_);
+
     //saves joint_bounds
     const moveit::core::JointModelGroup* model_group (group_.getRobotModel()->getJointModelGroup("manipulator"));
     int num_joints = model_group->getActiveJointModels().size();
@@ -204,6 +221,16 @@ teleopJacoDS4::teleopJacoDS4(std::string group_name, ros::NodeHandle& nh_)
 
 }
 
+
+
+void teleopJacoDS4::dynamicReconfigure(jaco2_simple_moveit_apps::ds4_PID_teleopConfig &config, uint32_t level) {
+
+    for (int i = 0; i < 6; i++) {
+        K_P[i] = config.ds4_p;
+        K_I[i] = config.ds4_i;
+        K_D[i] = config.ds4_d;
+    }
+}
 
 //tentative keymap:
 //left analog up/down = forward, backward (-y axis robot frame)
@@ -251,7 +278,7 @@ void teleopJacoDS4::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     double roll = right_analog_up_down;
     double pitch = right_trigger_R1 ? -right_analog_left_right : 0; //R1 + right analog left/right = yaw
 
-    if (right_x && !emergency_stop && !randomConfigurationMode) { //move home
+    if (right_x && !emergency_stop) { //move home
         moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 
         group_.setPlannerId("RRTkConfigDefault");
@@ -343,6 +370,12 @@ void teleopJacoDS4::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
             saved_trajectory.clear(); //deletes traj.
             goal_joint_trajectory.points.clear();
         } else {
+            useTeaching = false;            //ensure that gravity client is off (ie gravety compensation mode not active)
+            std_srvs::SetBoolRequest req;
+            std_srvs::SetBoolResponse res;
+            req.data = false;
+            gravity_client_.call(req, res); //TODO catch error
+
             ROS_INFO_STREAM("Turning on random configuration sampling mode.");
             randomConfigurationMode = true;
             std_srvs::SetBoolRequest req_a;
@@ -417,6 +450,7 @@ void teleopJacoDS4::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
             play_trajectory();
         }
 
+
     }
 
 }
@@ -457,6 +491,8 @@ bool teleopJacoDS4::move_cart(double x, double y, double z, double roll, double 
     ik_request.ik_request.group_name = "manipulator";
     ik_request.ik_request.pose_stamped.pose = result_pose;
     ik_request.ik_request.avoid_collisions = true;
+    ik_request.ik_request.robot_state.joint_state.name = group_.getActiveJoints();      //TODO? fix hack: set name and position in ik_request to remove empty joint state message error
+    ik_request.ik_request.robot_state.joint_state.position = current_state.position;
 
     ik_client_.call(ik_request, ik_response);
     if (ik_response.error_code.val != 1) { //only continue if ik was successful
@@ -558,7 +594,7 @@ moveit_msgs::MoveItErrorCodes teleopJacoDS4::move_to_trajectory_start(){
 
         group_.setPlannerId("RRTConnectkConfigDefault");
         group_.setStartStateToCurrentState();
-        group_.setPlanningTime(1.0);
+//        group_.setPlanningTime(1.0);
         group_.setNamedTarget("startState");
 
         moveit_msgs::MoveItErrorCodes success = group_.plan(my_plan);

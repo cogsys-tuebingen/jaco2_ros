@@ -24,9 +24,9 @@ public:
     Jaco2Teleop(std::string state_topic = "/jaco_arm_driver/out/joint_states",
                 std::string joy_topic = "/joy",
                 std::string vel_topic = "/jaco_arm_driver/in/joint_velocity",
-                std::string start_srv = "/jaco2_arm_driver/in/start",
-                std::string stop_srv = "/jaco2_arm_driver/in/stop",
-                std::string gcomp_srv = "/jaco2_arm_driver/in/enable_gravity_compensation_mode",
+                std::string start_srv = "/jaco_arm_driver/in/start",
+                std::string stop_srv = "/jaco_arm_driver/in/stop",
+                std::string gcomp_srv = "/jaco_arm_driver/in/enable_gravity_compensation_mode",
                 std::string ad_srv = "/jaco2_arm_driver/in/enable_admittance_mode",
                 std::string robot_description = "robot_description",
                 std::string base_link = "jaco_link_base",
@@ -54,7 +54,7 @@ public:
 
     void stateCb(const sensor_msgs::JointStateConstPtr& msg)
     {
-        jaco2_msgs::JointStateConversion::sensorMsgs2Data(*msg);
+       state_ = jaco2_msgs::JointStateConversion::sensorMsgs2Data(*msg);
     }
 
     void joyCb(const sensor_msgs::JoyConstPtr& msg)
@@ -103,6 +103,7 @@ public:
             else{
                 ROS_INFO_STREAM("SWITCHED to JOINT CONTROL.");
             }
+            ros::Duration(0.5).sleep();
 
         }
         //        bool move = doMove(msg);
@@ -136,15 +137,19 @@ public:
                                   getCmd(msg->axes[2]));
                 if(!msg->buttons[4]){ // L1
                     v.vel = input;
+                    ROS_INFO_STREAM("lin vel: " << v.vel.x() << ", " << v.vel.y() << ", " << v.vel.z());
                 }
                 else{
                     v.rot = input;
+                    ROS_INFO_STREAM("rot vel: " << v.rot.x() << ", " << v.rot.y() << ", " << v.rot.z());
                 }
 
                 jaco2_data::JointData jd;
                 int ec = model_.getJointVelocities(state_.position,v, jd.data);
                 jaco2_msgs::JointVelocity vel = jaco2_msgs::JointDataConversion::data2Velocity(jd);
                 pub_joint_vel.publish(vel);
+
+                ROS_INFO_STREAM("joint velocities: \n" << vel);
 
             }
             send_zero_ =false;
