@@ -40,7 +40,11 @@ void DynamicResidual::loadData(std::string data_file)
 {
     Jaco2Calibration::Jaco2CalibrationIO::importAsciiDataWithGravity(data_file, samples_);
     n_samples_ = samples_.size();
+}
 
+void DynamicResidual::setData(JointStateDataCollection& samples)
+{
+    samples_ = samples;
 }
 
 void DynamicResidual::useInitialGuess(bool use, double factor)
