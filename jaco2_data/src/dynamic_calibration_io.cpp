@@ -4,12 +4,12 @@
 #include <sstream>
 #include <yaml-cpp/yaml.h>
 using namespace Jaco2Calibration;
-void DynCalibrationIO::save(std::string name, const DynamicCalibratedParametersCollection &params)
+void DynCalibrationIO::save(std::string name, const DynamicParametersCollection &params)
 {
     std::ofstream file(name);
     YAML::Emitter yamlEmit(file);
     YAML::Node doc;
-    for(DynamicCalibratedParameters param : params)
+    for(DynamicParameters param : params)
     {
         YAML::Node pNode;
         pNode["link_name"] = param.linkName;
@@ -32,7 +32,7 @@ void DynCalibrationIO::save(std::string name, const DynamicCalibratedParametersC
 }
 
 
-void DynCalibrationIO::loadDynParm(std::string filename, DynamicCalibratedParametersCollection& params)
+void DynCalibrationIO::loadDynParm(std::string filename, DynamicParametersCollection& params)
 {
     YAML::Node doc = YAML::LoadFile(filename);
     doc = doc["parameter"];
@@ -42,7 +42,7 @@ void DynCalibrationIO::loadDynParm(std::string filename, DynamicCalibratedParame
     }
     for(auto it = doc.begin(); it != doc.end(); ++it){
         auto pNode = *it;
-        DynamicCalibratedParameters param;
+        DynamicParameters param;
         std::string name(pNode["link_name"].as<std::string>());
         param.linkName = name;
         param.mass = pNode["mass"].as<double>();

@@ -17,18 +17,18 @@ DynamicResidual::DynamicResidual(const std::string &robot_model, const std::stri
     n_opt_(n_param_)
 {
     //initial parameters
-    DynamicCalibratedParametersCollection init_param;
+
     for(auto link : model_.getLinkNames())
     {
-        Jaco2Calibration::DynamicCalibratedParameters param;
+        Jaco2Calibration::DynamicParameters param;
         param.linkName = link;
         param.mass = model_.getLinkMass(link);
         param.coM = model_.getLinkCoM(link);
         param.inertia = model_.getLinkInertiaCoM(link);
-        init_param.push_back(param);
+        urdf_dyn_param_.push_back(param);
     }
 
-    Jaco2Calibration::to_eigen(init_param, initial_params_);
+    Jaco2Calibration::to_eigen(urdf_dyn_param_, initial_params_);
     n_links_ = model_.getNrOfSegments();
     n_cols_ = n_param_ * n_links_;
 
@@ -101,6 +101,27 @@ void DynamicResidual::setResidualType(int type)
         n_opt_ = n_param_;
         break;
     }
+}
+
+std::vector<double> DynamicResidual::getInitialParamsVector() const
+{
+    std::vector<double> result;
+    std::vector<std::string> link_names;
+    switch (residual_type_) {
+    case ALL:
+        Jaco2Calibration::to_vector(urdf_dyn_param_, result, link_names);
+        break;
+    case STATIC:
+        Jaco2Calibration::to_vector(urdf_dyn_param_, result, link_names, true, true, false);
+        break;
+    case DYNAMIC:
+        Jaco2Calibration::to_vector(urdf_dyn_param_, result, link_names, false, false, true);
+        break;
+    default:
+        Jaco2Calibration::to_vector(urdf_dyn_param_, result, link_names);
+        break;
+    }
+    return result;
 }
 
 bool DynamicResidual::calculteMatrix()

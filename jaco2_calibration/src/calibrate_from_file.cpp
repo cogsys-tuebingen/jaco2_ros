@@ -38,13 +38,13 @@ int main(int argc, char *argv[])
         Jaco2Calibration::Jaco2CalibrationIO::save("/tmp/dyn_calib_with_noise.txt",samples);
         calib.calibrateCoMandInertia(samples);
 
-        Jaco2Calibration::DynamicCalibratedParametersCollection param = calib.getDynamicCalibration();
+        Jaco2Calibration::DynamicParametersCollection param = calib.getDynamicCalibration();
         Jaco2Calibration::Jaco2CalibrationIO::save("/tmp/param_sim.txt",param);
-        Jaco2Calibration::DynamicCalibratedParametersCollection org_param = calib.getDynamicUrdfParam();
-        Jaco2Calibration::DynamicCalibratedParametersCollection diff;
+        Jaco2Calibration::DynamicParametersCollection org_param = calib.getDynamicUrdfParam();
+        Jaco2Calibration::DynamicParametersCollection diff;
         for(std::size_t i = 0; i < param.size(); ++i)
         {
-            Jaco2Calibration::DynamicCalibratedParameters tmp;
+            Jaco2Calibration::DynamicParameters tmp;
 
             tmp.linkName = param[i].linkName;
             tmp.coM = (param[i].coM - org_param[i].coM).array() / param[i].coM.array() ;
