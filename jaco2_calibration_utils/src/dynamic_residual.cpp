@@ -45,6 +45,7 @@ void DynamicResidual::loadData(std::string data_file)
 void DynamicResidual::setData(JointStateDataCollection& samples)
 {
     samples_ = samples;
+    n_samples_ = samples_.size();
 }
 
 void DynamicResidual::useInitialGuess(bool use, double factor)
