@@ -20,9 +20,8 @@ void Jaco2KinDynLib::convert(const std::vector<double> &in, Eigen::VectorXd &out
 {
     out.resize(in.size() - ignore_end);
     std::size_t i = 0;
-    for(auto it = in.begin(); it < in.end() - ignore_end; ++i){
+    for(auto it = in.begin(); it < in.end() - ignore_end; ++it, ++i){
         out(i) = *it;
-        ++i;
     }
 }
 
