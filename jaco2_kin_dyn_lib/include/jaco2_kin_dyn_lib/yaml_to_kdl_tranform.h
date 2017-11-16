@@ -23,6 +23,8 @@ void load(std::string filename, std::vector<KDLTransformation>& transforms);
 
 void convert(YAML::Node& node, std::vector<KDLTransformation>& transforms);
 
+void frames(const std::vector<KDLTransformation>& in, std::vector<KDL::Frame>& out);
+
 
 }
 #endif // YAML_TO_TRANSFORM_CONVERSION_HPP
