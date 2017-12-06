@@ -32,7 +32,7 @@ struct Vector3StampedConverion{
 
 struct JointStateConversion {
     static sensor_msgs::JointState data2SensorMsgs(const jaco2_data::JointStateData& data);
-    static jaco2_msgs::Jaco2JointState datata2Jaco2Msgs(const jaco2_data::JointStateData &data);
+    static jaco2_msgs::Jaco2JointState data2Jaco2Msgs(const jaco2_data::JointStateData &data);
     static jaco2_data::JointStateData sensorMsgs2Data(const sensor_msgs::JointState& msg);
     static jaco2_data::JointStateData jaco2Msg2Data(const jaco2_msgs::Jaco2JointState& msg);
 };

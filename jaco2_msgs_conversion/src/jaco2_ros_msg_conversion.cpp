@@ -53,7 +53,7 @@ sensor_msgs::JointState JointStateConversion::data2SensorMsgs(const jaco2_data::
     return res;
 }
 
-jaco2_msgs::Jaco2JointState JointStateConversion::datata2Jaco2Msgs(const jaco2_data::JointStateData& data)
+jaco2_msgs::Jaco2JointState JointStateConversion::data2Jaco2Msgs(const jaco2_data::JointStateData& data)
 {
     jaco2_msgs::Jaco2JointState res;
     res.header.stamp = TimeConversion::data2ROS(data.stamp);
