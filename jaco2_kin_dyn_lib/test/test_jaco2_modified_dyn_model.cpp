@@ -15,6 +15,8 @@ Jaco2ModifiedDynamicModel modifiedModel;
 TEST(Jaco2ModifiedDynamicsTests, IDtest)
 {
     std::vector<double> q, qDot, qDotDot;
+    jaco2KDL.setGravity(0,0,-9.81);
+    modifiedModel.setGravity(0,0,-9.81);
 
     for(std::size_t i = 0; i < 1000000 ; ++ i){
 

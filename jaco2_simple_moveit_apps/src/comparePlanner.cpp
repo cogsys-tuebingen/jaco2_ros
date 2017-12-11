@@ -77,7 +77,7 @@ public:
 
                 if(!collision) {
                     group_.setJointValueTarget(goalState);
-                    succeeded = group_.plan(my_plan_);
+                    succeeded = group_.plan(my_plan_).val == moveit_msgs::MoveItErrorCodes::SUCCESS;
                     if (!succeeded) {
                         numFailed ++;
                     } else {

@@ -186,7 +186,7 @@ void StaticDataGenerator::saveStaticData()
         ROS_WARN("Did not get any TorqueGFree data!");
     }
     ros::Time wtime = ros::Time::now();
-    bag_.write("/joint_state", wtime, jaco2_msgs::JointStateConversion::datata2Jaco2Msgs(state_m.joint_state));
+    bag_.write("/joint_state", wtime, jaco2_msgs::JointStateConversion::data2Jaco2Msgs(state_m.joint_state));
     bag_.write("/acceleration", wtime, jaco2_msgs::AccelerometerConversion::data2ros(state_m.lin_acc));
     bag_.write("/angles", wtime, jaco2_msgs::JointAngleConversion::data2ros(angle_m));
     bag_.write("/torques_g_free", wtime, jaco2_msgs::JointDataConversion::data2ros(tau_m));

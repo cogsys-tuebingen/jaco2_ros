@@ -46,9 +46,9 @@ void Jaco2KinDynLib::poseTFToKDL(const tf::Pose& t, KDL::Frame& k)
 Eigen::Matrix3d Jaco2KinDynLib::skewSymMat(const KDL::Vector &vec)
 {
     Eigen::Matrix3d res;
-    res << 0    , -vec(2)   , vec(1),
-            vec(2), 0         , -vec(0),
-            -vec(1), vec(0)    , 0;
+    res << 0     , -vec(2)   , vec(1),
+           vec(2), 0         , -vec(0),
+          -vec(1), vec(0)    , 0;
     return res;
 }
 

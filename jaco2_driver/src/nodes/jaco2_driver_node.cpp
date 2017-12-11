@@ -610,7 +610,7 @@ void Jaco2DriverNode::publishJointState()
         jointStateMsg_ = jaco2_msgs::JointStateConversion::data2SensorMsgs(jdata);
         pubJointState_.publish(jointStateMsg_);
 
-        jaco2JointStateMsg_ = jaco2_msgs::JointStateConversion::datata2Jaco2Msgs(jdata);
+        jaco2JointStateMsg_ = jaco2_msgs::JointStateConversion::data2Jaco2Msgs(jdata);
         pubJaco2JointState_.publish(jaco2JointStateMsg_);
         lastTimeJsPublished_ = jdata.stamp;
     }
