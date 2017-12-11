@@ -201,7 +201,7 @@ public:
             else{
                 Jaco2Calibration::Jaco2CalibrationIO::save("/tmp/dyn_samples_sim.txt", samples_);
                 int ec = calibration_.calibrateCoMandInertia(samples_);
-                Jaco2Calibration::DynamicCalibratedParametersCollection dynparams;
+                Jaco2Calibration::DynamicParametersCollection dynparams;
                 if(ec > -1){
                     dynparams = calibration_.getDynamicCalibration();
                 }

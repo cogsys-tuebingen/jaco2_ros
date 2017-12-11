@@ -26,6 +26,7 @@ public:
     DynamicResidual(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
 
     void loadData(std::string data_file);
+    void setData(jaco2_data::JointStateDataCollection& samples);
     void useInitialGuess(bool use, double factor=0);
     void setScaleMatrix(Eigen::MatrixXd& scale);
     bool calculteMatrix();
@@ -45,6 +46,7 @@ public:
     inline void setInitalParams(Eigen::MatrixXd& params){initial_params_ = params;}
     void setResidualType(int type);
 
+    std::vector<double> getInitialParamsVector() const;
 
     double getResidual(const std::vector<double> &x, std::vector<double> &grad);
     double getResidual(const Eigen::MatrixXd &params, std::vector<double> &grad);
@@ -108,6 +110,7 @@ private:
     std::size_t n_links_;
     std::size_t n_cols_;
     std::size_t n_rows_;
+    Jaco2Calibration::DynamicParametersCollection urdf_dyn_param_;
 
 };
 

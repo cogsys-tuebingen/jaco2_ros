@@ -29,20 +29,20 @@ public:
     void setInitAccSamples(int n){initAccSamples_ = n;}
     void setGravityMagnitude(double g){gravityMag_ = g;}
 
-    DynamicCalibratedParametersCollection getDynamicCalibration() const { return dynParams_;}
+    DynamicParametersCollection getDynamicCalibration() const { return dynParams_;}
     std::vector<AccelerometerCalibrationParam> getAccCalibration() const { return accParams_;}
 
     std::string getTipFrame() const {return model_.getTipLink();}
     std::string getRootFrame() const {return model_.getRootLink();}
     std::vector<std::string> getLinkNames() const {return model_.getLinkNames();}
 
-    DynamicCalibratedParametersCollection getDynamicUrdfParam() const;
+    DynamicParametersCollection getDynamicUrdfParam() const;
 
 
 
 private:
     Jaco2KinDynLib::Jaco2DynamicModel model_;
-    DynamicCalibratedParametersCollection dynParams_;
+    DynamicParametersCollection dynParams_;
     int initAccSamples_;
     double gravityMag_;
     std::vector<AccelerometerCalibrationParam> accParams_;

@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<launch>
+    <arg name="prefix" default=""/>
+    <node pkg="tf" type="static_transform_publisher" name="tf_ring_1_bc" args="0 0 0 0 0 0  $(arg prefix)/jaco_link_1 $(arg prefix)/jaco_large_ring_cover_1 100" />
+
+    <node pkg="tf" type="static_transform_publisher" name="tf_ring_2_bc" args="0 0 0 0 0 0  $(arg prefix)/jaco_link_2 $(arg prefix)/jaco_large_ring_cover_2 100" />
+
+    <node pkg="tf" type="static_transform_publisher" name="tf_ring_3_bc" args="0 0 0 0 0 0  $(arg prefix)/jaco_link_3 $(arg prefix)/jaco_large_ring_cover_3 100" />
+
+    <node pkg="tf" type="static_transform_publisher" name="tf_ring_4_bc" args="0 0 0 0 0 0  $(arg prefix)/jaco_link_4 $(arg prefix)/jaco_small_ring_cover_1 100" />
+
+    <node pkg="tf" type="static_transform_publisher" name="tf_ring_5_bc" args="0 0 0 0 0 0  $(arg prefix)/jaco_link_5 $(arg prefix)/jaco_small_ring_cover_2 100" />
+
+    <node pkg="tf" type="static_transform_publisher" name="tf_ring_6_bc" args="0 0 0 0 0 0  $(arg prefix)/jaco_link_hand $(arg prefix)/jaco_small_ring_cover_3 100" />
+
+</launch>

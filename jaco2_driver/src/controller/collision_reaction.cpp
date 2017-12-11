@@ -366,7 +366,7 @@ void CollisionReaction::loadDynModelCalibration(std::string file_name)
 
 void CollisionReaction::setDynModelCalibration()
 {
-    for(const Jaco2Calibration::DynamicCalibratedParameters& p : model_calib_){
+    for(const Jaco2Calibration::DynamicParameters& p : model_calib_){
         resiudals_.changeDynamicParams(p.linkName, p.mass, p.coM, p.inertia);
     }
 }

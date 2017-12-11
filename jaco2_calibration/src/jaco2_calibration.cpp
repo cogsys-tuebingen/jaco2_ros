@@ -111,7 +111,7 @@ int Jaco2Calibration::calibrateCoMandInertia(const jaco2_data::JointStateDataCol
             std::cout << summary.BriefReport() << std::endl;
 
 
-            DynamicCalibratedParameters linkparams;
+            DynamicParameters linkparams;
             linkparams.linkName = link;
             linkparams.mass = model_.getLinkMass(link);
             linkparams.coM = Eigen::Vector3d(dyn_calib_params[0], dyn_calib_params[1], dyn_calib_params[2]);
@@ -199,7 +199,7 @@ int Jaco2Calibration::calibrateArmDynamic(const std::vector<DynamicCalibrationSa
 
     for(std::size_t i = 0; i < links.size(); ++i) {
         std::size_t id = i*9;
-        DynamicCalibratedParameters linkparams;
+        DynamicParameters linkparams;
         linkparams.linkName = links[i];
         linkparams.mass = model_.getLinkMass(links[i]);
         //        linkparams.coM = tf::Vector3(dyn_calib_params[id], dyn_calib_params[id + 1], dyn_calib_params[id + 2]);
@@ -293,12 +293,12 @@ void Jaco2Calibration::convert(const std::size_t &idx, const std::vector<imu_tk:
     }
 }
 
-DynamicCalibratedParametersCollection Jaco2Calibration::getDynamicUrdfParam() const
+DynamicParametersCollection Jaco2Calibration::getDynamicUrdfParam() const
 {
-    DynamicCalibratedParametersCollection result;
+    DynamicParametersCollection result;
     for(auto link : model_.getLinkNames())
     {
-        DynamicCalibratedParameters param;
+        DynamicParameters param;
         param.linkName = link;
         param.coM = model_.getURDFLinkCoM(link);
         param.inertia = model_.getURDFLinkInertiaCoM(link);

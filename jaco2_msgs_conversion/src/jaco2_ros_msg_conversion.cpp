@@ -169,3 +169,32 @@ jaco2_msgs::JointAngles JointDataConversion::data2rosAngles(const jaco2_data::Jo
     return res;
 }
 
+
+jaco2_msgs::JointVelocity JointDataConversion::data2Velocity(const jaco2_data::JointData &data)
+{
+    jaco2_msgs::JointVelocity vel;
+    if(data.size() >= 6){
+        vel.joint1 = data[0];
+        vel.joint2 = data[1];
+        vel.joint3 = data[2];
+        vel.joint4 = data[3];
+        vel.joint5 = data[4];
+        vel.joint6 = data[5];
+    }
+    return vel;
+}
+
+jaco2_data::JointData JointDataConversion::velocity2Data(const jaco2_msgs::JointVelocity &vel)
+{
+    jaco2_data::JointData data;
+    data.resize(6);
+    data[0] = vel.joint1;
+    data[1] = vel.joint2;
+    data[2] = vel.joint3;
+    data[3] = vel.joint4;
+    data[4] = vel.joint5;
+    data[5] = vel.joint6;
+    return data;
+
+}
+

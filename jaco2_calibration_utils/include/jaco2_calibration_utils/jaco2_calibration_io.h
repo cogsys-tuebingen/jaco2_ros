@@ -19,9 +19,9 @@ class Jaco2CalibrationIO{
     Jaco2CalibrationIO();
 
 public:
-    static void save(std::string name, const DynamicCalibratedParametersCollection& params);
+    static void save(std::string name, const DynamicParametersCollection& params);
 
-    static void loadDynParm(std::string filename, DynamicCalibratedParametersCollection& params);
+    static void loadDynParm(std::string filename, DynamicParametersCollection& params);
 
     static void save(std::string name, jaco2_data::JointStateDataCollection& samples, std::string delimiter = std::string(";"));
     static void save(std::string filename, jaco2_data::AccelerometerDataCollection &samples, std::string delimiter = std::string(";"));

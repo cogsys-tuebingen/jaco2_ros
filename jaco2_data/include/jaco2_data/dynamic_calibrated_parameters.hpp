@@ -6,7 +6,7 @@
 #include <Eigen/StdVector>
 namespace Jaco2Calibration {
 
-struct DynamicCalibratedParameters
+struct DynamicParameters
 {
     std::string linkName;
     double mass;
@@ -16,10 +16,10 @@ struct DynamicCalibratedParameters
 
 };
 
-typedef std::vector<Jaco2Calibration::DynamicCalibratedParameters, Eigen::aligned_allocator<Eigen::Matrix3d>> DynamicCalibratedParametersCollection;
+typedef std::vector<Jaco2Calibration::DynamicParameters, Eigen::aligned_allocator<Eigen::Matrix3d>> DynamicParametersCollection;
 
 
-inline void to_vector(const Jaco2Calibration::DynamicCalibratedParametersCollection& in, std::vector<double>& out, std::vector<std::string>& links,
+inline void to_vector(const Jaco2Calibration::DynamicParametersCollection& in, std::vector<double>& out, std::vector<std::string>& links,
                       bool move_mass = true, bool move_coM = true, bool move_inertia = true)
 {
     out.clear();
@@ -48,7 +48,7 @@ inline void to_vector(const Jaco2Calibration::DynamicCalibratedParametersCollect
 }
 
 inline void to_Jaco2ManipulatorDynParams(const std::vector<double>& in, const std::vector<std::string> links,
-                                         Jaco2Calibration::DynamicCalibratedParametersCollection& out,
+                                         Jaco2Calibration::DynamicParametersCollection& out,
                                          bool move_mass = true, bool move_coM = true, bool move_inertia = true)
 {
    int elements_per_link = 0;
@@ -72,7 +72,7 @@ inline void to_Jaco2ManipulatorDynParams(const std::vector<double>& in, const st
        int local_id = i % elements_per_link;
        values[local_id] = in[i];
        if( i > 0 &&  local_id == elements_per_link - 1) {
-           DynamicCalibratedParameters param;
+           DynamicParameters param;
            param.linkName = links[link_counter];
            ++link_counter;
            switch (elements_per_link) {
@@ -119,7 +119,7 @@ inline void to_Jaco2ManipulatorDynParams(const std::vector<double>& in, const st
    }
 }
 
-inline void to_eigen(const Jaco2Calibration::DynamicCalibratedParametersCollection& in, Eigen::MatrixXd & out)
+inline void to_eigen(const Jaco2Calibration::DynamicParametersCollection& in, Eigen::MatrixXd & out)
 {
 //    int counter = 0;
     out = Eigen::MatrixXd::Zero(in.size()*10,1);
@@ -138,12 +138,12 @@ inline void to_eigen(const Jaco2Calibration::DynamicCalibratedParametersCollecti
 }
 
 inline void to_Jaco2ManipulatorDynParams(const Eigen::MatrixXd & in, const std::vector<std::string> links,
-                                         Jaco2Calibration::DynamicCalibratedParametersCollection& out)
+                                         Jaco2Calibration::DynamicParametersCollection& out)
 {
     out.clear();
     int nlinks = in.size() / 10;
     for(int n = 0; n < nlinks; ++n) {
-        DynamicCalibratedParameters param;
+        DynamicParameters param;
         param.linkName = links[n];
         param.mass = in(n*10);
         param.coM = in.block<3,1>(n*10+1,0)/param.mass;
@@ -157,7 +157,7 @@ inline void to_Jaco2ManipulatorDynParams(const Eigen::MatrixXd & in, const std::
     }
 }
 
-inline std::vector<std::string> getLinkNames(const Jaco2Calibration::DynamicCalibratedParametersCollection& params)
+inline std::vector<std::string> getLinkNames(const Jaco2Calibration::DynamicParametersCollection& params)
 {
     std::vector<std::string> result;
     for(auto param : params) {

@@ -16,6 +16,7 @@
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
 #include <kdl/solveri.hpp>
+#include <kdl/chainjnttojacsolver.hpp>
 
 namespace Jaco2KinDynLib {
 
@@ -104,6 +105,9 @@ public:
     void getRotationAxis(const std::string &link, KDL::Vector &rot_axis) const;
     void getRotationAxis(const std::string &link, Eigen::Vector3d& rot_axis) const;
 
+    KDL::Jacobian getJacobian(const std::vector<double>& q);
+    int getJointVelocities(const std::vector<double> &q, const KDL::Twist &v_in, std::vector<double>& v_out);
+
 protected:
     virtual void initialize();
 
@@ -119,6 +123,8 @@ protected:
 
     std::shared_ptr<KDL::ChainFkSolverPos_recursive> solverFK_;
     std::shared_ptr<TRAC_IK::TRAC_IK> solverIK_;
+    std::shared_ptr<KDL::ChainJntToJacSolver> solverJac_;
+    std::shared_ptr<KDL::ChainIkSolverVel_pinv> solverIKVel_;
     std::vector<std::uniform_real_distribution<double> > jointDist_;
     std::default_random_engine randEng_;
     KDL::JntArray lowerLimits_;

@@ -96,10 +96,10 @@ public:
      * @param wrenches_ext optional input: external forces (not gravity)
      * @return 0 if successful
      */
-    int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
+    virtual int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
                    std::vector<double>& torques, const std::vector<Wrench>& wrenches_ext = std::vector<Wrench>());
 
-    int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
+    virtual int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
                    std::vector<double>& torques, const std::vector<KDL::Wrench>& wrenches_ext);
 
     /**
@@ -220,7 +220,7 @@ public:
                     const std::vector<double> &qDot,
                     Eigen::MatrixXd& res);
 
-private:
+protected:
     KDL::Vector gravity_;
     std::shared_ptr<KDL::ChainIdSolver_RNE> solverID_;
 

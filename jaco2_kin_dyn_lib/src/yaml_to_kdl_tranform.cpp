@@ -69,4 +69,15 @@ void convert(YAML::Node& node, std::vector<KDLTransformation>& transforms)
     }
 }
 
+void frames(const std::vector<KDLTransformation> &in, std::vector<KDL::Frame> &out)
+{
+
+    out.resize(in.size());
+    auto it = out.begin();
+    for(auto n_transform : in) {
+        *it = n_transform.frame;
+        ++it;
+    }
+}
+
 }

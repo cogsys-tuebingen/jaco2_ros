@@ -85,6 +85,6 @@ private:
     AngularInfo vel_bound_;
     AngularInfo max_torques_;
     AngularInfo velocity_threshold_;
-    Jaco2Calibration::DynamicCalibratedParametersCollection model_calib_;
+    Jaco2Calibration::DynamicParametersCollection model_calib_;
 };
 #endif // COLLISION_REACTION_H

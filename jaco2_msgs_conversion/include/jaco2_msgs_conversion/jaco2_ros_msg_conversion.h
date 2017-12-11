@@ -8,6 +8,7 @@
 #include <jaco2_msgs/JointAngles.h>
 #include <jaco2_msgs/Jaco2JointState.h>
 #include <jaco2_msgs/Jaco2Accelerometers.h>
+#include <jaco2_msgs/JointVelocity.h>
 /// JACO2 DATA
 #include <jaco2_data/time_stamp.h>
 #include <jaco2_data/joint_data.h>
@@ -50,6 +51,8 @@ struct JointDataConversion{
     static jaco2_msgs::JointData data2ros(const jaco2_data::JointData& data);
     static jaco2_data::JointData ros2data(const jaco2_msgs::JointData& data);
     static jaco2_msgs::JointAngles data2rosAngles(const jaco2_data::JointData &data);
+    static jaco2_msgs::JointVelocity data2Velocity(const jaco2_data::JointData &data);
+    static jaco2_data::JointData velocity2Data(const jaco2_msgs::JointVelocity &vel);
 };
 }
 #endif // JACO2_ROS_MSG_CONVERSION_H
