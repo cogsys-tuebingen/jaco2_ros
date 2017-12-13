@@ -4,7 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include <jaco2_data/vector3stamped.h>
+#include <jaco2_data/vector3.h>
 #include <jaco2_data/types.h>
 namespace Jaco2Calibration {
 
@@ -54,10 +54,10 @@ struct AccelerationSamples {
 
         for(std::size_t i = 0; i < maxSize; ++i)
         {
-            std::string line = std::to_string(samples[iMax][i].stamp.toSec()) + delimiter;
+            std::string line = std::to_string(samples[iMax][i].stamp().toSec()) + delimiter;
             for(std::size_t j = 0; j < nJoints; ++j){
                 if(samples[j].size() > i){
-                    line += samples[j][i].to_string(delimiter);
+                    line += samples[j][i].data.to_string(delimiter);
                 }
                 else{
                     line += std::string(delimiter);

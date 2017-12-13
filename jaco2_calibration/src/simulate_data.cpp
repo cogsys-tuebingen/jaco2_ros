@@ -74,31 +74,31 @@ public:
         ros::Duration dt = now-lastTime_;
         lastTime_ = now;
         dt_ = dt.toSec();
-        jaco2_data::JointStateData sample;
-        sample.stamp.fromNSec(now.toNSec());
+        jaco2_data::JointStateDataStamped sample;
+        sample.stamp().fromNSec(now.toNSec());
 
         double tdiff = dt_;
 
         for(std::size_t i = 0; i < 6; ++i){
-            sample.position[i] = msg->position[i];
-            sample.velocity[i] = msg->velocity[i];
+            sample.data.position[i] = msg->position[i];
+            sample.data.velocity[i] = msg->velocity[i];
 
             if(samples_.size() > 2 && dt_ !=0)
             {
-                sample.acceleration[i] = (sample.velocity[i] - samples_.at(samples_.size() -2).velocity[i])/(tdiff);
+                sample.data.acceleration[i] = (sample.data.velocity[i] - samples_.at(samples_.size() -2).data.velocity[i])/(tdiff);
             }
             else{
-                sample.acceleration[i] = 0;
+                sample.data.acceleration[i] = 0;
             }
         }
-        dynSolver_.getTorques(sample.position, sample.velocity, sample.acceleration,sample.torque);
+        dynSolver_.getTorques(sample.data.position, sample.data.velocity, sample.data.acceleration,sample.data.torque);
         // add white noise
         for(std::size_t i = 0; i < 6; ++i) {
-            sample.torque[i] += (double) distribution_(generator_);
+            sample.data.torque[i] += (double) distribution_(generator_);
         }
 
         //estimate jaco's base acceleration
-        sample.gravity = Eigen::Vector3d(0, 0, -9.81);
+        sample.data.gravity = Eigen::Vector3d(0, 0, -9.81);
         samples_.push_back(sample);
 
         ++currentSamples_;
@@ -333,7 +333,7 @@ private:
     ros::Subscriber subJointState_;
     ros::Subscriber subSensors_;
     ros::Subscriber subJointAcc_;
-    jaco2_data::JointStateDataCollection samples_;
+    jaco2_data::JointStateDataStampedCollection samples_;
     std::vector<Eigen::Vector3d, EV3dAllocator> gravity_;
 
     ros::Time lastTime_;

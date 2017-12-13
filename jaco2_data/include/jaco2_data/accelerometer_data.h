@@ -3,7 +3,9 @@
 #include <jaco2_data/types.h>
 #include <vector>
 #include <Eigen/StdVector>
-#include <jaco2_data/vector3stamped.h>
+#include <jaco2_data/vector3.h>
+#include <jaco2_data/types.h>
+
 
 namespace jaco2_data {
 
@@ -12,6 +14,7 @@ class AccelerometerData
 public:
     typedef Vector3StampedCollection::iterator iterator;
     typedef Vector3StampedCollection::const_iterator const_iterator;
+
 public:
 
     AccelerometerData();
@@ -36,9 +39,9 @@ public:
     const Vector3Stamped& back() const;
 
     std::size_t size() const;
-    void resize(std::size_t n, Vector3Stamped val = Vector3Stamped(0,0,0));
+    void resize(std::size_t n, Vector3Stamped val = Vector3Stamped(Vector3(0,0,0)));
 
-//    void emplace_back(Vector3Stamped&& val);
+//    void emplace_back(Vector3StampedStamped&& val);
     void push_back(const Vector3Stamped& val);
 
     std::vector<double> toVector() const;
@@ -47,6 +50,9 @@ public:
     double norm() const;
 
     AccelerometerData operator+(const AccelerometerData &other) const;
+    AccelerometerData operator-(const AccelerometerData &other) const;
+    AccelerometerData operator*(const double &b) const;
+    AccelerometerData operator/(const double &b) const;
     AccelerometerData& operator+=(const AccelerometerData &other);
     AccelerometerData& operator*=(const double &b);
     AccelerometerData& operator/=(const double &b);

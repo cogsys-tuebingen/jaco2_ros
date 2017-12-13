@@ -223,7 +223,7 @@ jaco2_data::TimeStamp Jaco2State::getLastUpdate(int read_data) const
 
 }
 
-jaco2_data::JointStateData Jaco2State::getJointState() const
+jaco2_data::JointStateDataStamped Jaco2State::getJointState() const
 {
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     return joint_state_.getJointState();

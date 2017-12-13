@@ -2,6 +2,7 @@
 #include <jaco2_msgs/JointVelocity.h>
 #include <sensor_msgs/JointState.h>
 #include <jaco2_data/joint_state_data.h>
+#include <jaco2_data/types.h>
 #include <jaco2_msgs_conversion/jaco2_ros_msg_conversion.h>
 struct SimDriver{
 
@@ -41,7 +42,6 @@ struct SimDriver{
         }
 
         state = next;
-        state.stamp.now();
         sensor_msgs::JointState jstate = jaco2_msgs::JointStateConversion::data2SensorMsgs(state);
         pub_joint_state.publish(jstate);
         last_stamp = now;
@@ -49,7 +49,6 @@ struct SimDriver{
 
     void tick()
     {
-        state.stamp.now();
         sensor_msgs::JointState jstate = jaco2_msgs::JointStateConversion::data2SensorMsgs(state);
         pub_joint_state.publish(jstate);
     }

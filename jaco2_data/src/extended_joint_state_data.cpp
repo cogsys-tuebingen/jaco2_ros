@@ -38,10 +38,9 @@ ExtendedJointStateData ExtendedJointStateData::abs() const
     return res;
 }
 
-std::string ExtendedJointStateData::to_string(const char delimiter) const
+std::string ExtendedJointStateData::to_string(const std::string delimiter) const
 {
     std::stringstream ss;
-    ss << joint_state.frame_id << delimiter;
     ss << joint_state.label << delimiter;
     for(auto val : joint_state.position){
         ss << val << delimiter;
@@ -57,7 +56,7 @@ std::string ExtendedJointStateData::to_string(const char delimiter) const
     }
     for(auto acc : lin_acc)
     {
-        ss << acc.vector[0] << delimiter << acc.vector[1] << delimiter << acc.vector[2] << delimiter;
+        ss << acc.data.vector[0] << delimiter << acc.data.vector[1] << delimiter << acc.data.vector[2] << delimiter;
     }
     return ss.str();
 }
@@ -116,6 +115,30 @@ ExtendedJointStateData ExtendedJointStateData::operator+(const ExtendedJointStat
     res.lin_acc = this->lin_acc + other.lin_acc;
     return res;
 }
+
+ExtendedJointStateData ExtendedJointStateData::operator-(const ExtendedJointStateData &other) const
+{
+    ExtendedJointStateData res;
+    res.joint_state = this->joint_state - other.joint_state;
+    res.lin_acc = this->lin_acc - other.lin_acc;
+    return res;
+}
+
+ExtendedJointStateData ExtendedJointStateData::operator*(const double &other) const
+{
+    ExtendedJointStateData res;
+    res.joint_state = this->joint_state * other;
+    res.lin_acc = this->lin_acc * other;
+    return res;
+}
+ExtendedJointStateData ExtendedJointStateData::operator/(const double &other) const
+{
+    ExtendedJointStateData res;
+    res.joint_state = this->joint_state / other;
+    res.lin_acc = this->lin_acc / other;
+    return res;
+}
+
 ExtendedJointStateData& ExtendedJointStateData::operator+=(const ExtendedJointStateData &other)
 {
     this->joint_state += other.joint_state;

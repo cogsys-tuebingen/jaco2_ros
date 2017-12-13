@@ -26,7 +26,7 @@ public:
     DynamicResidual(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
 
     void loadData(std::string data_file);
-    void setData(jaco2_data::JointStateDataCollection& samples);
+    void setData(jaco2_data::JointStateDataStampedCollection &samples);
     void useInitialGuess(bool use, double factor=0);
     void setScaleMatrix(Eigen::MatrixXd& scale);
     bool calculteMatrix();
@@ -84,8 +84,8 @@ public:
     static void paramEigen2Vector(const Eigen::MatrixXd& mat, std::vector<double>& result, int type);
 
 private:
-    bool staticSample(const jaco2_data::JointStateData& sample) const;
-    void selectData( jaco2_data::JointStateDataCollection& selected);
+    bool staticSample(const jaco2_data::JointStateData &sample) const;
+    void selectData(jaco2_data::JointStateDataStampedCollection &selected);
 
 private:
     Jaco2KinDynLib::Jaco2DynamicModel model_;
@@ -101,7 +101,7 @@ private:
     Eigen::MatrixXd initial_params_;
     Eigen::MatrixXd init_scale_;
     Eigen::MatrixXd uncertainty_scale_;
-    jaco2_data::JointStateDataCollection samples_;
+    jaco2_data::JointStateDataStampedCollection samples_;
     std::size_t n_samples_;
     const static std::size_t n_param_;
     const static std::size_t n_param_static_;

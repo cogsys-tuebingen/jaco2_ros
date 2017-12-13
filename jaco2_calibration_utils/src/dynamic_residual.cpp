@@ -42,7 +42,7 @@ void DynamicResidual::loadData(std::string data_file)
     n_samples_ = samples_.size();
 }
 
-void DynamicResidual::setData(JointStateDataCollection& samples)
+void DynamicResidual::setData(JointStateDataStampedCollection& samples)
 {
     samples_ = samples;
     n_samples_ = samples_.size();
@@ -131,8 +131,8 @@ bool DynamicResidual::calculteMatrix()
     std::string first_link = links.front();
     std::string last_link = links.back();
 
-    JointStateDataCollection* used_samples;
-    JointStateDataCollection selected;
+    JointStateDataStampedCollection* used_samples;
+    JointStateDataStampedCollection selected;
     if(residual_type_ != ALL){
         selectData(selected);
         used_samples = &selected;
@@ -159,7 +159,7 @@ bool DynamicResidual::calculteMatrix()
     auto it = used_samples->begin();
     for(std::size_t n = 0; n < n_samples_; ++ n) {
 
-        const JointStateData& sample = *it;
+        const JointStateData& sample = it->data;
         ++it;
 
         if(sample.position.size() == n_links_) {
@@ -218,10 +218,10 @@ bool DynamicResidual::staticSample(const jaco2_data::JointStateData &sample) con
     return vel_norm < static_vel_thresold_ && acc_norm < static_acc_thresold_;
 }
 
-void DynamicResidual::selectData(jaco2_data::JointStateDataCollection &selected)
+void DynamicResidual::selectData(jaco2_data::JointStateDataStampedCollection &selected)
 {
     for(auto data : samples_){
-        bool is_static = staticSample(data);
+        bool is_static = staticSample(data.data);
         if(residual_type_ == STATIC){
             if(is_static){
                 selected.push_back(data);

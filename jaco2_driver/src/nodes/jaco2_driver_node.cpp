@@ -603,22 +603,22 @@ void Jaco2DriverNode::stop()
 
 void Jaco2DriverNode::publishJointState()
 {
-    const jaco2_data::JointStateData& jdata = driver_.getJointState();
+    const jaco2_data::JointStateDataStamped& jdata = driver_.getJointState();
 
 
-    if(jdata.stamp != lastTimeJsPublished_){
+    if(jdata.stamp() != lastTimeJsPublished_){
         jointStateMsg_ = jaco2_msgs::JointStateConversion::data2SensorMsgs(jdata);
         pubJointState_.publish(jointStateMsg_);
 
         jaco2JointStateMsg_ = jaco2_msgs::JointStateConversion::data2Jaco2Msgs(jdata);
         pubJaco2JointState_.publish(jaco2JointStateMsg_);
-        lastTimeJsPublished_ = jdata.stamp;
+        lastTimeJsPublished_ = jdata.stamp();
     }
 
     jaco2_msgs::Jaco2GfreeTorques g_msg;
     g_msg.header = jointStateMsg_.header;
     auto stamp = driver_.getLastReadUpdate(READ_TORQUE_GRAVITY_FREE);
-    g_msg.header.stamp = jaco2_msgs::TimeConversion::data2ROS(stamp);
+    g_msg.header.stamp = jaco2_msgs::TimeConversion::data2ros(stamp);
     DataConversion::convert(driver_.getAngularForceGravityFree(), g_msg.effort_g_free);
     pubGfreeToruqes_.publish(g_msg);
 }

@@ -135,8 +135,8 @@ void StaticDataGenerator::saveStaticData()
     std::size_t tau_counter = 0;
     ExtendedJointStateData state_m(n_joints_, n_joints_);
     JointAngles angle_m(n_joints_);
-    JointData temp_m(n_joints_);
-    JointData tau_m(n_joints_);
+    JointDataStamped temp_m(n_joints_);
+    JointDataStamped tau_m(n_joints_);
     for(auto v : status_buffer_)
     {
         if(v == actionlib_msgs::GoalStatus::SUCCEEDED){
@@ -219,10 +219,10 @@ void StaticDataGenerator::stateCb(const jaco2_msgs::Jaco2JointStateConstPtr& msg
 void StaticDataGenerator::tauGfreeCb(const jaco2_msgs::Jaco2GfreeTorquesConstPtr& msg)
 {
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-    JointData d;
-    d.data = msg->effort_g_free;
-    d.frame_id = msg->header.frame_id;
-    d.stamp.fromNSec(msg->header.stamp.toNSec());
+    JointDataStamped d;
+    d.data.data = msg->effort_g_free;
+    d.header.frame_id = msg->header.frame_id;
+    d.header.stamp.fromNSec(msg->header.stamp.toNSec());
     tau_g_buffer_.emplace_back(d);
     while(tau_g_buffer_.size() > buffer_length_){
         tau_g_buffer_.pop_front();
@@ -232,9 +232,9 @@ void StaticDataGenerator::tauGfreeCb(const jaco2_msgs::Jaco2GfreeTorquesConstPtr
 void StaticDataGenerator::tempCb(const jaco2_msgs::Jaco2SensorConstPtr& msg)
 {
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-    JointData d;
-    d.data = msg->temperature;
-    d.stamp.fromNSec(msg->temperature_time.toNSec());
+    JointDataStamped d;
+    d.data.data = msg->temperature;
+    d.header.stamp.fromNSec(msg->temperature_time.toNSec());
     temp_buffer_.emplace_back(d);
     while(temp_buffer_.size() > buffer_length_){
         temp_buffer_.pop_front();

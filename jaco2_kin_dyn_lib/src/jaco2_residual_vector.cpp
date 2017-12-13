@@ -154,19 +154,20 @@ void Jaco2ResidualVector::getResidualVector(const ResidualData &data,
 
 }
 //TODO TEST THIS
-void Jaco2ResidualVector::getResidualVector(const jaco2_data::JointStateData &data,
+void Jaco2ResidualVector::getResidualVector(const jaco2_data::JointStateDataStamped &data_s,
                                             const Eigen::VectorXd& last_residual,
                                             const Eigen::VectorXd& last_integral,
                                             Eigen::VectorXd& new_integral,
                                             Eigen::VectorXd& new_residual)
 {
+    ROS_WARN("untested method");
     bool init = initial_;
     if(initial_){
-        last_stamp_ = data.stamp;
+        last_stamp_ = data_s.stamp();
         initial_ = false;
     }
-    double dt = data.stamp.substractionResultInSeconds(last_stamp_);
-    last_stamp_ = data.stamp;
+    double dt = data_s.stamp().substractionResultInSeconds(last_stamp_);
+    last_stamp_ = data_s.stamp();
 
     if(dt < 1e-7 || dt > 0.1){
         new_integral = last_integral;
@@ -177,7 +178,7 @@ void Jaco2ResidualVector::getResidualVector(const jaco2_data::JointStateData &da
 
         return;
     }
-
+    const jaco2_data::JointStateData& data = data_s.data;
     Eigen::MatrixXd C;
     model_.getMatrixC(data.position, data.velocity, C);
 

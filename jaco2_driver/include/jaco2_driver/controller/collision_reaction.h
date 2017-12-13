@@ -69,7 +69,7 @@ private:
     double threshold_;
     double stop_threshold_;
 //    double dt_;
-    jaco2_data::JointStateData last_state_;
+    jaco2_data::JointStateDataStamped last_state_;
     double residualNorm_;
     int n_joints_;
     std::string robot_model_;

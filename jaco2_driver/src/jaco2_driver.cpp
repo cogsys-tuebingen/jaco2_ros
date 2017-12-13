@@ -398,7 +398,7 @@ jaco2_data::TimeStamp Jaco2Driver::getLastReadUpdate(int read_data) const
     return state_.getLastUpdate(read_data);
 }
 
-jaco2_data::JointStateData Jaco2Driver::getJointState() const
+jaco2_data::JointStateDataStamped Jaco2Driver::getJointState() const
 {
     return state_.getJointState();
 }

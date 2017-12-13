@@ -25,7 +25,7 @@ public:
 
     ExtendedJointStateData abs() const;
 
-    std::string to_string(const char delimiter) const;
+    std::string to_string(const std::string delimiter) const;
 
     void setLabel(int i);
 
@@ -42,6 +42,9 @@ public:
     const std::vector<double>& torque() const;
 
     ExtendedJointStateData operator+(const ExtendedJointStateData &other) const;
+    ExtendedJointStateData operator-(const ExtendedJointStateData &other) const;
+    ExtendedJointStateData operator*(const double &other) const;
+    ExtendedJointStateData operator/(const double &other) const;
     ExtendedJointStateData& operator+=(const ExtendedJointStateData &other);
     ExtendedJointStateData& operator*=(const double &b);
     ExtendedJointStateData& operator/=(const double &b);

@@ -12,12 +12,13 @@
 // trac_ik
 #include <trac_ik/trac_ik.hpp>
 //Orocos KDL
+#include <jaco2_data/suppress_warnings_start.h>
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
 #include <kdl/chainidsolver_recursive_newton_euler.hpp>
 #include <kdl/solveri.hpp>
 #include <kdl/chaindynparam.hpp>
-
+#include <jaco2_data/suppress_warnings_end.h>
 #include <jaco2_kin_dyn_lib/jaco2_kinematic_model.h>
 namespace Jaco2KinDynLib {
 struct Wrench{
