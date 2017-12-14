@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<launch>
+<!--<launch>
   <arg name="bagfile" default="/tmp/static_bag" />
 
   <node pkg="jaco2_calibration_utils" type="jaco2_static_data_generartion_node" name="static_data_generator_node" output="screen">
@@ -19,6 +19,33 @@
     <param name="/joint_5_lower_limit" value="-3.14"/>
     <param name="/joint_6_upper_limit" value="3.14"/>
     <param name="/joint_6_lower_limit" value="-3.14"/>
+    </node>
+</launch>-->
+<launch>
+  <arg name="bagfile" default="/tmp/static_bag" />
+
+  <node pkg="jaco2_calibration_utils" type="jaco2_static_data_generartion_node" name="static_data_generator_node" output="screen">
+    <remap from="/joint_states" to="/jaco_21_driver/out/joint_states"/>
+    <param name="/driver_name" value="jaco_21_driver"/>
+    <param name="/bag_name" value="$(arg bagfile)"/>
+    <param name="/joint_1_upper_limit" value="6.28"/>
+    <param name="/joint_1_lower_limit" value="1.57"/>
+    <param name="/joint_2_upper_limit" value="4.05"/>
+    <param name="/joint_2_lower_limit" value="2.23"/>
+    <param name="/joint_3_upper_limit" value="4.14"/>
+    <param name="/joint_3_lower_limit" value="1.00"/>
+    <param name="/joint_4_upper_limit" value="3.14"/>
+    <param name="/joint_4_lower_limit" value="-3.14"/>
+    <param name="/joint_5_upper_limit" value="3.14"/>
+    <param name="/joint_5_lower_limit" value="-3.14"/>
+    <param name="/joint_6_upper_limit" value="3.14"/>
+    <param name="/joint_6_lower_limit" value="-3.14"/>
+    <param name="/discrete_start_1" value="1"/>
+    <param name="/discrete_start_2" value="3"/>
+    <param name="/discrete_start_3" value="0"/>
+    <param name="/discrete_start_4" value="0"/>
+    <param name="/discrete_start_5" value="3"/>
+    <param name="/discrete_start_6" value="3"/>
     </node>
 </launch>
 
