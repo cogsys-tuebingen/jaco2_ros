@@ -2,6 +2,9 @@
 #include <sensor_msgs/JointState.h>
 
 sensor_msgs::JointState aggregated_msg;
+bool received_jaco_21 = false;
+bool received_jaco_22 = false;
+
 void jaco_21_callback(const sensor_msgs::JointStateConstPtr& msg) {
     for(int i = 0; i < msg->name.size(); i++) {
         aggregated_msg.name.push_back(msg->name[i]);
@@ -9,6 +12,8 @@ void jaco_21_callback(const sensor_msgs::JointStateConstPtr& msg) {
         aggregated_msg.velocity.push_back(msg->velocity[i]);
         aggregated_msg.effort.push_back(msg->effort[i]);
     }
+    aggregated_msg.header.stamp = msg->header.stamp;
+    received_jaco_21 = true;
 }
 
 void jaco_22_callback(const sensor_msgs::JointStateConstPtr& msg) {
@@ -18,6 +23,8 @@ void jaco_22_callback(const sensor_msgs::JointStateConstPtr& msg) {
         aggregated_msg.velocity.push_back(msg->velocity[i]);
         aggregated_msg.effort.push_back(msg->effort[i]);
     }
+    aggregated_msg.header.stamp = msg->header.stamp;
+    received_jaco_22 = true;
 }
 
 
@@ -34,11 +41,15 @@ int main(int argc, char** argv )
 
     while (ros::ok()) {
         ros::spinOnce();
-        js_pub.publish(aggregated_msg);
-        aggregated_msg.name.clear();
-        aggregated_msg.position.clear();
-        aggregated_msg.velocity.clear();
-        aggregated_msg.effort.clear();
+        if (received_jaco_21 && received_jaco_22) {
+            js_pub.publish(aggregated_msg);
+            aggregated_msg.name.clear();
+            aggregated_msg.position.clear();
+            aggregated_msg.velocity.clear();
+            aggregated_msg.effort.clear();
+            received_jaco_21 = false;
+            received_jaco_22 = false;
+        }
 
     }
 
