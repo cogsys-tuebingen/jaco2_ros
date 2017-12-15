@@ -159,3 +159,13 @@ ExtendedJointStateData& ExtendedJointStateData::operator/=(const double &b)
     this->lin_acc /=b;
     return *this;
 }
+
+std::vector<std::string>& ExtendedJointStateData::names()
+{
+    return joint_state.names;
+}
+
+const std::vector<std::string>& ExtendedJointStateData::names() const
+{
+    return joint_state.names;
+}

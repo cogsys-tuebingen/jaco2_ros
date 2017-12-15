@@ -41,6 +41,9 @@ public:
     std::vector<double>& torque();
     const std::vector<double>& torque() const;
 
+    std::vector<std::string>& names();
+    const std::vector<std::string>& names() const;
+
     ExtendedJointStateData operator+(const ExtendedJointStateData &other) const;
     ExtendedJointStateData operator-(const ExtendedJointStateData &other) const;
     ExtendedJointStateData operator*(const double &other) const;
@@ -48,7 +51,6 @@ public:
     ExtendedJointStateData& operator+=(const ExtendedJointStateData &other);
     ExtendedJointStateData& operator*=(const double &b);
     ExtendedJointStateData& operator/=(const double &b);
-
 
 public:
     JointStateData joint_state;

@@ -16,6 +16,11 @@ public:
         data(d)
     {}
 
+    StampedData(jaco2_data::Header& h, T& d) :
+        header(h),
+        data(d)
+    {}
+
     TimeStamp stamp() const
     {
         return header.stamp;

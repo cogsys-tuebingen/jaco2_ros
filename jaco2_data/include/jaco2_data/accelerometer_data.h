@@ -32,6 +32,9 @@ public:
     Vector3Stamped& operator[](std::size_t i);
     const Vector3Stamped& operator [](std::size_t i) const;
 
+    double& operator()(std::size_t i, std::size_t comp);
+    const double& operator ()(std::size_t i, std::size_t comp) const;
+
     Vector3Stamped& front();
     const Vector3Stamped& front() const;
 

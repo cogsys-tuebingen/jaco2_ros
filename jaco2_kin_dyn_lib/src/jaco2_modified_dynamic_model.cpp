@@ -290,14 +290,23 @@ void Jaco2ModifiedDynamicModel::checkInput(const std::vector<double> &q, const s
 void Jaco2ModifiedDynamicModel::checkInput(const KDLJointStateData& data)
 {
     std::size_t njoints = chain_.getNrOfJoints();
-    if(data.position.columns() != data.velocity.columns() || data.position.columns() != data.acceleration.columns()
-            || data.position.columns() < njoints){
+    std::size_t r_p = data.position.rows();
+    std::size_t r_v = data.velocity.rows();
+    std::size_t r_a = data.acceleration.rows();
+    std::size_t c_p = data.position.columns();
+    std::size_t c_v = data.velocity.columns();
+    std::size_t c_a = data.acceleration.columns();
+    if(r_p !=  r_v || r_p != r_a || c_p != c_v || c_p != c_a){
+        bool test = c_p == njoints || r_p == njoints;
+        if(test){
+            return;
+        }
         std::stringstream e_des;
         e_des << "Dimension mismatch of input: Dimenion of pos. is "
-              << data.position.columns()     << ". While vel. has dimension "
-              << data.velocity.columns()     << " and acc. "
-              << data.acceleration.columns() <<". The KDL chain contains "
-              <<  chain_.getNrOfJoints() << "  joints." ;
+              << r_p << " x " << c_p  << ". While vel. has dimension "
+              << r_v << " x " << c_v  << " and acc. "
+              << r_a << " x " << c_a  << ". The KDL chain contains "
+              <<  njoints << "  joints." ;
         std::string error = e_des.str();
         ROS_ERROR_STREAM(error);
         throw std::runtime_error(error);
