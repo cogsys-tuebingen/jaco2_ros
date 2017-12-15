@@ -1,0 +1,389 @@
+<?xml version="1.0"?>
+<robot xmlns:xi="http://www.w3.org/2001/XInclude"
+	xmlns:gazebo="http://playerstage.sourceforge.net/gazebo/xmlschema/#gz"
+	xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model"
+	xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+	xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body"
+	xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom"
+	xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint"
+	xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+	xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+	xmlns:rendering="http://playerstage.sourceforge.net/gazebo/xmlschema/#rendering"
+	xmlns:renderable="http://playerstage.sourceforge.net/gazebo/xmlschema/#renderable"
+	xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics"
+	xmlns:xacro="http://ros.org/wiki/xacro">
+
+	
+    <xacro:property name="M_SCALE" value="0.0254" />
+	<xacro:property name="M_PI" value="3.1415926535897931" />
+	<xacro:property name="J_LIM" value="${2*M_PI}" />
+	<xacro:property name="link_base" value="jaco_left_link_base" />
+	<xacro:property name="link" value="jaco_left_link" />	
+	<xacro:property name="link_1" value="jaco_left_link_1" />
+	<xacro:property name="link_2" value="jaco_left_link_2" />
+	<xacro:property name="link_3" value="jaco_left_link_3" />
+	<xacro:property name="link_hand" value="jaco_left_link_hand" />
+	<xacro:property name="link_finger" value="jaco_left_link_finger" />
+	<xacro:property name="link_finger_tip" value="jaco_left_link_finger_tip" />
+
+	<xacro:property name="joint_base" value="jaco_left_joint_base" />
+	<xacro:property name="joint_base_axis_xyz" value="0 0 0" />
+
+  <xacro:property name="joint_1" value="jaco_left_joint_1" />
+  <xacro:property name="joint_1_axis_xyz" value="0 0 1" />
+  <xacro:property name="joint_1_origin_xyz" value="0 0 0.1535" />
+  <xacro:property name="joint_1_origin_rpy" value="${M_PI} 0 0" />
+
+  <xacro:property name="joint_2" value="jaco_left_joint_2" />
+  <xacro:property name="joint_2_axis_xyz" value="0 0 1" />
+  <xacro:property name="joint_2_origin_xyz" value="0 0 -0.1185" />
+  <xacro:property name="joint_2_origin_rpy" value="-${M_PI/2} -${M_PI/2} 0" />
+
+  <xacro:property name="joint_3" value="jaco_left_joint_3" />
+  <xacro:property name="joint_3_axis_xyz" value="0 0 1" />
+  <xacro:property name="joint_3_origin_xyz" value="0.41 0 0" />
+  <xacro:property name="joint_3_origin_rpy" value="${M_PI} 0 ${M_PI}" />
+
+  <xacro:property name="joint_4" value="jaco_left_joint_4" />
+  <xacro:property name="joint_4_axis_xyz" value="0 0 1" />
+  <xacro:property name="joint_4_origin_xyz" value="0.207 0 -0.01125" />
+  <xacro:property name="joint_4_origin_rpy" value="0 -${M_PI/2} 0" />
+
+  <xacro:property name="joint_5" value="jaco_left_joint_5" />
+  <xacro:property name="joint_5_axis_xyz" value="0 0 1" />
+  <xacro:property name="joint_5_origin_xyz" value="0.0343 0 -0.06588" />
+  <xacro:property name="joint_5_origin_rpy" value="0 ${M_PI/180*60} ${M_PI}" /> <!-- maybe 55 degrees, Advanded user guide specifys 60 ...-->
+
+  <xacro:property name="joint_6" value="jaco_left_joint_6" />
+  <xacro:property name="joint_6_axis_xyz" value="0 0 1" />
+  <xacro:property name="joint_6_origin_xyz" value="0.0343 0 -0.06588" />
+  <xacro:property name="joint_6_origin_rpy" value="0 ${M_PI/180*60} ${M_PI}" /> <!-- maybe 55 degrees, Advanded user guide specifys 60 ...-->
+
+  <xacro:property name="joint_finger_1" value="jaco_left_joint_finger_1" />
+  <xacro:property name="joint_finger_1_axis_xyz" value="0 0 1" />
+  <xacro:property name="joint_finger_1_origin_xyz" value="-0.032578 0.0033 -0.12131" />  
+  <xacro:property name="joint_finger_1_origin_rpy" value="-1.7983 1.117 3.1416" />
+  <xacro:property name="joint_finger_1_lower_limit" value="0" />
+  <xacro:property name="joint_finger_1_upper_limit" value="${M_PI/180*40}" />
+
+  <xacro:property name="joint_finger_3" value="jaco_left_joint_finger_3" />
+  <xacro:property name="joint_finger_3_axis_xyz" value="0 0 1" />
+  <xacro:property name="joint_finger_3_origin_xyz" value="0.027788 -0.0206 -0.12131" />
+  <xacro:property name="joint_finger_3_origin_rpy" value="-1.6222 1.117 -0.23615" />
+  <xacro:property name="joint_finger_3_lower_limit" value="0" />
+  <xacro:property name="joint_finger_3_upper_limit" value="${M_PI/180*40}" />
+
+  <xacro:property name="joint_finger_2" value="jaco_left_joint_finger_2" />
+  <xacro:property name="joint_finger_2_axis_xyz" value="0 0 1" />
+  <xacro:property name="joint_finger_2_origin_xyz" value="0.027788 0.0206 -0.12131" />
+  <xacro:property name="joint_finger_2_origin_rpy" value="-1.5161 1.1459 0.23978" />
+  <xacro:property name="joint_finger_2_lower_limit" value="0" />
+  <xacro:property name="joint_finger_2_upper_limit" value="${M_PI/180*40}" />
+  
+  <xacro:property name="joint_finger_tip_1" value="jaco_left_joint_finger_tip_1" />
+  <xacro:property name="joint_finger_tip_1_axis_xyz" value="0 0 1" />
+  <xacro:property name="joint_finger_tip_1_origin_xyz" value="0.044094 -0.0029 0" />  
+  <xacro:property name="joint_finger_tip_1_origin_rpy" value="0 0 0" />
+  <xacro:property name="joint_finger_tip_1_lower_limit" value="0" />
+  <xacro:property name="joint_finger_tip_1_upper_limit" value="${M_PI/180*40}" />
+  
+  <xacro:property name="joint_finger_tip_2" value="jaco_left_joint_finger_tip_2" />
+  <xacro:property name="joint_finger_tip_2_axis_xyz" value="0 0 1" />
+  <xacro:property name="joint_finger_tip_2_origin_xyz" value="0.044094 -0.0029 0" />  
+  <xacro:property name="joint_finger_tip_2_origin_rpy" value="0 0 0" />
+  <xacro:property name="joint_finger_tip_2_lower_limit" value="0" />
+  <xacro:property name="joint_finger_tip_2_upper_limit" value="${M_PI/180*40}" />
+  
+  <xacro:property name="joint_finger_tip_3" value="jaco_left_joint_finger_tip_3" />
+  <xacro:property name="joint_finger_tip_3_axis_xyz" value="0 0 1" />
+  <xacro:property name="joint_finger_tip_3_origin_xyz" value="0.044094 -0.0029 0" />  
+  <xacro:property name="joint_finger_tip_3_origin_rpy" value="0 0 0" />
+  <xacro:property name="joint_finger_tip_3_lower_limit" value="0" />
+  <xacro:property name="joint_finger_tip_3_upper_limit" value="${M_PI/180*40}" />
+
+  <xacro:property name="link_base_com_xyz" value="0 0 0" />
+  <xacro:property name="link_base_com_rpy" value="0 0 0" />
+  <xacro:property name="link_base_mass" value="0.0" />
+  <xacro:property name="link_base_Ixx" value="0.1" />
+  <xacro:property name="link_base_Ixy" value="0.2" />
+  <xacro:property name="link_base_Ixz" value="0.3" />
+  <xacro:property name="link_base_Iyy" value="0.4" />
+  <xacro:property name="link_base_Iyz" value="0.5" />
+  <xacro:property name="link_base_Izz" value="0.6" />
+
+  <xacro:property name="link_1_com_xyz" value="0 0.0086 -0.1064" />
+  <xacro:property name="link_1_com_rpy" value="0 0 0" />
+  <xacro:property name="link_1_mass" value="0.7417" />
+  <xacro:property name="link_1_Ixx" value=" 0.0009" />
+  <xacro:property name="link_1_Ixy" value=" 0.0000" />
+  <xacro:property name="link_1_Ixz" value=" 0.0000" />
+  <xacro:property name="link_1_Iyy" value=" 0.0438" />
+  <xacro:property name="link_1_Iyz" value=" 0.0000" />
+  <xacro:property name="link_1_Izz" value=" 0.0004" />
+
+  <xacro:property name="link_2_com_xyz" value="0.2452 0 -0.0921" />
+  <xacro:property name="link_2_com_rpy" value="0 0 0" />
+  <xacro:property name="link_2_mass" value="0.9977" />
+  <xacro:property name="link_2_Ixx" value=" 0.0097" />
+  <xacro:property name="link_2_Ixy" value=" 0.0000" />
+  <xacro:property name="link_2_Ixz" value="-0.0186" />
+  <xacro:property name="link_2_Iyy" value="-0.0500" /> <!-- actually -Iyy ??? -->
+  <xacro:property name="link_2_Iyz" value=" 0.0000" />
+  <xacro:property name="link_2_Izz" value=" 0.0407" />
+
+  <xacro:property name="link_3_com_xyz" value="0.1624 0.0 -0.0135" />
+  <xacro:property name="link_3_com_rpy" value="0 0 0" />
+  <xacro:property name="link_3_mass" value="0.7847" />
+  <xacro:property name="link_3_Ixx" value=" 0.0003" />
+  <xacro:property name="link_3_Ixy" value=" 0.0000" />
+  <xacro:property name="link_3_Ixz" value="-0.0002" />
+  <xacro:property name="link_3_Iyy" value=" 0.0035" />
+  <xacro:property name="link_3_Iyz" value=" 0.0000" />
+  <xacro:property name="link_3_Izz" value=" 0.0036" />
+
+  <xacro:property name="link_4_com_xyz" value="0.0253 0.0000 -0.0585" />
+  <xacro:property name="link_4_com_rpy" value="0 0 0" />
+  <xacro:property name="link_4_mass" value="0.6426" />
+  <xacro:property name="link_4_Ixx" value=" 0.0003" />
+  <xacro:property name="link_4_Ixy" value=" 0.0000" />
+  <xacro:property name="link_4_Ixz" value=" 0.0000" />
+  <xacro:property name="link_4_Iyy" value=" 0.0003" />
+  <xacro:property name="link_4_Iyz" value=" 0.0000" />
+  <xacro:property name="link_4_Izz" value=" 0.0003" />
+
+  <xacro:property name="link_5_com_xyz" value="0.0253 0.0000 -0.0585" />
+  <xacro:property name="link_5_com_rpy" value="0 0 0" />
+  <xacro:property name="link_5_mass" value="0.6426" />
+  <xacro:property name="link_5_Ixx" value=" 0.0003" />
+  <xacro:property name="link_5_Ixy" value=" 0.0000" />
+  <xacro:property name="link_5_Ixz" value=" 0.0000" />
+  <xacro:property name="link_5_Iyy" value=" 0.0003" />
+  <xacro:property name="link_5_Iyz" value=" 0.0000" />
+  <xacro:property name="link_5_Izz" value=" 0.0003" />
+
+  <xacro:property name="link_hand_com_xyz" value="0.0068 0 -0.0822" />
+  <xacro:property name="link_hand_com_rpy" value="0 0 0" />
+  <xacro:property name="link_hand_mass" value="0.7270" />
+  <xacro:property name="link_hand_Ixx" value=" 0.0050" />
+  <xacro:property name="link_hand_Ixy" value=" 0.0000" />
+  <xacro:property name="link_hand_Ixz" value=" 0.0004" />
+  <xacro:property name="link_hand_Iyy" value=" 0.0050" />
+  <xacro:property name="link_hand_Iyz" value=" 0.0000" />
+  <xacro:property name="link_hand_Izz" value=" 0.0001" />
+
+	<xacro:macro name="jaco_left_link" params="link_name link_mass Ixx Ixy Ixz Iyy Iyz Izz link_com_origin link_com_rpy">
+		<link name="${link_name}">
+            <inertial>
+                <mass value="${link_mass}"/>
+                <inertia ixx="${Ixx}" ixy="${Ixy}" ixz="${Ixz}" iyy="${Iyy}" iyz="${Iyz}" izz="${Izz}"/>
+                <origin xyz="${link_com_origin}" rpy="${link_com_rpy}" />
+            </inertial>
+			<visual>
+				<geometry>
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/left_right/${link_name}.min.dae" />
+				</geometry>
+				<material name="carbon_fiber">
+					<color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+				</material>
+			</visual>
+			<collision>
+				<geometry>
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/left_right/${link_name}.stl" />
+				</geometry>
+			</collision>
+		</link>
+	</xacro:macro>
+
+	<xacro:macro name="jaco_left_link_suffix" params="link_name suffix">
+		<link name="${link_name}_${suffix}">
+            <inertial>
+                <mass value="0.25"/>
+                <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+                <origin/>
+            </inertial>
+			<visual>
+				<geometry>
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/left_right/${link_name}.min.dae" />
+				</geometry>
+				<material name="carbon_fiber">
+					<color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+				</material>
+			</visual>
+			<collision>
+				<geometry>
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/left_right/${link_name}.stl" />
+				</geometry>
+			</collision>
+		</link>
+	</xacro:macro>
+
+	<xacro:macro name="jaco_left_link_4_5" params="link_name suffix link_mass Ixx Ixy Ixz Iyy Iyz Izz link_com_origin link_com_rpy">
+		<link name="${link_name}_${suffix}">
+            <inertial>
+                <mass value="${link_mass}"/>
+                <inertia ixx="${Ixx}" ixy="${Ixy}" ixz="${Ixz}" iyy="${Iyy}" iyz="${Iyz}" izz="${Izz}"/>
+                <origin xyz="${link_com_origin}" rpy="${link_com_rpy}" />
+            </inertial>
+			<visual>
+				<geometry>
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/left_right/${link_name}_4_5.min.dae" />
+				</geometry>
+				<material name="carbon_fiber">
+					<color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+				</material>
+			</visual>
+			<collision>
+				<geometry>
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/left_right/${link_name}_4_5.stl" />
+				</geometry>
+			</collision>
+		</link>
+	</xacro:macro>
+
+	<xacro:macro name="jaco_left_ring_cover" params="suffix size">
+		<link name="jaco_left_${size}_ring_cover_${suffix}">
+            <inertial>
+                <mass value="0"/>
+                <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+                <origin/>
+            </inertial>
+			<visual>
+				<geometry>
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/left_right/jaco_left_${size}_ring_cover.min.dae" />
+				</geometry>
+				<material name="carbon_fiber">
+					<color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+				</material>
+			</visual>
+			<collision>
+				<geometry>
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/left_right/jaco_left_${size}_ring_cover.stl" />
+				</geometry>
+			</collision>
+		</link>
+	</xacro:macro>
+
+	<xacro:macro name="jaco_left_joint" params="joint_name type parent child joint_axis_xyz joint_origin_xyz joint_origin_rpy lower_limit upper_limit">
+		<joint name="${joint_name}" type="${type}">
+			<parent link="${parent}" />
+			<child link="${child}" />
+			<axis xyz="${joint_axis_xyz}" />
+			<origin xyz="${joint_origin_xyz}" rpy="${joint_origin_rpy}" />
+			<limit lower="${lower_limit}" upper="${upper_limit}" effort="30" velocity="5" />
+		</joint>
+	</xacro:macro>    
+
+	<xacro:macro name="jaco_left_finger_joint" params="joint_name type parent child joint_axis_xyz joint_origin_xyz joint_origin_rpy lower_limit upper_limit">
+		<joint name="${joint_name}" type="${type}">
+			<parent link="${parent}" />
+			<child link="${child}" />
+			<axis xyz="${joint_axis_xyz}" />
+			<origin xyz="${joint_origin_xyz}" rpy="${joint_origin_rpy}" />
+			<limit lower="${lower_limit}" upper="${upper_limit}" effort="30" velocity="5" />
+		</joint>
+	</xacro:macro>
+
+	<xacro:macro name="jaco_left_transmission" params="joint_name">
+        <transmission name="${joint_name}_transmission">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="${joint_name}">
+              <hardwareInterface>PositionJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="${joint_name}_motor">
+              <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
+	</xacro:macro>
+    
+	<xacro:macro name="jaco_left_arm" params="parent xyz rpy">
+        <gazebo>
+            <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_controller_manager">
+                <!-- <robotNamespace>/</robotNamespace> -->
+                <robotParam>jaco_left_description</robotParam>
+            </plugin>
+        </gazebo>
+      
+		<xacro:jaco_left_link link_name="${link_base}" link_mass="${link_base_mass}" Ixx="${link_base_Ixx}" Ixy="${link_base_Ixy}" Ixz="${link_base_Ixz}" Iyy="${link_base_Iyy}" Iyz="${link_base_Iyz}" Izz="${link_base_Izz}" link_com_origin="${link_base_com_xyz}" link_com_rpy="${link_base_com_rpy}" />
+		<xacro:jaco_left_joint joint_name="${joint_base}" type="fixed" parent="${parent}" child="${link_base}" joint_axis_xyz="${joint_base_axis_xyz}" joint_origin_xyz="${xyz}" joint_origin_rpy="${rpy}" lower_limit="-${J_LIM}" upper_limit="${J_LIM}" />
+        
+		<xacro:jaco_left_link link_name="${link_1}" link_mass="${link_1_mass}" Ixx="${link_1_Ixx}" Ixy="${link_1_Ixy}" Ixz="${link_1_Ixz}" Iyy="${link_1_Iyy}" Iyz="${link_1_Iyz}" Izz="${link_1_Izz}" link_com_origin="${link_1_com_xyz}" link_com_rpy="${link_1_com_rpy}" />
+		<xacro:jaco_left_joint joint_name="${joint_1}" type="revolute" parent="${link_base}" child="${link_1}" joint_axis_xyz="${joint_1_axis_xyz}" joint_origin_xyz="${joint_1_origin_xyz}" joint_origin_rpy="${joint_1_origin_rpy}" lower_limit="-${J_LIM}" upper_limit="${J_LIM}"/>
+        <xacro:jaco_left_transmission joint_name="${joint_1}" />
+        
+		<xacro:jaco_left_link link_name="${link_2}" link_mass="${link_2_mass}" Ixx="${link_2_Ixx}" Ixy="${link_2_Ixy}" Ixz="${link_2_Ixz}" Iyy="${link_2_Iyy}" Iyz="${link_2_Iyz}" Izz="${link_2_Izz}" link_com_origin="${link_2_com_xyz}" link_com_rpy="${link_2_com_rpy}" />
+		<xacro:jaco_left_joint joint_name="${joint_2}" type="revolute" parent="${link_1}" child="${link_2}" joint_axis_xyz="${joint_2_axis_xyz}" joint_origin_xyz="${joint_2_origin_xyz}" joint_origin_rpy="${joint_2_origin_rpy}" lower_limit="0" upper_limit="${J_LIM}"  />
+        <xacro:jaco_left_transmission joint_name="${joint_2}" />
+        
+		<xacro:jaco_left_link link_name="${link_3}" link_mass="${link_3_mass}" Ixx="${link_3_Ixx}" Ixy="${link_3_Ixy}" Ixz="${link_3_Ixz}" Iyy="${link_3_Iyy}" Iyz="${link_3_Iyz}" Izz="${link_3_Izz}" link_com_origin="${link_3_com_xyz}" link_com_rpy="${link_3_com_rpy}" />
+		<xacro:jaco_left_joint joint_name="${joint_3}" type="revolute" parent="${link_2}" child="${link_3}" joint_axis_xyz="${joint_3_axis_xyz}" joint_origin_xyz="${joint_3_origin_xyz}" joint_origin_rpy="${joint_3_origin_rpy}" lower_limit="0" upper_limit="${J_LIM}"  />
+        <xacro:jaco_left_transmission joint_name="${joint_3}" />
+        
+		<xacro:jaco_left_link_4_5 link_name="${link}" suffix="4" link_mass="${link_4_mass}" Ixx="${link_4_Ixx}" Ixy="${link_4_Ixy}" Ixz="${link_4_Ixz}" Iyy="${link_4_Iyy}" Iyz="${link_4_Iyz}" Izz="${link_4_Izz}" link_com_origin="${link_4_com_xyz}" link_com_rpy="${link_4_com_rpy}"/>
+		<xacro:jaco_left_joint joint_name="${joint_4}" type="revolute" parent="${link_3}" child="${link}_4" joint_axis_xyz="${joint_4_axis_xyz}" joint_origin_xyz="${joint_4_origin_xyz}" joint_origin_rpy="${joint_4_origin_rpy}" lower_limit="-${J_LIM}" upper_limit="${J_LIM}"  />
+        <xacro:jaco_left_transmission joint_name="${joint_4}" />
+        
+		<xacro:jaco_left_link_4_5 link_name="${link}" suffix="5" link_mass="${link_5_mass}" Ixx="${link_5_Ixx}" Ixy="${link_5_Ixy}" Ixz="${link_5_Ixz}" Iyy="${link_5_Iyy}" Iyz="${link_5_Iyz}" Izz="${link_5_Izz}" link_com_origin="${link_5_com_xyz}" link_com_rpy="${link_5_com_rpy}"/>
+		<xacro:jaco_left_joint joint_name="${joint_5}" type="revolute" parent="${link}_4" child="${link}_5" joint_axis_xyz="${joint_5_axis_xyz}" joint_origin_xyz="${joint_5_origin_xyz}" joint_origin_rpy="${joint_5_origin_rpy}" lower_limit="-${J_LIM}" upper_limit="${J_LIM}"/>
+        <xacro:jaco_left_transmission joint_name="${joint_5}" />
+        
+		<xacro:jaco_left_link link_name="${link_hand}" link_mass="${link_hand_mass}" Ixx="${link_hand_Ixx}" Ixy="${link_hand_Ixy}" Ixz="${link_hand_Ixz}" Iyy="${link_hand_Iyy}" Iyz="${link_hand_Iyz}" Izz="${link_hand_Izz}" link_com_origin="${link_hand_com_xyz}" link_com_rpy="${link_hand_com_rpy}"/>
+		<xacro:jaco_left_joint joint_name="${joint_6}" type="revolute" parent="${link}_5" child="${link_hand}" joint_axis_xyz="${joint_6_axis_xyz}" joint_origin_xyz="${joint_6_origin_xyz}" joint_origin_rpy="${joint_6_origin_rpy}" lower_limit="-${J_LIM}" upper_limit="${J_LIM}"/>
+        <xacro:jaco_left_transmission joint_name="${joint_6}" />
+				
+		<xacro:jaco_left_ring_cover suffix="1" size="large"/>
+		<xacro:jaco_left_joint joint_name="jaco_left_large_ring_cover_1_joint" type="fixed" parent="${link_base}" child="jaco_left_large_ring_cover_1" joint_axis_xyz="${joint_1_axis_xyz}" joint_origin_xyz="${joint_1_origin_xyz}" joint_origin_rpy="${joint_1_origin_rpy}" lower_limit="-${J_LIM}" upper_limit="${J_LIM}" />
+		<xacro:jaco_left_ring_cover suffix="2" size="large"/>
+		<xacro:jaco_left_joint joint_name="jaco_left_large_ring_cover_2_joint" type="fixed" parent="${link_1}" child="jaco_left_large_ring_cover_2" joint_axis_xyz="${joint_2_axis_xyz}" joint_origin_xyz="${joint_2_origin_xyz}" joint_origin_rpy="${joint_2_origin_rpy}" lower_limit="0" upper_limit="${J_LIM}" />
+		<xacro:jaco_left_ring_cover suffix="3" size="large"/>
+		<xacro:jaco_left_joint joint_name="jaco_left_large_ring_cover_3_joint" type="fixed" parent="${link_2}" child="jaco_left_large_ring_cover_3" joint_axis_xyz="${joint_3_axis_xyz}" joint_origin_xyz="${joint_3_origin_xyz}" joint_origin_rpy="${joint_3_origin_rpy}" lower_limit="0" upper_limit="${J_LIM}" />
+		<xacro:jaco_left_ring_cover suffix="1" size="small"/>
+		<xacro:jaco_left_joint joint_name="jaco_left_large_ring_cover_4_joint" type="fixed" parent="${link_3}" child="jaco_left_small_ring_cover_1" joint_axis_xyz="${joint_4_axis_xyz}" joint_origin_xyz="${joint_4_origin_xyz}" joint_origin_rpy="${joint_4_origin_rpy}" lower_limit="-${J_LIM}" upper_limit="${J_LIM}" />
+		<xacro:jaco_left_ring_cover suffix="2" size="small"/>
+		<xacro:jaco_left_joint joint_name="jaco_left_large_ring_cover_5_joint" type="fixed" parent="${link}_4" child="jaco_left_small_ring_cover_2" joint_axis_xyz="${joint_5_axis_xyz}" joint_origin_xyz="${joint_5_origin_xyz}" joint_origin_rpy="${joint_5_origin_rpy}" lower_limit="-${J_LIM}" upper_limit="${J_LIM}" />
+		<xacro:jaco_left_ring_cover suffix="3" size="small"/>
+		<xacro:jaco_left_joint joint_name="jaco_left_large_ring_cover_6_joint" type="fixed" parent="${link}_5" child="jaco_left_small_ring_cover_3" joint_axis_xyz="${joint_6_axis_xyz}" joint_origin_xyz="${joint_6_origin_xyz}" joint_origin_rpy="${joint_6_origin_rpy}" lower_limit="-${J_LIM}" upper_limit="${J_LIM}" />
+		
+		<xacro:jaco_left_link_suffix link_name="${link_finger}" suffix="1"/>
+		<xacro:jaco_left_finger_joint joint_name="${joint_finger_1}" type="revolute" parent="${link_hand}" child="${link_finger}_1" joint_axis_xyz="${joint_finger_1_axis_xyz}" joint_origin_xyz="${joint_finger_1_origin_xyz}" joint_origin_rpy="${joint_finger_1_origin_rpy}" lower_limit="${joint_finger_1_lower_limit}" upper_limit="${joint_finger_1_upper_limit}" />
+        <xacro:jaco_left_transmission joint_name="${joint_finger_1}" />
+        
+		<xacro:jaco_left_link_suffix link_name="${link_finger}" suffix="2"/>
+		<xacro:jaco_left_finger_joint joint_name="${joint_finger_2}" type="revolute" parent="${link_hand}" child="${link_finger}_2" joint_axis_xyz="${joint_finger_2_axis_xyz}" joint_origin_xyz="${joint_finger_2_origin_xyz}" joint_origin_rpy="${joint_finger_2_origin_rpy}" lower_limit="${joint_finger_2_lower_limit}" upper_limit="${joint_finger_2_upper_limit}" />
+        <xacro:jaco_left_transmission joint_name="${joint_finger_2}" />
+        
+		<xacro:jaco_left_link_suffix link_name="${link_finger}" suffix="3"/>
+		<xacro:jaco_left_finger_joint joint_name="${joint_finger_3}" type="revolute" parent="${link_hand}" child="${link_finger}_3" joint_axis_xyz="${joint_finger_3_axis_xyz}" joint_origin_xyz="${joint_finger_3_origin_xyz}" joint_origin_rpy="${joint_finger_3_origin_rpy}" lower_limit="${joint_finger_3_lower_limit}" upper_limit="${joint_finger_3_upper_limit}" />	
+        <xacro:jaco_left_transmission joint_name="${joint_finger_3}" />
+        
+		<xacro:jaco_left_link_suffix link_name="${link_finger_tip}" suffix="1"/>
+		<xacro:jaco_left_finger_joint joint_name="${joint_finger_tip_1}" type="revolute" parent="${link_finger}_1" child="${link_finger_tip}_1" joint_axis_xyz="${joint_finger_tip_1_axis_xyz}" joint_origin_xyz="${joint_finger_tip_1_origin_xyz}" joint_origin_rpy="${joint_finger_tip_1_origin_rpy}" lower_limit="${joint_finger_tip_1_lower_limit}" upper_limit="${joint_finger_tip_1_upper_limit}" />
+        <xacro:jaco_left_transmission joint_name="${joint_finger_tip_1}" />
+        
+		<xacro:jaco_left_link_suffix link_name="${link_finger_tip}" suffix="2"/>
+		<xacro:jaco_left_finger_joint joint_name="${joint_finger_tip_2}" type="revolute" parent="${link_finger}_2" child="${link_finger_tip}_2" joint_axis_xyz="${joint_finger_tip_2_axis_xyz}" joint_origin_xyz="${joint_finger_tip_2_origin_xyz}" joint_origin_rpy="${joint_finger_tip_2_origin_rpy}" lower_limit="${joint_finger_tip_2_lower_limit}" upper_limit="${joint_finger_tip_2_upper_limit}" />
+        <xacro:jaco_left_transmission joint_name="${joint_finger_tip_2}" />
+        
+		<xacro:jaco_left_link_suffix link_name="${link_finger_tip}" suffix="3"/>
+		<xacro:jaco_left_finger_joint joint_name="${joint_finger_tip_3}" type="revolute" parent="${link_finger}_3" child="${link_finger_tip}_3" joint_axis_xyz="${joint_finger_tip_3_axis_xyz}" joint_origin_xyz="${joint_finger_tip_3_origin_xyz}" joint_origin_rpy="${joint_finger_tip_3_origin_rpy}" lower_limit="${joint_finger_tip_3_lower_limit}" upper_limit="${joint_finger_tip_3_upper_limit}" />
+        <xacro:jaco_left_transmission joint_name="${joint_finger_tip_3}" />
+
+        <gazebo>
+          <gripper name="grasping">
+            <grasp_check>
+              <attach_steps>5</attach_steps>
+              <detach_steps>5</detach_steps>
+              <min_contact_count>1</min_contact_count>
+            </grasp_check>
+            <gripper_link>${link_finger}_1</gripper_link>
+            <gripper_link>${link_finger}_2</gripper_link>
+            <gripper_link>${link_finger}_3</gripper_link>
+            <gripper_link>${link_finger_tip}_1</gripper_link>
+            <gripper_link>${link_finger_tip}_2</gripper_link>
+            <gripper_link>${link_finger_tip}_3</gripper_link>
+            <palm_link>${link_hand}</palm_link>
+            <!-- <gripper_link>${link_hand}</gripper_link> -->
+            <!-- <palm_link>${link_finger_tip}_1</palm_link> -->
+          </gripper>
+        </gazebo>
+	</xacro:macro>
+</robot>

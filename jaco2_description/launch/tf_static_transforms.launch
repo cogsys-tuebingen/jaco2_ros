@@ -1,26 +1,27 @@
 <?xml version="1.0" ?>
 <launch>
     <arg name="prefix" default=""/>
-    <node pkg="tf" type="static_transform_publisher" name="tf_acc_1_bc" args="0.00071, 0.00714, 0.1371 -1.5707963267948966 0 3.141592653589793 $(arg prefix)/jaco_link_base $(arg prefix)/jaco_accelerometer_0 100" />
+    <arg name="jaco_name" default="jaco"/>
+    <node pkg="tf" type="static_transform_publisher" name="tf_$(arg jaco_name)_acc_1_bc" args="0.00071, 0.00714, 0.1371 -1.5707963267948966 0 3.141592653589793 $(arg prefix)/$(arg jaco_name)_link_base $(arg prefix)/$(arg jaco_name)_accelerometer_0 100" />
 
-    <node pkg="tf" type="static_transform_publisher" name="tf_acc_2_bc" args="0.00071 0.0271 -0.12524 0 -1.5707963267948966 -1.5707963267948966  $(arg prefix)/jaco_link_1 $(arg prefix)/jaco_accelerometer_1 100" />
+    <node pkg="tf" type="static_transform_publisher" name="tf_$(arg jaco_name)_acc_2_bc" args="0.00071 0.0271 -0.12524 0 -1.5707963267948966 -1.5707963267948966  $(arg prefix)/$(arg jaco_name)_link_1 $(arg prefix)/$(arg jaco_name)_accelerometer_1 100" />
 
-    <node pkg="tf" type="static_transform_publisher" name="tf_acc_3_bc" args="0.41714 -0.00071 -0.0271 3.141592654 0 3.141592653589793  $(arg prefix)/jaco_link_2 $(arg prefix)/jaco_accelerometer_2 100" />
+    <node pkg="tf" type="static_transform_publisher" name="tf_$(arg jaco_name)_acc_3_bc" args="0.41714 -0.00071 -0.0271 3.141592654 0 3.141592653589793  $(arg prefix)/$(arg jaco_name)_link_2 $(arg prefix)/$(arg jaco_name)_accelerometer_2 100" />
 
-    <node pkg="tf" type="static_transform_publisher" name="tf_acc_4_bc" args="0.1799 0.00071 -0.00411 0 1.5707963267948966 3.141592653589793  $(arg prefix)/jaco_link_3 $(arg prefix)/jaco_accelerometer_3 100" />
+    <node pkg="tf" type="static_transform_publisher" name="tf_$(arg jaco_name)_acc_4_bc" args="0.1799 0.00071 -0.00411 0 1.5707963267948966 3.141592653589793  $(arg prefix)/$(arg jaco_name)_link_3 $(arg prefix)/$(arg jaco_name)_accelerometer_3 100" />
 
 
-    <node pkg="tf" type="static_transform_publisher" name="tf_acc_5_bc" args="0.014 -0.00071 -0.046 0 -1.0471975511965979 0  $(arg prefix)/jaco_link_4 $(arg prefix)/jaco_accelerometer_4 100" />
+    <node pkg="tf" type="static_transform_publisher" name="tf_$(arg jaco_name)_acc_5_bc" args="0.014 -0.00071 -0.046 0 -1.0471975511965979 0  $(arg prefix)/$(arg jaco_name)_link_4 $(arg prefix)/$(arg jaco_name)_accelerometer_4 100" />
 
-    <node pkg="tf" type="static_transform_publisher" name="tf_acc_6_bc" args="0.014 -0.00071 -0.046 0 -1.0471975511965979 0  $(arg prefix)/jaco_link_5 $(arg prefix)/jaco_accelerometer_5 100" />
+    <node pkg="tf" type="static_transform_publisher" name="tf_$(arg jaco_name)_acc_6_bc" args="0.014 -0.00071 -0.046 0 -1.0471975511965979 0  $(arg prefix)/$(arg jaco_name)o_link_5 $(arg prefix)/$(arg jaco_name)_accelerometer_5 100" />
 
-    <node pkg="tf" type="static_transform_publisher" name="tf_finger_tip_1_bc" args="0.044094 -0.0029 -0.0029 0 0 0  $(arg prefix)/jaco_link_finger_1 $(arg prefix)/jaco_link_finger_tip_1 100" />
+    <node pkg="tf" type="static_transform_publisher" name="tf_$(arg jaco_name)_finger_tip_1_bc" args="0.044094 -0.0029 -0.0029 0 0 0  $(arg prefix)/$(arg jaco_name)_link_finger_1 $(arg prefix)/$(arg jaco_name)_link_finger_tip_1 100" />
 
-    <node pkg="tf" type="static_transform_publisher" name="tf_finger_tip_2_bc" args="0.044094 -0.0029 -0.0029 0 0 0  $(arg prefix)/jaco_link_finger_2 $(arg prefix)/jaco_link_finger_tip_2 100" />
+    <node pkg="tf" type="static_transform_publisher" name="tf_$(arg jaco_name)_finger_tip_2_bc" args="0.044094 -0.0029 -0.0029 0 0 0  $(arg prefix)/$(arg jaco_name)_link_finger_2 $(arg prefix)/$(arg jaco_name)_link_finger_tip_2 100" />
 
-    <node pkg="tf" type="static_transform_publisher" name="tf_finger_tip_3_bc" args="0.044094 -0.0029 -0.0029 0 0 0  $(arg prefix)/jaco_link_finger_3 $(arg prefix)/jaco_link_finger_tip_3 100" />
+    <node pkg="tf" type="static_transform_publisher" name="tf_$(arg jaco_name)_finger_tip_3_bc" args="0.044094 -0.0029 -0.0029 0 0 0  $(arg prefix)/$(arg jaco_name)_link_finger_3 $(arg prefix)/$(arg jaco_name)_link_finger_tip_3 100" />
 
-   <node pkg="tf" type="static_transform_publisher" name="hand_tip_bc" args="0 0 -0.1093655 0  3.141592654 0  $(arg prefix)/jaco_link_hand $(arg prefix)/jaco_hand_tip 100" />
+   <node pkg="tf" type="static_transform_publisher" name="$(arg jaco_name)_hand_tip_bc" args="0 0 -0.1093655 0  3.141592654 0  $(arg prefix)/$(arg jaco_name)_link_hand $(arg prefix)/$(arg jaco_name)_hand_tip 100" />
 
 
 
