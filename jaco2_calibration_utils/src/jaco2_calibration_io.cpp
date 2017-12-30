@@ -62,24 +62,24 @@ void Jaco2CalibrationIO::loadDynParm(std::string filename, DynamicParametersColl
     }
 }
 
-void Jaco2CalibrationIO::save(std::string name, jaco2_data::JointStateDataCollection& samples, std::string delimiter)
+void Jaco2CalibrationIO::save(std::string name, jaco2_data::JointStateDataStampedCollection &samples, std::string delimiter)
 {
     std::ofstream file(name);
     //    std::string delimiter(";");
     file << "time " << delimiter;
-    for(std::size_t i = 0; i <samples[0].position.size(); ++i)
+    for(std::size_t i = 0; i <samples[0].data.position.size(); ++i)
     {
         file << "joint_pos_" << std::to_string(i) << delimiter;
     }
-    for(std::size_t i = 0; i <samples[0].velocity.size(); ++i)
+    for(std::size_t i = 0; i <samples[0].data.velocity.size(); ++i)
     {
         file << "joint_vel_" << std::to_string(i) << delimiter;
     }
-    for(std::size_t i = 0; i <samples[0].acceleration.size(); ++i)
+    for(std::size_t i = 0; i <samples[0].data.acceleration.size(); ++i)
     {
         file << "joint_acc_" << std::to_string(i) << delimiter;
     }
-    for(std::size_t i = 0; i <samples[0].torque.size(); ++i)
+    for(std::size_t i = 0; i <samples[0].data.torque.size(); ++i)
     {
         file << "joint_torque_" << std::to_string(i) << delimiter;
     }
@@ -90,7 +90,7 @@ void Jaco2CalibrationIO::save(std::string name, jaco2_data::JointStateDataCollec
     }
 }
 
-void Jaco2CalibrationIO::importAsciiData(std::string filename, jaco2_data::JointStateDataCollection& samples, const char delimiter)
+void Jaco2CalibrationIO::importAsciiData(std::string filename, jaco2_data::JointStateDataStampedCollection& samples, const char delimiter)
 {
     samples.clear();
 
@@ -112,25 +112,25 @@ void Jaco2CalibrationIO::importAsciiData(std::string filename, jaco2_data::Joint
             std::stringstream ss;
             ss<< line ;
 
-            jaco2_data::JointStateData sample(6);
+            jaco2_data::JointStateDataStamped sample(6);
             int i = 0;
             while( ss.getline( value, 256, delimiter ))
             {
                 unsigned long int val = std::atoi(value);
                 if(i==0){
-                    sample.stamp.fromNSec(val);
+                    sample.stamp().fromNSec(val);
                 }
                 if( i > 0 && i < 7){
-                    sample.position[i-1] = val;
+                    sample.data.position[i-1] = val;
                 }
                 if(i >= 7 && i<13){
-                    sample.velocity[i-7] = val;
+                    sample.data.velocity[i-7] = val;
                 }
                 if(i >= 13 && i<19){
-                    sample.acceleration[i-13] = val;
+                    sample.data.acceleration[i-13] = val;
                 }
                 if(i >= 19 && i<25){
-                    sample.torque[i-19] = val;
+                    sample.data.torque[i-19] = val;
                 }
                 ++i;
             }
@@ -144,7 +144,7 @@ void Jaco2CalibrationIO::importAsciiData(std::string filename, jaco2_data::Joint
 }
 
 
-void Jaco2CalibrationIO::importAsciiDataWithGravity(std::string filename, jaco2_data::JointStateDataCollection& samples, const char delimiter)
+void Jaco2CalibrationIO::importAsciiDataWithGravity(std::string filename, jaco2_data::JointStateDataStampedCollection& samples, const char delimiter)
 {
     samples.clear();
 
@@ -166,28 +166,28 @@ void Jaco2CalibrationIO::importAsciiDataWithGravity(std::string filename, jaco2_
             std::stringstream ss;
             ss<< line ;
 
-            jaco2_data::JointStateData sample(6);
+            jaco2_data::JointStateDataStamped sample(6);
             int i = 0;
             while( ss.getline( value, 256, delimiter ))
             {
                 unsigned long int val = std::atoi(value);
                 if(i==0){
-                    sample.stamp.fromNSec(val);
+                    sample.stamp().fromNSec(val);
                 }
                 if( i > 0 && i < 7){
-                    sample.position[i-1] = val;
+                    sample.data.position[i-1] = val;
                 }
                 if(i >= 7 && i<13){
-                    sample.velocity[i-7] = val;
+                    sample.data.velocity[i-7] = val;
                 }
                 if(i >= 13 && i<19){
-                    sample.acceleration[i-13] = val;
+                    sample.data.acceleration[i-13] = val;
                 }
                 if(i >= 19 && i<25){
-                    sample.torque[i-19] = val;
+                    sample.data.torque[i-19] = val;
                 }
                 if(i >= 25 && i<28){
-                    sample.gravity(i-25) = val;
+                    sample.data.gravity(i-25) = val;
                 }
                 ++i;
             }
@@ -229,26 +229,26 @@ void Jaco2CalibrationIO::importAsciiData(std::string filename, AccelerationSampl
                 double val = std::atof(value);
                 if(i==0){
                     for(std::size_t i = 0; i < samples.nJoints; ++i){
-                        sample[0].stamp.fromSec(val);
+                        sample[0].stamp().fromSec(val);
                     }
                 }
                 if( i > 0 && i < 4){
-                    sample[0].vector[i-1] = val;
+                    sample[0].data.vector[i-1] = val;
                 }
                 if(i >= 4 && i<7){
-                    sample[1].vector[i-4] = val;
+                    sample[1].data.vector[i-4] = val;
                 }
                 if(i >= 7 && i<10){
-                    sample[2].vector[i-7] = val;
+                    sample[2].data.vector[i-7] = val;
                 }
                 if(i >= 10 && i<13){
-                    sample[3].vector[i-10] = val;
+                    sample[3].data.vector[i-10] = val;
                 }
                 if(i >= 13 && i<16){
-                    sample[4].vector[i-13] = val;
+                    sample[4].data.vector[i-13] = val;
                 }
                 if(i >= 16 && i<19){
-                    sample[5].vector[i-16] = val;
+                    sample[5].data.vector[i-16] = val;
                 }
                 ++i;
             }

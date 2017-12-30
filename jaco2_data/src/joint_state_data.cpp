@@ -38,6 +38,77 @@ void JointStateData::normalize(std::size_t offset )
     }
 }
 
+JointStateData::iterator JointStateData::begin(DataType type)
+{
+    switch (type) {
+    case DataType::JOINT_POS:
+        return position.begin();
+        break;
+    case DataType::JOINT_VEL:
+        return velocity.begin();
+        break;
+    case DataType::JOINT_ACC:
+        return acceleration.begin();
+        break;
+    case DataType::JOINT_TORQUE:
+        return torque.begin();
+        break;
+    }
+}
+
+JointStateData::const_iterator JointStateData::begin(DataType type) const
+{
+    switch (type) {
+    case DataType::JOINT_POS:
+        return position.begin();
+        break;
+    case DataType::JOINT_VEL:
+        return velocity.begin();
+        break;
+    case DataType::JOINT_ACC:
+        return acceleration.begin();
+        break;
+    case DataType::JOINT_TORQUE:
+        return torque.begin();
+        break;
+    }
+}
+
+JointStateData::iterator JointStateData::end(DataType type)
+{
+    switch (type) {
+    case DataType::JOINT_POS:
+        return position.end();
+        break;
+    case DataType::JOINT_VEL:
+        return velocity.end();
+        break;
+    case DataType::JOINT_ACC:
+        return acceleration.end();
+        break;
+    case DataType::JOINT_TORQUE:
+        return torque.end();
+        break;
+    }
+}
+JointStateData::const_iterator JointStateData::end(DataType type) const
+{
+    switch (type) {
+    case DataType::JOINT_POS:
+        return position.end();
+        break;
+    case DataType::JOINT_VEL:
+        return velocity.end();
+        break;
+    case DataType::JOINT_ACC:
+        return acceleration.end();
+        break;
+    case DataType::JOINT_TORQUE:
+        return torque.end();
+        break;
+    }
+}
+
 Eigen::VectorXd JointStateData::getEigenVector(DataType type, std::size_t offset) const
 {
     const std::vector<double>* data;
@@ -148,7 +219,6 @@ JointStateData JointStateData::operator+(const JointStateData &other) const
     auto it_other = other.position.begin();
 
     res.gravity = this->gravity + other.gravity;
-    res.stamp.fromNSec(0.5* (this->stamp.toNSec() + other.stamp.toNSec()));
     for(auto d : this->position){
         *it_res = d + *it_other;
         ++it_res;
@@ -184,12 +254,123 @@ JointStateData JointStateData::operator+(const JointStateData &other) const
     return res;
 
 }
+
+JointStateData JointStateData::operator-(const JointStateData &other) const
+{
+    JointStateData res(this->position.size());
+    auto it_res = res.position.begin();
+    auto it_other = other.position.begin();
+
+    res.gravity = this->gravity + other.gravity;
+    for(auto d : this->position){
+        *it_res = d - *it_other;
+        ++it_res;
+        ++it_other;
+    }
+
+    it_res = res.velocity.begin();
+    it_other = other.velocity.begin();
+
+    for(auto d : this->velocity){
+        *it_res = d - *it_other;
+        ++it_res;
+        ++it_other;
+    }
+
+    it_res = res.acceleration.begin();
+    it_other = other.acceleration.begin();
+
+    for(auto d : this->acceleration){
+        *it_res = d - *it_other;
+        ++it_res;
+        ++it_other;
+    }
+
+    it_res = res.torque.begin();
+    it_other = other.torque.begin();
+
+    for(auto d : this->torque){
+        *it_res = d - *it_other;
+        ++it_res;
+        ++it_other;
+    }
+    return res;
+
+}
+
+JointStateData JointStateData::operator*(const double &b) const
+{
+    JointStateData res(this->position.size());
+    auto it_res = res.position.begin();
+    res.gravity = this->gravity * b;
+
+    for(auto d : this->position){
+        *it_res = d * b;
+        ++it_res;
+    }
+
+    it_res = res.velocity.begin();
+
+    for(auto d : this->velocity){
+        *it_res = d * b;
+        ++it_res;
+    }
+
+    it_res = res.acceleration.begin();
+
+    for(auto d : this->acceleration){
+        *it_res = d * b;
+        ++it_res;
+    }
+
+    it_res = res.torque.begin();
+
+    for(auto d : this->torque){
+        *it_res = d * b;
+        ++it_res;
+    }
+    return res;
+}
+
+JointStateData JointStateData::operator/(const double &b) const
+{
+    JointStateData res(this->position.size());
+    auto it_res = res.position.begin();
+    res.gravity = this->gravity / b;
+
+    for(auto d : this->position){
+        *it_res = d / b;
+        ++it_res;
+    }
+
+    it_res = res.velocity.begin();
+
+    for(auto d : this->velocity){
+        *it_res = d / b;
+        ++it_res;
+    }
+
+    it_res = res.acceleration.begin();
+
+    for(auto d : this->acceleration){
+        *it_res = d / b;
+        ++it_res;
+    }
+
+    it_res = res.torque.begin();
+
+    for(auto d : this->torque){
+        *it_res = d / b;
+        ++it_res;
+    }
+    return res;
+}
+
 JointStateData& JointStateData::operator+=(const JointStateData &other)
 {
     auto it_other = other.position.begin();
 
     this->gravity += other.gravity;
-    this->stamp.fromNSec(0.5* (this->stamp.toNSec() + other.stamp.toNSec()));
     for(auto it_p = this->position.begin();  it_p < this->position.end(); ++it_p){
         *it_p += *it_other;
         ++it_other;
@@ -266,9 +447,8 @@ JointStateData& JointStateData::operator/=(const double &b)
 
 std::string JointStateData::toString(std::string delimiter) const
 {
-//    std::string res;
+    //    std::string res;
     std::stringstream ss;
-    ss << std::to_string(stamp.toNSec()) + delimiter;
     for(auto val : position)
     {
         ss << std::to_string(val) + delimiter;

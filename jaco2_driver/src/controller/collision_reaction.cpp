@@ -180,7 +180,8 @@ void CollisionReaction::updateResiduals()
 {
     Jaco2KinDynLib::ResidualData data;
 
-    auto state = state_.getJointState();
+    auto state_stamped = state_.getJointState();
+    auto state = state_stamped.data;
 
     data.gx = state.gravity(0);
     data.gy = state.gravity(1);
@@ -197,10 +198,10 @@ void CollisionReaction::updateResiduals()
         initial_ = false;
     }
     else{
-        data.dt = std::abs(jaco2_data::TimeStamp::timeDiffinSeconds(state.stamp, last_state_.stamp));
+        data.dt = std::abs(jaco2_data::TimeStamp::timeDiffinSeconds(state_stamped.stamp(), last_state_.stamp()));
     }
     //    std::cout << "collision rreaction: dt = " << data.dt <<" | " << jaco2_data::TimeStamp::timeDiffinSeconds(state.stamp, last_state_.stamp) << std::endl;
-    last_state_ = state;
+    last_state_ = state_stamped;
 
     if(data.dt == 0 ){
         return;

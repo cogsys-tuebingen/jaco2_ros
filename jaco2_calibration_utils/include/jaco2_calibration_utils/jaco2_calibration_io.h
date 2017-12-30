@@ -23,12 +23,12 @@ public:
 
     static void loadDynParm(std::string filename, DynamicParametersCollection& params);
 
-    static void save(std::string name, jaco2_data::JointStateDataCollection& samples, std::string delimiter = std::string(";"));
+    static void save(std::string name, jaco2_data::JointStateDataStampedCollection& samples, std::string delimiter = std::string(";"));
     static void save(std::string filename, jaco2_data::AccelerometerDataCollection &samples, std::string delimiter = std::string(";"));
 
-    static void importAsciiData(std::string filename, jaco2_data::JointStateDataCollection&  samples, const char delimiter = ';');
+    static void importAsciiData(std::string filename, jaco2_data::JointStateDataStampedCollection &samples, const char delimiter = ';');
 
-    static void importAsciiDataWithGravity(std::string filename, jaco2_data::JointStateDataCollection&  samples, const char delimiter = ';');
+    static void importAsciiDataWithGravity(std::string filename, jaco2_data::JointStateDataStampedCollection&  samples, const char delimiter = ';');
 
     static void importAsciiData(std::string filename, AccelerationSamples& samples, const char delimiter = ';');
 

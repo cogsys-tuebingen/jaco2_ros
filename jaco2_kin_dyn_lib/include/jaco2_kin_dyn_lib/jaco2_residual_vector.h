@@ -4,6 +4,7 @@
 #include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 #include <jaco2_kin_dyn_lib/jaco2_kin_dyn_data_structs.h>
 #include <jaco2_data/joint_state_data.h>
+#include <jaco2_data/types.h>
 
 namespace Jaco2KinDynLib {
 /**
@@ -34,7 +35,7 @@ public:
                            Eigen::VectorXd& new_integral,
                            Eigen::VectorXd& new_residual);
 
-    void getResidualVector(const jaco2_data::JointStateData &data,
+    void getResidualVector(const jaco2_data::JointStateDataStamped &data,
                            const Eigen::VectorXd& last_residual,
                            const Eigen::VectorXd& last_integral,
                            Eigen::VectorXd& new_integral,

@@ -36,7 +36,7 @@ add_library(${PROJECT_NAME}
    ${ALL_HEADERS}
    src/joint_state_data.cpp
    src/accelerometer_data.cpp
-   src/vector3stamped.cpp
+   src/vector3.cpp
    src/time_stamp.cpp
    src/extended_joint_state_data.cpp
    src/joint_angles.cpp

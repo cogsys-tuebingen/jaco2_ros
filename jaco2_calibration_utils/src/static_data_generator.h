@@ -68,8 +68,8 @@ private:
 
     jaco2_data::ExtendedJointStateDeque state_buffer_;
     std::deque<jaco2_data::JointAngles> angle_buffer_;
-    std::deque<jaco2_data::JointData> tau_g_buffer_;
-    std::deque<jaco2_data::JointData> temp_buffer_;
+    std::deque<jaco2_data::JointDataStamped> tau_g_buffer_;
+    std::deque<jaco2_data::JointDataStamped> temp_buffer_;
     std::deque<int> status_buffer_;
 
     jaco2_data::AccelerometerData last_accs_;

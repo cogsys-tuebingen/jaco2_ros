@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Joint state publisher gui -->
+  <arg name="gui" default="false" />
+
+  <!-- Load the URDF file -->
+  <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find jaco2_description)/robots/standalone_arm_left.urdf.xacro'" />
+  <!--<param name="jaco_left_description" command="$(arg urdf_file)" />-->
+  <param name="robot_description" command="$(arg urdf_file)" />
+  
+  <!-- State publishers -->
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="50" />
+  </node>
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="use_gui" value="$(arg gui)" />
+    <rosparam param="source_list">[jaco_left_arm/joint_states]</rosparam>
+  </node>
+</launch>

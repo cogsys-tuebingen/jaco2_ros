@@ -7,9 +7,7 @@ namespace jaco2_data {
 
 class JointAngles : public JointData
 {
-//public:
-//    typedef std::vector<double>::iterator iterator;
-//    typedef std::vector<double>::const_iterator const_iterator;
+
 public:
     JointAngles();
     JointAngles(std::size_t n);
@@ -20,7 +18,6 @@ public:
 
 private:
     static double normalize(double angle);
-
     bool normalized_;
 
 

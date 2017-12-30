@@ -79,6 +79,8 @@ add_executable(distFunction src/distFunction.cpp)
 add_executable(comparePlanner src/comparePlanner.cpp)
 add_executable(move_to_sampled_config src/move_to_sampled_config.cpp)
 add_executable(ds4_PID_teleop src/ds4_PID_teleop.cpp)
+add_executable(jaco_calib_table src/jaco_calib_table.cpp)
+add_executable(joint_state_aggregator src/joint_state_aggregator.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -103,6 +105,14 @@ add_dependencies(move_to_sampled_config
     ${catkin_EXPORTED_TARGETS}
 )
 add_dependencies(ds4_PID_teleop
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+)
+add_dependencies(jaco_calib_table
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+)
+add_dependencies(joint_state_aggregator
     ${${PROJECT_NAME}_EXPORTED_TARGETS}
     ${catkin_EXPORTED_TARGETS}
 )
@@ -135,6 +145,14 @@ target_link_libraries(move_to_sampled_config
 )
 
 target_link_libraries(ds4_PID_teleop
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(jaco_calib_table
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(joint_state_aggregator
    ${catkin_LIBRARIES}
 )
 

@@ -90,7 +90,6 @@ JointData JointData::operator+(const JointData &other) const
 {
     JointData res;
     res.data.resize(this->data.size());
-    res.stamp.fromNSec(0.5* (this->stamp.toNSec() + other.stamp.toNSec()));
     auto it_other = other.data.begin();
     auto it_res = res.data.begin();
     for(const double& d : this->data){
@@ -101,9 +100,44 @@ JointData JointData::operator+(const JointData &other) const
     return res;
 }
 
+JointData JointData::operator-(const JointData &other) const
+{
+    JointData res;
+    res.data.resize(this->data.size());
+    auto it_other = other.data.begin();
+    auto it_res = res.data.begin();
+    for(const double& d : this->data){
+        *it_res = d - *it_other;
+        ++it_other;
+        ++it_res;
+    }
+    return res;
+}
+JointData JointData::operator*(const double &val) const
+{
+    JointData res;
+    res.data.resize(this->data.size());
+    auto it_res = res.data.begin();
+    for(const double& d : this->data){
+        *it_res = d * val;
+        ++it_res;
+    }
+    return res;
+}
+JointData JointData::operator/(const double &val) const
+{
+    JointData res;
+    res.data.resize(this->data.size());
+    auto it_res = res.data.begin();
+    for(const double& d : this->data){
+        *it_res = d / val;
+        ++it_res;
+    }
+    return res;
+}
+
 JointData& JointData::operator+=(const JointData &other)
 {
-    this->stamp.fromNSec(0.5* (this->stamp.toNSec() + other.stamp.toNSec()));
     auto it_other = other.data.begin();
     for(double& d : this->data){
         d += *it_other;

@@ -7,6 +7,7 @@
 #include <jaco2_data/torque_offset_lut.hpp>
 #include <jaco2_data/torque_offset_calibration.hpp>
 #include <jaco2_driver/data/jaco2_joint_state.h>
+#include <jaco2_data/types.h>
 
 #include <deque>
 
@@ -45,7 +46,7 @@ public:
     SensorsInfo getSensorInfo() const;
 
     jaco2_data::TimeStamp getLastUpdate(int read_data) const;
-    jaco2_data::JointStateData getJointState() const;
+    jaco2_data::JointStateDataStamped getJointState() const;
     jaco2_data::AccelerometerData getAccelerometerData() const;
 
     std::vector<int> getHighPriQue() const;

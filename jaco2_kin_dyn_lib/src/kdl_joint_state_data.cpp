@@ -19,9 +19,7 @@ KDLJointStateData::KDLJointStateData(std::size_t n) :
 
 KDLJointStateData::KDLJointStateData(const jaco2_data::JointStateData &data, std::size_t ignore_end) :
     label(data.label),
-    frame_id(data.frame_id),
-    gravity(data.gravity(0),data.gravity(1),data.gravity(2)),
-    stamp(data.stamp)
+    gravity(data.gravity(0),data.gravity(1),data.gravity(2))
 {
     convert(data.position, position, ignore_end);
     convert(data.velocity, velocity, ignore_end);
@@ -49,9 +47,7 @@ void KDLJointStateData::fromJaco2Data(const jaco2_data::JointStateData &data, st
     convert(data.acceleration, acceleration, ignore_end);
     convert(data.torque, torque, ignore_end);
     label = data.label;
-    frame_id =data.frame_id;
     gravity = KDL::Vector(data.gravity(0),data.gravity(1),data.gravity(2));
-    stamp = data.stamp;
     for(std::size_t i = 0; i < data.names.size() - ignore_end; ++i){
         names.push_back(data.names[i]);
     }
@@ -60,9 +56,7 @@ void KDLJointStateData::fromJaco2Data(const jaco2_data::JointStateData &data, st
 jaco2_data::JointStateData KDLJointStateData::toJointStateData()
 {
     jaco2_data::JointStateData res;
-    res.frame_id = frame_id;
     res.label = label;
-    res.stamp = stamp;
     res.names = names;
     res.gravity = Eigen::Vector3d(gravity(0),gravity(1),gravity(2));
     convert(position, res.position);

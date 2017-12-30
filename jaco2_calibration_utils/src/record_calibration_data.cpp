@@ -14,6 +14,7 @@
 #include <jaco2_calibration_utils/acceleration_samples.hpp>
 #include <jaco2_calibration_utils/jaco2_calibration_io.h>
 #include <jaco2_driver/data/gravity_estimator.h>
+#include <jaco2_msgs_conversion/jaco2_ros_msg_conversion.h>
 
 class CalibRecordNode
 {
@@ -40,15 +41,7 @@ public:
             initial_ = false;
         }
 
-        jaco2_data::JointStateData sample;
-        sample.stamp.fromNSec(msg->header.stamp.toNSec());
-        for(std::size_t i = 0; i < 6; ++i){
-            sample.position[i] = msg->position[i];
-            sample.velocity[i] = msg->velocity[i];
-            sample.torque[i] = msg->effort[i];
-            sample.acceleration[i] = msg->acceleration[i];
-        }
-
+        jaco2_data::JointStateDataStamped sample = jaco2_msgs::JointStateStampedConversion::jaco2Msg2Data(*msg);
 
         if(!initialSensor_ /*&& currentSamples_ < numberOfSamples_*/){
 
@@ -58,15 +51,6 @@ public:
                 accSamples_.push_back(i,jacoAccMsg_[i]);
             }
 
-
-
-            //estimate jaco's base acceleration
-            Eigen::Vector3d g(msg->gx, msg->gy, msg->gz);
-            double gnorm = g.norm();
-            if(gnorm > 20 || gnorm < 1){
-                g = estimate_g_.update(jacoAccMsg_);
-            }
-            sample.gravity = g;
         }
         if(currentSamples_ > 10) {
             samples_.push_back(sample);
@@ -115,7 +99,7 @@ private:
     ros::Subscriber subJointState_;
     ros::Subscriber subAccs_;
     ros::Subscriber subacceleration_;
-    jaco2_data::JointStateDataCollection samples_;
+    jaco2_data::JointStateDataStampedCollection samples_;
     Jaco2Calibration::AccelerationSamples accSamples_;
     ros::Time lastTime_;
     double dt_;

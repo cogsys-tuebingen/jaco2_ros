@@ -1,0 +1,12 @@
+controller_list:
+  - name: jaco_22_driver
+    action_ns: follow_joint_trajectory/manipulator
+    type: FollowJointTrajectory
+    default: true
+    joints: 
+      - jaco_left_joint_1
+      - jaco_left_joint_2
+      - jaco_left_joint_3
+      - jaco_left_joint_4
+      - jaco_left_joint_5
+      - jaco_left_joint_6

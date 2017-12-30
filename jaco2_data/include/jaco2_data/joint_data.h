@@ -2,7 +2,7 @@
 #define JOINT_DATA_H
 #include <vector>
 #include <string>
-#include "time_stamp.h"
+#include <jaco2_data/header.h>
 namespace jaco2_data {
 
 class JointData
@@ -38,13 +38,14 @@ public:
     void push_back(const double& val);
 
     JointData operator+(const JointData &other) const;
+    JointData operator-(const JointData &other) const;
+    JointData operator*(const double &val) const;
+    JointData operator/(const double &val) const;
     JointData& operator+=(const JointData &other);
     JointData& operator*=(const double &b);
     JointData& operator/=(const double &b);
 
 public:
-    std::string frame_id;
-    TimeStamp stamp;
     std::vector<double> data;
 };
 }

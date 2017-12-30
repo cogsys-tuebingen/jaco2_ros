@@ -51,7 +51,7 @@ public:
     QuickStatus getQuickStatus() const;
     SensorsInfo getSensorInfo() const;
     jaco2_data::TimeStamp getLastReadUpdate(int read_data) const;
-    jaco2_data::JointStateData getJointState() const;
+    jaco2_data::JointStateDataStamped getJointState() const;
     jaco2_data::AccelerometerData getAccelerometerData() const;
     Jaco2Calibration::TorqueOffsetLut getTorqueCalibration() const;
 

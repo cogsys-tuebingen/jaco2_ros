@@ -10,6 +10,7 @@
 /// ROS
 #include <sensor_msgs/JointState.h>
 /// Jaco2
+#include <jaco2_data/types.h>
 #include <jaco2_data/extended_joint_state_data.h>
 #include <jaco2_data/accelerometer_calibration.hpp>
 #include <jaco2_driver/data/joint_state_outlier_filter.h>
@@ -56,7 +57,7 @@ public:
 
     AngularInfo getAngularData(const jaco2_data::JointStateData::DataType type) const;
 
-    jaco2_data::JointStateData getJointState() const;
+    jaco2_data::JointStateDataStamped getJointState() const;
     jaco2_data::AccelerometerData getLinearAccelerations() const;
     jaco2_data::ExtendedJointStateData getExtJointState() const;
 
@@ -83,7 +84,7 @@ private:
 private:
     bool use_outlier_fiter_;
     GravityEstimator gravity_;
-    jaco2_data::ExtendedJointStateData current_state_;
+    jaco2_data::ExtendedJointStateDataStamped current_state_;
     std::vector<bool> calibrate_acc_;
     std::vector<Jaco2Calibration::AccelerometerCalibrationParam> accCalibParam_;
     JointStateOutlierFilter filter_;

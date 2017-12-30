@@ -21,7 +21,7 @@ public:
     Jaco2Calibration(std::string& urdf_param, std::string& root, std::string& tip);
     ~Jaco2Calibration();
 
-    int calibrateCoMandInertia(const jaco2_data::JointStateDataCollection &samples);
+    int calibrateCoMandInertia(const jaco2_data::JointStateDataStampedCollection &samples);
     int calibrateArmDynamic(const std::vector<DynamicCalibrationSample> &samples);
 
     bool calibrateAcc(const AccelerationSamples & samples);

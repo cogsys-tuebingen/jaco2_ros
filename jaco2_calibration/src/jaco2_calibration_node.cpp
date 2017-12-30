@@ -74,8 +74,8 @@ public:
         ros::Duration dt = now-lastTime_;
         lastTime_ = now;
         dt_ = dt.toSec();
-        jaco2_data::JointStateData sample = jaco2_msgs::JointStateConversion::jaco2Msg2Data(*msg);
-        sample.popToSize(6);
+        jaco2_data::JointStateDataStamped sample = jaco2_msgs::JointStateStampedConversion::jaco2Msg2Data(*msg);
+        sample.data.popToSize(6);
 
         //        }
         double thres = 0.008;
@@ -359,7 +359,7 @@ private:
     ros::Subscriber subJointState_;
     ros::Subscriber subaccs_;
     ros::Subscriber subJointAcc_;
-    jaco2_data::JointStateDataCollection samples_;
+    jaco2_data::JointStateDataStampedCollection samples_;
     std::vector<Eigen::Vector3d> gravity_;
     Jaco2Calibration::AccelerationSamples accSamples_;
     ros::Time lastTime_;

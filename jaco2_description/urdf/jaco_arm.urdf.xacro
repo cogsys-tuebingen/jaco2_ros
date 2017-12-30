@@ -49,7 +49,6 @@
   <xacro:property name="joint_4_origin_xyz" value="0.207 0 -0.01125" />
   <xacro:property name="joint_4_origin_rpy" value="0 -${M_PI/2} 0" />
 
-  <xacro:property name="joint_5" value="jaco_joint_5" />
   <xacro:property name="joint_5_axis_xyz" value="0 0 1" />
   <xacro:property name="joint_5_origin_xyz" value="0.03705 0 -0.0641725" />
   <xacro:property name="joint_5_origin_rpy" value="0 ${M_PI/180*60} ${M_PI}" /> <!-- maybe 55 degrees, Advanded user guide specifys 60 ...-->

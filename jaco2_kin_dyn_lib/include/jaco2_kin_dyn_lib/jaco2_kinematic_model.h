@@ -13,11 +13,12 @@
 // trac_ik
 #include <trac_ik/trac_ik.hpp>
 //Orocos KDL
+#include <jaco2_data/suppress_warnings_start.h>
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
 #include <kdl/solveri.hpp>
 #include <kdl/chainjnttojacsolver.hpp>
-
+#include <jaco2_data/suppress_warnings_end.h>
 namespace Jaco2KinDynLib {
 
 

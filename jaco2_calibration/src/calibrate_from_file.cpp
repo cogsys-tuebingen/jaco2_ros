@@ -4,6 +4,8 @@
 #include <jaco2_calibration_utils/jaco2_calibration_io.h>
 #include <jaco2_calibration_utils/acceleration_samples.hpp>
 
+using namespace jaco2_data;
+
 int main(int argc, char *argv[])
 {
     std::string calib_mode = argv[1];
@@ -20,7 +22,7 @@ int main(int argc, char *argv[])
 
 
     if(calib_mode == "dynamic"){
-        jaco2_data::JointStateDataCollection samples;
+        jaco2_data::JointStateDataStampedCollection samples;
         Jaco2Calibration::Jaco2CalibrationIO::importAsciiDataWithGravity(file,samples);
         if(addNoise)
         {
@@ -28,7 +30,9 @@ int main(int argc, char *argv[])
             std::normal_distribution<double> distribution(0,0.4);
             //TODO TEST
             for(auto sample = samples.begin(); sample != samples.end(); ++sample) {
-                for(auto tau = sample->torque.begin(); tau != sample->torque.end(); ++tau)
+                jaco2_data::JointStateData& d = sample->data;
+                for(auto tau = d.begin(JointStateData::DataType::JOINT_TORQUE);
+                         tau != d.end(JointStateData::DataType::JOINT_TORQUE); ++tau)
                 {
                     double white_noise = distribution(generator);
                     (*tau) += white_noise;

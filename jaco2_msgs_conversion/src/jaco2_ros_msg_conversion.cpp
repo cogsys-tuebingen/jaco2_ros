@@ -2,8 +2,8 @@
 
 using namespace jaco2_msgs;
 
-
-ros::Time TimeConversion::data2ROS(const jaco2_data::TimeStamp &data)
+// Time Conversion -------------------------------------------------------------------------
+ros::Time TimeConversion::data2ros(const jaco2_data::TimeStamp &data)
 {
     ros::Time res;
     res.fromNSec(data.toNSec());
@@ -17,35 +17,97 @@ jaco2_data::TimeStamp TimeConversion::ros2data(const ros::Time &time)
     return res;
 }
 
+// Header Conversion -------------------------------------------------------------------------
 
-
-geometry_msgs::Vector3Stamped Vector3StampedConverion::data2ROS(const jaco2_data::Vector3Stamped& data)
+std_msgs::Header HeaderConversion::data2ros(const jaco2_data::Header &data)
 {
-    geometry_msgs::Vector3Stamped res;
-    res.header.stamp = TimeConversion::data2ROS(data.stamp);
-    res.header.frame_id = data.frame_id;
-    res.vector.x = data.vector(0);
-    res.vector.y = data.vector(1);
-    res.vector.z = data.vector(2);
+    std_msgs::Header res;
+    res.frame_id = data.frame_id;
+    res.stamp = TimeConversion::data2ros(data.stamp);
     return res;
 }
 
-jaco2_data::Vector3Stamped Vector3StampedConverion::ros2data(const geometry_msgs::Vector3Stamped &msg)
+jaco2_data::Header HeaderConversion::ros2data(const std_msgs::Header &data)
 {
-    jaco2_data::Vector3Stamped res;
-    res.stamp = TimeConversion::ros2data(msg.header.stamp);
-    res.frame_id = msg.header.frame_id;
+    jaco2_data::Header res;
+    res.frame_id = data.frame_id;
+    res.stamp = TimeConversion::ros2data(data.stamp);
+    return res;
+}
+
+// Vector3 Conversion -------------------------------------------------------------------------
+
+geometry_msgs::Vector3 Vector3Converion::data2ros(const jaco2_data::Vector3& data)
+{
+    geometry_msgs::Vector3 res;
+    res.x = data.vector(0);
+    res.y = data.vector(1);
+    res.z = data.vector(2);
+    return res;
+}
+
+geometry_msgs::Vector3 Vector3Converion::data2ros(const jaco2_data::Vector3Stamped& data)
+{
+    geometry_msgs::Vector3 res = data2ros(data.data);
+    return res;
+}
+
+jaco2_data::Vector3 Vector3Converion::ros2data(const geometry_msgs::Vector3 &msg)
+{
+    jaco2_data::Vector3 res;
+    res.vector = Eigen::Vector3d(msg.x, msg.y, msg.z);
+    return res;
+}
+
+jaco2_data::Vector3 Vector3Converion::ros2data(const geometry_msgs::Vector3Stamped& msg)
+{
+    jaco2_data::Vector3 res;
     res.vector = Eigen::Vector3d(msg.vector.x, msg.vector.y, msg.vector.z);
     return res;
 }
 
+// Vector3Stamped Conversion -------------------------------------------------------------------------
 
+geometry_msgs::Vector3Stamped Vector3StampedConverion::data2ros(const jaco2_data::Vector3& data)
+{
+    geometry_msgs::Vector3Stamped res;
+    res.header.stamp = ros::Time::now();
+    res.header.frame_id = "";
+    res.vector = Vector3Converion::data2ros(data);
+    return res;
+}
+
+geometry_msgs::Vector3Stamped Vector3StampedConverion::data2ros(const jaco2_data::Vector3Stamped& data)
+{
+    geometry_msgs::Vector3Stamped res;
+    res.header =  HeaderConversion::data2ros(data.header);
+    res.vector = Vector3Converion::data2ros(data.data);
+    return res;
+}
+
+jaco2_data::Vector3Stamped Vector3StampedConverion::ros2data(const geometry_msgs::Vector3 &msg)
+{
+    jaco2_data::Vector3Stamped res;
+    res.header.stamp.now();
+    res.data = Vector3Converion::ros2data(msg);
+    return res;
+}
+
+jaco2_data::Vector3Stamped Vector3StampedConverion::ros2data(const geometry_msgs::Vector3Stamped& msg)
+{
+    jaco2_data::Vector3Stamped res;
+    res.header = HeaderConversion::ros2data(msg.header);
+    res.data   = Vector3Converion::ros2data(msg.vector);
+    return res;
+}
+
+// JointState Conversion -------------------------------------------------------------------------
 
 sensor_msgs::JointState JointStateConversion::data2SensorMsgs(const jaco2_data::JointStateData& data)
 {
     sensor_msgs::JointState res;
-    res.header.stamp = TimeConversion::data2ROS(data.stamp);
-    res.header.frame_id = data.frame_id;
+    res.header.stamp = ros::Time::now();
+    res.header.frame_id = "";
     res.name = data.names;
     res.position = data.position;
     res.velocity = data.velocity;
@@ -53,11 +115,18 @@ sensor_msgs::JointState JointStateConversion::data2SensorMsgs(const jaco2_data::
     return res;
 }
 
+sensor_msgs::JointState JointStateConversion::data2SensorMsgs(const jaco2_data::JointStateDataStamped& data)
+{
+    sensor_msgs::JointState res = JointStateConversion::data2SensorMsgs(data.data);
+    res.header = HeaderConversion::data2ros(data.header);
+    return res;
+}
+
 jaco2_msgs::Jaco2JointState JointStateConversion::data2Jaco2Msgs(const jaco2_data::JointStateData& data)
 {
     jaco2_msgs::Jaco2JointState res;
-    res.header.stamp = TimeConversion::data2ROS(data.stamp);
-    res.header.frame_id = data.frame_id;
+    res.header.stamp = ros::Time::now();
+    res.header.frame_id = "";
     res.gx = data.gravity(0);
     res.gy = data.gravity(1);
     res.gz = data.gravity(2);
@@ -69,11 +138,16 @@ jaco2_msgs::Jaco2JointState JointStateConversion::data2Jaco2Msgs(const jaco2_dat
     return res;
 }
 
+jaco2_msgs::Jaco2JointState JointStateConversion::data2Jaco2Msgs(const jaco2_data::JointStateDataStamped& data)
+{
+    jaco2_msgs::Jaco2JointState res = JointStateConversion::data2Jaco2Msgs(data.data);
+    res.header = HeaderConversion::data2ros(data.header);
+    return res;
+}
+
 jaco2_data::JointStateData JointStateConversion::sensorMsgs2Data(const sensor_msgs::JointState& msg)
 {
     jaco2_data::JointStateData res;
-    res.stamp = TimeConversion::ros2data(msg.header.stamp);
-    res.frame_id = msg.header.frame_id;
     res.names = msg.name;
     res.position = msg.position;
     res.velocity = msg.velocity;
@@ -81,11 +155,10 @@ jaco2_data::JointStateData JointStateConversion::sensorMsgs2Data(const sensor_ms
     return res;
 }
 
+
 jaco2_data::JointStateData JointStateConversion::jaco2Msg2Data(const jaco2_msgs::Jaco2JointState& msg)
 {
     jaco2_data::JointStateData res;
-    res.frame_id = msg.header.frame_id;
-    res.stamp = TimeConversion::ros2data(msg.header.stamp);
     res.gravity = Eigen::Vector3d(msg.gx, msg.gy, msg.gz);
     res.names = msg.name;
     res.position = msg.position;
@@ -95,13 +168,31 @@ jaco2_data::JointStateData JointStateConversion::jaco2Msg2Data(const jaco2_msgs:
     return res;
 }
 
+// JointStateStamped Conversion -------------------------------------------------------------------------
 
+jaco2_data::JointStateDataStamped JointStateStampedConversion::sensorMsgs2Data(const sensor_msgs::JointState& msg)
+{
+    jaco2_data::JointStateDataStamped res;
+    res.data = JointStateConversion::sensorMsgs2Data(msg);
+    res.header = HeaderConversion::ros2data(msg.header);
+    return res;
+}
+
+jaco2_data::JointStateDataStamped JointStateStampedConversion::jaco2Msg2Data(const jaco2_msgs::Jaco2JointState& msg)
+{
+    jaco2_data::JointStateDataStamped res;
+    res.data = JointStateConversion::jaco2Msg2Data(msg);
+    res.header = HeaderConversion::ros2data(msg.header);
+    return res;
+}
+
+// Accelerometer Conversion -------------------------------------------------------------------------
 
 jaco2_msgs::Jaco2Accelerometers AccelerometerConversion::data2ros(const jaco2_data::AccelerometerData& data)
 {
     jaco2_msgs::Jaco2Accelerometers res;
     for(auto d : data){
-        res.lin_acc.emplace_back(Vector3StampedConverion::data2ROS(d));
+        res.lin_acc.emplace_back(Vector3StampedConverion::data2ros(d));
     }
     return res;
 }
@@ -115,6 +206,8 @@ jaco2_data::AccelerometerData AccelerometerConversion::ros2data(const Jaco2Accel
     }
     return res;
 }
+
+// JointAngle Conversion -------------------------------------------------------------------------
 
 jaco2_msgs::JointAngles JointAngleConversion::data2ros(const jaco2_data::JointAngles &data)
 {
@@ -130,10 +223,15 @@ jaco2_msgs::JointAngles JointAngleConversion::data2ros(const jaco2_data::JointAn
     return res;
 }
 
+jaco2_msgs::JointAngles JointAngleConversion::data2ros(const jaco2_data::JointAnglesStamped& data)
+{
+    jaco2_msgs::JointAngles res = JointAngleConversion::data2ros(data.data);
+    return res;
+}
+
 jaco2_data::JointAngles JointAngleConversion::ros2data(const jaco2_msgs::JointAngles &data)
 {
     jaco2_data::JointAngles res;
-    res.stamp.now();
     res.resize(6,0);
     res[0] = data.joint1;
     res[1] = data.joint2;
@@ -144,21 +242,33 @@ jaco2_data::JointAngles JointAngleConversion::ros2data(const jaco2_msgs::JointAn
     return res;
 }
 
-jaco2_data::JointData JointDataConversion::ros2data(const JointData &data)
+jaco2_data::JointAnglesStamped JointAngleStampedConversion::ros2data(const jaco2_msgs::JointAngles& data)
+{
+    jaco2_data::JointAnglesStamped res;
+    res.header.frame_id = "";
+    res.header.stamp.now();
+    res.data = JointAngleConversion::ros2data(data);
+    return res;
+}
+
+jaco2_data::JointData JointDataConversion::ros2data(const jaco2_msgs::JointData &data)
 {
     jaco2_data::JointData res;
-    res.frame_id = data.header.frame_id;
-    res.stamp.fromNSec(data.header.stamp.toNSec());
     res.data = data.data;
     return res;
 }
 
+
 jaco2_msgs::JointData JointDataConversion::data2ros(const jaco2_data::JointData &data)
 {
     jaco2_msgs::JointData res;
-    res.header.stamp.fromNSec(data.stamp.toNSec());
-    res.header.frame_id = data.frame_id;
     res.data = data.data;
+    return res;
+}
+
+jaco2_msgs::JointData JointDataConversion::data2ros(const jaco2_data::JointDataStamped& data)
+{
+    jaco2_msgs::JointData res = JointDataConversion::data2ros(data.data);
     return res;
 }
 

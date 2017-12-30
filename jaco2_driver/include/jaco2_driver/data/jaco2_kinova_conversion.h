@@ -6,7 +6,7 @@
 #include <jaco2_data/accelerometer_data.h>
 #include <jaco2_data/joint_state_data.h>
 #include <jaco2_data/time_stamp.h>
-#include <jaco2_data/vector3stamped.h>
+#include <jaco2_data/vector3.h>
 
 struct ConvertAccelerometers
 {

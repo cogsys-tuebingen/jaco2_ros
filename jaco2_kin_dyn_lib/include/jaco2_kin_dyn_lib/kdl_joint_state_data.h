@@ -1,6 +1,8 @@
 #ifndef KDLJOINTSTATEDATA_H
 #define KDLJOINTSTATEDATA_H
+#include <jaco2_data/suppress_warnings_start.h>
 #include <kdl/jntarray.hpp>
+#include <jaco2_data/suppress_warnings_end.h>
 #include <jaco2_data/joint_state_data.h>
 namespace Jaco2KinDynLib {
 class KDLJointStateData
@@ -25,10 +27,7 @@ public:
 
 public:
     int label;
-    std::string frame_id;
     KDL::Vector gravity;
-
-    jaco2_data::TimeStamp stamp;
     std::vector<std::string> names;
     KDL::JntArray position;
     KDL::JntArray velocity;
