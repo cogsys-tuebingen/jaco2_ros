@@ -353,6 +353,13 @@ void Jaco2KinematicModel::getRotationAxis(const std::string &link, KDL::Vector& 
     rot_axis = X.Inverse().M * chain_.getSegment(id).getJoint().JointAxis();
 }
 
+KDL::Twist Jaco2KinematicModel::getJointAxisProjection(const std::string &link) const
+{
+    int i = getKDLSegmentIndex(link);
+    KDL::Frame X = chain_.getSegment(i).pose(0);//Remark this is the inverse of the
+    KDL::Twist S = X.M.Inverse(chain_.getSegment(i).twist(0,1.0));
+    return S;
+}
 void Jaco2KinematicModel::getRotationAxis(const std::string &link, Eigen::Vector3d &rot_axis) const
 {
     KDL::Vector v;
