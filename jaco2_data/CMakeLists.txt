@@ -34,6 +34,7 @@ file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLIN
 
 add_library(${PROJECT_NAME}
    ${ALL_HEADERS}
+   src/wrench.cpp
    src/joint_state_data.cpp
    src/accelerometer_data.cpp
    src/vector3.cpp
