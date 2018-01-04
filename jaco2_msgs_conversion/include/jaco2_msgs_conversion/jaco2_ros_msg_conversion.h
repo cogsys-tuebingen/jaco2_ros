@@ -3,6 +3,8 @@
 /// ROS
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
+#include <geometry_msgs/Wrench.h>
+#include <geometry_msgs/WrenchStamped.h>
 /// JACO2 ROS MSGS
 #include <jaco2_msgs/JointData.h>
 #include <jaco2_msgs/JointAngles.h>
@@ -15,6 +17,7 @@
 #include <jaco2_data/joint_data.h>
 #include <jaco2_data/joint_angles.h>
 #include <jaco2_data/vector3.h>
+#include <jaco2_data/wrench.h>
 #include <jaco2_data/joint_state_data.h>
 #include <jaco2_data/accelerometer_data.h>
 #include <jaco2_data/extended_joint_state_data.h>
@@ -31,18 +34,33 @@ struct HeaderConversion{
     static jaco2_data::Header ros2data(const std_msgs::Header& data);
 };
 
-struct Vector3Converion{
+struct Vector3Conversion{
     static geometry_msgs::Vector3 data2ros(const jaco2_data::Vector3& data);
     static geometry_msgs::Vector3 data2ros(const jaco2_data::Vector3Stamped& data);
     static jaco2_data::Vector3 ros2data(const geometry_msgs::Vector3& msg);
     static jaco2_data::Vector3 ros2data(const geometry_msgs::Vector3Stamped& msg);
 };
 
-struct Vector3StampedConverion{
+
+struct Vector3StampedConversion{
     static geometry_msgs::Vector3Stamped data2ros(const jaco2_data::Vector3& data);
     static geometry_msgs::Vector3Stamped data2ros(const jaco2_data::Vector3Stamped& data);
     static jaco2_data::Vector3Stamped ros2data(const geometry_msgs::Vector3& msg);
     static jaco2_data::Vector3Stamped ros2data(const geometry_msgs::Vector3Stamped& msg);
+};
+
+struct WrenchConversion{
+    static geometry_msgs::Wrench data2ros(const jaco2_data::Wrench& data);
+    static geometry_msgs::Wrench data2ros(const jaco2_data::WrenchStamped& data);
+    static jaco2_data::Wrench ros2data(const geometry_msgs::Wrench& msg);
+    static jaco2_data::Wrench ros2data(const geometry_msgs::WrenchStamped& msg);
+};
+
+struct WrenchStampedConversion{
+    static geometry_msgs::WrenchStamped data2ros(const jaco2_data::Wrench& data);
+    static geometry_msgs::WrenchStamped data2ros(const jaco2_data::WrenchStamped& data);
+    static jaco2_data::WrenchStamped ros2data(const geometry_msgs::Wrench& msg);
+    static jaco2_data::WrenchStamped ros2data(const geometry_msgs::WrenchStamped& msg);
 };
 
 struct JointStateConversion {
