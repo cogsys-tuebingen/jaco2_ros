@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 //ROS
+#include <jaco2_data/suppress_warnings_start.h>
 #include <ros/ros.h>
 #include <kdl_parser/kdl_parser.hpp>
 #include <urdf/model.h>
@@ -12,7 +13,6 @@
 // trac_ik
 #include <trac_ik/trac_ik.hpp>
 //Orocos KDL
-#include <jaco2_data/suppress_warnings_start.h>
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
 #include <kdl/chainidsolver_recursive_newton_euler.hpp>
@@ -20,41 +20,9 @@
 #include <kdl/chaindynparam.hpp>
 #include <jaco2_data/suppress_warnings_end.h>
 #include <jaco2_kin_dyn_lib/jaco2_kinematic_model.h>
+#include <jaco2_data/wrench.h>
 namespace Jaco2KinDynLib {
-struct Wrench{
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    Eigen::Vector3d force;
-    Eigen::Vector3d torque;
 
-    Wrench()
-    {
-        force(0) = 0;
-        force(1) = 0;
-        force(2) = 0;
-        torque(0) = 0;
-        torque(1) = 0;
-        torque(2) = 0;
-    }
-
-    Wrench(double fx, double fy, double fz,
-           double tx, double ty, double tz)
-    {
-        force (0) = fx;
-        force (1) = fy;
-        force (2) = fz;
-        torque(0) = tx;
-        torque(1) = ty;
-        torque(2) = tz;
-    }
-
-    KDL::Wrench toKDL() const
-    {
-        KDL::Vector f(force(0),force(2),force(3));
-        KDL::Vector tau(torque(0),torque(1),torque(3));
-
-        return KDL::Wrench(f,tau);
-    }
-};
 /**
  * @brief The Jaco2DynamicModel class
  *
@@ -98,10 +66,10 @@ public:
      * @return 0 if successful
      */
     virtual int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
-                   std::vector<double>& torques, const std::vector<Wrench>& wrenches_ext = std::vector<Wrench>());
+                           std::vector<double>& torques, const std::vector<jaco2_data::Wrench>& wrenches_ext = std::vector<jaco2_data::Wrench>());
 
     virtual int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
-                   std::vector<double>& torques, const std::vector<KDL::Wrench>& wrenches_ext);
+                           std::vector<double>& torques, const std::vector<KDL::Wrench>& wrenches_ext);
 
     /**
      * @brief getJointAcceleration Forward Dynamic solver call. Inertia Matrix method

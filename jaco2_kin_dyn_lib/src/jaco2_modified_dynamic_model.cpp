@@ -54,7 +54,7 @@ int Jaco2ModifiedDynamicModel::getTorques(const std::vector<double> &q, const st
 }
 
 int Jaco2ModifiedDynamicModel::getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
-                                          std::vector<double>& torques, const std::vector<Wrench>& wrenches_ext)
+                                          std::vector<double>& torques, const std::vector<jaco2_data::Wrench>& wrenches_ext)
 {
     std::size_t njoints = chain_.getNrOfJoints();
     checkInput(q, q_Dot, q_DotDot);
@@ -86,7 +86,7 @@ int Jaco2ModifiedDynamicModel::getTorques(const std::vector<double>& q, const st
     }
     else{
         for(std::size_t i = 0; i < chain_.getNrOfSegments(); ++i){
-            wrenches[i] = wrenches_ext[i].toKDL();
+            wrenches[i] = convert(wrenches_ext[i]);
         }
     }
     rnea(qkdl,qkdl_Dot,qkdl_DotDot,wrenches,torques_kdl);
