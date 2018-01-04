@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <random>
+#include <jaco2_data/suppress_warnings_start.h>
 //ROS
 #include <ros/ros.h>
 #include <kdl_parser/kdl_parser.hpp>
@@ -13,7 +14,6 @@
 // trac_ik
 #include <trac_ik/trac_ik.hpp>
 //Orocos KDL
-#include <jaco2_data/suppress_warnings_start.h>
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
 #include <kdl/solveri.hpp>

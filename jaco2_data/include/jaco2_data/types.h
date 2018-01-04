@@ -16,6 +16,7 @@ namespace jaco2_data
 {
 class JointStateData;
 class Vector3;
+class Wrench;
 class ExtendedJointStateData;
 class AccelerometerData;
 class JointData;
@@ -30,6 +31,7 @@ namespace jaco2_data
 {
 typedef StampedData<JointStateData> JointStateDataStamped;
 typedef StampedData<Vector3> Vector3Stamped;
+typedef StampedData<Wrench> WrenchStamped;
 typedef StampedData<ExtendedJointStateData> ExtendedJointStateDataStamped;
 typedef StampedData<JointData> JointDataStamped;
 typedef StampedData<JointAngles> JointAnglesStamped;

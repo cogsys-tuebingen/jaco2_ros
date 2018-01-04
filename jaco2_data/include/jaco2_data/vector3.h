@@ -23,6 +23,9 @@ public:
 
     Vector3 abs() const;
 
+    double& operator ()(std::size_t i);
+    const double& operator ()(std::size_t i) const;
+
     ///
     /// \brief operator * element wise multiplication
     /// \param other the other vector
