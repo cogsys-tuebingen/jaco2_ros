@@ -67,7 +67,7 @@ inline void to_Jaco2ManipulatorDynParams(const std::vector<double>& in, const st
    }
    out.clear();
    int link_counter = 0;
-   double values[elements_per_link];
+   std::vector<double> values(elements_per_link);
    for(std::size_t i = 0; i < in.size(); ++i) {
        int local_id = i % elements_per_link;
        values[local_id] = in[i];

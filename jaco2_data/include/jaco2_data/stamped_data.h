@@ -78,6 +78,7 @@ public:
     {
         this->header.stamp.fromNSec(0.5* (this->header.stamp.toNSec() + other.header.stamp.toNSec()));
         this->data += other.data;
+        return *this;
     }
 
     StampedData<T>& operator*=(const double &b)

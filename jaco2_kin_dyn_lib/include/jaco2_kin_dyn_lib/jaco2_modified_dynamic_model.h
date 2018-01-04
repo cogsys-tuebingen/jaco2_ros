@@ -12,7 +12,7 @@ public:
     Jaco2ModifiedDynamicModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
 
     virtual int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
-                   std::vector<double>& torques, const std::vector<Wrench>& wrenches_ext = std::vector<Wrench>()) override;
+                   std::vector<double>& torques, const std::vector<jaco2_data::Wrench>& wrenches_ext = std::vector<jaco2_data::Wrench>()) override;
 
     virtual int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
                    std::vector<double>& torques, const std::vector<KDL::Wrench>& wrenches_ext)  override;

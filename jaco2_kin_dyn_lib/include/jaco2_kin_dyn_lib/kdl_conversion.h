@@ -1,6 +1,7 @@
 #ifndef KDL_CONVERSION_H
 #define KDL_CONVERSION_H
 
+#include <jaco2_data/suppress_warnings_start.h>
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
 #include <kdl/jntarray.hpp>
@@ -8,6 +9,8 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <tf/tf.h>
+#include <jaco2_data/suppress_warnings_end.h>
+#include <jaco2_data/wrench.h>
 
 namespace Jaco2KinDynLib {
 
@@ -28,6 +31,11 @@ namespace Jaco2KinDynLib {
 
      void vectorKDLToEigen(const KDL::Vector& in, Eigen::Vector3d& out);
      void rotationKDLToEigen(const KDL::Rotation& in, Eigen::Quaterniond& out);
+
+     KDL::Wrench convert(const jaco2_data::Wrench& w);
+
+
+
 
 }
 #endif // KDL_CONVERSION_H

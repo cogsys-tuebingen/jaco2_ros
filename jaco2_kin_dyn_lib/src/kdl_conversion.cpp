@@ -142,3 +142,10 @@ void Jaco2KinDynLib::rotationKDLToEigen(const KDL::Rotation &in, Eigen::Quaterni
     in.GetQuaternion(x,y,z,w);
     out = Eigen::Quaterniond(w,x,y,z);
 }
+
+KDL::Wrench Jaco2KinDynLib::convert(const jaco2_data::Wrench& w)
+{
+    KDL::Vector f(w.force(0), w.force(1), w.force(2));
+    KDL::Vector t(w.torque(0), w.torque(1), w.torque(2));
+    return KDL::Wrench(f, t);
+}
