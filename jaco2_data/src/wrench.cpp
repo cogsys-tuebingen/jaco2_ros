@@ -22,6 +22,19 @@ Wrench::Wrench(double tx, double ty, double tz, double fx, double fy, double fz)
 
 }
 
+Wrench::Wrench(Eigen::Matrix<double, 6, 1> vec) :
+    torque(vec(0), vec(1), vec(2)),
+    force(vec(3), vec(4), vec(5))
+{
+
+}
+
+Wrench::Wrench(Vector3 _torque, Vector3 _force):
+    torque(_torque),
+    force(_force)
+{
+}
+
 Wrench Wrench::operator+(const Wrench &other) const
 {
     Wrench res;

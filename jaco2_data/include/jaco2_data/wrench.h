@@ -12,6 +12,8 @@ public:
     Wrench(double val);
 
     Wrench(double tx, double ty, double tz, double fx, double fy, double fz);
+    Wrench(Eigen::Matrix<double, 6, 1> vec);
+    Wrench(Vector3 torque, Vector3 force);
     Wrench operator+(const Wrench &other) const;
     Wrench operator-(const Wrench &other) const;
 
