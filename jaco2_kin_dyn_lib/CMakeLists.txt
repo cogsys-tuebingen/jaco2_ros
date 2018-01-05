@@ -46,6 +46,7 @@ include_directories(
 file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/*.hpp include/*.h)
 
 add_library(jaco2_kin_dyn_lib
+   src/joint_axis_transformed_model.cpp
    src/kdl_joint_state_data.cpp
    src/jaco2_modified_dynamic_model.cpp
    src/jaco2_dynamic_model.cpp

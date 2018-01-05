@@ -261,7 +261,7 @@ JointStateData JointStateData::operator-(const JointStateData &other) const
     auto it_res = res.position.begin();
     auto it_other = other.position.begin();
 
-    res.gravity = this->gravity + other.gravity;
+    res.gravity = this->gravity - other.gravity;
     for(auto d : this->position){
         *it_res = d - *it_other;
         ++it_res;
