@@ -121,8 +121,8 @@ void::Jaco2KinematicModel::setRootAndTip(const std::string &chain_root, const st
 int Jaco2KinematicModel::getFKPose(const std::vector<double> &q_in, KDL::Frame &out, const std::string link) const
 {
     if(q_in.size() < chain_.getNrOfJoints()){
-//        std::string error = std::to_string(chain_.getNrOfJoints()) + " joint values expected got only " + std::to_string(q_in.size()) + "!";
-//        throw std::runtime_error(error);
+        //        std::string error = std::to_string(chain_.getNrOfJoints()) + " joint values expected got only " + std::to_string(q_in.size()) + "!";
+        //        throw std::runtime_error(error);
         ROS_ERROR_STREAM(chain_.getNrOfJoints() << " joint values expected got only " << q_in.size() << "!");
         return KDL::SolverI::E_UNDEFINED;
     }
@@ -359,6 +359,18 @@ KDL::Twist Jaco2KinematicModel::getJointAxisProjection(const std::string &link) 
     KDL::Frame X = chain_.getSegment(i).pose(0);//Remark this is the inverse of the
     KDL::Twist S = X.M.Inverse(chain_.getSegment(i).twist(0,1.0));
     return S;
+}
+
+std::vector<KDL::Twist> Jaco2KinematicModel::getJointAxisProjections() const
+{
+    int ns = chain_.getNrOfSegments();
+    std::vector<KDL::Twist> res(ns);
+    auto it = res.begin();
+    for(int i = 0;  i < ns; i++, it++){;
+        KDL::Frame X = chain_.getSegment(i).pose(0);//Remark this is the inverse of the
+        (*it) = X.M.Inverse(chain_.getSegment(i).twist(0,1.0));
+    }
+    return res;
 }
 void Jaco2KinematicModel::getRotationAxis(const std::string &link, Eigen::Vector3d &rot_axis) const
 {
