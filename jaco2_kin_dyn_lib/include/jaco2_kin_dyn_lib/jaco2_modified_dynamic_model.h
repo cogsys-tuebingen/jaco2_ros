@@ -17,7 +17,7 @@ public:
     virtual int getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
                    std::vector<double>& torques, const std::vector<KDL::Wrench>& wrenches_ext)  override;
 
-    void getTorques(KDLJointStateData& data, std::vector<KDL::Wrench>& wrenches, std::vector<KDL::Twist>& S,
+    virtual void getTorques(KDLJointStateData& data, std::vector<KDL::Wrench>& wrenches, std::vector<KDL::Frame>& X,
                     const std::vector<KDL::Wrench>& wrenches_ext = std::vector<KDL::Wrench>());
 
 
@@ -25,9 +25,16 @@ public:
     std::vector<KDL::Frame> getSensorTransforms() const {return sensor_transforms_;}
 
 protected:
-    void rnea(const KDL::JntArray &q, const KDL::JntArray &q_dot, const KDL::JntArray &q_dotdot, const KDL::Wrenches& f_ext,KDL::JntArray &torques);
-    void rnea(KDLJointStateData& data, const KDL::Wrenches& f_ext,
-              std::vector<KDL::Wrench>& wrenches, std::vector<KDL::Twist>& S);
+    virtual void rnea(const KDL::JntArray &q,
+                      const KDL::JntArray &q_dot,
+                      const KDL::JntArray &q_dotdot,
+                      const KDL::Wrenches& f_ext,
+                      KDL::JntArray &torques);
+
+    virtual void rnea(KDLJointStateData& data,
+                      const KDL::Wrenches& f_ext,
+                      std::vector<KDL::Wrench>& wrenches,
+                      std::vector<KDL::Frame>& X);
 
     void checkInput(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot);
     void checkInput(const KDLJointStateData& data);

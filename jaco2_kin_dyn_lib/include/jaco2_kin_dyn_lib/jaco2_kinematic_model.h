@@ -106,6 +106,7 @@ public:
     void getRotationAxis(const std::string &link, KDL::Vector &rot_axis) const;
     void getRotationAxis(const std::string &link, Eigen::Vector3d& rot_axis) const;
     KDL::Twist getJointAxisProjection(const std::string& link) const;
+    std::vector<KDL::Twist> getJointAxisProjections() const;
 
     KDL::Jacobian getJacobian(const std::vector<double>& q);
     int getJointVelocities(const std::vector<double> &q, const KDL::Twist &v_in, std::vector<double>& v_out);
