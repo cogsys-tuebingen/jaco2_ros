@@ -3,7 +3,7 @@ before_script:
   # (change apt-get to yum if you use a CentOS-based image)
   - 'apt-get -qq update -y'
   - 'apt-get -qq install build-essential openssh-client libeigen3-dev libyaml-cpp-dev libtbb-dev libopencv-dev sudo -y'
-  - 'apt-get -qq install ros-jade-moveit-* -y'
+  - 'apt-get -qq install ros-kinetic-moveit-* -y'
   - 'apt-get -qq install libgoogle-glog-dev libatlas-base-dev -y'
 
   # Run ssh-agent (inside the build environment)
