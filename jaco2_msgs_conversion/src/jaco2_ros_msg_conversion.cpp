@@ -37,7 +37,7 @@ jaco2_data::Header HeaderConversion::ros2data(const std_msgs::Header &data)
 
 // Vector3 Conversion -------------------------------------------------------------------------
 
-geometry_msgs::Vector3 Vector3Converion::data2ros(const jaco2_data::Vector3& data)
+geometry_msgs::Vector3 Vector3Conversion::data2ros(const jaco2_data::Vector3& data)
 {
     geometry_msgs::Vector3 res;
     res.x = data.vector(0);
@@ -46,20 +46,20 @@ geometry_msgs::Vector3 Vector3Converion::data2ros(const jaco2_data::Vector3& dat
     return res;
 }
 
-geometry_msgs::Vector3 Vector3Converion::data2ros(const jaco2_data::Vector3Stamped& data)
+geometry_msgs::Vector3 Vector3Conversion::data2ros(const jaco2_data::Vector3Stamped& data)
 {
     geometry_msgs::Vector3 res = data2ros(data.data);
     return res;
 }
 
-jaco2_data::Vector3 Vector3Converion::ros2data(const geometry_msgs::Vector3 &msg)
+jaco2_data::Vector3 Vector3Conversion::ros2data(const geometry_msgs::Vector3 &msg)
 {
     jaco2_data::Vector3 res;
     res.vector = Eigen::Vector3d(msg.x, msg.y, msg.z);
     return res;
 }
 
-jaco2_data::Vector3 Vector3Converion::ros2data(const geometry_msgs::Vector3Stamped& msg)
+jaco2_data::Vector3 Vector3Conversion::ros2data(const geometry_msgs::Vector3Stamped& msg)
 {
     jaco2_data::Vector3 res;
     res.vector = Eigen::Vector3d(msg.vector.x, msg.vector.y, msg.vector.z);
@@ -68,38 +68,105 @@ jaco2_data::Vector3 Vector3Converion::ros2data(const geometry_msgs::Vector3Stamp
 
 // Vector3Stamped Conversion -------------------------------------------------------------------------
 
-geometry_msgs::Vector3Stamped Vector3StampedConverion::data2ros(const jaco2_data::Vector3& data)
+geometry_msgs::Vector3Stamped Vector3StampedConversion::data2ros(const jaco2_data::Vector3& data)
 {
     geometry_msgs::Vector3Stamped res;
     res.header.stamp = ros::Time::now();
     res.header.frame_id = "";
-    res.vector = Vector3Converion::data2ros(data);
+    res.vector = Vector3Conversion::data2ros(data);
     return res;
 }
 
-geometry_msgs::Vector3Stamped Vector3StampedConverion::data2ros(const jaco2_data::Vector3Stamped& data)
+geometry_msgs::Vector3Stamped Vector3StampedConversion::data2ros(const jaco2_data::Vector3Stamped& data)
 {
     geometry_msgs::Vector3Stamped res;
     res.header =  HeaderConversion::data2ros(data.header);
-    res.vector = Vector3Converion::data2ros(data.data);
+    res.vector = Vector3Conversion::data2ros(data.data);
     return res;
 }
 
-jaco2_data::Vector3Stamped Vector3StampedConverion::ros2data(const geometry_msgs::Vector3 &msg)
+jaco2_data::Vector3Stamped Vector3StampedConversion::ros2data(const geometry_msgs::Vector3 &msg)
 {
     jaco2_data::Vector3Stamped res;
     res.header.stamp.now();
-    res.data = Vector3Converion::ros2data(msg);
+    res.data = Vector3Conversion::ros2data(msg);
     return res;
 }
 
-jaco2_data::Vector3Stamped Vector3StampedConverion::ros2data(const geometry_msgs::Vector3Stamped& msg)
+jaco2_data::Vector3Stamped Vector3StampedConversion::ros2data(const geometry_msgs::Vector3Stamped& msg)
 {
     jaco2_data::Vector3Stamped res;
     res.header = HeaderConversion::ros2data(msg.header);
-    res.data   = Vector3Converion::ros2data(msg.vector);
+    res.data   = Vector3Conversion::ros2data(msg.vector);
     return res;
 }
+// Wrench Conversion -------------------------------------------------------------------------
+
+geometry_msgs::Wrench WrenchConversion::data2ros(const jaco2_data::Wrench& data)
+{
+    geometry_msgs::Wrench res;
+    res.torque = Vector3Conversion::data2ros(data.torque);
+    res.force = Vector3Conversion::data2ros(data.force);
+    return res;
+}
+geometry_msgs::Wrench WrenchConversion::data2ros(const jaco2_data::WrenchStamped& data)
+{
+    geometry_msgs::Wrench res;
+    res.torque = Vector3Conversion::data2ros(data.data.torque);
+    res.force = Vector3Conversion::data2ros(data.data.force);
+    return res;
+}
+
+jaco2_data::Wrench WrenchConversion::ros2data(const geometry_msgs::Wrench& msg)
+{
+    jaco2_data::Wrench res;
+    res.torque = Vector3Conversion::ros2data(msg.torque);
+    res.force = Vector3Conversion::ros2data(msg.force);
+    return res;
+}
+
+jaco2_data::Wrench WrenchConversion::ros2data(const geometry_msgs::WrenchStamped& msg)
+{
+    jaco2_data::Wrench res;
+    res.torque = Vector3Conversion::ros2data(msg.wrench.torque);
+    res.force = Vector3Conversion::ros2data(msg.wrench.force);
+    return res;
+}
+
+// WrenchStamped Conversion -------------------------------------------------------------------------
+
+ geometry_msgs::WrenchStamped WrenchStampedConversion::data2ros(const jaco2_data::Wrench& data)
+ {
+     geometry_msgs::WrenchStamped res;
+     res.header.frame_id ="";
+     res.header.stamp = ros::Time::now();
+     res.wrench = WrenchConversion::data2ros(data);
+     return res;
+ }
+
+ geometry_msgs::WrenchStamped WrenchStampedConversion::data2ros(const jaco2_data::WrenchStamped& data)
+ {
+     geometry_msgs::WrenchStamped res;
+     res.header = HeaderConversion::data2ros(data.header);
+     res.wrench = WrenchConversion::data2ros(data.data);
+     return res;
+ }
+
+ jaco2_data::WrenchStamped WrenchStampedConversion::ros2data(const geometry_msgs::Wrench& msg)
+ {
+     jaco2_data::WrenchStamped res;
+     res.header.stamp.now();
+     res.data = WrenchConversion::ros2data(msg);
+     return res;
+ }
+
+ jaco2_data::WrenchStamped WrenchStampedConversion::ros2data(const geometry_msgs::WrenchStamped& msg)
+ {
+     jaco2_data::WrenchStamped res;
+     res.header = HeaderConversion::ros2data(msg.header);
+     res.data = WrenchConversion::ros2data(msg.wrench);
+     return res;
+ }
 
 // JointState Conversion -------------------------------------------------------------------------
 
@@ -192,7 +259,7 @@ jaco2_msgs::Jaco2Accelerometers AccelerometerConversion::data2ros(const jaco2_da
 {
     jaco2_msgs::Jaco2Accelerometers res;
     for(auto d : data){
-        res.lin_acc.emplace_back(Vector3StampedConverion::data2ros(d));
+        res.lin_acc.emplace_back(Vector3StampedConversion::data2ros(d));
     }
     return res;
 }
@@ -202,7 +269,7 @@ jaco2_data::AccelerometerData AccelerometerConversion::ros2data(const Jaco2Accel
 {
     jaco2_data::AccelerometerData res;
     for(auto d : msg.lin_acc){
-        res.push_back(Vector3StampedConverion::ros2data(d));
+        res.push_back(Vector3StampedConversion::ros2data(d));
     }
     return res;
 }

@@ -12,6 +12,17 @@ Vector3::Vector3(double val):
 Vector3::Vector3(double x, double y, double z):
     vector(x,y,z){}
 
+
+double& Vector3::operator ()(std::size_t i)
+{
+    return vector(i);
+}
+
+const double& Vector3::operator ()(std::size_t i) const
+{
+    return vector(i);
+}
+
 Vector3 Vector3::operator+(const Vector3 &other) const
 {
     Vector3 res;

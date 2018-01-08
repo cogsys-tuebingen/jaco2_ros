@@ -54,7 +54,7 @@ int Jaco2ModifiedDynamicModel::getTorques(const std::vector<double> &q, const st
 }
 
 int Jaco2ModifiedDynamicModel::getTorques(const std::vector<double>& q, const std::vector<double>& q_Dot, const std::vector<double>& q_DotDot,
-                                          std::vector<double>& torques, const std::vector<Wrench>& wrenches_ext)
+                                          std::vector<double>& torques, const std::vector<jaco2_data::Wrench>& wrenches_ext)
 {
     std::size_t njoints = chain_.getNrOfJoints();
     checkInput(q, q_Dot, q_DotDot);
@@ -86,7 +86,7 @@ int Jaco2ModifiedDynamicModel::getTorques(const std::vector<double>& q, const st
     }
     else{
         for(std::size_t i = 0; i < chain_.getNrOfSegments(); ++i){
-            wrenches[i] = wrenches_ext[i].toKDL();
+            wrenches[i] = convert(wrenches_ext[i]);
         }
     }
     rnea(qkdl,qkdl_Dot,qkdl_DotDot,wrenches,torques_kdl);
@@ -96,7 +96,7 @@ int Jaco2ModifiedDynamicModel::getTorques(const std::vector<double>& q, const st
 
 }
 
-void Jaco2ModifiedDynamicModel::getTorques(KDLJointStateData& data, std::vector<KDL::Wrench>& wrenches, std::vector<KDL::Twist>& S,
+void Jaco2ModifiedDynamicModel::getTorques(KDLJointStateData& data, std::vector<KDL::Wrench>& wrenches, std::vector<KDL::Frame>& X,
                                            const std::vector<KDL::Wrench>& wrenches_ext)
 {
     std::size_t njoints = chain_.getNrOfJoints();
@@ -120,7 +120,7 @@ void Jaco2ModifiedDynamicModel::getTorques(KDLJointStateData& data, std::vector<
         wrenches_ext_k = wrenches_ext;
     }
 
-    rnea(data, wrenches_ext_k, wrenches, S);
+    rnea(data, wrenches_ext_k, wrenches, X);
 }
 
 void Jaco2ModifiedDynamicModel::setSensorTransforms(const std::vector<KDL::Frame> &transformation)
@@ -204,7 +204,7 @@ void Jaco2ModifiedDynamicModel::rnea(const KDL::JntArray &q, const KDL::JntArray
 
 
 void Jaco2ModifiedDynamicModel::rnea(KDLJointStateData& data, const KDL::Wrenches& f_ext,
-                             std::vector<KDL::Wrench>& f, std::vector<KDL::Twist>& S)
+                             std::vector<KDL::Wrench>& f, std::vector<KDL::Frame>& X)
 {
     unsigned int j=0;
     std::size_t nj = chain_.getNrOfJoints();
@@ -222,9 +222,9 @@ void Jaco2ModifiedDynamicModel::rnea(KDLJointStateData& data, const KDL::Wrenche
     KDL::Twist ag = -KDL::Twist(gravity_, KDL::Vector::Zero());  // as in orocos kdl
     f.resize(ns);
     std::vector<KDL::Twist> a(ns);
-    S.resize(ns);
+    X.resize(ns);
     std::vector<KDL::Twist> v(ns);
-    std::vector<KDL::Frame> X(ns);
+    std::vector<KDL::Twist> S(ns);
 
 
     //Sweep from root to leaf

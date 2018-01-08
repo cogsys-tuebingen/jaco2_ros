@@ -1,5 +1,5 @@
-#include <moveit/move_group_interface/move_group.h>
-//#include <moveit/move_group_interface/move_group_interface.h>
+//#include <moveit/move_group_interface/move_group.h>
+#include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit_msgs/GetPositionFK.h>
@@ -166,8 +166,8 @@ private:
 
 private:
 
-    moveit::planning_interface::MoveGroup::Plan my_plan_;
-    moveit::planning_interface::MoveGroup group_;
+    moveit::planning_interface::MoveGroupInterface::Plan my_plan_;
+    moveit::planning_interface::MoveGroupInterface group_;
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
     ros::ServiceClient fk_client_;
     ros::ServiceServer move_cart_server_;

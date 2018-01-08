@@ -83,7 +83,7 @@ TEST(Jaco2KinematicsDynamicsToolTests, KinParam)
     Eigen::Matrix3d rot = jaco2KDL.getLinkFixedRotation("jaco_link_1");
     EXPECT_NEAR(trans(0), 0, 1e-4);
     EXPECT_NEAR(trans(1), 0, 1e-4);
-    EXPECT_NEAR(trans(2), 0.1535, 1e-4);
+    EXPECT_NEAR(trans(2), 0.15675, 1e-4);
     EXPECT_NEAR(rot(0,0),  1, 1e-4);
     EXPECT_NEAR(rot(0,1),  0, 1e-4);
     EXPECT_NEAR(rot(0,2),  0, 1e-4);
@@ -166,7 +166,7 @@ TEST(Jaco2DynamicsTests,inverseDynamics)
 TEST(Jaco2KinematicsTests, fk)
 {
     std::vector<double> q = {0, M_PI, M_PI, 0, 0, M_PI};
-    tf::Vector3 posH(-0.000, 0.063, 1.018);
+    tf::Vector3 posH(-0.000, 0.0611, 1.021);
     tf::Quaternion rotH(-0.707, 0.707, -0.000, 0.000);
     tf::Pose res;
     int ec = jaco2KDL.getFKPose(q,res,"jaco_link_hand");
@@ -179,7 +179,7 @@ TEST(Jaco2KinematicsTests, fk)
     EXPECT_NEAR(rotH.getZ(), res.getRotation().getZ(), 1e-3);
     EXPECT_NEAR(rotH.getW(), res.getRotation().getW(), 1e-3);
 
-    tf::Vector3 pos5(-0.000, 0.023, 0.955);
+    tf::Vector3 pos5(-0.000, 0.024, 0.957);
     tf::Quaternion rot5(-0.612, 0.612, -0.354, -0.354);
     tf::Pose res5;
     ec = jaco2KDL.getFKPose(q,res5,"jaco_link_5");

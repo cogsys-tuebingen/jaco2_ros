@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<launch>
+    <arg name="prefix" default=""/>
+    <arg name="jaco_name" default="jaco"/>
+    <node pkg="tf" type="static_transform_publisher" name="tf_$(arg jaco_name)_finger_tip_3_bc" args="0 0 -0.16 0 3.141592654 0  $(arg prefix)/$(arg jaco_name)_link_hand $(arg prefix)/$(arg jaco_name)_link_6 100" />
+</launch>

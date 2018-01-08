@@ -59,7 +59,7 @@ void Jaco2DynamicModel::initialize()
 
 
 int Jaco2DynamicModel::getTorques(const std::vector<double> &q, const std::vector<double> &q_Dot, const std::vector<double> &q_DotDot,
-                                  std::vector<double> &torques, const std::vector<Wrench> &wrenches_ext)
+                                  std::vector<double> &torques, const std::vector<jaco2_data::Wrench> &wrenches_ext)
 {
     std::size_t njoints = chain_.getNrOfJoints();
     if(q.size() != q_Dot.size() || q.size() != q_DotDot.size() || q.size() < njoints){
@@ -91,7 +91,7 @@ int Jaco2DynamicModel::getTorques(const std::vector<double> &q, const std::vecto
     }
     else{
         for(std::size_t i = 0; i < chain_.getNrOfSegments(); ++i){
-            wrenches[i] = wrenches_ext[i].toKDL();
+            wrenches[i] = convert(wrenches_ext[i]);
         }
     }
     int e_code = -1;

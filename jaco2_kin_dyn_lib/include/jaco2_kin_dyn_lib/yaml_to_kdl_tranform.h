@@ -1,8 +1,10 @@
 #ifndef YAML_TO_TRANSFORM_CONVERSION_HPP
 #define YAML_TO_TRANSFORM_CONVERSION_HPP
 #include <vector>
+#include <jaco2_data/suppress_warnings_start.h>
 #include <tf/tf.h>
 #include <tf_conversions/tf_kdl.h>
+#include <jaco2_data/suppress_warnings_end.h>
 #include <yaml-cpp/yaml.h>
 
 namespace Jaco2KinDynLib{
