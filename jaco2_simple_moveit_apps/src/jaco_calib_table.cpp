@@ -11,7 +11,7 @@ int main( int argc, char** argv )
   ros::NodeHandle n;
   ros::Rate r(1);
   ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
-  moveit::planning_interface::MoveGroup group_("manipulator");
+  moveit::planning_interface::MoveGroupInterface group_("manipulator");
   moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
 
   // Set our initial shape type to be a cube
