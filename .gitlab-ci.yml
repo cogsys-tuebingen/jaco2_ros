@@ -45,9 +45,9 @@ before_script:
 stages:
   - build
 
-jade:
+kinetic:
   stage: build
-  image: ros:jade
+  image: ros:kinetic
   script:
     - source /opt/ros/$(ls /opt/ros/ | sort -r | head -n 1)/setup.bash
     - rosdep install -y -r -i --from-paths src
