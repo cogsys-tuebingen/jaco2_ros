@@ -64,19 +64,22 @@ void JointAxisTransformedModel::rnea(const KDL::JntArray &q, const KDL::JntArray
         f[i] = Ii*a[i] + v[i]*(Ii*v[i]) - f_ext[i];
     }
     //Sweep from leaf to root
+    f.back() = sensor_transforms_.back() * f.back();
     j = nj - 1;
-    for(int i = ns-1; i >= 0; --i){
+    for(int i = ns-1; i > 0; --i){
         if(chain_.getSegment(i).getJoint().getType() != KDL::Joint::None) {
             torques(j) = dot(S[i], f[i]);
             --j;
         }
-        if(i!=0)
-            f[i-1] = sensor_transforms_[i] * ( f[i-1] +  X[i]*f[i] );
+        f[i-1] = sensor_transforms_[i] * ( f[i-1] +  X[i]*f[i] );
+    }
+    if(chain_.getSegment(i).getJoint().getType() != KDL::Joint::None) {
+        torques(0) = dot(S[0], f[0]);
     }
 }
 
 void JointAxisTransformedModel::rnea(KDLJointStateData& data, const KDL::Wrenches& f_ext,
-                             std::vector<KDL::Wrench>& f, std::vector<KDL::Frame>& X)
+                                     std::vector<KDL::Wrench>& f, std::vector<KDL::Frame>& X)
 {
     unsigned int j=0;
     std::size_t nj = chain_.getNrOfJoints();
@@ -132,14 +135,16 @@ void JointAxisTransformedModel::rnea(KDLJointStateData& data, const KDL::Wrenche
         f[i] = Ii*a[i] + v[i]*(Ii*v[i]) - f_ext[i];
     }
     std::vector<KDL::Wrench> fprime = f;
-    //Sweep from leaf to root
+    fprime.back() = sensor_transforms_.back() * f.back();
     j = nj - 1;
-    for(int i = ns-1; i >= 0; --i){
+    for(int i = ns-1; i > 0; --i){
         if(chain_.getSegment(i).getJoint().getType() != KDL::Joint::None) {
             data.torque(j) = dot(S[i],  fprime[i]);
             --j;
         }
-        if(i!=0)
-            fprime[i-1] = sensor_transforms_[i] * ( fprime[i-1] + X[i]*fprime[i] );
+        fprime[i-1] = sensor_transforms_[i-1] * ( fprime[i-1] + X[i]*fprime[i] );
+    }
+    if(chain_.getSegment(0).getJoint().getType() != KDL::Joint::None) {
+        data.torque(0) = dot(S[0],  fprime[0]);
     }
 }
