@@ -3,7 +3,11 @@
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit_msgs/PlanningScene.h>
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+#include <moveit/move_group_interface/move_group_interface.h>
+#else
 #include <moveit/move_group_interface/move_group.h>
+#endif
 
 #include <fstream>
 #include <iomanip>
@@ -36,7 +40,11 @@ public:
     }
 
     void runPlanner(std::string currentPlanner, int iterations = 10) {
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+        moveit::planning_interface::MoveGroupInterface::Plan my_plan_;
+#else
         moveit::planning_interface::MoveGroup::Plan my_plan_;
+#endif
 
         iterations_ = iterations;
 
@@ -127,7 +135,12 @@ public:
 
 private:
     std::vector<std::string> jointNames_;
+
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+    moveit::planning_interface::MoveGroupInterface group_;
+#else
     moveit::planning_interface::MoveGroup group_;
+#endif
     //    moveit::planning_interface::MoveGroup::Plan my_plan_;
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
 

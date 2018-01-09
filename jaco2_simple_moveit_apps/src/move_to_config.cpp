@@ -1,4 +1,4 @@
-#include <moveit/move_group_interface/move_group.h>
+#include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
@@ -21,8 +21,8 @@ int main(int argc, char *argv[])
         sleep_time.sleep();
         sleep_time.sleep();
 
-        moveit::planning_interface::MoveGroup::Plan my_plan;
-        moveit::planning_interface::MoveGroup group("manipulator");
+        moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+        moveit::planning_interface::MoveGroupInterface group("manipulator");
         moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
 
 
