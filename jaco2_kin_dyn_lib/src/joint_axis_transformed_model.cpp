@@ -71,7 +71,7 @@ void JointAxisTransformedModel::rnea(const KDL::JntArray &q, const KDL::JntArray
             torques(j) = dot(S[i], f[i]);
             --j;
         }
-        f[i-1] = sensor_transforms_[i] * ( f[i-1] +  X[i]*f[i] );
+        f[i-1] = sensor_transforms_[i-1] * ( f[i-1] +  X[i]*f[i] );
     }
     if(chain_.getSegment(0).getJoint().getType() != KDL::Joint::None) {
         torques(0) = dot(S[0], f[0]);
