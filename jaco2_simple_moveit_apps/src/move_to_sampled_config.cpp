@@ -1,7 +1,7 @@
 #include <jaco2_utils/configuration_list.h>
 #include <jaco2_msgs/SetSampledConfigService.h>
 #include <ros/ros.h>
-#include <moveit/move_group_interface/move_group_interface.h>
+#include <moveit/move_group_interface/move_group.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
@@ -9,6 +9,14 @@
 #include <std_srvs/Trigger.h>
 
 #include <signal.h>
+
+#if ROS_VERSION_MINIMUM(1,12,0)
+    typedef moveit::planning_interface::MoveGroupInterface MoveGroup;
+    typedef moveit::planning_interface::MoveGroupInterface::Plan Plan;
+#else
+    typedef moveit::planning_interface::MoveGroup MoveGroup;
+    typedef moveit::planning_interface::MoveGroup::Plan Plan;
+#endif
 
 class MoveToSampledConfPlanner{
 public:
@@ -56,7 +64,7 @@ public:
 
         if(id < configurations_.configurations.size()){
             group_.setJointValueTarget(configurations_.configurations[id].angles);
-            moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+            Plan my_plan;
             moveit_msgs::MoveItErrorCodes success = group_.plan(my_plan);
             if(success.val == moveit_msgs::MoveItErrorCodes::SUCCESS) {
                 ROS_INFO("Success! Now move");
@@ -195,7 +203,7 @@ public:
 private:
 
     std::vector<std::string> jointNames_;
-    moveit::planning_interface::MoveGroupInterface group_;
+    MoveGroup group_;
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
 
     planning_scene_monitor::PlanningSceneMonitorPtr planningMonitor_;

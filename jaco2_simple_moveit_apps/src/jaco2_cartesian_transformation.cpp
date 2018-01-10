@@ -1,5 +1,4 @@
 //#include <moveit/move_group_interface/move_group.h>
-#include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit_msgs/GetPositionFK.h>
@@ -8,6 +7,15 @@
 #include <tf/tf.h>
 #include <ros/ros.h>
 
+#if ROS_VERSION_MINIMUM(1,12,0)
+    #include <moveit/move_group_interface/move_group_interface.h>
+    typedef moveit::planning_interface::MoveGroupInterface MoveGroup;
+    typedef moveit::planning_interface::MoveGroupInterface::Plan Plan;
+#else
+    #include <moveit/move_group_interface/move_group.h>
+    typedef moveit::planning_interface::MoveGroup MoveGroup;
+    typedef moveit::planning_interface::MoveGroup::Plan Plan;
+#endif
 
 class CartesianTransformationServer{
 public:
@@ -166,8 +174,8 @@ private:
 
 private:
 
-    moveit::planning_interface::MoveGroupInterface::Plan my_plan_;
-    moveit::planning_interface::MoveGroupInterface group_;
+    Plan my_plan_;
+    MoveGroup group_;
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
     ros::ServiceClient fk_client_;
     ros::ServiceServer move_cart_server_;

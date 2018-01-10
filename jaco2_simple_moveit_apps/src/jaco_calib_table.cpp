@@ -2,8 +2,17 @@
 #include <visualization_msgs/Marker.h>
 #include <vector>
 #include <moveit_msgs/CollisionObject.h>
-#include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
+
+#if ROS_VERSION_MINIMUM(1,12,0)
+    #include <moveit/move_group_interface/move_group_interface.h>
+    typedef moveit::planning_interface::MoveGroupInterface MoveGroup;
+    typedef moveit::planning_interface::MoveGroupInterface::Plan Plan;
+#else
+    #include <moveit/move_group_interface/move_group.h>
+    typedef moveit::planning_interface::MoveGroup MoveGroup;
+    typedef moveit::planning_interface::MoveGroup::Plan Plan;
+#endif
 
 int main( int argc, char** argv )
 {
@@ -11,7 +20,7 @@ int main( int argc, char** argv )
   ros::NodeHandle n;
   ros::Rate r(1);
   ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
-  moveit::planning_interface::MoveGroup group_("manipulator");
+  MoveGroup group_("manipulator");
   moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
 
   // Set our initial shape type to be a cube
