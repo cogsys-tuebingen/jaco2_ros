@@ -7,7 +7,6 @@
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <actionlib_msgs/GoalStatusArray.h>
-#include <moveit/move_group_interface/move_group.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 /// JACO2
@@ -20,6 +19,14 @@
 #include <jaco2_msgs/Jaco2Sensor.h>
 #include <jaco2_msgs/Jaco2Accelerometers.h>
 #include <jaco2_data/types.h>
+
+#if ROS_VERSION_MINIMUM(1,12,0)
+    #include <moveit/move_group_interface/move_group_interface.h>
+    typedef moveit::planning_interface::MoveGroupInterface MoveGroupInterface;
+#else
+    #include <moveit/move_group_interface/move_group.h>
+    typedef moveit::planning_interface::MoveGroup MoveGroupInterface;
+#endif
 
 class StaticDataGenerator
 {
@@ -55,7 +62,7 @@ private:
     std::vector<double> upper_limits_;
     std::vector<double> lower_limits_;
     std::size_t valid_counter_;
-    moveit::planning_interface::MoveGroup group_;
+    MoveGroupInterface group_;
     ros::Subscriber sub_angles_;
     ros::Subscriber sub_jaco_state_;
     ros::Subscriber sub_torque_gravity_;

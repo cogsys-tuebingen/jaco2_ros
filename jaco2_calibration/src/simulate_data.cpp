@@ -2,7 +2,6 @@
 #include <random>
 
 #include <ros/ros.h>
-#include <moveit/move_group_interface/move_group.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
@@ -16,7 +15,13 @@
 #include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
 #include <jaco2_calibration_utils/acceleration_samples.hpp>
 #include <jaco2_calibration_utils/jaco2_calibration_io.h>
-
+#if ROS_VERSION_MINIMUM(1,12,0)
+    #include <moveit/move_group_interface/move_group_interface.h>
+    typedef moveit::planning_interface::MoveGroupInterface MoveGroupInterface;
+#else
+    #include <moveit/move_group_interface/move_group.h>
+    typedef moveit::planning_interface::MoveGroup MoveGroupInterface;
+#endif
 
 class SimCalibNode
 {
@@ -44,11 +49,7 @@ public:
         //        calibServiceServer_ = private_nh_.advertiseService("calibrate_acc", &SimCalibNode::changeCalibCallback, this);
 
         moveGroup_.setPlannerId("RRTkConfigDefault");
-        //        moveGroup_.set
-        //        moveGroup_.setStartStateToCurrentState();
         moveGroup_.setPlanningTime(2.0);
-        //        moveGroup_.setGoalPositionTolerance(0.01);
-        //        moveGroup_.setGoalOrientationTolerance(0.05);
 
 #if ROS_VERSION_MINIMUM(1, 12, 0)
         planningMonitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
@@ -156,7 +157,7 @@ public:
 
                 if(!collision) {
 
-                    moveit::planning_interface::MoveGroup::Plan my_plan;
+                    MoveGroupInterface::Plan my_plan;
                     moveGroup_.setJointValueTarget(jvalues);
                     //                    moveGroup_.setStartStateToCurrentState();
                     moveGroup_.setPlanningTime(3.0);
@@ -342,7 +343,7 @@ private:
     ros::ServiceServer calibServiceServer_;
     std::vector<Eigen::Vector3d, EV3dAllocator> gsum_;
     std::vector<std::string> jointGroupNames_;
-    moveit::planning_interface::MoveGroup moveGroup_;
+    MoveGroupInterface moveGroup_;
     moveit::planning_interface::PlanningSceneInterface planningSceneInterface_;
     planning_scene_monitor::PlanningSceneMonitorPtr  planningMonitor_;
     Jaco2KinDynLib::Jaco2DynamicModel dynSolver_;

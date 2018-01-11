@@ -51,7 +51,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES simple_moveit_apps
   CATKIN_DEPENDS moveit_core moveit_msgs moveit_ros_planning moveit_ros_planning_interface roscpp jaco2_msgs jaco2_utils
-#  DEPENDS system_lib
+  DEPENDS system_lib
 )
 
 ###########
@@ -89,6 +89,11 @@ add_dependencies(home_arm
     ${catkin_EXPORTED_TARGETS}
 )
 add_dependencies(move_to_new_rand_configuration
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+)
+
+add_dependencies(jaco2_cartesian_transformation
     ${${PROJECT_NAME}_EXPORTED_TARGETS}
     ${catkin_EXPORTED_TARGETS}
 )

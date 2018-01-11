@@ -1,6 +1,16 @@
-#include <moveit/move_group_interface/move_group.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
+#include <ros/ros.h>
+
+#if ROS_VERSION_MINIMUM(1,12,0)
+    #include <moveit/move_group_interface/move_group_interface.h>
+    typedef moveit::planning_interface::MoveGroupInterface MoveGroup;
+    typedef moveit::planning_interface::MoveGroupInterface::Plan Plan;
+#else
+    #include <moveit/move_group_interface/move_group.h>
+    typedef moveit::planning_interface::MoveGroup MoveGroup;
+    typedef moveit::planning_interface::MoveGroup::Plan Plan;
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -13,8 +23,8 @@ int main(int argc, char *argv[])
     sleep_time.sleep();
     sleep_time.sleep();
 
-    moveit::planning_interface::MoveGroup::Plan my_plan;
-    moveit::planning_interface::MoveGroup group("manipulator");
+    MoveGroup::Plan my_plan;
+    MoveGroup group("manipulator");
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
 
 

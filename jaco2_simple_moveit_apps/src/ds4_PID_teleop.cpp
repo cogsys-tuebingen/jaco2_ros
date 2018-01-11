@@ -1,5 +1,4 @@
 
-#include <moveit/move_group_interface/move_group.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
@@ -49,7 +48,13 @@
 //const std::vector<double> K_I (6, 0);
 //const std::vector<double> K_D (6, 0.05);
 
-
+#if ROS_VERSION_MINIMUM(1,12,0)
+    #include <moveit/move_group_interface/move_group_interface.h>
+    typedef moveit::planning_interface::MoveGroupInterface MoveGroupInterface;
+#else
+    #include <moveit/move_group_interface/move_group.h>
+    typedef moveit::planning_interface::MoveGroup MoveGroupInterface;
+#endif
 class teleopJacoDS4 {
 public:
     teleopJacoDS4(std::string group_name, ros::NodeHandle& nh);
@@ -80,7 +85,7 @@ private:
     actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> goal_action_client_;
     trajectory_msgs::JointTrajectory goal_joint_trajectory;            //add points (ie states from statecallback) to trajectory to follow, slightly overfitted since it interpolates
 
-    moveit::planning_interface::MoveGroup group_;
+    MoveGroupInterface group_;
     planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
 
     ros::Time prev_time;
@@ -140,7 +145,11 @@ teleopJacoDS4::teleopJacoDS4(std::string group_name, ros::NodeHandle& nh_)
     useTeaching = false;
     randomConfigurationMode = false;
 
+#if ROS_VERSION_MINIMUM(1,12,0)
+    planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+#else
     planning_scene_monitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
+#endif
 
     joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("/joy", 10, &teleopJacoDS4::joyCallback, this);
 //    joint_state_sub_ = nh_.subscribe<sensor_msgs::JointState>("/jaco_21_driver/out/joint_states", 10, &teleopJacoDS4::jointStateCallback, this);
@@ -280,7 +289,7 @@ void teleopJacoDS4::joyCallback(const sensor_msgs::Joy::ConstPtr& joy) {
     double pitch = right_trigger_R1 ? -right_analog_left_right : 0; //R1 + right analog left/right = yaw
 
     if (right_x && !emergency_stop) { //move home
-        moveit::planning_interface::MoveGroup::Plan my_plan;
+        MoveGroupInterface::Plan my_plan;
 
         group_.setPlannerId("RRTkConfigDefault");
         group_.setStartStateToCurrentState();
@@ -591,7 +600,7 @@ void teleopJacoDS4::publish_states(std::vector<double> vel) {
 
 moveit_msgs::MoveItErrorCodes teleopJacoDS4::move_to_trajectory_start(){
     if (saved_trajectory[0].position != current_state.position) {
-        moveit::planning_interface::MoveGroup::Plan my_plan;
+        MoveGroupInterface::Plan my_plan;
 
         group_.setPlannerId("RRTConnectkConfigDefault");
         group_.setStartStateToCurrentState();

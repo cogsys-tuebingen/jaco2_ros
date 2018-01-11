@@ -88,7 +88,7 @@ void StaticDataGenerator::generateData()
                 group_.getCurrentState();
             }
             group_.setJointValueTarget(goal);
-            moveit::planning_interface::MoveGroup::Plan my_plan;
+            MoveGroupInterface::Plan my_plan;
             moveit_msgs::MoveItErrorCodes success = group_.plan(my_plan);
             if(success.val == moveit_msgs::MoveItErrorCodes::SUCCESS) {
                 ROS_INFO("Success! Now move");
