@@ -12,11 +12,12 @@
 #include <jaco2_msgs/JointVelocity.h>
 #include <jaco2_driver/jaco2_api.h>
 #include <jaco2_driver/joint_trajectory.h>
-#include <jaco2_driver/accelerometer_calibration.hpp>
-#include <jaco2_driver/torque_offset_lut.hpp>
-#include <jaco2_driver/gravity_params.hpp>
-#include <jaco2_driver/torque_offset_calibration.hpp>
+#include <jaco2_data/accelerometer_calibration.hpp>
+#include <jaco2_data/torque_offset_lut.hpp>
+#include <jaco2_data/gravity_params.hpp>
+#include <jaco2_data/torque_offset_calibration.hpp>
 #include <jaco2_driver/jaco2_driver_configureConfig.h>
+#include <jaco2_driver/utility/delegate.hpp>
 //Jaco2 Controller
 #include <jaco2_driver/controller/jaco2_controller.h>
 #include <jaco2_driver/controller/empty_controller.h>
@@ -30,11 +31,12 @@
 
 class Jaco2Driver
 {
+
 public:
     Jaco2Driver();
     ~Jaco2Driver();
 
-    bool reachedGoal() const;
+    bool controllerFinished(Jaco2Controller::Result &result_type) const;
     bool serviceDone() const;
     bool initialize(std::string serial = std::string(""), bool right = true, bool move_home = true);
     // GET
@@ -48,8 +50,9 @@ public:
     AngularAcceleration getActuatorAcceleration() const;
     QuickStatus getQuickStatus() const;
     SensorsInfo getSensorInfo() const;
-    std::chrono::time_point<std::chrono::high_resolution_clock> getLastReadUpdate(int read_data) const;
-    std::vector<Jaco2Calibration::AccelerometerCalibrationParam> getAccerlerometerCalibration() const;
+    jaco2_data::TimeStamp getLastReadUpdate(int read_data) const;
+    jaco2_data::JointStateDataStamped getJointState() const;
+    jaco2_data::AccelerometerData getAccelerometerData() const;
     Jaco2Calibration::TorqueOffsetLut getTorqueCalibration() const;
 
     int getSetTorqueZeroResult() const;
@@ -81,6 +84,8 @@ public:
     void enableForceControl();
     void disableForceControl();
 
+    void setJointNames(const std::vector<std::string>& names);
+
 
 
 // BEGIN EXPERIMENTAL
@@ -105,16 +110,18 @@ public:
 private:
     void setActiveController(Jaco2Controller* controller);
 
+    void controllerTerminated(const Jaco2Controller::Result res);
+
 private:
+    Jaco2Controller::TerminationCallback t_;
     bool initialized_;
+    bool controller_done_;
     Jaco2API jaco_api_;
 
     std::string serial_;
     bool right_arm_;
     Jaco2Controller* active_controller_;
-
-
-
+    Jaco2Controller::Result result_;
     AngularPositionController position_controller_;
     EmptyController empty_controller_;
     GripperController gripper_controller_;
@@ -124,16 +131,11 @@ private:
     std::shared_ptr<VelocityController> velocity_controller_;
     std::shared_ptr<TrajectoryTrackingController> trajectory_controller_;
 
-    std::vector<double> jointAngles_;
-    std::vector<double> jointVelocities_;
-    std::vector<double> jointEffort_;
-
     QuickStatus quickStatus_;
 
     void getJointValues();
     void tick();
     void executeLater(std::function<void()> fn);
-//    void executeLater(std::function<int()> fn);
 
 private:
     std::thread spinner_;
@@ -148,6 +150,7 @@ private:
     int setTorqueZeroResult_;
     bool paused_;
     bool serviceDone_;
+
 
 };
 

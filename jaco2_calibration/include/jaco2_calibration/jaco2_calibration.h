@@ -7,7 +7,7 @@
 #include <imu_tk/base.h>
 #include <imu_tk/calibration.h>
 //Jaco2 ROS
-#include <jaco2_driver/accelerometer_calibration.hpp>
+#include <jaco2_data/accelerometer_calibration.hpp>
 #include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 #include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
 #include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
@@ -21,7 +21,7 @@ public:
     Jaco2Calibration(std::string& urdf_param, std::string& root, std::string& tip);
     ~Jaco2Calibration();
 
-    int calibrateCoMandInertia(const std::vector<DynamicCalibrationSample> &samples);
+    int calibrateCoMandInertia(const jaco2_data::JointStateDataStampedCollection &samples);
     int calibrateArmDynamic(const std::vector<DynamicCalibrationSample> &samples);
 
     bool calibrateAcc(const AccelerationSamples & samples);
@@ -29,20 +29,20 @@ public:
     void setInitAccSamples(int n){initAccSamples_ = n;}
     void setGravityMagnitude(double g){gravityMag_ = g;}
 
-    std::vector<DynamicCalibratedParameters> getDynamicCalibration() const { return dynParams_;}
+    DynamicParametersCollection getDynamicCalibration() const { return dynParams_;}
     std::vector<AccelerometerCalibrationParam> getAccCalibration() const { return accParams_;}
 
     std::string getTipFrame() const {return model_.getTipLink();}
     std::string getRootFrame() const {return model_.getRootLink();}
     std::vector<std::string> getLinkNames() const {return model_.getLinkNames();}
 
-    std::vector<DynamicCalibratedParameters> getDynamicUrdfParam() const;
+    DynamicParametersCollection getDynamicUrdfParam() const;
 
 
 
 private:
     Jaco2KinDynLib::Jaco2DynamicModel model_;
-    std::vector<DynamicCalibratedParameters> dynParams_;
+    DynamicParametersCollection dynParams_;
     int initAccSamples_;
     double gravityMag_;
     std::vector<AccelerometerCalibrationParam> accParams_;

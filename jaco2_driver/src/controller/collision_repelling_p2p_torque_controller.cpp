@@ -2,10 +2,10 @@
 #include <jaco2_driver/jaco2_driver_constants.h>
 #include <kinova/KinovaArithmetics.hpp>
 
-CollisionReplellingP2PTorqueController::CollisionReplellingP2PTorqueController(Jaco2State &state, Jaco2API &api):
-    TrajectoryTrackingController(state, api),
-    reflex_controller_(state, api),
-    tracking_controller_(state, api),
+CollisionReplellingP2PTorqueController::CollisionReplellingP2PTorqueController(Jaco2State &state, Jaco2API &api, TerminationCallback &t):
+    TrajectoryTrackingController(state, api, t),
+    reflex_controller_(state, api, t),
+    tracking_controller_(state, api, t),
     collision_reaction_(state)
 {
     collision_reaction_.setRobotModel("/robot_description", "jaco_link_base", "jaco_link_hand");
@@ -48,11 +48,11 @@ void CollisionReplellingP2PTorqueController::setConfig(jaco2_driver::jaco2_drive
 void CollisionReplellingP2PTorqueController::write()
 {
 
-    auto now = std::chrono::high_resolution_clock::now();
-    auto durationLast = now - last_cmd_rep_;
-    last_cmd_rep_ = now;
-    double dt = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
-    collision_reaction_.update(dt);
+//    auto now = std::chrono::high_resolution_clock::now();
+//    auto durationLast = now - last_cmd_rep_;
+//    last_cmd_rep_ = now;
+//    double dt = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
+    collision_reaction_.update();
 
     double residual = collision_reaction_.getResidualsNorm();
 

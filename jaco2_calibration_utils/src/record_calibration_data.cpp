@@ -1,5 +1,5 @@
 #include <vector>
-
+#include <math.h>
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
 
@@ -8,10 +8,13 @@
 #include <jaco2_msgs/JointAngles.h>
 #include <jaco2_msgs/Jaco2JointState.h>
 #include <geometry_msgs/Vector3Stamped.h>
-#include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
+#include <jaco2_data/joint_state_data.h>
+#include <jaco2_data/accelerometer_data.h>
+#include <jaco2_msgs_conversion/jaco2_ros_msg_conversion.h>
 #include <jaco2_calibration_utils/acceleration_samples.hpp>
 #include <jaco2_calibration_utils/jaco2_calibration_io.h>
-
+#include <jaco2_driver/data/gravity_estimator.h>
+#include <jaco2_msgs_conversion/jaco2_ros_msg_conversion.h>
 
 class CalibRecordNode
 {
@@ -38,63 +41,28 @@ public:
             initial_ = false;
         }
 
-
-//        ros::Time now = ros::Time::now();
-//        ros::Duration dt = now-lastTime_;
-//        lastTime_ = now;
-//        dt_ = dt.toSec();
-        Jaco2Calibration::DynamicCalibrationSample sample;
-        sample.time = msg->header.stamp.toSec();
-        for(std::size_t i = 0; i < 6; ++i){
-            sample.jointPos[i] = msg->position[i];
-            sample.jointVel[i] = msg->velocity[i];
-            sample.jointTorque[i] = -msg->effort[i];
-            sample.jointAcc[i] = msg->acceleration[i];
-        }
-
+        jaco2_data::JointStateDataStamped sample = jaco2_msgs::JointStateStampedConversion::jaco2Msg2Data(*msg);
 
         if(!initialSensor_ /*&& currentSamples_ < numberOfSamples_*/){
 
+
             for(std::size_t i = 0; i <6;++i)
             {
-                geometry_msgs::Vector3Stamped acc = jacoAccMsg_.lin_acc[i];
-
-                Jaco2Calibration::AccelerationData data(acc.header.stamp.toSec(), acc.vector.x, acc.vector.y, acc.vector.z);
-                accSamples_.push_back(i,data);
+                accSamples_.push_back(i,jacoAccMsg_[i]);
             }
 
-            //estimate jaco's base acceleration
-            Eigen::Vector3d g(-jacoAccMsg_.lin_acc[0].vector.y, -jacoAccMsg_.lin_acc[0].vector.x, -jacoAccMsg_.lin_acc[0].vector.z );
-            g *= 9.81;
-            gsum_.push_back(g);
-            Eigen::Vector3d mean(0,0,0);
-            int counter = 0;
-            for(auto i = gsum_.rbegin(); i != gsum_.rend(); ++i)
-            {
-                if( counter < 5)
-                {
-                    mean += *i;
-                    ++counter;
-                }
-                if(counter == 5)
-                {
-                    break;
-                }
-            }
-            mean *= 1.0/((double)counter);
-            sample.gravity = mean;
         }
         if(currentSamples_ > 10) {
             samples_.push_back(sample);
 
         }
         ++currentSamples_;
-//        ROS_INFO_STREAM("Recoding_Data");
+        //        ROS_INFO_STREAM("Recoding_Data");
     }
 
     void accsCb(const jaco2_msgs::Jaco2AccelerometersConstPtr& msg)
     {
-        jacoAccMsg_ = *msg;
+        jacoAccMsg_ = jaco2_msgs::AccelerometerConversion::ros2data(*msg);
 
         if(initialSensor_)
         {
@@ -130,17 +98,16 @@ private:
     int g_counter_;
     ros::Subscriber subJointState_;
     ros::Subscriber subAccs_;
-    ros::Subscriber subJointAcc_;
-    std::vector<Jaco2Calibration::DynamicCalibrationSample> samples_;
-    std::vector<Eigen::Vector3d> gravity_;
+    ros::Subscriber subacceleration_;
+    jaco2_data::JointStateDataStampedCollection samples_;
     Jaco2Calibration::AccelerationSamples accSamples_;
     ros::Time lastTime_;
     double dt_;
-    jaco2_msgs::Jaco2Accelerometers jacoAccMsg_;
+    jaco2_data::AccelerometerData jacoAccMsg_;
     ros::ServiceServer calibServiceServer_;
     std::vector<Eigen::Vector3d> gsum_;
     std::vector<std::string> jointGroupNames_;
-
+    GravityEstimator estimate_g_;
 };
 
 bool done = false;

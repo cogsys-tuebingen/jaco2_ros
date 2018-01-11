@@ -16,7 +16,7 @@ Jaco2Calibration::~Jaco2Calibration()
 
 
 
-int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibrationSample> &samples)
+int Jaco2Calibration::calibrateCoMandInertia(const jaco2_data::JointStateDataStampedCollection &samples)
 {
     //    dynParams_.resize(model_.getNrOfSegments());
     std::vector<std::string> links = model_.getLinkNames();
@@ -92,9 +92,9 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
             }
 
 
-            for(auto sample : samples)
+            for(const jaco2_data::JointStateDataStamped& sample : samples)
             {
-                ceres::CostFunction* cost_function = ComInetriaResiduals::Create(&model_, sample, link);
+                ceres::CostFunction* cost_function = ComInetriaResiduals::Create(&model_, sample.data, link);
                 problem.AddResidualBlock(cost_function, new ceres::CauchyLoss(0.1), dyn_calib_params.data());
 
             }/*NULL */
@@ -111,7 +111,7 @@ int Jaco2Calibration::calibrateCoMandInertia(const std::vector<DynamicCalibratio
             std::cout << summary.BriefReport() << std::endl;
 
 
-            DynamicCalibratedParameters linkparams;
+            DynamicParameters linkparams;
             linkparams.linkName = link;
             linkparams.mass = model_.getLinkMass(link);
             linkparams.coM = Eigen::Vector3d(dyn_calib_params[0], dyn_calib_params[1], dyn_calib_params[2]);
@@ -199,7 +199,7 @@ int Jaco2Calibration::calibrateArmDynamic(const std::vector<DynamicCalibrationSa
 
     for(std::size_t i = 0; i < links.size(); ++i) {
         std::size_t id = i*9;
-        DynamicCalibratedParameters linkparams;
+        DynamicParameters linkparams;
         linkparams.linkName = links[i];
         linkparams.mass = model_.getLinkMass(links[i]);
         //        linkparams.coM = tf::Vector3(dyn_calib_params[id], dyn_calib_params[id + 1], dyn_calib_params[id + 2]);
@@ -263,12 +263,12 @@ void Jaco2Calibration::convert(const std::size_t &idx, const AccelerationSamples
     std::size_t nElem = samples.samples[idx].size();
     data.resize(nElem);
     if(nElem > 0) {
-        double t0 = samples.samples[0].at(0).time;
+        double t0 = samples.samples[0].at(0).stamp().toSec();
         for(std::size_t i = 0; i < nElem; ++i){
-            double t = samples.samples[idx][i].time -t0;
-            double x = samples.samples[idx][i].vector[0];
-            double y = samples.samples[idx][i].vector[1];
-            double z = samples.samples[idx][i].vector[2];
+            double t = samples.samples[idx][i].stamp().toSec() - t0;
+            double x = samples.samples[idx][i].data.vector[0];
+            double y = samples.samples[idx][i].data.vector[1];
+            double z = samples.samples[idx][i].data.vector[2];
 
             imu_tk::TriadData tkAcc(t, x, y, z);
             data[i] = tkAcc;
@@ -287,17 +287,18 @@ void Jaco2Calibration::convert(const std::size_t &idx, const std::vector<imu_tk:
         double x = data[i].x();
         double y = data[i].y();
         double z = data[i].z();
-        AccelerationData samp(t, x, y,z);
+        jaco2_data::Vector3Stamped samp(jaco2_data::Vector3(x, y,z));
+        samp.stamp().fromSec(t);
         samples.push_back(idx,samp);
     }
 }
 
-std::vector<DynamicCalibratedParameters> Jaco2Calibration::getDynamicUrdfParam() const
+DynamicParametersCollection Jaco2Calibration::getDynamicUrdfParam() const
 {
-    std::vector<DynamicCalibratedParameters> result;
+    DynamicParametersCollection result;
     for(auto link : model_.getLinkNames())
     {
-        DynamicCalibratedParameters param;
+        DynamicParameters param;
         param.linkName = link;
         param.coM = model_.getURDFLinkCoM(link);
         param.inertia = model_.getURDFLinkInertiaCoM(link);

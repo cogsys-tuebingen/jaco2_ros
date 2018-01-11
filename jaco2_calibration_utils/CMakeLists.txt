@@ -18,9 +18,11 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  jaco2_data
   jaco2_driver
   jaco2_kin_dyn_lib
   jaco2_msgs
+  jaco2_msgs_conversion
   moveit_core
   moveit_msgs
   moveit_ros_planning
@@ -29,6 +31,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   tf
   rosbag
+  actionlib_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -49,7 +52,7 @@ find_package(NLOPT REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES jaco2_calibration_utils
-  CATKIN_DEPENDS jaco2_driver jaco2_kin_dyn_lib jaco2_msgs roscpp sensor_msgs tf
+  CATKIN_DEPENDS jaco2_data jaco2_kin_dyn_lib jaco2_msgs roscpp sensor_msgs tf
   DEPENDS system_lib
 )
 
@@ -73,9 +76,9 @@ add_library(jaco2_calibration_utils
     include/jaco2_calibration_utils/dynamic_calibration_sample.hpp
     include/jaco2_calibration_utils/acceleration_samples.hpp
     include/jaco2_calibration_utils/dynamic_calibrated_parameters.hpp
-#    include/jaco2_calibration_utils/torque_offset_lut.hpp
     src/dynamic_residual.cpp
     src/jaco2_calibration_io.cpp
+    src/static_data_generator.cpp
     ${ALL_HEADERS}
 )
 
@@ -86,6 +89,7 @@ add_executable(jaco2_rigid_body_subplex src/jaco2_dyn_subplex_calibration.cpp)
 add_executable(record_static_data src/record_static_data.cpp)
 add_executable(calib_joint_velocity src/calib_joint_velocity.cpp)
 add_executable(jaco2_torque_offset_calibration src/jaco2_torque_offsets_sinus_fit.cpp)
+add_executable(jaco2_static_data_generartion_node src/static_data_generation_node.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(jaco2_calibration_utils ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -145,6 +149,12 @@ target_link_libraries(jaco2_torque_offset_calibration
    ${catkin_LIBRARIES}
    ${Boost_LIBRARIES}
    jaco2_calibration_utils
+)
+
+target_link_libraries(jaco2_static_data_generartion_node
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+    jaco2_calibration_utils
 )
 #############
 ## Install ##

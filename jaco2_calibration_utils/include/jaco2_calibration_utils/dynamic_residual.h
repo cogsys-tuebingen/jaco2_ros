@@ -3,6 +3,7 @@
 
 #include <string>
 #include <Eigen/Dense>
+#include <jaco2_data/joint_state_data.h>
 #include <jaco2_kin_dyn_lib/jaco2_dynamic_model.h>
 #include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
 #include <jaco2_calibration_utils/dynamic_calibrated_parameters.hpp>
@@ -25,6 +26,7 @@ public:
     DynamicResidual(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
 
     void loadData(std::string data_file);
+    void setData(jaco2_data::JointStateDataStampedCollection &samples);
     void useInitialGuess(bool use, double factor=0);
     void setScaleMatrix(Eigen::MatrixXd& scale);
     bool calculteMatrix();
@@ -44,6 +46,7 @@ public:
     inline void setInitalParams(Eigen::MatrixXd& params){initial_params_ = params;}
     void setResidualType(int type);
 
+    std::vector<double> getInitialParamsVector() const;
 
     double getResidual(const std::vector<double> &x, std::vector<double> &grad);
     double getResidual(const Eigen::MatrixXd &params, std::vector<double> &grad);
@@ -81,8 +84,8 @@ public:
     static void paramEigen2Vector(const Eigen::MatrixXd& mat, std::vector<double>& result, int type);
 
 private:
-    bool staticSample(const Jaco2Calibration::DynamicCalibrationSample& sample) const;
-    void selectData(std::vector<Jaco2Calibration::DynamicCalibrationSample>& selected);
+    bool staticSample(const jaco2_data::JointStateData &sample) const;
+    void selectData(jaco2_data::JointStateDataStampedCollection &selected);
 
 private:
     Jaco2KinDynLib::Jaco2DynamicModel model_;
@@ -98,7 +101,7 @@ private:
     Eigen::MatrixXd initial_params_;
     Eigen::MatrixXd init_scale_;
     Eigen::MatrixXd uncertainty_scale_;
-    std::vector<Jaco2Calibration::DynamicCalibrationSample> samples_;
+    jaco2_data::JointStateDataStampedCollection samples_;
     std::size_t n_samples_;
     const static std::size_t n_param_;
     const static std::size_t n_param_static_;
@@ -107,6 +110,7 @@ private:
     std::size_t n_links_;
     std::size_t n_cols_;
     std::size_t n_rows_;
+    Jaco2Calibration::DynamicParametersCollection urdf_dyn_param_;
 
 };
 

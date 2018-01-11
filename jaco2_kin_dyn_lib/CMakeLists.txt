@@ -13,10 +13,6 @@ else()
     message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
-
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
 #  kdl_parser
   roscpp
@@ -26,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   trac_ik_lib
   rosbag
   jaco2_msgs
+  jaco2_data
 )
 
 ## System dependencies are found with CMake's conventions
@@ -33,34 +30,13 @@ find_package(Boost REQUIRED COMPONENTS system)
 find_package(orocos_kdl REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
-
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES jaco2_kin_dyn_lib
-  CATKIN_DEPENDS kdl_parser roscpp tf trac_ik_lib
+  CATKIN_DEPENDS kdl_parser roscpp tf trac_ik_lib jaco2_data
   DEPENDS system_lib orocos_kdl
 )
 
-###########
-## Build ##
-###########
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-# include_directories(include)
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
@@ -68,8 +44,11 @@ include_directories(
   ${EIGEN3_INCLUDE_DIR}
 )
 file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/*.hpp include/*.h)
-## Declare a C++ library
- add_library(jaco2_kin_dyn_lib
+
+add_library(jaco2_kin_dyn_lib
+   src/joint_axis_transformed_model.cpp
+   src/kdl_joint_state_data.cpp
+   src/jaco2_modified_dynamic_model.cpp
    src/jaco2_dynamic_model.cpp
    src/jaco2_kinematic_model.cpp
    src/yaml_to_kdl_tranform.cpp
@@ -88,12 +67,14 @@ add_dependencies(jaco2_kin_dyn_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_
 ## Declare a C++ executable
 add_executable(jaco2_tf_static_transforms_conversion src/jaco2_tf_static_tranforms_conversion.cpp)
 add_executable(jaco2_kin_dyn_lib_test test/test_jaco2_kin_dyn.cpp)
+add_executable(jaco2_modified_dyn_lib_test test/test_jaco2_modified_dyn_model.cpp)
 add_executable(jaco2_estimation_test test/test_pos_vel_estimation.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(jaco2_tf_static_transforms_conversion ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} jaco2_kin_dyn_lib)
 add_dependencies(jaco2_kin_dyn_lib_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${GTEST_LIBRARIES} jaco2_kin_dyn_lib)
+add_dependencies(jaco2_modified_dyn_lib_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${GTEST_LIBRARIES} jaco2_kin_dyn_lib)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(jaco2_kin_dyn_lib
@@ -113,6 +94,14 @@ target_link_libraries(jaco2_kin_dyn_lib_test
    ${GTEST_LIBRARIES}
    jaco2_kin_dyn_lib
 )
+
+target_link_libraries(jaco2_modified_dyn_lib_test
+   ${catkin_LIBRARIES}
+   ${orocos_kdl_LIBRARIES}
+   ${GTEST_LIBRARIES}
+   jaco2_kin_dyn_lib
+)
+
 
 target_link_libraries(jaco2_estimation_test
    ${catkin_LIBRARIES}

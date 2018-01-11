@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>  
+  <node pkg="jaco2_driver" type="jaco2_driver_node" name="jaco_21_driver" output="screen">
+    <param name="/jaco_serial" type="string" value="PJ00900006160400002"/>
+    <param name="/jaco_use_accelerometer_calib" type="bool" value="true" />
+    <param name="/jaco_use_torque_calib" type="bool" value="false" />
+    <param name="/jaco_accelerometer_calibration_file" type="string" value="$(find jaco2_driver)/config/acc_calib_jaco2-1.yaml"/>
+    <param name="/jaco_velocity_calibration_file" type="string" value="$(find jaco2_driver)/config/velocity_calibration_jaco2-1.yaml"/>
+    <param name="/jaco_torque_calibration_file" type="string" value="$(find jaco2_driver)/config/torque_offset_lut_jaco2-1.yaml"/>
+    <param name="/velocity_controller" type="string" value="VEL_COLL"/>
+    <param name="/trajectory_controller" type="string" value="TRAJ_P2P_VEL_COLL"/>
+    <param name ="/jaco_dynamic_model_calibration_file" value="$(find jaco2_driver)/config/jaco2-1regression_rb_param.yaml"/>
+    <param name="/tf_prefix" type="string" value="jaco_right_"/>
+  </node>
+</launch>
+
+

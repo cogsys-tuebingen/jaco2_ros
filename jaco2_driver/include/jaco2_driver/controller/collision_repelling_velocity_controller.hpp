@@ -6,8 +6,8 @@
 class CollisionRepellingVelocityController : public VelocityController
 {
 public:
-    CollisionRepellingVelocityController(Jaco2State &state, Jaco2API &api)
-        : VelocityController(state, api),
+    CollisionRepellingVelocityController(Jaco2State &state, Jaco2API &api, TerminationCallback& t)
+        : VelocityController(state, api, t),
           set_model_(false),
           collision_reaction_(state)
     {
@@ -17,9 +17,11 @@ public:
     void setVelocity(const TrajectoryPoint& tp) override
     {
         if(!collision_reaction_.inCollision()){
-            collision_reaction_.resetResiduals();
+//            collision_reaction_.resetResiduals();
             VelocityController::setVelocity(tp);
             last_cmd_rep_  = std::chrono::high_resolution_clock::now();
+            done_ = false;
+            result_ = Result::WORKING;
         }
     }
 
@@ -35,30 +37,23 @@ public:
         if(!set_model_){
             return;
         }
-        auto now = std::chrono::high_resolution_clock::now();
-        auto durationLast = now - last_cmd_rep_;
-        last_cmd_rep_ = now;
-        double dt = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
-        collision_reaction_.update(dt);
+        collision_reaction_.update();
 
         double residual = collision_reaction_.getResidualsNorm();
+//        std::cout << "CRVC dt = " << dt << " | res: " << residual << std::endl;
+//        ROS_INFO_STREAM("CRVC dt = " << dt << " | res: " << residual);
+
 
         if(collision_reaction_.inCollision() && desired_.Position.HandMode == HAND_NOMOVEMENT ){
-            while(collision_reaction_.inCollision()){
+            while(collision_reaction_.inCollision()){ // Republish problem?
                 ROS_WARN_STREAM("Repelling! collision detected: "<< residual);
                 auto cmd = collision_reaction_.velocityControlReflex();
-//                for(int i = 0; i < 2; ++i){
                     VelocityController::setVelocity(cmd);
                     VelocityController::write();
                     usleep(5000);
-//                }
                 state_.read();
 
-                now = std::chrono::high_resolution_clock::now();
-                last_cmd_rep_ = now;
-                dt = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
-                //        std::cout << dt << std::endl;
-                collision_reaction_.update(dt);
+                collision_reaction_.update();
                 residual = collision_reaction_.getResidualsNorm();
             }
 

@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
             t.name = accs[i];
             t.parent = links[i];
             KDL::Frame frame;
-            tf::TransformTFToKDL(transform,frame);
+            tf::transformTFToKDL(transform, frame);
             t.frame = frame;
             tosave.push_back(t);
 

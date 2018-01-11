@@ -3,36 +3,32 @@
 void Jaco2KinDynLib::convert(const KDL::JntArray &in, std::vector<double> &out)
 {
     out.resize(in.rows());
-    for(std::size_t i = 0; i < out.size(); ++i)
-    {
+    for(std::size_t i = 0; i < out.size(); ++i){
         out[i] = in(i);
     }
 }
 
-void Jaco2KinDynLib::convert(const std::vector<double> &in, KDL::JntArray &out)
+void Jaco2KinDynLib::convert(const std::vector<double> &in, KDL::JntArray &out, std::size_t ignore_end)
 {
-    out.resize(in.size());
-    for(std::size_t i = 0; i < out.rows(); ++i)
-    {
+    out.resize(in.size() - ignore_end);
+    for(std::size_t i = 0; i < out.rows(); ++i){
         out(i) = in[i];
     }
 }
 
-void Jaco2KinDynLib::convert(const std::vector<double> &in, Eigen::VectorXd &out)
+void Jaco2KinDynLib::convert(const std::vector<double> &in, Eigen::VectorXd &out, std::size_t ignore_end)
 {
-    out.resize(in.size());
+    out.resize(in.size() - ignore_end);
     std::size_t i = 0;
-    for(auto data : in)
-    {
-        out(i) = data;
-        ++i;
+    for(auto it = in.begin(); it < in.end() - ignore_end; ++it, ++i){
+        out(i) = *it;
     }
 }
 
-void Jaco2KinDynLib::convert(const Eigen::VectorXd &in, std::vector<double> &out)
+void Jaco2KinDynLib::convert(const Eigen::VectorXd &in, std::vector<double> &out, std::size_t ignore_end)
 {
-    out.resize(in.rows());
-    for(std::size_t i = 0; i < in.rows(); ++i){
+    out.resize(in.rows() -ignore_end);
+    for(std::size_t i = 0; i < out.size(); ++i){
         out[i] = in(i);
     }
 }
@@ -50,9 +46,9 @@ void Jaco2KinDynLib::poseTFToKDL(const tf::Pose& t, KDL::Frame& k)
 Eigen::Matrix3d Jaco2KinDynLib::skewSymMat(const KDL::Vector &vec)
 {
     Eigen::Matrix3d res;
-    res << 0    , -vec(2)   , vec(1),
-            vec(2), 0         , -vec(0),
-            -vec(1), vec(0)    , 0;
+    res << 0     , -vec(2)   , vec(1),
+           vec(2), 0         , -vec(0),
+          -vec(1), vec(0)    , 0;
     return res;
 }
 
@@ -145,4 +141,11 @@ void Jaco2KinDynLib::rotationKDLToEigen(const KDL::Rotation &in, Eigen::Quaterni
     double x,y,z,w;
     in.GetQuaternion(x,y,z,w);
     out = Eigen::Quaterniond(w,x,y,z);
+}
+
+KDL::Wrench Jaco2KinDynLib::convert(const jaco2_data::Wrench& w)
+{
+    KDL::Vector f(w.force(0), w.force(1), w.force(2));
+    KDL::Vector t(w.torque(0), w.torque(1), w.torque(2));
+    return KDL::Wrench(f, t);
 }

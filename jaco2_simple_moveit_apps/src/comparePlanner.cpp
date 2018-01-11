@@ -8,6 +8,7 @@
 #else
 #include <moveit/move_group_interface/move_group.h>
 #endif
+
 #include <fstream>
 #include <iomanip>
 
@@ -84,7 +85,7 @@ public:
 
                 if(!collision) {
                     group_.setJointValueTarget(goalState);
-                    succeeded = group_.plan(my_plan_);
+                    succeeded = group_.plan(my_plan_).val == moveit_msgs::MoveItErrorCodes::SUCCESS;
                     if (!succeeded) {
                         numFailed ++;
                     } else {
@@ -134,6 +135,7 @@ public:
 
 private:
     std::vector<std::string> jointNames_;
+
 #if ROS_VERSION_MINIMUM(1, 12, 0)
     moveit::planning_interface::MoveGroupInterface group_;
 #else

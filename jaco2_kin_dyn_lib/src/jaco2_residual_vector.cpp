@@ -2,13 +2,13 @@
 using namespace Jaco2KinDynLib;
 
 Jaco2ResidualVector::Jaco2ResidualVector()
-    : model_()
+    :initial_(true), model_()
 {
 
 }
 
 Jaco2ResidualVector::Jaco2ResidualVector(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip)
-    : model_(robot_model, chain_root, chain_tip)
+    : initial_(true),model_(robot_model, chain_root, chain_tip)
 {
 
 }
@@ -33,7 +33,6 @@ void Jaco2ResidualVector::setGravity(double x, double y, double z)
 int Jaco2ResidualVector::getNrOfJoints()const
 {
     int val = model_.getNrOfJoints();
-    std::cout << "#Joints: " << val << std::endl;
     return val;
 }
 
@@ -123,13 +122,13 @@ void Jaco2ResidualVector::getResidualVector(const ResidualData &data,
                                             Eigen::VectorXd& new_residual)
 {
 
-    if(data.dt < 1e-7 || data.dt > 0.1){
+    if(/*data.dt < 1e-7 || */data.dt > 0.1){
         new_integral = last_integral;
         new_residual = last_residual;
         ROS_WARN_STREAM("Time difference very small or very big: " << data.dt);
         return;
     }
-
+//    ROS_INFO_STREAM("getResidualVector dt: " << data.dt);
     Eigen::MatrixXd C;
     model_.getMatrixC(data.joint_positions,data.joint_velocities, C);
 
@@ -146,7 +145,7 @@ void Jaco2ResidualVector::getResidualVector(const ResidualData &data,
 //    Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - G + last_residual;
     model_.getChainDynInertiaAndGravity(data.joint_positions, H, gravity_torque_);
     Eigen::VectorXd m = H * omega;
-    Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega + gravity_torque_ + last_residual;
+    Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - gravity_torque_ + last_residual; // changed sign at 15.17.2017
 
     new_integral = integration_step(data.dt, last_integral, to_integrate);
 
@@ -154,6 +153,52 @@ void Jaco2ResidualVector::getResidualVector(const ResidualData &data,
 
 
 }
+//TODO TEST THIS
+void Jaco2ResidualVector::getResidualVector(const jaco2_data::JointStateDataStamped &data_s,
+                                            const Eigen::VectorXd& last_residual,
+                                            const Eigen::VectorXd& last_integral,
+                                            Eigen::VectorXd& new_integral,
+                                            Eigen::VectorXd& new_residual)
+{
+    ROS_WARN("untested method");
+    bool init = initial_;
+    if(initial_){
+        last_stamp_ = data_s.stamp();
+        initial_ = false;
+    }
+    double dt = data_s.stamp().substractionResultInSeconds(last_stamp_);
+    last_stamp_ = data_s.stamp();
+
+    if(dt < 1e-7 || dt > 0.1){
+        new_integral = last_integral;
+        new_residual = last_residual;
+        if(!init){
+            ROS_WARN_STREAM("Time difference very small or very big: " << dt);
+        }
+
+        return;
+    }
+    const jaco2_data::JointStateData& data = data_s.data;
+    Eigen::MatrixXd C;
+    model_.getMatrixC(data.position, data.velocity, C);
+
+    Eigen::VectorXd omega;
+    Eigen::VectorXd tau;
+    vector2EigenVector(data.velocity, omega);
+    vector2EigenVector(data.torque, tau);
+
+    Eigen::MatrixXd H;
+    model_.setGravity(data.gravity(0), data.gravity(1), data.gravity(2));
+    model_.getChainDynInertiaAndGravity(data.position, H, gravity_torque_);
+    Eigen::VectorXd m = H * omega;
+    Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - gravity_torque_ + last_residual;
+
+    new_integral = integration_step(dt, last_integral, to_integrate);
+    new_residual = gains_ * (m - new_integral);
+
+}
+
+
 
 Eigen::VectorXd Jaco2ResidualVector::integration_step(const double dt, const Eigen::VectorXd &last_integral, const Eigen::VectorXd &next_integrant) const
 {

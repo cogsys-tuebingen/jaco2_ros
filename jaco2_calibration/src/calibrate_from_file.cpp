@@ -4,6 +4,8 @@
 #include <jaco2_calibration_utils/jaco2_calibration_io.h>
 #include <jaco2_calibration_utils/acceleration_samples.hpp>
 
+using namespace jaco2_data;
+
 int main(int argc, char *argv[])
 {
     std::string calib_mode = argv[1];
@@ -20,7 +22,7 @@ int main(int argc, char *argv[])
 
 
     if(calib_mode == "dynamic"){
-        std::vector<Jaco2Calibration::DynamicCalibrationSample> samples;
+        jaco2_data::JointStateDataStampedCollection samples;
         Jaco2Calibration::Jaco2CalibrationIO::importAsciiDataWithGravity(file,samples);
         if(addNoise)
         {
@@ -28,7 +30,9 @@ int main(int argc, char *argv[])
             std::normal_distribution<double> distribution(0,0.4);
             //TODO TEST
             for(auto sample = samples.begin(); sample != samples.end(); ++sample) {
-                for(auto tau = sample->jointTorque.begin(); tau != sample->jointTorque.end(); ++tau)
+                jaco2_data::JointStateData& d = sample->data;
+                for(auto tau = d.begin(JointStateData::DataType::JOINT_TORQUE);
+                         tau != d.end(JointStateData::DataType::JOINT_TORQUE); ++tau)
                 {
                     double white_noise = distribution(generator);
                     (*tau) += white_noise;
@@ -37,15 +41,14 @@ int main(int argc, char *argv[])
         }
         Jaco2Calibration::Jaco2CalibrationIO::save("/tmp/dyn_calib_with_noise.txt",samples);
         calib.calibrateCoMandInertia(samples);
-//        calib.calibrateArmDynamic(samples);
-        std::vector<Jaco2Calibration::DynamicCalibratedParameters> param = calib.getDynamicCalibration();
+
+        Jaco2Calibration::DynamicParametersCollection param = calib.getDynamicCalibration();
         Jaco2Calibration::Jaco2CalibrationIO::save("/tmp/param_sim.txt",param);
-        std::vector<Jaco2Calibration::DynamicCalibratedParameters> org_param = calib.getDynamicUrdfParam();
-//        Jaco2Calibration::save("/tmp/param_org.txt",org_param);
-        std::vector<Jaco2Calibration::DynamicCalibratedParameters> diff;
+        Jaco2Calibration::DynamicParametersCollection org_param = calib.getDynamicUrdfParam();
+        Jaco2Calibration::DynamicParametersCollection diff;
         for(std::size_t i = 0; i < param.size(); ++i)
         {
-            Jaco2Calibration::DynamicCalibratedParameters tmp;
+            Jaco2Calibration::DynamicParameters tmp;
 
             tmp.linkName = param[i].linkName;
             tmp.coM = (param[i].coM - org_param[i].coM).array() / param[i].coM.array() ;

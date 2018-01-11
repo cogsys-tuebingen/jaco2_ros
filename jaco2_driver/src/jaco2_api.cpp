@@ -102,6 +102,7 @@ int Jaco2API::init(std::string serial, bool right, bool move_home)
                 std::cout << "Connect to the robot on the USB bus (" << serial_i << ")" << std::endl;
                 result = SetActiveDevice(list[i]);
 
+
                 if(move_home){
                     std::cout << "Send the robot to HOME position " << ((right_arm_) ? "right" : "left") << std::endl;
                     if(right_arm_){
@@ -110,9 +111,6 @@ int Jaco2API::init(std::string serial, bool right, bool move_home)
                     else{
                         moveHomeLeft();
                     }
-                }
-
-                if(move_home){
                     std::cout << "Initializing the fingers" << std::endl;
                     result = InitFingers();
                 }
@@ -509,13 +507,13 @@ void Jaco2API::startForceControl()
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     int res = StartForceControl();
-    std::cout << res << std::endl;
+    std::cout <<  "stop force control " << res << std::endl;
 }
 
 void Jaco2API::stopForceControl()
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
     int res = StopForceControl();
-    std::cout << res << std::endl;
+    std::cout << "stop force control " << res << std::endl;
 }
 

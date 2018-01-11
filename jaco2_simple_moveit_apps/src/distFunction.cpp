@@ -3,8 +3,11 @@
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit_msgs/PlanningScene.h>
-#include <moveit/move_group_interface/move_group_interface.h>
-
+#if ROS_VERSION_MINIMUM(1, 12, 0)
+    #include <moveit/move_group_interface/move_group_interface.h>
+#else
+    #include <moveit/move_group_interface/move_group.h>
+#endif
 #include <moveit/collision_detection_fcl/collision_robot_fcl.h>
 #include <moveit/collision_detection_fcl/collision_world_fcl.h>
 #include <moveit/collision_detection_fcl/collision_detector_allocator_fcl.h>
@@ -17,13 +20,16 @@ int main(int argc, char** argv) {
     spinner.start();
     //    sleep(4.0);
 
+
+#if ROS_VERSION_MINIMUM(1, 12, 0)
     moveit::planning_interface::MoveGroupInterface group_("manipulator");
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
     planning_scene_monitor::PlanningSceneMonitorPtr planningMonitor_;
-
-#if ROS_VERSION_MINIMUM(1, 12, 0)
     planningMonitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
 #else
+    moveit::planning_interface::MoveGroup group_("manipulator");
+    moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
+    planning_scene_monitor::PlanningSceneMonitorPtr planningMonitor_;
     planningMonitor_ = boost::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
 #endif
     std::vector<std::string> jointNames_;

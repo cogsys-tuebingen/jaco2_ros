@@ -25,6 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
   jaco2_msgs
   jaco2_utils
   tf
+  dynamic_reconfigure
 )
 
 message("################################### ROS VERSION: ${roscpp_VERSION_MAJOR}.${roscpp_VERSION_MINOR}.${roscpp_VERSION_PATCH}")
@@ -32,6 +33,10 @@ message("################################### ROS VERSION: ${roscpp_VERSION_MAJOR
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+
+generate_dynamic_reconfigure_options(
+  cfg/ds4_PID_teleop.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -46,7 +51,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES simple_moveit_apps
   CATKIN_DEPENDS moveit_core moveit_msgs moveit_ros_planning moveit_ros_planning_interface roscpp jaco2_msgs jaco2_utils
-#  DEPENDS system_lib
+  DEPENDS system_lib
 )
 
 ###########
@@ -74,6 +79,8 @@ add_executable(distFunction src/distFunction.cpp)
 add_executable(comparePlanner src/comparePlanner.cpp)
 add_executable(move_to_sampled_config src/move_to_sampled_config.cpp)
 add_executable(ds4_PID_teleop src/ds4_PID_teleop.cpp)
+add_executable(jaco_calib_table src/jaco_calib_table.cpp)
+add_executable(joint_state_aggregator src/joint_state_aggregator.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -82,6 +89,11 @@ add_dependencies(home_arm
     ${catkin_EXPORTED_TARGETS}
 )
 add_dependencies(move_to_new_rand_configuration
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+)
+
+add_dependencies(jaco2_cartesian_transformation
     ${${PROJECT_NAME}_EXPORTED_TARGETS}
     ${catkin_EXPORTED_TARGETS}
 )
@@ -98,6 +110,14 @@ add_dependencies(move_to_sampled_config
     ${catkin_EXPORTED_TARGETS}
 )
 add_dependencies(ds4_PID_teleop
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+)
+add_dependencies(jaco_calib_table
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+)
+add_dependencies(joint_state_aggregator
     ${${PROJECT_NAME}_EXPORTED_TARGETS}
     ${catkin_EXPORTED_TARGETS}
 )
@@ -130,6 +150,14 @@ target_link_libraries(move_to_sampled_config
 )
 
 target_link_libraries(ds4_PID_teleop
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(jaco_calib_table
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(joint_state_aggregator
    ${catkin_LIBRARIES}
 )
 

@@ -4,62 +4,9 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <jaco2_data/vector3.h>
+#include <jaco2_data/types.h>
 namespace Jaco2Calibration {
-
-
-struct AccelerationData {
-
-    AccelerationData()
-    {
-        time = 0;
-        vector[0] = 0;
-        vector[1] = 0;
-        vector[2] = 0;
-    }
-
-    AccelerationData(double t, double x, double y, double z)
-    {
-        time = t;
-        vector[0] = x;
-        vector[1] = y;
-        vector[2] = z;
-    }
-
-//    AccelerationData& operator=(const AccelerationData& other)
-//    {
-//        this->time = other.time;
-//        this->vector[0] = other.vector[0];
-//        this->vector[1] = other.vector[1];
-//        this->vector[2] = other.vector[2];
-//    }
-
-    std::string toString(const std::string delimiter = std::string(";"))
-    {
-        std::string res;
-
-        res += std::to_string(time) + delimiter;
-        for(std::size_t i = 0; i < dataLength; ++i)
-        {
-            res += std::to_string(vector[i]) + delimiter;
-        }
-        return res;
-    }
-
-    std::string vectorToString(const std::string delimiter = std::string(";"))
-    {
-        std::string res;
-
-        for(std::size_t i = 0; i < dataLength; ++i)
-        {
-            res += std::to_string(vector[i]) + delimiter;
-        }
-        return res;
-    }
-
-    const std::size_t dataLength = 3;
-    double time;
-    double vector[3];
-};
 
 struct AccelerationSamples {
 
@@ -68,7 +15,7 @@ struct AccelerationSamples {
 
     }
 
-    std::vector<AccelerationData> getSamples(const std::size_t& joint_index) const
+    jaco2_data::Vector3StampedCollection getSamples(const std::size_t& joint_index) const
     {
         if(joint_index < nJoints)
         {
@@ -80,7 +27,7 @@ struct AccelerationSamples {
         }
     }
 
-    void push_back(const std::size_t& joint_index, const AccelerationData& value)
+    void push_back(const std::size_t& joint_index, const jaco2_data::Vector3Stamped& value)
     {
         if(joint_index < nJoints)
         {
@@ -107,10 +54,10 @@ struct AccelerationSamples {
 
         for(std::size_t i = 0; i < maxSize; ++i)
         {
-            std::string line = std::to_string(samples[iMax][i].time) + delimiter;
+            std::string line = std::to_string(samples[iMax][i].stamp().toSec()) + delimiter;
             for(std::size_t j = 0; j < nJoints; ++j){
                 if(samples[j].size() > i){
-                    line += samples[j][i].vectorToString(delimiter);
+                    line += samples[j][i].data.to_string(delimiter);
                 }
                 else{
                     line += std::string(delimiter);
@@ -128,7 +75,7 @@ struct AccelerationSamples {
     }
 
     const std::size_t nJoints = 6;
-    std::vector<AccelerationData> samples[6];
+    jaco2_data::Vector3StampedCollection samples[6];
 };
 }
 #endif // ACCELERATION_SAMPLES_HPP

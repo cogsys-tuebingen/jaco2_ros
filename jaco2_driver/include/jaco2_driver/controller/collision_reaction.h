@@ -5,6 +5,7 @@
 #include <jaco2_driver/jaco2_state.h>
 #include <jaco2_kin_dyn_lib/jaco2_residual_vector.h>
 #include <jaco2_driver/jaco2_driver_configureConfig.h>
+#include <jaco2_data/dynamic_calibrated_parameters.hpp>
 /**
  * @brief The CollisionReaction class
  *
@@ -44,9 +45,10 @@ public:
     AngularInfo getResiduals() const;
     double getResidualsNorm() const;
 
-    void estimateGravity(double& gx, double &gy, double& gz);
     void resetResiduals();
-    void update(double dt);
+    void update();
+    void loadDynModelCalibration(std::string file_name);
+    void setDynModelCalibration();
 
     bool inCollision() const;
     bool energyDisipation() const;
@@ -55,7 +57,6 @@ public:
 
 
 private:
-    void getResidualsData(Jaco2KinDynLib::ResidualData &data);
     void updateResiduals();
     double energyDisipation(AngularInfo &vel, AngularInfo &lower, AngularInfo &upper, std::size_t id) const;
     TrajectoryPoint calculateVelocity(AngularInfo& cmd);
@@ -63,10 +64,12 @@ private:
 private:
     Jaco2State &state_;
     bool in_collision_;
+    bool initial_;
     std::size_t collision_counter_;
     double threshold_;
     double stop_threshold_;
-    double dt_;
+//    double dt_;
+    jaco2_data::JointStateDataStamped last_state_;
     double residualNorm_;
     int n_joints_;
     std::string robot_model_;
@@ -75,12 +78,13 @@ private:
     Jaco2KinDynLib::Jaco2ResidualVector resiudals_;
     Eigen::VectorXd last_integral_;
     Eigen::VectorXd last_residual_;
-    std::deque<Eigen::Vector3d> filter_g_;
+    Eigen::VectorXd bias_;
 
 
     AngularInfo kr_;
     AngularInfo vel_bound_;
     AngularInfo max_torques_;
     AngularInfo velocity_threshold_;
+    Jaco2Calibration::DynamicParametersCollection model_calib_;
 };
 #endif // COLLISION_REACTION_H

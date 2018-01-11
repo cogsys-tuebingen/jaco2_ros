@@ -106,10 +106,10 @@ int main(int argc, char *argv[])
 
         if(mean_diff < 3.5)
         {
-            Jaco2Calibration::Jaco2ManipulatorDynParams params;
+            Jaco2Calibration::DynamicParametersCollection params;
             Jaco2Calibration::to_Jaco2ManipulatorDynParams(param, model.getLinkNames(),params);
             Jaco2Calibration::Jaco2CalibrationIO::save(output,params);
-            Jaco2Calibration::Jaco2ManipulatorDynParams init_param;
+            Jaco2Calibration::DynamicParametersCollection init_param;
             Jaco2Calibration::to_Jaco2ManipulatorDynParams(initial_param, model.getLinkNames(), init_param);
             Jaco2Calibration::Jaco2CalibrationIO::save("/tmp/cad_params.txt",init_param);
         }

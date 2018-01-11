@@ -1,6 +1,7 @@
 #ifndef KDL_CONVERSION_H
 #define KDL_CONVERSION_H
 
+#include <jaco2_data/suppress_warnings_start.h>
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
 #include <kdl/jntarray.hpp>
@@ -8,13 +9,15 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <tf/tf.h>
+#include <jaco2_data/suppress_warnings_end.h>
+#include <jaco2_data/wrench.h>
 
 namespace Jaco2KinDynLib {
 
      void convert(const KDL::JntArray& in, std::vector<double>& out);
-     void convert(const std::vector<double>& in, KDL::JntArray& out);
-     void convert(const std::vector<double> &in, Eigen::VectorXd &out);
-     void convert(const Eigen::VectorXd &in, std::vector<double> &out);
+     void convert(const std::vector<double>& in, KDL::JntArray& out, std::size_t ignore_end = 0);
+     void convert(const std::vector<double> &in, Eigen::VectorXd &out, std::size_t ignore_end = 0 );
+     void convert(const Eigen::VectorXd &in, std::vector<double> &out, std::size_t ignore_end = 0);
      void poseTFToKDL(const tf::Pose& t, KDL::Frame& k);
      Eigen::Matrix3d skewSymMat(const KDL::Vector& vec);
      Eigen::Matrix<double, 3, 6> inertiaProductMat(const KDL::Vector& vec);
@@ -28,6 +31,11 @@ namespace Jaco2KinDynLib {
 
      void vectorKDLToEigen(const KDL::Vector& in, Eigen::Vector3d& out);
      void rotationKDLToEigen(const KDL::Rotation& in, Eigen::Quaterniond& out);
+
+     KDL::Wrench convert(const jaco2_data::Wrench& w);
+
+
+
 
 }
 #endif // KDL_CONVERSION_H

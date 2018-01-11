@@ -37,6 +37,7 @@ add_message_files(
    Jaco2JointState.msg
    Jaco2Accelerometers.msg
    Jaco2GfreeTorques.msg
+   JointData.msg
 )
 
 ## Generate services in the 'srv' folder

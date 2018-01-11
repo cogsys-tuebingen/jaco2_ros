@@ -1,0 +1,11 @@
+<?xml version="1.0"?>  
+<launch>
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="rob_st_pub" >
+      <remap from="robot_description" to="robot_description" />
+      <remap from="joint_states" to="/jaco_arm_driver/out/joint_states" />
+    </node>
+
+   <node pkg="jaco2_teleop" type="sim_test_node" name="sim_arm" output="screen">
+	</node>
+</launch>
+

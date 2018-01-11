@@ -6,7 +6,7 @@
 #include <jaco2_data/accelerometer_data.h>
 #include <jaco2_data/joint_state_data.h>
 #include <jaco2_data/time_stamp.h>
-#include <jaco2_data/vector3stamped.h>
+#include <jaco2_data/vector3.h>
 
 struct ConvertAccelerometers
 {
@@ -20,15 +20,17 @@ class ConvertAngularData
 public:
     ConvertAngularData();
 
-    static std::vector<double> kinova2data(const AngularPosition& data);
-    static std::vector<double> kinova2data(const AngularInfo& data);
+    static std::vector<double> kinova2data(const AngularPosition& data, bool convertRadian = true);
+    static std::vector<double> kinova2data(const AngularInfo& data, bool convertRadian = true);
 
-    static AngularPosition data2AngularPosition(const std::vector<double>& data);
-    static AngularInfo data2AngularInfo(const std::vector<double>& data);
+    static AngularPosition data2AngularPosition(const std::vector<double>& data, bool convertDegree = true);
+    static AngularInfo data2AngularInfo(const std::vector<double>& data, bool convertDegree = true);
 
 private:
     static double toDegrees(const double& radian);
     static double toRadian(const double& degrees);
+    static void toDegrees(double& radian);
+    static void toRadian(double& degrees);
 };
 
 #endif // JACO2_KINOVA_CONVERSION_H

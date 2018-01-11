@@ -2,8 +2,8 @@
 #include <math.h>
 #include <kinova/KinovaTypes.h>
 
-GripperController::GripperController(Jaco2State &state, Jaco2API& api)
-    : Jaco2Controller(state, api),
+GripperController::GripperController(Jaco2State &state, Jaco2API& api, TerminationCallback& t )
+    : Jaco2Controller(state, api, t),
       usePos_(false),
       threshold_(1),
       counter_(1)
@@ -35,6 +35,7 @@ void GripperController::grabObj(const bool& useFinger1, const bool& useFinger2, 
     counter_ = 1;
     lastPosition_ = state_.getAngularPosition();
     done_ = false;
+    result_ = Result::WORKING;
     last_command_ = std::chrono::high_resolution_clock::now();
 }
 
@@ -74,6 +75,8 @@ void GripperController::write()
           tp_.Position.Fingers.Finger3 = 0;
           api_.setAngularVelocity(tp_);
 //          std::cout << "done" << std::endl;
+          result_ = Result::SUCCESS;
+          t_(result_);
           return;
     }
     else{

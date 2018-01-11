@@ -132,7 +132,7 @@ struct FFTAnalysis
     {
         double fitness = 0;
         FFTAnalysis * t = (FFTAnalysis*) data;
-        for(std::size_t i = 0; i < t->x_.size(); ++i){
+        for(std::size_t i = 0; i < (std::size_t) t->x_.size(); ++i){
             double ft = 0;
             for(std::size_t k = 0; k < t->n_sine_; ++k){
                 double tmp = t->freqs(k) *t->x_(i);

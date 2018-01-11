@@ -6,33 +6,26 @@ namespace jaco2_data {
 class TimeStamp
 {
 public:
-    TimeStamp() {}
+    TimeStamp();
 
-    inline void now()
-    {
-        stamp = std::chrono::high_resolution_clock::now();
-    }
+    void now();
 
-    inline unsigned long int toNSec() const
-    {
-        return std::chrono::duration_cast<std::chrono::nanoseconds>(stamp.time_since_epoch()).count();
-    }
+    unsigned long int toNSec() const;
+    unsigned long int toMicroSec() const;
+    double toSec() const;
 
-    inline unsigned long int toMicroSec() const
-    {
-        return std::chrono::duration_cast<std::chrono::microseconds>(stamp.time_since_epoch()).count();
-    }
+    void fromNSec(unsigned long int nsecs);
+    void fromMicroSec(unsigned long int musecs);
+    void fromSec(double sec);
 
-    inline double toSec() const
-    {
-        return std::chrono::duration_cast<std::chrono::nanoseconds>(stamp.time_since_epoch()).count() * 1e-9;
-    }
+    bool operator !=(const TimeStamp& other) const;
+    bool operator <=(const TimeStamp& other) const;
+    bool operator >=(const TimeStamp& other) const;
+    bool operator ==(const TimeStamp& other) const;
 
-    inline void fromNSec(unsigned long int nsecs)
-    {
-        std::chrono::nanoseconds  tmp = std::chrono::nanoseconds(nsecs);
-        stamp = std::chrono::time_point<std::chrono::high_resolution_clock>(tmp);
-    }
+    double substractionResultInSeconds(const TimeStamp& rhs) const;
+
+    static double timeDiffinSeconds(const TimeStamp& lhs, const TimeStamp& rhs);
 
 
 public:

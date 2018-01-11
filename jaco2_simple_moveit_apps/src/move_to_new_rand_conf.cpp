@@ -1,10 +1,5 @@
 #include <jaco2_utils/configuration_list.h>
 #include <ros/ros.h>
-#if ROS_VERSION_MINIMUM(1, 12, 0)
-#include <moveit/move_group_interface/move_group_interface.h>
-#else
-#include <moveit/move_group_interface/move_group.h>
-#endif
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
@@ -12,6 +7,14 @@
 #include <std_srvs/Trigger.h>
 
 #include <signal.h>
+
+#if ROS_VERSION_MINIMUM(1,12,0)
+    #include <moveit/move_group_interface/move_group_interface.h>
+    typedef moveit::planning_interface::MoveGroupInterface MoveGroupInterface;
+#else
+    #include <moveit/move_group_interface/move_group.h>
+    typedef moveit::planning_interface::MoveGroup MoveGroupInterface;
+#endif
 
 class NewRandomConfPlanner{
 public:
@@ -108,11 +111,7 @@ public:
             if(!collision && !contains) {
 
 
-#if ROS_VERSION_MINIMUM(1, 12, 0)
-                moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-#else
-                moveit::planning_interface::MoveGroup::Plan my_plan;
-#endif
+                MoveGroupInterface::Plan my_plan;
                 my_plan.trajectory_.joint_trajectory;
 
                 group_.setJointValueTarget(rand.angles);
@@ -291,11 +290,7 @@ public:
 private:
 
     std::vector<std::string> jointNames_;
-#if ROS_VERSION_MINIMUM(1, 12, 0)
-    moveit::planning_interface::MoveGroupInterface group_;
-#else
-    moveit::planning_interface::MoveGroup group_;
-#endif
+    MoveGroupInterface group_;
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
 
     planning_scene_monitor::PlanningSceneMonitorPtr planningMonitor_;

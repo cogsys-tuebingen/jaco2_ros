@@ -27,11 +27,12 @@ find_package(catkin REQUIRED COMPONENTS
     std_msgs
     tf
     trajectory_msgs
-    jaco2_msgs
     dynamic_reconfigure
-    jaco2_kin_dyn_lib
     rostest
     jaco2_data
+    jaco2_msgs
+    jaco2_msgs_conversion
+    jaco2_kin_dyn_lib
     )
 
 ## System dependencies are found with CMake's conventions
@@ -74,7 +75,8 @@ add_library(jaco2_driver
     src/jaco2_state.cpp
     src/data/jaco2_joint_state.cpp
     src/data/jaco2_kinova_conversion.cpp
-#    src/joint_state_outlier_filter.cpp
+    src/data/joint_state_outlier_filter.cpp
+    src/data/gravity_estimator.cpp
     src/controller/collision_reaction.cpp
     src/controller/gripper_controller.cpp
     src/controller/torque_controller.cpp
@@ -108,6 +110,7 @@ target_link_libraries(jaco2_driver_node
     jaco2_driver
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
+    yaml-cpp
     )
 
 target_link_libraries(gravity_parameter_estimation

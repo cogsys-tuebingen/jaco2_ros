@@ -3,7 +3,7 @@
 #include <sensor_msgs/JointState.h>
 #include <jaco2_msgs/JointVelocity.h>
 #include <jaco2_msgs/ArmJointAnglesAction.h>
-#include <jaco2_driver/velocity_calibration.hpp>
+#include <jaco2_data/velocity_calibration.hpp>
 #include <Eigen/Core>
 
 double getMean(const std::vector<double>& vec)
@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
     ros::NodeHandle nh("~");
     std::string save_path;
     std::string driver_name;
-    nh.param<std::string>("driver_name",driver_name,"/jaco_21_driver");
+    nh.param<std::string>("driver_name",driver_name,"/jaco_22_driver");
     nh.param<std::string>("save_path",save_path,"/tmp/velocity_calibration.yaml");
 
 

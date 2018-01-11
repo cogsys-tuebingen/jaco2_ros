@@ -38,6 +38,16 @@ public:
         jointNames_ = name;
     }
 
+    void clear()
+    {
+        position_.clear();
+        velocity_.clear();
+        accerleration_.clear();
+        time_from_start_.clear();
+        points_ = 0;
+        jointNames_.clear();
+    }
+
     void push_back(AngularInfo& pos, AngularInfo& vel, AngularInfo& acc, double time_from_start)
     {
         position_.push_back(pos);

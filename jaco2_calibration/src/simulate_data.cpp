@@ -2,7 +2,6 @@
 #include <random>
 
 #include <ros/ros.h>
-#include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
@@ -16,7 +15,13 @@
 #include <jaco2_calibration_utils/dynamic_calibration_sample.hpp>
 #include <jaco2_calibration_utils/acceleration_samples.hpp>
 #include <jaco2_calibration_utils/jaco2_calibration_io.h>
-
+#if ROS_VERSION_MINIMUM(1,12,0)
+    #include <moveit/move_group_interface/move_group_interface.h>
+    typedef moveit::planning_interface::MoveGroupInterface MoveGroupInterface;
+#else
+    #include <moveit/move_group_interface/move_group.h>
+    typedef moveit::planning_interface::MoveGroup MoveGroupInterface;
+#endif
 
 class SimCalibNode
 {
@@ -44,11 +49,7 @@ public:
         //        calibServiceServer_ = private_nh_.advertiseService("calibrate_acc", &SimCalibNode::changeCalibCallback, this);
 
         moveGroup_.setPlannerId("RRTkConfigDefault");
-        //        moveGroup_.set
-        //        moveGroup_.setStartStateToCurrentState();
         moveGroup_.setPlanningTime(2.0);
-        //        moveGroup_.setGoalPositionTolerance(0.01);
-        //        moveGroup_.setGoalOrientationTolerance(0.05);
 
 #if ROS_VERSION_MINIMUM(1, 12, 0)
         planningMonitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
@@ -74,53 +75,37 @@ public:
         ros::Duration dt = now-lastTime_;
         lastTime_ = now;
         dt_ = dt.toSec();
-        Jaco2Calibration::DynamicCalibrationSample sample;
-        sample.time = dt_;
+        jaco2_data::JointStateDataStamped sample;
+        sample.stamp().fromNSec(now.toNSec());
 
         double tdiff = dt_;
-        if (samples_.size() > 2) {
-            tdiff = samples_.at(samples_.size() -1).time + samples_.at(samples_.size() -2).time;
-        }
+
         for(std::size_t i = 0; i < 6; ++i){
-            sample.jointPos[i] = msg->position[i];
-            sample.jointVel[i] = msg->velocity[i];
-            //            sample.jointTorque[i] = msg->effort[i];
-            //            sample.jointAcc[i] = msg->acceleration[i];
+            sample.data.position[i] = msg->position[i];
+            sample.data.velocity[i] = msg->velocity[i];
+
             if(samples_.size() > 2 && dt_ !=0)
             {
-                sample.jointAcc[i] = (sample.jointVel[i] - samples_.at(samples_.size() -2).jointVel[i])/(tdiff);
+                sample.data.acceleration[i] = (sample.data.velocity[i] - samples_.at(samples_.size() -2).data.velocity[i])/(tdiff);
             }
             else{
-                sample.jointAcc[i] = 0;
+                sample.data.acceleration[i] = 0;
             }
         }
-        dynSolver_.getTorques(sample.jointPos, sample.jointVel, sample.jointAcc,sample.jointTorque);
+        dynSolver_.getTorques(sample.data.position, sample.data.velocity, sample.data.acceleration,sample.data.torque);
         // add white noise
         for(std::size_t i = 0; i < 6; ++i) {
-            sample.jointTorque[i] += (double) distribution_(generator_);
+            sample.data.torque[i] += (double) distribution_(generator_);
         }
 
         //estimate jaco's base acceleration
-        sample.gravity = Eigen::Vector3d(0, 0, -9.81);
+        sample.data.gravity = Eigen::Vector3d(0, 0, -9.81);
         samples_.push_back(sample);
 
         ++currentSamples_;
         //        ROS_INFO_STREAM("Recoding_Data");
     }
 
-
-    //    bool changeCalibCallback(jaco2_msgs::CalibAcc::Request & req, jaco2_msgs::CalibAcc::Response& res)
-    //    {
-    //        calibAcc_ = req.calib_acc;
-    //        if(calibAcc_){
-    //            res.calib_acc_result = "Starting Accelerometer Calibration.";
-    //        }
-    //        else{
-    //            res.calib_acc_result = "Starting Dynamic Parameter Calibration.";
-    //        }
-    //        notCalib_ = true;
-    //        return true;
-    //    }
 
 
     bool checkCollision(const planning_scene_monitor::PlanningSceneMonitorPtr& plm, const robot_state::RobotState& rstate )
@@ -172,7 +157,7 @@ public:
 
                 if(!collision) {
 
-                    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+                    MoveGroupInterface::Plan my_plan;
                     moveGroup_.setJointValueTarget(jvalues);
                     //                    moveGroup_.setStartStateToCurrentState();
                     moveGroup_.setPlanningTime(3.0);
@@ -217,7 +202,7 @@ public:
             else{
                 Jaco2Calibration::Jaco2CalibrationIO::save("/tmp/dyn_samples_sim.txt", samples_);
                 int ec = calibration_.calibrateCoMandInertia(samples_);
-                std::vector<Jaco2Calibration::DynamicCalibratedParameters> dynparams;
+                Jaco2Calibration::DynamicParametersCollection dynparams;
                 if(ec > -1){
                     dynparams = calibration_.getDynamicCalibration();
                 }
@@ -349,23 +334,22 @@ private:
     ros::Subscriber subJointState_;
     ros::Subscriber subSensors_;
     ros::Subscriber subJointAcc_;
-    std::vector<Jaco2Calibration::DynamicCalibrationSample> samples_;
-    std::vector<Eigen::Vector3d> gravity_;
-    //    Jaco2Calibration::AccelerationSamples accSamples_;
+    jaco2_data::JointStateDataStampedCollection samples_;
+    std::vector<Eigen::Vector3d, EV3dAllocator> gravity_;
+
     ros::Time lastTime_;
     double dt_;
     jaco2_msgs::Jaco2Sensor jacoSensorMsg_;
     ros::ServiceServer calibServiceServer_;
-    std::vector<Eigen::Vector3d> gsum_;
+    std::vector<Eigen::Vector3d, EV3dAllocator> gsum_;
     std::vector<std::string> jointGroupNames_;
-    moveit::planning_interface::MoveGroupInterface moveGroup_;
+    MoveGroupInterface moveGroup_;
     moveit::planning_interface::PlanningSceneInterface planningSceneInterface_;
     planning_scene_monitor::PlanningSceneMonitorPtr  planningMonitor_;
     Jaco2KinDynLib::Jaco2DynamicModel dynSolver_;
     std::default_random_engine generator_;
     std::normal_distribution<double> distribution_;
-    //    ros::Publisher display_publisher_;
-    //    moveit_msgs::DisplayTrajectory display_trajectory_;
+
 };
 
 int main(int argc, char *argv[])

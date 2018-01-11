@@ -1,15 +1,14 @@
 #include <jaco2_calibration_utils/jaco2_calibration_io.h>
 #include <yaml-cpp/yaml.h>
 
-//namespace Jaco2Calibration{
 using namespace Jaco2Calibration;
 
-void Jaco2CalibrationIO::save(std::string name, const std::vector<DynamicCalibratedParameters>& params)
+void Jaco2CalibrationIO::save(std::string name, const DynamicParametersCollection &params)
 {
     std::ofstream file(name);
     YAML::Emitter yamlEmit(file);
     YAML::Node doc;
-    for(DynamicCalibratedParameters param : params)
+    for(DynamicParameters param : params)
     {
         YAML::Node pNode;
         pNode["link_name"] = param.linkName;
@@ -32,7 +31,7 @@ void Jaco2CalibrationIO::save(std::string name, const std::vector<DynamicCalibra
 }
 
 
-void Jaco2CalibrationIO::loadDynParm(std::string filename, std::vector<DynamicCalibratedParameters>& params)
+void Jaco2CalibrationIO::loadDynParm(std::string filename, DynamicParametersCollection& params)
 {
     YAML::Node doc = YAML::LoadFile(filename);
     doc = doc["parameter"];
@@ -42,7 +41,7 @@ void Jaco2CalibrationIO::loadDynParm(std::string filename, std::vector<DynamicCa
     }
     for(auto it = doc.begin(); it != doc.end(); ++it){
         auto pNode = *it;
-        DynamicCalibratedParameters param;
+        DynamicParameters param;
         std::string name(pNode["link_name"].as<std::string>());
         param.linkName = name;
         param.mass = pNode["mass"].as<double>();
@@ -63,35 +62,35 @@ void Jaco2CalibrationIO::loadDynParm(std::string filename, std::vector<DynamicCa
     }
 }
 
-void Jaco2CalibrationIO::save(std::string name, std::vector<DynamicCalibrationSample> samples, std::string delimiter)
+void Jaco2CalibrationIO::save(std::string name, jaco2_data::JointStateDataStampedCollection &samples, std::string delimiter)
 {
     std::ofstream file(name);
     //    std::string delimiter(";");
     file << "time " << delimiter;
-    for(std::size_t i = 0; i <samples[0].jointPos.size(); ++i)
+    for(std::size_t i = 0; i <samples[0].data.position.size(); ++i)
     {
         file << "joint_pos_" << std::to_string(i) << delimiter;
     }
-    for(std::size_t i = 0; i <samples[0].jointVel.size(); ++i)
+    for(std::size_t i = 0; i <samples[0].data.velocity.size(); ++i)
     {
         file << "joint_vel_" << std::to_string(i) << delimiter;
     }
-    for(std::size_t i = 0; i <samples[0].jointAcc.size(); ++i)
+    for(std::size_t i = 0; i <samples[0].data.acceleration.size(); ++i)
     {
         file << "joint_acc_" << std::to_string(i) << delimiter;
     }
-    for(std::size_t i = 0; i <samples[0].jointTorque.size(); ++i)
+    for(std::size_t i = 0; i <samples[0].data.torque.size(); ++i)
     {
         file << "joint_torque_" << std::to_string(i) << delimiter;
     }
     file << std::endl;
-    for(DynamicCalibrationSample sample : samples)
+    for(auto sample : samples)
     {
         file << sample.toString(delimiter) << std::endl;
     }
 }
 
-void Jaco2CalibrationIO::importAsciiData(std::string filename, std::vector<DynamicCalibrationSample>& samples, const char delimiter)
+void Jaco2CalibrationIO::importAsciiData(std::string filename, jaco2_data::JointStateDataStampedCollection& samples, const char delimiter)
 {
     samples.clear();
 
@@ -113,25 +112,25 @@ void Jaco2CalibrationIO::importAsciiData(std::string filename, std::vector<Dynam
             std::stringstream ss;
             ss<< line ;
 
-            DynamicCalibrationSample sample;
+            jaco2_data::JointStateDataStamped sample(6);
             int i = 0;
             while( ss.getline( value, 256, delimiter ))
             {
-                double val = std::atof(value);
+                unsigned long int val = std::atoi(value);
                 if(i==0){
-                    sample.time = val;
+                    sample.stamp().fromNSec(val);
                 }
                 if( i > 0 && i < 7){
-                    sample.jointPos[i-1] = val;
+                    sample.data.position[i-1] = val;
                 }
                 if(i >= 7 && i<13){
-                    sample.jointVel[i-7] = val;
+                    sample.data.velocity[i-7] = val;
                 }
                 if(i >= 13 && i<19){
-                    sample.jointAcc[i-13] = val;
+                    sample.data.acceleration[i-13] = val;
                 }
                 if(i >= 19 && i<25){
-                    sample.jointTorque[i-19] = val;
+                    sample.data.torque[i-19] = val;
                 }
                 ++i;
             }
@@ -144,7 +143,8 @@ void Jaco2CalibrationIO::importAsciiData(std::string filename, std::vector<Dynam
     infile.close();
 }
 
-void Jaco2CalibrationIO::importAsciiDataWithGravity(std::string filename, std::vector<DynamicCalibrationSample>& samples, const char delimiter)
+
+void Jaco2CalibrationIO::importAsciiDataWithGravity(std::string filename, jaco2_data::JointStateDataStampedCollection& samples, const char delimiter)
 {
     samples.clear();
 
@@ -166,28 +166,28 @@ void Jaco2CalibrationIO::importAsciiDataWithGravity(std::string filename, std::v
             std::stringstream ss;
             ss<< line ;
 
-            DynamicCalibrationSample sample;
+            jaco2_data::JointStateDataStamped sample(6);
             int i = 0;
             while( ss.getline( value, 256, delimiter ))
             {
-                double val = std::atof(value);
+                unsigned long int val = std::atoi(value);
                 if(i==0){
-                    sample.time = val;
+                    sample.stamp().fromNSec(val);
                 }
                 if( i > 0 && i < 7){
-                    sample.jointPos[i-1] = val;
+                    sample.data.position[i-1] = val;
                 }
                 if(i >= 7 && i<13){
-                    sample.jointVel[i-7] = val;
+                    sample.data.velocity[i-7] = val;
                 }
                 if(i >= 13 && i<19){
-                    sample.jointAcc[i-13] = val;
+                    sample.data.acceleration[i-13] = val;
                 }
                 if(i >= 19 && i<25){
-                    sample.jointTorque[i-19] = val;
+                    sample.data.torque[i-19] = val;
                 }
                 if(i >= 25 && i<28){
-                    sample.gravity(i-25) = val;
+                    sample.data.gravity(i-25) = val;
                 }
                 ++i;
             }
@@ -222,33 +222,33 @@ void Jaco2CalibrationIO::importAsciiData(std::string filename, AccelerationSampl
             std::stringstream ss;
             ss<< line ;
 
-            AccelerationData sample[samples.nJoints];
+            jaco2_data::Vector3Stamped sample[samples.nJoints];
             int i = 0;
             while( ss.getline( value, 256, delimiter ))
             {
                 double val = std::atof(value);
                 if(i==0){
                     for(std::size_t i = 0; i < samples.nJoints; ++i){
-                        sample[0].time = val;
+                        sample[0].stamp().fromSec(val);
                     }
                 }
                 if( i > 0 && i < 4){
-                    sample[0].vector[i-1] = val;
+                    sample[0].data.vector[i-1] = val;
                 }
                 if(i >= 4 && i<7){
-                    sample[1].vector[i-4] = val;
+                    sample[1].data.vector[i-4] = val;
                 }
                 if(i >= 7 && i<10){
-                    sample[2].vector[i-7] = val;
+                    sample[2].data.vector[i-7] = val;
                 }
                 if(i >= 10 && i<13){
-                    sample[3].vector[i-10] = val;
+                    sample[3].data.vector[i-10] = val;
                 }
                 if(i >= 13 && i<16){
-                    sample[4].vector[i-13] = val;
+                    sample[4].data.vector[i-13] = val;
                 }
                 if(i >= 16 && i<19){
-                    sample[5].vector[i-16] = val;
+                    sample[5].data.vector[i-16] = val;
                 }
                 ++i;
             }
@@ -260,7 +260,5 @@ void Jaco2CalibrationIO::importAsciiData(std::string filename, AccelerationSampl
     }
     infile.close();
 }
-
-//}
 
 

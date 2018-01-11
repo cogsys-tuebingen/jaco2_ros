@@ -77,6 +77,11 @@ void ConfigurationList::add(const Configuration &c)
     }
 }
 
+void ConfigurationList::clear()
+{
+    configurations.clear();
+}
+
 void  ConfigurationList::save(std::string filename) const
 {
     std::ofstream file(filename);

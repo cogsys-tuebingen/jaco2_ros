@@ -34,17 +34,26 @@ file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLIN
 
 add_library(${PROJECT_NAME}
    ${ALL_HEADERS}
+   src/wrench.cpp
    src/joint_state_data.cpp
+   src/accelerometer_data.cpp
+   src/vector3.cpp
+   src/time_stamp.cpp
+   src/extended_joint_state_data.cpp
+   src/joint_angles.cpp
+   src/joint_data.cpp
+   src/dynamic_calibration_io.cpp
    )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(${PROJECT_NAME}
    ${catkin_LIBRARIES}
+   yaml-cpp
  )
 
 #############

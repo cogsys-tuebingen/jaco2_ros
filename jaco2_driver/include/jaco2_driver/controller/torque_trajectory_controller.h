@@ -9,7 +9,7 @@
 class TorqueTrajectoryController  : public TrajectoryTrackingController
 {
 public:
-    TorqueTrajectoryController(Jaco2State &state, Jaco2API& api);
+    TorqueTrajectoryController(Jaco2State &state, Jaco2API& api, TerminationCallback& t);
 
     void setTrajectory(const JointTrajectory& trajectory) override;
 

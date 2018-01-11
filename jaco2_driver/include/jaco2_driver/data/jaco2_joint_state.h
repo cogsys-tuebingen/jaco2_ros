@@ -10,11 +10,15 @@
 /// ROS
 #include <sensor_msgs/JointState.h>
 /// Jaco2
+#include <jaco2_data/types.h>
 #include <jaco2_data/extended_joint_state_data.h>
+#include <jaco2_data/accelerometer_calibration.hpp>
+#include <jaco2_driver/data/joint_state_outlier_filter.h>
+#include <jaco2_driver/data/gravity_estimator.h>
 
 struct KinovaJointState{
-    std::chrono::time_point<std::chrono::high_resolution_clock> stamp;
-    std::chrono::time_point<std::chrono::high_resolution_clock> acc_stamp;
+    jaco2_data::TimeStamp stamp;
+    jaco2_data::TimeStamp acc_stamp;
     AngularPosition position;
     AngularPosition velocity;
     AngularPosition acceleration;
@@ -23,43 +27,67 @@ struct KinovaJointState{
 };
 
 
-enum AngularDataFields{
-    POS = 0,
-    VEL = 1,
-    ACC = 2,
-    TOR = 3
-};
 /**
- * @brief The Jaco2JointState class normalized joint data in radian
+ * @brief The Jaco2JointState class normalized joint data in radian.
+ *        Converts API data to jaco2_data
+ *        Estimation of gravity
+ *        Outlier filtering
+ *        Use update methods!
  */
 class Jaco2JointState
 {
 public:
     Jaco2JointState();
 
-    void setAngularData(const AngularDataFields type, const AngularPosition& pos);
+    void useOutlierFilter(bool arg);
+    void setOutlierThreshold(double torque, double acc);
+    /**
+     * @brief setAngularData set Angular data. No gravity estimation, no filtering.
+     * @param type type of data
+     * @param pos the data
+     */
+    void setAngularData(const jaco2_data::JointStateData::DataType type, const AngularPosition& pos);
+
+    /**
+     * @brief setLinearData set linear acceleration (accelerometer) data.  No gravity estimation, no filtering.
+     * @param accs linear acceleration (accelerometer) data
+     * @param stamp time stamp od data
+     */
     void setLinearData(const AngularAcceleration& accs, const jaco2_data::TimeStamp &stamp);
 
-    AngularInfo getAngularData(const AngularDataFields type) const;
-    std::vector<double> getData(const AngularDataFields type, bool degrees) const;
+    AngularInfo getAngularData(const jaco2_data::JointStateData::DataType type) const;
 
-    void set(const KinovaJointState& data);
-    void set(const jaco2_data::TimeStamp& t,
-             const AngularPosition& pos,
-              const AngularPosition& vel,
-              const AngularPosition& acc,
-              const AngularPosition& tor,
-              const AngularAcceleration& lacc);
+    jaco2_data::JointStateDataStamped getJointState() const;
+    jaco2_data::AccelerometerData getLinearAccelerations() const;
+    jaco2_data::ExtendedJointStateData getExtJointState() const;
 
+    void setJointNames(const std::vector<std::string> &names);
+    void setAccelerometerCalibration(std::vector<Jaco2Calibration::AccelerometerCalibrationParam> params);
+
+
+    void update(const KinovaJointState& data);
+    void update(const jaco2_data::TimeStamp& t,
+                const AngularPosition& pos,
+                const AngularPosition& vel,
+                const AngularPosition& acc,
+                const AngularPosition& tor,
+                const AngularAcceleration& lacc);
+    /**
+     * @brief estimateG estimates Gravity. Has to be called if setter are used
+     */
+
+    void estimateG();
 
 private:
-    void estimateG(double x, double y, double z);
-
+    void applyCalibration();
 
 private:
-    std::size_t buffer_size_;
-    std::deque<Eigen::Vector3d> g_buffer_;
-    jaco2_data::ExtendedJointStateData current_state_;
+    bool use_outlier_fiter_;
+    GravityEstimator gravity_;
+    jaco2_data::ExtendedJointStateDataStamped current_state_;
+    std::vector<bool> calibrate_acc_;
+    std::vector<Jaco2Calibration::AccelerometerCalibrationParam> accCalibParam_;
+    JointStateOutlierFilter filter_;
 
 
 

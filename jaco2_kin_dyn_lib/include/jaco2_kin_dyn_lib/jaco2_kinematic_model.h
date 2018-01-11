@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <random>
+#include <jaco2_data/suppress_warnings_start.h>
 //ROS
 #include <ros/ros.h>
 #include <kdl_parser/kdl_parser.hpp>
@@ -16,7 +17,8 @@
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
 #include <kdl/solveri.hpp>
-
+#include <kdl/chainjnttojacsolver.hpp>
+#include <jaco2_data/suppress_warnings_end.h>
 namespace Jaco2KinDynLib {
 
 
@@ -89,18 +91,12 @@ public:
     std::string getRootLink() const {return root_;}
     std::string getTipLink() const {return tip_;}
 
-    double getUpperJointLimit(const std::size_t id);
-    double getLowerJointLimit(const std::size_t id);
+    double getUpperJointLimit(const std::size_t id) const;
+    double getLowerJointLimit(const std::size_t id) const;
 
 
     Eigen::Vector3d getLinkFixedTranslation(const std::string &link) const;
     Eigen::Matrix3d getLinkFixedRotation(const std::string &link) const;
-
-    //    static void convert(const KDL::JntArray& in, std::vector<double>& out);
-    //    static void convert(const std::vector<double>& in, KDL::JntArray& out);
-    //    static void PoseTFToKDL(const tf::Pose& t, KDL::Frame& k);
-
-
 
     /**
      * @brief getRotationAxis gets the rotation axis of the link in the link frame
@@ -109,6 +105,11 @@ public:
      */
     void getRotationAxis(const std::string &link, KDL::Vector &rot_axis) const;
     void getRotationAxis(const std::string &link, Eigen::Vector3d& rot_axis) const;
+    KDL::Twist getJointAxisProjection(const std::string& link) const;
+    std::vector<KDL::Twist> getJointAxisProjections() const;
+
+    KDL::Jacobian getJacobian(const std::vector<double>& q);
+    int getJointVelocities(const std::vector<double> &q, const KDL::Twist &v_in, std::vector<double>& v_out);
 
 protected:
     virtual void initialize();
@@ -125,6 +126,8 @@ protected:
 
     std::shared_ptr<KDL::ChainFkSolverPos_recursive> solverFK_;
     std::shared_ptr<TRAC_IK::TRAC_IK> solverIK_;
+    std::shared_ptr<KDL::ChainJntToJacSolver> solverJac_;
+    std::shared_ptr<KDL::ChainIkSolverVel_pinv> solverIKVel_;
     std::vector<std::uniform_real_distribution<double> > jointDist_;
     std::default_random_engine randEng_;
     KDL::JntArray lowerLimits_;
