@@ -1,7 +1,6 @@
 #include <jaco2_utils/configuration_list.h>
 #include <jaco2_msgs/SetSampledConfigService.h>
 #include <ros/ros.h>
-#include <moveit/move_group_interface/move_group.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
@@ -11,9 +10,11 @@
 #include <signal.h>
 
 #if ROS_VERSION_MINIMUM(1,12,0)
+    #include <moveit/move_group_interface/move_group_interface.h>
     typedef moveit::planning_interface::MoveGroupInterface MoveGroup;
     typedef moveit::planning_interface::MoveGroupInterface::Plan Plan;
 #else
+    #include <moveit/move_group_interface/move_group.h>
     typedef moveit::planning_interface::MoveGroup MoveGroup;
     typedef moveit::planning_interface::MoveGroup::Plan Plan;
 #endif
