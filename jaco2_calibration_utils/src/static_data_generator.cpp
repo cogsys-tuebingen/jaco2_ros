@@ -203,7 +203,7 @@ void StaticDataGenerator::anglesCb(const jaco2_msgs::JointAnglesConstPtr& msg)
 {
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     JointAngles angles = jaco2_msgs::JointAngleConversion::ros2data(*msg);
-     if(!moving()){
+     if(notMoving()){
          angle_buffer_.emplace_back(angles);
      }
     while(angle_buffer_.size() > buffer_length_){
@@ -234,7 +234,7 @@ void StaticDataGenerator::tauGfreeCb(const jaco2_msgs::Jaco2GfreeTorquesConstPtr
     d.data.data = msg->effort_g_free;
     d.header.frame_id = msg->header.frame_id;
     d.header.stamp.fromNSec(msg->header.stamp.toNSec());
-     if(!moving()){
+     if(notMoving()){
          tau_g_buffer_.emplace_back(d);
      }
     while(tau_g_buffer_.size() > buffer_length_){
@@ -248,7 +248,7 @@ void StaticDataGenerator::tempCb(const jaco2_msgs::Jaco2SensorConstPtr& msg)
     JointDataStamped d;
     d.data.data = msg->temperature;
     d.header.stamp.fromNSec(msg->temperature_time.toNSec());
-    if(!moving()){
+    if(notMoving()){
         temp_buffer_.emplace_back(d);
     }
     while(temp_buffer_.size() > buffer_length_){
@@ -288,6 +288,17 @@ bool StaticDataGenerator::moving()
     }
     bool is_moving = status_buffer_.back() != actionlib_msgs::GoalStatus::SUCCEEDED;
     return is_moving;
+}
+bool StaticDataGenerator::notMoving()
+{
+    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
+    if(status_buffer_.empty() || state_buffer_.empty()){
+        return false;
+    }
+    bool not_moving = status_buffer_.back() == actionlib_msgs::GoalStatus::SUCCEEDED;
+    not_moving = state_buffer_.back().joint_state.norm((int) jaco2_data::JointStateData::DataType::JOINT_VEL) < 0.1;
+
+    return not_moving;
 }
 
 std::size_t StaticDataGenerator::searchStart() const

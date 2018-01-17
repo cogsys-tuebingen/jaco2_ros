@@ -50,6 +50,7 @@ private:
 
     void saveStaticData();
     bool moving();
+    bool notMoving();
     std::size_t searchStart() const;
     bool discreteVectorEqual(const std::vector<int> first,
                              const std::vector<int>& second) const;
