@@ -5,7 +5,7 @@ using namespace jaco2_data;
 
 StaticDataGenerator::StaticDataGenerator(ros::NodeHandle &nh):
     nh_(nh),
-    buffer_length_(40),
+    buffer_length_(30),
     n_joints_(6),
     n_steps_(4),
     valid_counter_(0),
@@ -15,7 +15,7 @@ StaticDataGenerator::StaticDataGenerator(ros::NodeHandle &nh):
     group_.setStartStateToCurrentState();
     group_.setPlanningTime(5.0);
 
-    std::string driver_name = nh_.param<std::string>("driver_name","jaco_arm_driver");
+    std::string driver_name = nh_.param<std::string>("driver_name","jaco_22_driver");
     std::string prefix = "/" + driver_name + "/";
 
     sub_angles_ = nh_.subscribe(prefix + "out/joint_angles", 1, &StaticDataGenerator::anglesCb, this);
@@ -117,10 +117,15 @@ void StaticDataGenerator::generateData()
 void StaticDataGenerator::saveStaticData()
 {
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-    ros::Duration(0.5).sleep();
-    ros::Duration d(1);
-    ros::Rate r(30);
     ros::Time start = ros::Time::now();
+    ros::Duration d0(0.5);
+    ros::Rate r(30);
+    while(ros::Time::now() - start < d0){
+        ros::spinOnce();
+        r.sleep();
+    }
+    ros::Duration d(1);
+    start = ros::Time::now();
     while(ros::Time::now() - start < d){
         ros::spinOnce();
         r.sleep();
@@ -198,7 +203,9 @@ void StaticDataGenerator::anglesCb(const jaco2_msgs::JointAnglesConstPtr& msg)
 {
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     JointAngles angles = jaco2_msgs::JointAngleConversion::ros2data(*msg);
-    angle_buffer_.emplace_back(angles);
+     if(!moving()){
+         angle_buffer_.emplace_back(angles);
+     }
     while(angle_buffer_.size() > buffer_length_){
         angle_buffer_.pop_front();
     }
@@ -210,7 +217,11 @@ void StaticDataGenerator::stateCb(const jaco2_msgs::Jaco2JointStateConstPtr& msg
     ExtendedJointStateData ex;
     ex.joint_state = jaco2_msgs::JointStateConversion::jaco2Msg2Data(*msg);
     ex.lin_acc = last_accs_;
-    state_buffer_.emplace_back(ex);
+
+    if(!moving() && ex.joint_state.norm((int) jaco2_data::JointStateData::DataType::JOINT_VEL) < 0.1){
+        state_buffer_.emplace_back(ex);
+    }
+
     while(state_buffer_.size() > buffer_length_){
         state_buffer_.pop_front();
     }
@@ -223,7 +234,9 @@ void StaticDataGenerator::tauGfreeCb(const jaco2_msgs::Jaco2GfreeTorquesConstPtr
     d.data.data = msg->effort_g_free;
     d.header.frame_id = msg->header.frame_id;
     d.header.stamp.fromNSec(msg->header.stamp.toNSec());
-    tau_g_buffer_.emplace_back(d);
+     if(!moving()){
+         tau_g_buffer_.emplace_back(d);
+     }
     while(tau_g_buffer_.size() > buffer_length_){
         tau_g_buffer_.pop_front();
     }
@@ -235,7 +248,9 @@ void StaticDataGenerator::tempCb(const jaco2_msgs::Jaco2SensorConstPtr& msg)
     JointDataStamped d;
     d.data.data = msg->temperature;
     d.header.stamp.fromNSec(msg->temperature_time.toNSec());
-    temp_buffer_.emplace_back(d);
+    if(!moving()){
+        temp_buffer_.emplace_back(d);
+    }
     while(temp_buffer_.size() > buffer_length_){
         temp_buffer_.pop_front();
     }
