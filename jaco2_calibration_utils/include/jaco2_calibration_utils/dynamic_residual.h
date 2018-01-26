@@ -26,7 +26,7 @@ public:
     DynamicResidual(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
 
     void loadData(std::string data_file);
-    void setData(jaco2_data::JointStateDataStampedCollection &samples);
+    void setData(const jaco2_data::JointStateDataStampedCollection &samples);
     void useInitialGuess(bool use, double factor=0);
     void setScaleMatrix(Eigen::MatrixXd& scale);
     bool calculteMatrix();
