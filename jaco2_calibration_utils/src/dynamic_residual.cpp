@@ -42,7 +42,7 @@ void DynamicResidual::loadData(std::string data_file)
     n_samples_ = samples_.size();
 }
 
-void DynamicResidual::setData(JointStateDataStampedCollection& samples)
+void DynamicResidual::setData(const JointStateDataStampedCollection& samples)
 {
     samples_ = samples;
     n_samples_ = samples_.size();
