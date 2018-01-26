@@ -18,7 +18,7 @@
     <param name="/joint_5_lower_limit" value="-3.141592653589793"/>
     <param name="/joint_6_upper_limit" value="3.141592653589793"/>
     <param name="/joint_6_lower_limit" value="-3.141592653589793"/>
-    <param name="/discrete_start_1" value="0"/>
+    <param name="/discrete_start_1" value="1"/>
     <param name="/discrete_start_2" value="0"/>
     <param name="/discrete_start_3" value="0"/>
     <param name="/discrete_start_4" value="0"/>
