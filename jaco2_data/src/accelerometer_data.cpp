@@ -68,7 +68,7 @@ std::size_t AccelerometerData::size() const
     return lin_acc.size();
 }
 
-void AccelerometerData::resize(std::size_t n, Vector3Stamped val)
+void AccelerometerData::resize(std::size_t n, Vector3Stamped &val)
 {
     lin_acc.resize(n, val);
 }
