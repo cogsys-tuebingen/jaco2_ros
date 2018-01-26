@@ -13,7 +13,7 @@ StaticDataGenerator::StaticDataGenerator(ros::NodeHandle &nh):
 {
     group_.setPlannerId("RRTkConfigDefault");
     group_.setStartStateToCurrentState();
-    group_.setPlanningTime(2.0);
+    group_.setPlanningTime(1.0);
 
     std::string driver_name = nh_.param<std::string>("driver_name","jaco_22_driver");
     std::string prefix = "/" + driver_name + "/";
