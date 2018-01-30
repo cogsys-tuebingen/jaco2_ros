@@ -169,7 +169,7 @@ public:
         primitive.dimensions[1] = 2.0;
         primitive.dimensions[2] = 0.01;
 
-//        /* A pose for the box (specified relative to frame_id) */
+        //        /* A pose for the box (specified relative to frame_id) */
         geometry_msgs::Pose box_pose;
         box_pose.orientation.w = 1.0;
         box_pose.position.x =  0.0;
@@ -258,18 +258,18 @@ public:
 
         collision_objects.push_back(collision_object);
 
-//        primitive.type = primitive.CYLINDER;
-//        primitive.dimensions[primitive.CYLINDER_RADIUS] = 0.05;
-//        primitive.dimensions[primitive.CYLINDER_HEIGHT]  = 1.0;
-//        geometry_msgs::Pose c_pose;
-//        c_pose.orientation.w = 1.0;
-//        c_pose.position.x = 0.3;
-//        c_pose.position.y = 0.2;
-//        c_pose.position.z = 0.5;
-//        collision_object.id = "cylinder";
-//        collision_object.primitives.push_back(primitive);
-//        collision_object.primitive_poses.push_back(c_pose);
-//        collision_object.operation = collision_object.ADD;
+        //        primitive.type = primitive.CYLINDER;
+        //        primitive.dimensions[primitive.CYLINDER_RADIUS] = 0.05;
+        //        primitive.dimensions[primitive.CYLINDER_HEIGHT]  = 1.0;
+        //        geometry_msgs::Pose c_pose;
+        //        c_pose.orientation.w = 1.0;
+        //        c_pose.position.x = 0.3;
+        //        c_pose.position.y = 0.2;
+        //        c_pose.position.z = 0.5;
+        //        collision_object.id = "cylinder";
+        //        collision_object.primitives.push_back(primitive);
+        //        collision_object.primitive_poses.push_back(c_pose);
+        //        collision_object.operation = collision_object.ADD;
 
         // Now, let's add the collision object into the world
         ROS_INFO("Add an object into the world");

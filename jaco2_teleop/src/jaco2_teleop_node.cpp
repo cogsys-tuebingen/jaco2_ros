@@ -63,6 +63,7 @@ public:
         toggle_states_[Function::GCOMP] = false;
         toggle_states_[Function::ADMIT] = false;
         toggle_states_[Function::CART] = false;
+        ROS_WARN_STREAM("DOES YET NOT WORK PROBABLY !!!");
     }
 
     void stateCb(const sensor_msgs::JointStateConstPtr& msg)
