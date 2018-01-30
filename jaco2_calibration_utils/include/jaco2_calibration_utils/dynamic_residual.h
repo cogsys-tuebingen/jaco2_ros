@@ -44,6 +44,7 @@ public:
     inline std::size_t getNumOfLinks() const {return n_links_;}
     inline std::size_t getNumOfParams() const {return n_cols_;}
     inline std::size_t getNumOfRows() const {return n_rows_;}
+    inline Jaco2Calibration::DynamicParametersCollection getURDFParams() const {return urdf_dyn_param_;}
     inline void setStaticVelThreshold(double val){static_vel_thresold_ = val;}
     inline void setStaticAccThreshold(double val){static_acc_thresold_ = val;}
     inline void setInitalParams(Eigen::MatrixXd& params){initial_params_ = params;}
