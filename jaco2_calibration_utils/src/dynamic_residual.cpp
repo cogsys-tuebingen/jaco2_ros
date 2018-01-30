@@ -8,12 +8,12 @@ const std::size_t DynamicResidual::n_param_ = 10;
 const std::size_t DynamicResidual::n_param_static_ = 4;
 const std::size_t DynamicResidual::n_param_dynamic_ = 6;
 
-DynamicResidual::DynamicResidual(const std::string &robot_model, const std::string &chain_root, const std::string &chain_tip):
+DynamicResidual::DynamicResidual(const std::string &robot_model, const std::string &chain_root, const std::string &chain_tip, const ResidualType &type):
     model_(robot_model, chain_root, chain_tip),
     calculated_matrix_(false),
     use_initial_(false),
     set_scale_mat_(false),
-    residual_type_(ALL),
+    residual_type_((int) type),
     n_opt_(n_param_)
 {
     //initial parameters
@@ -28,9 +28,36 @@ DynamicResidual::DynamicResidual(const std::string &robot_model, const std::stri
         urdf_dyn_param_.push_back(param);
     }
 
-    Jaco2Calibration::to_eigen(urdf_dyn_param_, initial_params_);
     n_links_ = model_.getNrOfSegments();
-    n_cols_ = n_param_ * n_links_;
+
+    switch(residual_type_){
+    case (int) ALL:
+        residual_type_ = type;
+        n_opt_ = n_param_;
+        n_cols_ = n_param_ * n_links_;
+        Jaco2Calibration::to_eigen(urdf_dyn_param_, initial_params_);
+        break;
+    case (int) STATIC:
+        residual_type_ = type;
+        n_opt_ = n_param_static_;
+        n_cols_ = n_opt_ * n_links_;
+        Jaco2Calibration::to_eigen(urdf_dyn_param_, initial_params_,true, true, false);
+        break;
+    case (int) DYNAMIC:
+        residual_type_ = type;
+        n_opt_ = n_param_dynamic_;
+        n_cols_ = n_param_ * n_links_;
+        Jaco2Calibration::to_eigen(urdf_dyn_param_, initial_params_);
+        break;
+    default:
+        residual_type_ = ALL;
+        n_opt_ = n_param_;
+        n_cols_ = n_param_ * n_links_;
+        Jaco2Calibration::to_eigen(urdf_dyn_param_, initial_params_);
+        break;
+    }
+
+
 
     init_scale_ = Eigen::MatrixXd::Identity(n_cols_, n_cols_);
     uncertainty_scale_ = Eigen::MatrixXd::Identity(n_links_, n_links_);
@@ -92,6 +119,7 @@ void DynamicResidual::setResidualType(int type)
     case STATIC:
         residual_type_ = type;
         n_opt_ = n_param_static_;
+        n_cols_ = n_opt_ * n_links_;
         break;
     case DYNAMIC:
         residual_type_ = type;
@@ -163,14 +191,24 @@ bool DynamicResidual::calculteMatrix()
         ++it;
 
         if(sample.position.size() == n_links_) {
-            Eigen::MatrixXd sample_mat  =
-                    model_.getRigidBodyRegressionMatrix(first_link, last_link,
-                                                        sample.position,
-                                                        sample.velocity,
-                                                        sample.acceleration,
-                                                        sample.gravity(0),
-                                                        sample.gravity(1),
-                                                        sample.gravity(2));
+            Eigen::MatrixXd sample_mat;
+            if(residual_type_ == (int) ResidualType::STATIC){
+                sample_mat = model_.getStaticRigidBodyRegressionMatrix(first_link, last_link,
+                                                                       sample.position,
+                                                                       sample.gravity(0),
+                                                                       sample.gravity(1),
+                                                                       sample.gravity(2));
+
+            } else {
+
+                sample_mat = model_.getRigidBodyRegressionMatrix(first_link, last_link,
+                                                                 sample.position,
+                                                                 sample.velocity,
+                                                                 sample.acceleration,
+                                                                 sample.gravity(0),
+                                                                 sample.gravity(1),
+                                                                 sample.gravity(2));
+            }
 
             Eigen::MatrixXd sample_tau = Eigen::MatrixXd::Zero(n_links_, 1);
             for(std::size_t i = 0; i < n_links_; ++i) {
@@ -258,10 +296,10 @@ double DynamicResidual::getResidual(const Eigen::MatrixXd &params, std::vector<d
     if (!grad.empty())  {
         Eigen::MatrixXd  e_grad = -2.0 * diffT * reg_mat_;
         paramEigen2Vector(e_grad, grad);
-//        std::cout << "grad" << std::endl;
+        //        std::cout << "grad" << std::endl;
     }
 
-//    std::cout << cost << std::endl;
+    //    std::cout << cost << std::endl;
     return cost;
 }
 

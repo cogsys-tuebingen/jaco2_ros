@@ -119,21 +119,75 @@ inline void to_Jaco2ManipulatorDynParams(const std::vector<double>& in, const st
    }
 }
 
-inline void to_eigen(const Jaco2Calibration::DynamicParametersCollection& in, Eigen::MatrixXd & out)
+inline void to_eigen(const Jaco2Calibration::DynamicParametersCollection& in, Eigen::MatrixXd & out,
+                      bool move_mass = true, bool move_coM = true, bool move_inertia = true)
 {
 //    int counter = 0;
-    out = Eigen::MatrixXd::Zero(in.size()*10,1);
+    std::size_t sz = 0;
+    if(move_mass){
+        sz += 1;
+    }
+    if(move_coM){
+        sz += 3;
+    }
+    if(move_inertia){
+        sz+= 6;
+    }
+    out = Eigen::MatrixXd::Zero(in.size()*sz,1);
     for(std::size_t i = 0; i < in.size(); ++i) {
         auto param = in[i];
-        int id = i*10;
-        out(id) = param.mass;
-        out.block<3,1>(id+1,0) = param.mass * param.coM;
-        out(id+4,0) = param.inertia(0,0);
-        out(id+5,0) = param.inertia(0,1);
-        out(id+6,0) = param.inertia(0,2);
-        out(id+7,0) = param.inertia(1,1);
-        out(id+8,0) = param.inertia(1,2);
-        out(id+9,0) = param.inertia(2,2);
+        int id = i*sz;
+        switch (sz) {
+        case 1:
+            out(id) = param.mass;
+            break;
+        case 3:
+            out.block<3,1>(id,0) = param.mass * param.coM;
+            break;
+        case 4:
+            out(id) = param.mass;
+            out.block<3,1>(id+1,0) = param.mass * param.coM;
+            break;
+        case 6:
+            out(id,0) = param.inertia(0,0);
+            out(id+1,0) = param.inertia(0,1);
+            out(id+2,0) = param.inertia(0,2);
+            out(id+3,0) = param.inertia(1,1);
+            out(id+4,0) = param.inertia(1,2);
+            out(id+5,0) = param.inertia(2,2);
+            break;
+        case 7:
+            out(id) = param.mass;
+            out(id+1,0) = param.inertia(0,0);
+            out(id+2,0) = param.inertia(0,1);
+            out(id+3,0) = param.inertia(0,2);
+            out(id+4,0) = param.inertia(1,1);
+            out(id+5,0) = param.inertia(1,2);
+            out(id+6,0) = param.inertia(2,2);
+            break;
+        case 9:
+            out.block<3,1>(id,0) = param.mass * param.coM;
+            out(id+3,0) = param.inertia(0,0);
+            out(id+4,0) = param.inertia(0,1);
+            out(id+5,0) = param.inertia(0,2);
+            out(id+6,0) = param.inertia(1,1);
+            out(id+7,0) = param.inertia(1,2);
+            out(id+8,0) = param.inertia(2,2);
+            break;
+        case 10:
+            out(id) = param.mass;
+            out.block<3,1>(id+1,0) = param.mass * param.coM;
+            out(id+4,0) = param.inertia(0,0);
+            out(id+5,0) = param.inertia(0,1);
+            out(id+6,0) = param.inertia(0,2);
+            out(id+7,0) = param.inertia(1,1);
+            out(id+8,0) = param.inertia(1,2);
+            out(id+9,0) = param.inertia(2,2);
+            break;
+        default:
+            throw std::logic_error("something terribly wrong");
+            break;
+        }
     }
 }
 

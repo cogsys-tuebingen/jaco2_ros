@@ -23,7 +23,10 @@ enum ParamertType{
 class DynamicResidual
 {
 public:
-    DynamicResidual(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
+    DynamicResidual(const std::string& robot_model,
+                    const std::string& chain_root,
+                    const std::string& chain_tip,
+                    const ResidualType& type = ResidualType::ALL);
 
     void loadData(std::string data_file);
     void setData(const jaco2_data::JointStateDataStampedCollection &samples);
