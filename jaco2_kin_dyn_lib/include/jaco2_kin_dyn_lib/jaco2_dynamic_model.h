@@ -176,6 +176,14 @@ public:
                                                  const double& gz,
                                                  const bool project = true);
 
+    Eigen::MatrixXd getStaticRigidBodyRegressionMatrix(const std::string &root,
+                                                       const std::string &tip,
+                                                       const std::vector<double> &q,
+                                                       const double& gx,
+                                                       const double& gy,
+                                                       const double& gz,
+                                                       const bool project = true);
+
     void modifiedRNE(const double gx,
                      const double gy,
                      const double gz,
