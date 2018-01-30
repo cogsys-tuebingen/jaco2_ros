@@ -20,6 +20,7 @@ class Jaco2CalibrationIO{
 
 public:
     static void save(std::string name, const DynamicParametersCollection& params);
+    static void saveAscii(std::string name, const DynamicParametersCollection& params);
 
     static void loadDynParm(std::string filename, DynamicParametersCollection& params);
 

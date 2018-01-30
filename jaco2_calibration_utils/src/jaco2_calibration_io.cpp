@@ -62,6 +62,33 @@ void Jaco2CalibrationIO::loadDynParm(std::string filename, DynamicParametersColl
     }
 }
 
+void Jaco2CalibrationIO::saveAscii(std::string name, const DynamicParametersCollection &params)
+{
+    std::ofstream file(name);
+
+    for(DynamicParameters param : params)
+    {
+        std::stringstream ss;
+        ss << "link_name " << ";" << param.linkName << std::endl;
+        ss << "mass" << ";" << param.mass << std::endl;;
+        Eigen::Vector3d com = param.coM;
+        ss <<"com_x"<<";" << com(0) << std::endl;
+        ss <<"com_y"<<";" << com(1) << std::endl;
+        ss <<"com_z"<<";" << com(2) << std::endl;
+        Eigen::Matrix3d inertia = param.inertia;
+        ss << "Ixx"<< ";"<< inertia(0,0) << std::endl;
+        ss << "Ixy"<< ";"<< inertia(0,1) << std::endl;
+        ss << "Ixz"<< ";"<< inertia(0,2) << std::endl;
+        ss << "Iyy"<< ";"<< inertia(1,1) << std::endl;
+        ss << "Iyz"<< ";"<< inertia(1,2) << std::endl;
+        ss << "Izz"<< ";"<< inertia(2,2) << std::endl;
+
+        file << ss.str();
+    }
+    file.close();
+
+}
+
 void Jaco2CalibrationIO::save(std::string name, jaco2_data::JointStateDataStampedCollection &samples, std::string delimiter)
 {
     std::ofstream file(name);
