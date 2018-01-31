@@ -18,6 +18,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  rostest
   jaco2_data
   jaco2_driver
   jaco2_kin_dyn_lib
@@ -90,6 +91,7 @@ add_executable(record_static_data src/record_static_data.cpp)
 add_executable(calib_joint_velocity src/calib_joint_velocity.cpp)
 add_executable(jaco2_torque_offset_calibration src/jaco2_torque_offsets_sinus_fit.cpp)
 add_executable(jaco2_static_data_generartion_node src/static_data_generation_node.cpp)
+add_executable(dynamic_residual_test test/dynamic_residual_test.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(jaco2_calibration_utils ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -154,6 +156,13 @@ target_link_libraries(jaco2_torque_offset_calibration
 target_link_libraries(jaco2_static_data_generartion_node
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
+    jaco2_calibration_utils
+)
+
+target_link_libraries(dynamic_residual_test
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${GTEST_LIBRARIES}
     jaco2_calibration_utils
 )
 #############
