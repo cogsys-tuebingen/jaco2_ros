@@ -15,6 +15,7 @@ TEST(DynamicResidual,ALL)
                                             "jaco_link_hand");
 
     jaco2_data::JointStateDataStampedCollection  data;
+    model.setGravity(0,0,-9.81);
     for(int i = 0; i < 10 ; ++i){
         std::vector<double> q, qDot,qDotDot, torques;
         jaco2_data::JointStateDataStamped js;
@@ -23,6 +24,8 @@ TEST(DynamicResidual,ALL)
         model.getRandomConfig(qDotDot);
         model.getTorques(q, qDot, qDotDot, torques);
         js.position = q;
+        js.gravity = Eigen::Vector3d(0,0,-9.81);
+        js.names = {"joint_1","joint_2","joint_3","joint_4","joint_5","joint_6"};
         js.velocity = qDot;
         js.acceleration= qDotDot;
         js.torque = torques;
@@ -62,5 +65,6 @@ int main(int argc, char *argv[])
     std::string robot_desc_string;
     //    node.getParam("/robot_description", robot_desc_string);//, std::string(""));
     std::string urdf_param("robot_description");
-    return 0;
+
+    return RUN_ALL_TESTS();
 }
