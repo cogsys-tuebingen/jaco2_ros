@@ -14,7 +14,7 @@ TEST(DynamicResidual,ALL)
                                             "jaco_link_base",
                                             "jaco_link_hand");
 
-    std::vector<jaco2_data::JointStateData> data;
+    jaco2_data::JointStateDataStampedCollection  data;
     for(int i = 0; i < 10 ; ++i){
         std::vector<double> q, qDot,qDotDot, torques;
         jaco2_data::JointStateDataStamped js;
@@ -22,26 +22,32 @@ TEST(DynamicResidual,ALL)
         model.getRandomConfig(qDot);
         model.getRandomConfig(qDotDot);
         model.getTorques(q, qDot, qDotDot, torques);
-        js.data.position = q;
-        js.data.velocity = qDot;
-        js.data.acceleration= qDotDot;
-        js.data.torque = torques;
+        js.position = q;
+        js.velocity = qDot;
+        js.acceleration= qDotDot;
+        js.torque = torques;
         js.header.frame_id = "";
         js.header.stamp.now();
-        data.push_back(data);
+        data.push_back(js);
     }
 
-    residual.setData(d);
+    residual.setData(data);
     Eigen::VectorXd param = residual.linSolve();
+    Jaco2Calibration::DynamicParametersCollection paramout;
     Jaco2Calibration::to_Jaco2ManipulatorDynParams(param, model.getLinkNames(), paramout);
     auto it = paramout.begin();
     for(auto l :  model.getLinkNames()){
         auto com = model.getLinkCoM(l);
         for(int k = 0; k < 3; ++k){
-            it->coM
+            EXPECT_NEAR(com(k), it->coM(k), 1e-3);
         }
         auto m = model.getLinkMass(l);
+        EXPECT_NEAR(m, it->mass,1e-3);
         auto i = model.getLinkInertia(l);
+        for(int k = 0; k < 3; ++k){
+            EXPECT_NEAR(i(k), it->inertia(k), 1e-3);
+        }
+        ++it;
     }
 
 
