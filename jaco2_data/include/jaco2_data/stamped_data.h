@@ -3,23 +3,69 @@
 #include <jaco2_data/header.h>
 namespace jaco2_data{
 template<typename T>
-class StampedData
+class StampedData : public T
 {
 public:
-    StampedData() {}
-
-    StampedData(T d) :
-        data(d)
+    StampedData():
+        data(*this)
     {}
 
-    StampedData(T& d) :
-        data(d)
-    {}
+    StampedData(const StampedData<T>& other):
+        T(other), data(*this)
+    {
+        this->header = other.header;
+        this->data = other.data;
+    }
 
-    StampedData(jaco2_data::Header& h, T& d) :
+    StampedData(StampedData<T>&& other):
+        T(other), data(*this)
+    {
+        header = std::move(other.header);
+        data = std::move(other.data);
+    }
+
+    explicit StampedData(const T& d) :
+        data(*this)
+    {
+        data = d ;
+    }
+
+    explicit StampedData(jaco2_data::Header& h, const T& d) :
         header(h),
-        data(d)
-    {}
+        data(*this)
+    {
+        data = d;
+    }
+
+    explicit StampedData(T&& v)
+        : data(*this)
+    {
+        data = std::move(v);
+    }
+
+    StampedData& operator = (const StampedData<T> & copy)
+    {
+        header = copy.header;
+        data = copy.data;
+        return *this;
+    }
+    StampedData& operator = (StampedData<T>&& copy)
+    {
+        header = std::move(copy.header);
+        data = std::move(copy.data);
+        return *this;
+    }
+
+    StampedData& operator = (const T & other_value)
+    {
+        data = other_value;
+        return *this;
+    }
+    StampedData& operator = (T && other_value)
+    {
+        data = std::move(other_value);
+        return *this;
+    }
 
     TimeStamp stamp() const
     {
@@ -101,7 +147,7 @@ public:
 
 public:
     Header header;
-    T data;
+    T& data;
 };
 }
 #endif // STAMPED_DATA_H
