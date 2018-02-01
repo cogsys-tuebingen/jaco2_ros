@@ -17,31 +17,27 @@ public:
         this->data = other.data;
     }
 
-    StampedData(const StampedData<T>&& other):
+    StampedData(StampedData<T>&& other):
         T(other), data(*this)
     {
         header = std::move(other.header);
         data = std::move(other.data);
     }
 
-    StampedData(T d)
-        : data(*this)
-    {}
-
-    StampedData(T& d) :
+    explicit StampedData(const T& d) :
         data(*this)
     {
         data = d ;
     }
 
-    StampedData(jaco2_data::Header& h, T& d) :
+    explicit StampedData(jaco2_data::Header& h, const T& d) :
         header(h),
         data(*this)
     {
         data = d;
     }
 
-    StampedData(T&& v)
+    explicit StampedData(T&& v)
         : data(*this)
     {
         data = std::move(v);

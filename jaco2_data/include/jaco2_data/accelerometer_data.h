@@ -42,7 +42,7 @@ public:
     const Vector3Stamped& back() const;
 
     std::size_t size() const;
-    void resize(std::size_t n, Vector3Stamped& val = Vector3Stamped(Vector3(0,0,0)));
+    void resize(std::size_t n, const Vector3Stamped& val = Vector3Stamped(Vector3(0,0,0)));
 
 //    void emplace_back(Vector3StampedStamped&& val);
     void push_back(const Vector3Stamped& val);
