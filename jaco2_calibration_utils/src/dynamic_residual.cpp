@@ -153,6 +153,17 @@ std::vector<double> DynamicResidual::getInitialParamsVector() const
     return result;
 }
 
+Eigen::VectorXd DynamicResidual::linSolve()
+{
+    if(!calculated_matrix_){
+        calculteMatrix();
+    }
+    Eigen::JacobiSVD<Eigen::MatrixXd> svd(reg_mat_, Eigen::ComputeThinU | Eigen::ComputeThinV | Eigen::FullPivHouseholderQRPreconditioner);
+    Eigen::VectorXd param = svd.solve(torques_);
+    return param;
+
+}
+
 bool DynamicResidual::calculteMatrix()
 {
     std::vector<std::string> links = model_.getLinkNames();
