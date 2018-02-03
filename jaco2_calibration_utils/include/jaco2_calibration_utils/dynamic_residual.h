@@ -34,6 +34,8 @@ public:
     void setScaleMatrix(Eigen::MatrixXd& scale);
     bool calculteMatrix();
 
+    Eigen::VectorXd linSolve();
+
     const Eigen::MatrixXd& getRegressionMatrix();
     const Eigen::MatrixXd& getTorques();
 
