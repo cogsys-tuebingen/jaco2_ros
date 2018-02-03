@@ -183,18 +183,23 @@ JointStateData JointStateData::abs() const
 
 double JointStateData::norm(int type) const
 {
+    return norm((DataType) type);
+}
+
+double JointStateData::norm(DataType type) const
+{
     const std::vector<double>* data;
     switch (type) {
-    case (int) DataType::JOINT_POS:
+    case DataType::JOINT_POS:
         data = &position;
         break;
-    case (int) DataType::JOINT_VEL:
+    case DataType::JOINT_VEL:
         data = &velocity;
         break;
-    case (int) DataType::JOINT_ACC:
+    case DataType::JOINT_ACC:
         data = &acceleration;
         break;
-    case (int) DataType::JOINT_TORQUE:
+    case DataType::JOINT_TORQUE:
         data = &torque;
         break;
     default:
