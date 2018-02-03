@@ -16,9 +16,7 @@ This package contains a driver and ROS interfaces for the Kinova Jaco 2 manipula
 It contains:
 -  [the diver](#jaco2_driver) containg several controller and basic input and output
 -  [a library](#jaco2_kin_dyn_lib) for kinematic and dynamic models
--  [calibration tools](#jaco2_calibration) to calibrate the dynamic model and the accelerometers
 - [a moveit config](#jaco2_moveit_config) to use the Jaco 2 with moveit
-- [simple moveit apps](#jaco2_simple_moveit_apps) such as random sampling
 - [the model](#jaco2_description) of the Jaco 2
 
 
@@ -128,10 +126,8 @@ Now you can plan and execute trajectories. For a simulation run:
 roslaunch jaco2_moveit_config demo.launch
 ```
 
-## jaco2_calibration
-TODO
-## jaco2_simple_moveit_apps
-TODO
+
+
 ## jaco2_description
 The robot model which holds  all parameters needed for the kinematic and the dynamic model. Additionally, meshes are included for visualization and collision checking.
 
