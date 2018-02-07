@@ -59,17 +59,29 @@ struct convert<jaco2_data::Vector3> {
         if(!nodeX.IsDefined()){
             return false;
         }
-        rhs.vector[0] = nodeX.as<double>();
+        if(nodeX.Scalar() == "-nan" || nodeX.Scalar() == "nan"){   // broken force x sensor!
+            rhs.vector[0] = std::numeric_limits<double>::quiet_NaN();
+        } else {
+            rhs.vector[0] = nodeX.as<double>();
+        }
         auto nodeY = node["y"];
         if(!nodeY.IsDefined()){
             return false;
         }
-        rhs.vector[1] = nodeY.as<double>();
+        if(nodeY.Scalar() == "-nan" || nodeY.Scalar() == "nan"){ // broken force x sensor!
+            rhs.vector[1] = std::numeric_limits<double>::quiet_NaN();
+        } else {
+            rhs.vector[1] = nodeY.as<double>();
+        }
         auto nodeZ = node["z"];
         if(!nodeZ.IsDefined()){
             return false;
         }
-        rhs.vector[2] = nodeZ.as<double>();
+        if(nodeZ.Scalar() == "-nan" || nodeZ.Scalar() == "nan"){ // broken force x sensor!
+            rhs.vector[2] = std::numeric_limits<double>::quiet_NaN();
+        } else {
+            rhs.vector[2] = nodeZ.as<double>();
+        }
         return true;
     }
 };
