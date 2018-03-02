@@ -17,8 +17,10 @@ move_home|bool| true| If true, on start up, move arm to home and initialize (ope
 trajectory_controller|string|TRAJ_P2P_VEL|Changes the trajactory traking controller controller type. One can choose beween velocity and torque control and collision repelling or  rigid controllers. Possible controllers: TRAJ_P2P_VEL, TRAJ_P2P_VEL_COLL, TRAJ_P2P_TOR, TRAJ_P2P_TOR_COLL. Attention: Torque control is still under development.|
 |jaco_accelerometer_calibration_file|string|""|Povides calibration parameters for the accelerometers. Paramerters can be optained using jaco2_calibration.|
 |jaco_torque_calibration_file|string|""|Under development. Provides a calibration for the torque sensors.|
-|jaco_velocity_calibration_file|string|""| Provides a velocity sensor calibration. For some API versions the sensed velocity is smaller than the actual. Calibration can be optianed using jaco2_calibration_utils.|
-|jaco_gravity_calibration_file|string|""|Gravitiy parameter parameter calibration, provided by the Jaco2 API. Get parameters by running: rosrun jaco2_driver gravity_parameter_estimation.
+|robot_model_param_sever|string|/robot_description|  Name of robot_model in parameter server.|
+|robot_model_base_link|string|jaco_link_base| Base link of the controlled chain. Can differ e.g. jaco_left_link_base jaco_right_link_base
+|robot_model_tip_link|string|jaco_link_hand|Tip link of the controlled chain. Can differ e.g. jaco_left_link_hand jaco_right_link_hand
+
 
 ##Warning
 Using the collision repelling controllers in a debugger might be a problem, since due to very long sampling periods the collision estimation might get numerically instable.  Be extra careful and just turn the Jaco2 of if something unexpected happens.
