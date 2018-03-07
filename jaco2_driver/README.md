@@ -7,6 +7,11 @@ The jaco2_driver is a simple FSM reading and writing data in each cycle. Per cyc
 
 | name | type  | default | function |
 | --------|-----|------| ----------- |
+connection_type|string| USB| Select how the arm is connected: "USB" or  "ethernet".|
+ethernet/local_machine_IP|string| 192.168.100.100| Local IP address|
+ethernet/subnet_mask|string| 255.255.255.0| Subnet mask|
+ethernet/local_cmd_port|int| 25000|Command Port|
+ethernet/local_broadcast_port|int| 25025| Broadcast Port|
 right_arm|bool| true| Use the jaco2 as a right or left arm.|
 move_home|bool| true| If true, on start up, move arm to home and initialize (open) fingers If false, stay in current configuration.|
 |jaco_use_accelerometer_calib|bool|false|Use a accelerometer calibration (yaml file has to be provided, see "jaco_accelerometer_calibration_file")|
