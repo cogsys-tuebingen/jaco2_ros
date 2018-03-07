@@ -126,7 +126,16 @@ Jaco2DriverNode::Jaco2DriverNode()
     sensorMsg_.name[5] = tf_prefix_ + "joint_6";
 
 
-    bool init = driver_.initialize(serial_, rightArm_, move_home);
+    std::string conntection_type = private_nh_.param<std::string>("connection_type", "USB");
+    bool use_usb = !(conntection_type == "ethernet");
+
+    EthernetConfig econf;
+    econf.local_ip_address = private_nh_.param<std::string>("ethernet/local_machine_IP", "192.168.100.100");
+    econf.subnet_mask = private_nh_.param<std::string>("ethernet/subnet_mask", "255.255.255.0");
+    econf.local_cmd_port = private_nh_.param<int>("ethernet/local_cmd_port", 25000);
+    econf.local_bcast_port = private_nh_.param<int>("ethernet/local_broadcast_port", 25025);
+
+    bool init = driver_.initialize(econf, serial_, rightArm_, move_home, use_usb);
     if(!init){
         ROS_ERROR_STREAM("Jaco 2 could not be initialized for device: " << serial_);
     }

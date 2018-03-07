@@ -27,7 +27,7 @@
 #include <jaco2_driver/controller/torque_controller.h>
 #include <jaco2_driver/controller/controller_factory.hpp>
 
-
+// Kinova
 
 class Jaco2Driver
 {
@@ -38,7 +38,7 @@ public:
 
     bool controllerFinished(Jaco2Controller::Result &result_type) const;
     bool serviceDone() const;
-    bool initialize(std::string serial = std::string(""), bool right = true, bool move_home = true);
+    bool initialize(EthernetConfig &conf, std::string serial = std::string(""), bool right = true, bool move_home = true, bool use_usb = true);
     // GET
     AngularPosition getAngularPosition() const;
     AngularPosition getAngularVelocity() const;

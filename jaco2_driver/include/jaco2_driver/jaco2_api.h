@@ -7,9 +7,12 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <kinova/KinovaTypes.h>
-#include <kinova/Kinova.API.CommLayerUbuntu.h>
-#include <kinova/Kinova.API.UsbCommandLayerUbuntu.h>
+
+#include <kinova/Kinova.API.USBCommandLayerUbuntu.h>
+#include <kinova/Kinova.API.EthCommandLayerUbuntu.h>
 #include <mutex>
+
+#include <jaco2_driver/data/ethernetconfig.h>
 
 enum ActuatorID{
     Actuator1 = 1,
@@ -20,11 +23,28 @@ enum ActuatorID{
     Actuator6 = 6
 };
 
+namespace kinova {
+
+#define KINOVA_USB_LIBRARY  "USBCommandLayerUbuntu.so"
+#define KINOVA_COMM_USB_LIBRARY "USBCommLayerUbuntu.so"
+
+#define KINOVA_ETH_LIBRARY  "EthCommandLayerUbuntu.so"
+#define KINOVA_COMM_ETH_LIBRARY "EthCommLayerUbuntu.so"
+enum KinovaAPIType {
+    USB = 0,
+    ETHERNET = 1
+};
+}
+
+
 class Jaco2API
 {
+private:
 public:
     Jaco2API();
     ~Jaco2API();
+
+    void setupCommandInterface(const kinova::KinovaAPIType& api_type);
 
     int init(std::string serial = "", bool right = true, bool move_home = true);
 
@@ -78,14 +98,17 @@ public:
     void startForceControl();
     void stopForceControl();
 
+    int setEthernetConfiguration(const EthernetConfig &conf);
 
 private:
-    void * commandLayer_handle;
+    void * api_command_lib_;
+    void * kinova_comm_lib_;
 
     int (*InitAPI)();
     int (*CloseAPI)();
     int (*StopControlAPI)();
     int (*StartControlAPI)();
+    int (*InitEthernetAPI)(EthernetCommConfig & config);
     int (*SendBasicTrajectory)(TrajectoryPoint command);
     int (*GetDevices)(KinovaDevice devices[MAX_KINOVA_DEVICE], int &result);
     int (*SetActiveDevice)(KinovaDevice device);
@@ -127,7 +150,10 @@ private:
 
 
     void moveHomeLeft();
+    void* initCommLayerFunction(const char* name);
+    void* initCommandLayerFunction(const char* name);
 private:
+    kinova::KinovaAPIType api_type_;
     mutable std::recursive_mutex mutex_;
     bool stopedAPI_;
     bool right_arm_;
