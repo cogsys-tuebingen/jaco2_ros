@@ -26,7 +26,11 @@ Jaco2DriverNode::Jaco2DriverNode()
       gripperServerRunning_(false),
       fingerServerRunning_(false),
       rightArm_(true),
-      ok_(true)
+      ok_(true),
+      dyn_model_calib_file_path_(""),
+      robot_description_("/robot_description"),
+      base_link_("jaco_link_base"),
+      tip_link_("jaco_link_tip")
 {
 
     pubJointState_ = private_nh_.advertise<sensor_msgs::JointState>("out/joint_states", 2);
@@ -75,6 +79,21 @@ Jaco2DriverNode::Jaco2DriverNode()
     if(dyn_model_calib_file_path_ != ""){
         ROS_INFO_STREAM("Using dynamic model calibration.");
     }
+    std::string rdes = private_nh_.param<std::string>("robot_model_param_sever", "");
+    if(rdes != ""){
+        robot_description_ = rdes;
+    }
+    ROS_INFO_STREAM("Robot model: " << robot_description_);
+
+    std::string link_base = private_nh_.param<std::string>("robot_model_base_link", "");
+    if(link_base != ""){
+        base_link_ = link_base;
+    }
+    std::string tip_link  = private_nh_.param<std::string>("robot_model_tip_link", "jaco_link_hand");
+    if(tip_link != ""){
+        tip_link_ = tip_link;
+    }
+
 
     f_ = boost::bind(&Jaco2DriverNode::dynamicReconfigureCb, this, _1, _2);
     paramServer_.setCallback(f_);
@@ -470,6 +489,17 @@ void Jaco2DriverNode::dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureC
     if(config.dynamic_model_calibration_file == "" && dyn_model_calib_file_path_ != ""){
         config.dynamic_model_calibration_file = dyn_model_calib_file_path_;
     }
+
+    if(config.robot_model_param_sever == "" && robot_description_!= ""){
+        config.robot_model_param_sever = robot_description_;
+    }
+    if(config.robot_model_base_link == "" && base_link_!= ""){
+        config.robot_model_base_link = base_link_;
+    }
+    if(config.robot_model_tip_link == "" && tip_link_!= ""){
+        config.robot_model_tip_link = tip_link_;
+    }
+
     driver_.updateControllerConfig(config);
 
 

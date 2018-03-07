@@ -38,6 +38,7 @@ public:
     JointStateData abs() const;
 
     double norm(int type) const;
+    double norm(DataType type) const;
 
     JointStateData operator+(const JointStateData &other) const;
     JointStateData operator-(const JointStateData &other) const;

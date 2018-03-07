@@ -178,6 +178,11 @@ std::size_t CollisionReaction::getCollisionCounter() const
 
 void CollisionReaction::updateResiduals()
 {
+    if(robot_model_ == "" || base_link_ == "" || tip_link_ == ""){
+       ROS_ERROR_STREAM("Robot will not perform any movement. Robot model not given!");
+       return;
+    }
+
     Jaco2KinDynLib::ResidualData data;
 
     auto state_stamped = state_.getJointState();

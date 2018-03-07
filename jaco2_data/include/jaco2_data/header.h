@@ -7,6 +7,15 @@ namespace jaco2_data
 {
 
 struct Header{
+
+    Header() {}
+
+    Header(const std::string& frame_id_, const TimeStamp& stamp_) :
+        stamp(stamp_),
+        frame_id(frame_id_)
+    {
+    }
+
     TimeStamp stamp;
     std::string frame_id;
 };

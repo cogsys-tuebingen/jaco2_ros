@@ -12,5 +12,8 @@
     <param name="jaco_velocity_calibration_file" type="string" value="$(find jaco2_driver)/config/velocity_calibration_jaco2-2.yaml"/>
     <param name="/velocity_controller" type="string" value="VEL"/>
     <param name="/trajectory_controller" type="string" value="TRAJ_P2P_VEL_COLL"/>
+    <param name="/robot_model_base_link" type="string" value="jaco_link_base"/>
+    <param name="/robot_model_tip_link" type="string" value="jaco_link_hand"/>
+    <param name="/robot_model_param_sever" type="string" value="/robot_description"/>
   </node>
 </launch>

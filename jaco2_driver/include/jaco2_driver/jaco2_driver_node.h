@@ -121,6 +121,9 @@ private:
 
     double j6o_;
     std::string dyn_model_calib_file_path_;
+    std::string robot_description_;
+    std::string base_link_;
+    std::string tip_link_;
 };
 #endif // JACO2_DRIVER_NODE_H
 
