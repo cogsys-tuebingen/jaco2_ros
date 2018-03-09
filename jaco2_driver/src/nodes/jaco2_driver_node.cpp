@@ -131,8 +131,9 @@ Jaco2DriverNode::Jaco2DriverNode()
 
     EthernetConfig econf;
     econf.local_ip_address = private_nh_.param<std::string>("ethernet/local_machine_IP", "192.168.100.100");
+    econf.robot_ip_address = private_nh_.param<std::string>("ethernet/local_robot_IP", "192.168.100.101");
     econf.subnet_mask = private_nh_.param<std::string>("ethernet/subnet_mask", "255.255.255.0");
-    econf.local_cmd_port = private_nh_.param<int>("ethernet/local_cmd_port", 25000);
+    econf.local_cmd_port = private_nh_.param<int>("ethernet/local_cmd_port", 25015);
     econf.local_bcast_port = private_nh_.param<int>("ethernet/local_broadcast_port", 25025);
 
     bool init = driver_.initialize(econf, serial_, rightArm_, move_home, use_usb);

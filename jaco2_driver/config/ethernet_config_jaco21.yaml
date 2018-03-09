@@ -1,10 +1,10 @@
 connection_type: ethernet
 
 # Ethernet connection parameters
-ethernet: {
+ethernet:
   local_machine_IP: 192.168.100.100,
-  local_robot_IP: 192.168.100.101,
+  local_robot_IP: 192.168.100.101
   subnet_mask: 255.255.255.0,
   local_cmd_port: 25000,
   local_broadcast_port: 25025
-}
+

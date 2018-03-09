@@ -8,7 +8,8 @@ The jaco2_driver is a simple FSM reading and writing data in each cycle. Per cyc
 | name | type  | default | function |
 | --------|-----|------| ----------- |
 connection_type|string| USB| Select how the arm is connected: "USB" or  "ethernet".|
-ethernet/local_machine_IP|string| 192.168.100.100| Local IP address|
+ethernet/local_machine_IP|string| 192.168.100.100| IP address of the PC. Adapter which is connected to the Jaco|
+ethernet/local_robot_IP|string| 192.168.100.100| IP address of the Jaco. Adapter which is connected to the Jaco|
 ethernet/subnet_mask|string| 255.255.255.0| Subnet mask|
 ethernet/local_cmd_port|int| 25000|Command Port|
 ethernet/local_broadcast_port|int| 25025| Broadcast Port|

@@ -15,5 +15,7 @@
     <param name="/tf_prefix" type="string" value="jaco_right_"/>
     <param name="/robot_model_base_link" type="string" value="jaco_right_link_base"/>
     <param name="/robot_model_tip_link" type="string" value="jaco_right_link_hand"/>
+    <param name="/connection_type" type="string" value="ethernet"/>
+    <rosparam file="$(find jaco2_driver)/config/ethernet_config_jaco22.yaml" command="load"/>
   </node>
 </launch>

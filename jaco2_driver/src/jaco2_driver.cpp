@@ -24,9 +24,10 @@ bool Jaco2Driver::initialize(EthernetConfig& conf, std::string serial, bool righ
 {
     if(use_usb){
         jaco_api_.setupCommandInterface(kinova::KinovaAPIType::USB);
+        jaco_api_.initUSB();
     } else{
         jaco_api_.setupCommandInterface(kinova::KinovaAPIType::ETHERNET);
-        jaco_api_.setEthernetConfiguration(conf);
+        jaco_api_.initEthernet(conf);
     }
 
 

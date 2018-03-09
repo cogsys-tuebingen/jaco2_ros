@@ -3,7 +3,8 @@
 #include <arpa/inet.h>
 
 Jaco2API::Jaco2API():
-    stopedAPI_(true)
+    stopedAPI_(true),
+    initialized_(false)
 {
 
 }
@@ -29,56 +30,57 @@ void Jaco2API::setupCommandInterface(const kinova::KinovaAPIType& api_type)
     }
 
     if (api_type_ !=  kinova::KinovaAPIType::USB){
-      InitEthernetAPI = (int (*)(EthernetCommConfig &))initCommandLayerFunction("InitEthernetAPI");
+        InitEthernetAPI = (int (*)(EthernetCommConfig &))initCommandLayerFunction("InitEthernetAPI");
     }
 
 
-    InitAPI = (int (*)()) initCommandLayerFunction("InitAPI");
-    CloseAPI = (int (*)()) initCommandLayerFunction("CloseAPI");
-    StopControlAPI = (int (*)()) initCommandLayerFunction("StopControlAPI");
-    StartControlAPI = (int (*)()) initCommandLayerFunction("StartControlAPI");
-    MoveHome = (int (*)()) initCommandLayerFunction("MoveHome");
-    InitFingers = (int (*)()) initCommandLayerFunction("InitFingers");
-    GetDevices = (int (*)(KinovaDevice devices[MAX_KINOVA_DEVICE], int &result)) initCommandLayerFunction("GetDevices");
-    SetActiveDevice = (int (*)(KinovaDevice devices)) initCommandLayerFunction("SetActiveDevice");
-    SendBasicTrajectory = (int (*)(TrajectoryPoint)) initCommandLayerFunction("SendBasicTrajectory");
-    GetAngularCommand = (int (*)(AngularPosition &)) initCommandLayerFunction("GetAngularCommand");
-    GetAngularPosition = (int (*)(AngularPosition &)) initCommandLayerFunction("GetAngularPosition");
-    GetAngularVelocity = (int (*)(AngularPosition &)) initCommandLayerFunction("GetAngularVelocity");
-    GetAngularForce = (int (*)(AngularPosition &Response)) initCommandLayerFunction("GetAngularForce");
-    GetAngularForceGravityFree = (int (*)(AngularPosition &Response)) initCommandLayerFunction("GetAngularForceGravityFree");
-    GetQuickStatus = (int (*)(QuickStatus &)) initCommandLayerFunction("GetQuickStatus");
-    GetAngularCurrent = (int (*)(AngularPosition &)) initCommandLayerFunction("GetAngularCurrent");
-    EraseAllTrajectories = (int (*)()) initCommandLayerFunction("EraseAllTrajectories");
-    GetActuatorAcceleration = (int (*)(AngularAcceleration &)) initCommandLayerFunction("GetActuatorAcceleration");
-    GetAngularForceGravityFree = (int (*)(AngularPosition &)) initCommandLayerFunction("GetAngularForceGravityFree");
-    SetAngularControl = (int (*)()) initCommandLayerFunction("SetAngularControl");
-    SetCartesianControl = (int (*)()) initCommandLayerFunction("SetCartesianControl");
-    GetSensorsInfo = (int (*)(SensorsInfo &)) initCommandLayerFunction("GetSensorsInfo");
-    SetTorqueZero = (int (*)(int)) initCommandLayerFunction("SetTorqueZero");
-    SendAdvanceTrajectory = (int (*)(TrajectoryPoint)) initCommandLayerFunction("SendAdvanceTrajectory");
-    StopCurrentLimitation = (int (*)()) initCommandLayerFunction("StopCurrentLimitation");
-    GetCartesianPosition = (int (*)(CartesianPosition &)) initCommandLayerFunction("GetCartesianPosition");
-    GetAPIVersion = (int (*)(int Response[API_VERSION_COUNT])) initCommandLayerFunction("GetAPIVersion");
+    InitAPI                         = (int (*)()) initCommandLayerFunction("InitAPI");
+    CloseAPI                        = (int (*)()) initCommandLayerFunction("CloseAPI");
+    StopControlAPI                  = (int (*)()) initCommandLayerFunction("StopControlAPI");
+    StartControlAPI                 = (int (*)()) initCommandLayerFunction("StartControlAPI");
+    MoveHome                        = (int (*)()) initCommandLayerFunction("MoveHome");
+    InitFingers                     = (int (*)()) initCommandLayerFunction("InitFingers");
+    GetDevices                      = (int (*)(KinovaDevice devices[MAX_KINOVA_DEVICE], int &result)) initCommandLayerFunction("GetDevices");
+    SetActiveDevice                 = (int (*)(KinovaDevice devices)) initCommandLayerFunction("SetActiveDevice");
+    SendBasicTrajectory             = (int (*)(TrajectoryPoint)) initCommandLayerFunction("SendBasicTrajectory");
+    GetAngularCommand               = (int (*)(AngularPosition &)) initCommandLayerFunction("GetAngularCommand");
+    GetAngularPosition              = (int (*)(AngularPosition &)) initCommandLayerFunction("GetAngularPosition");
+    GetAngularVelocity              = (int (*)(AngularPosition &)) initCommandLayerFunction("GetAngularVelocity");
+    GetAngularForce                 = (int (*)(AngularPosition &Response)) initCommandLayerFunction("GetAngularForce");
+    GetAngularForceGravityFree      = (int (*)(AngularPosition &Response)) initCommandLayerFunction("GetAngularForceGravityFree");
+    GetQuickStatus                  = (int (*)(QuickStatus &)) initCommandLayerFunction("GetQuickStatus");
+    GetAngularCurrent               = (int (*)(AngularPosition &)) initCommandLayerFunction("GetAngularCurrent");
+    EraseAllTrajectories            = (int (*)()) initCommandLayerFunction("EraseAllTrajectories");
+    GetActuatorAcceleration         = (int (*)(AngularAcceleration &)) initCommandLayerFunction("GetActuatorAcceleration");
+    GetAngularForceGravityFree      = (int (*)(AngularPosition &)) initCommandLayerFunction("GetAngularForceGravityFree");
+    SetAngularControl               = (int (*)()) initCommandLayerFunction("SetAngularControl");
+    SetCartesianControl             = (int (*)()) initCommandLayerFunction("SetCartesianControl");
+    GetSensorsInfo                  = (int (*)(SensorsInfo &)) initCommandLayerFunction("GetSensorsInfo");
+    SetTorqueZero                   = (int (*)(int)) initCommandLayerFunction("SetTorqueZero");
+    SendAdvanceTrajectory           = (int (*)(TrajectoryPoint)) initCommandLayerFunction("SendAdvanceTrajectory");
+    StopCurrentLimitation           = (int (*)()) initCommandLayerFunction("StopCurrentLimitation");
+    GetCartesianPosition            = (int (*)(CartesianPosition &)) initCommandLayerFunction("GetCartesianPosition");
+    GetAPIVersion                   = (int (*)(int Response[API_VERSION_COUNT])) initCommandLayerFunction("GetAPIVersion");
+    RefresDevicesList               = (int (*)()) initCommandLayerFunction("RefresDevicesList");
     // untested functions since available  5.2.0
-    RunGravityZEstimationSequence = (int(*)(ROBOT_TYPE, double OptimalzParam[OPTIMAL_Z_PARAM_SIZE])) initCommandLayerFunction( "RunGravityZEstimationSequence");
-    SwitchTrajectoryTorque = (int(*)(GENERALCONTROL_TYPE)) initCommandLayerFunction( "SwitchTrajectoryTorque");
-    SetTorqueSafetyFactor = (int(*)(float)) initCommandLayerFunction( "SetTorqueSafetyFactor");
-    SendAngularTorqueCommand = (int(*)(float Command[COMMAND_SIZE])) initCommandLayerFunction( "SendAngularTorqueCommand");
-    SendCartesianForceCommand = (int(*)(float Command[COMMAND_SIZE])) initCommandLayerFunction( "SendCartesianForceCommand");
-    SetGravityVector = (int(*)(float Command[3])) initCommandLayerFunction( "SetGravityVector");
-    SetGravityPayload = (int(*)(float Command[GRAVITY_PAYLOAD_SIZE])) initCommandLayerFunction( "SetGravityPayload");
-    SetGravityOptimalZParam =  (int(*)(float Command[GRAVITY_PARAM_SIZE])) initCommandLayerFunction( "SetGravityOptimalZParam");
-    SetGravityType = (int(*)(GRAVITY_TYPE Type)) initCommandLayerFunction( "SetGravityType");
-    GetCartesianForce = (int(*)(CartesianPosition &)) initCommandLayerFunction( "GetCartesianForce");
-    SetTorqueVibrationController = (int(*)(float)) initCommandLayerFunction( "SetTorqueVibrationController");
-    SetTorqueControlType = (int(*)(TORQUECONTROL_TYPE)) initCommandLayerFunction( "SetTorqueControlType");
-    GetTrajectoryTorqueMode = (int(*)(int &)) initCommandLayerFunction( "GetTrajectoryTorqueMode");
-    SetGravityType = (int(*)(GRAVITY_TYPE Type)) initCommandLayerFunction( "SetGravityType");
-    SetGravityOptimalZParam = (int(*)(float Command[GRAVITY_PARAM_SIZE])) initCommandLayerFunction( "SetGravityOptimalZParam");
-    SetActuatorPID = (int (*)(unsigned int, float, float, float )) initCommandLayerFunction("SetActuatorPID");
-    StartForceControl = (int (*)()) initCommandLayerFunction("StartForceControl");
-    StopForceControl = (int (*)()) initCommandLayerFunction("StopForceControl");
+    RunGravityZEstimationSequence   = (int(*)(ROBOT_TYPE, double OptimalzParam[OPTIMAL_Z_PARAM_SIZE])) initCommandLayerFunction( "RunGravityZEstimationSequence");
+    SwitchTrajectoryTorque          = (int(*)(GENERALCONTROL_TYPE)) initCommandLayerFunction( "SwitchTrajectoryTorque");
+    SetTorqueSafetyFactor           = (int(*)(float)) initCommandLayerFunction( "SetTorqueSafetyFactor");
+    SendAngularTorqueCommand        = (int(*)(float Command[COMMAND_SIZE])) initCommandLayerFunction( "SendAngularTorqueCommand");
+    SendCartesianForceCommand       = (int(*)(float Command[COMMAND_SIZE])) initCommandLayerFunction( "SendCartesianForceCommand");
+    SetGravityVector                = (int(*)(float Command[3])) initCommandLayerFunction( "SetGravityVector");
+    SetGravityPayload               = (int(*)(float Command[GRAVITY_PAYLOAD_SIZE])) initCommandLayerFunction( "SetGravityPayload");
+    SetGravityOptimalZParam         = (int(*)(float Command[GRAVITY_PARAM_SIZE])) initCommandLayerFunction( "SetGravityOptimalZParam");
+    SetGravityType                  = (int(*)(GRAVITY_TYPE Type)) initCommandLayerFunction( "SetGravityType");
+    GetCartesianForce               = (int(*)(CartesianPosition &)) initCommandLayerFunction( "GetCartesianForce");
+    SetTorqueVibrationController    = (int(*)(float)) initCommandLayerFunction( "SetTorqueVibrationController");
+    SetTorqueControlType            = (int(*)(TORQUECONTROL_TYPE)) initCommandLayerFunction( "SetTorqueControlType");
+    GetTrajectoryTorqueMode         = (int(*)(int &)) initCommandLayerFunction( "GetTrajectoryTorqueMode");
+    SetGravityType                  = (int(*)(GRAVITY_TYPE Type)) initCommandLayerFunction( "SetGravityType");
+    SetGravityOptimalZParam         = (int(*)(float Command[GRAVITY_PARAM_SIZE])) initCommandLayerFunction( "SetGravityOptimalZParam");
+    SetActuatorPID                  = (int (*)(unsigned int, float, float, float )) initCommandLayerFunction("SetActuatorPID");
+    StartForceControl               = (int (*)()) initCommandLayerFunction("StartForceControl");
+    StopForceControl                = (int (*)()) initCommandLayerFunction("StopForceControl");
 }
 
 void* Jaco2API::initCommLayerFunction(const char* name)
@@ -109,20 +111,49 @@ void* Jaco2API::initCommandLayerFunction(const char* name)
     return function_pointer;
 }
 
-int Jaco2API::setEthernetConfiguration(const EthernetConfig &conf)
+int Jaco2API::initUSB()
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);
+    int result = -1;
+    if((InitAPI == NULL) || (CloseAPI == NULL) || (SendBasicTrajectory == NULL) ||
+            (SendBasicTrajectory == NULL) || (MoveHome == NULL) || (InitFingers == NULL))
+    {
+        std::cout << "* * *  E R R O R   D U R I N G   I N I T I A L I Z A T I O N  * * *" << std::endl;
+        result = ERROR_NOT_INITIALIZED;
+    }
+    result = InitAPI();
+    if(result != NO_ERROR_KINOVA){
+        std::cerr << "Could not initialize Kinova Ethernet API" << std::endl;
+    } else {
+        initialized_ = true;
+    }
+    std::cout << "Initialization's result : " << result << std::endl;
+    return result;
+}
+
+int Jaco2API::initEthernet(const EthernetConfig &conf)
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    int result = -1;
+    if((InitAPI == NULL) || (CloseAPI == NULL) || (SendBasicTrajectory == NULL) ||
+            (SendBasicTrajectory == NULL) || (MoveHome == NULL) || (InitFingers == NULL))
+    {
+        std::cout << "* * *  E R R O R   D U R I N G   I N I T I A L I Z A T I O N  * * *" << std::endl;
+        result = ERROR_NOT_INITIALIZED;
+    }
     EthernetCommConfig econf;
     econf.localBcastPort = conf.local_bcast_port;
     econf.localCmdport = conf.local_cmd_port;
     econf.localIpAddress = inet_addr(conf.local_ip_address.c_str());
     econf.subnetMask = inet_addr(conf.subnet_mask.c_str());
-    econf.rxTimeOutInMs = 1000;
-    econf.robotIpAddress = inet_addr("192.168.100.11");
+    econf.rxTimeOutInMs = 2000;
+    econf.robotIpAddress = inet_addr(conf.robot_ip_address.c_str());
     econf.robotPort = 55000;
-    int result = InitEthernetAPI(econf);
+    result = InitEthernetAPI(econf);
     if(result != NO_ERROR_KINOVA){
-        std::cerr << "Could not initialize Kinova API" << std::endl;
+        std::cerr << "Could not initialize Kinova Ethernet API" << std::endl;
+    } else {
+        initialized_ = true;
     }
     return result;
 }
@@ -137,32 +168,30 @@ int Jaco2API::init(std::string serial, bool right, bool move_home)
         std::cout << "* * *  E R R O R   D U R I N G   I N I T I A L I Z A T I O N  * * *" << std::endl;
         result = ERROR_NOT_INITIALIZED;
     }
-    else if (api_type_ == kinova::KinovaAPIType::USB)
+    else
     {
-        std::cout << "I N I T I A L I Z A T I O N   C O M P L E T E D" << std::endl << std::endl;
-
-        result = (*InitAPI)();
-
-        std::cout << "Initialization's result : " << result << std::endl;
-        if(result == 1015)
-        {
-            return ERROR_NOT_INITIALIZED;
-        }
         stopedAPI_ = false;
 
-        KinovaDevice list[MAX_KINOVA_DEVICE];
 
+        result = RefresDevicesList();
+
+
+        result = NO_ERROR_KINOVA;
+        KinovaDevice list[MAX_KINOVA_DEVICE];
         int devicesCount = GetDevices(list, result);
+        if(result != NO_ERROR_KINOVA){
+            return result;
+        }
+
         std::size_t length = serial.length();
 
-        for(int i = 0; i < devicesCount; i++)
+        for(int i = 0; i < devicesCount; ++i)
         {
             std::string serial_i = std::string(list[i].SerialNumber);
-
-            std::cout << "Found a robot " << ((api_type_ == kinova::KinovaAPIType::ETHERNET) ? "using ETHERNET" : "on the USB bus (")
+            std::cout << "Found a robot " << ((api_type_ == kinova::KinovaAPIType::ETHERNET) ? "using ETHERNET (" : "on the USB bus (")
                       << serial_i << ")" << std::endl;
-            if(serial_i.compare(0,length,serial) == 0 || serial == std::string("")){
-                //Setting the current device as the active device.
+            // If no device is specified, just use the first available device
+            if (serial == "" || std::strcmp(serial.c_str(), serial_i.c_str()) == 0){
                 std::cout << "Connect to the robot (" << serial_i << ")" << std::endl;
                 result = SetActiveDevice(list[i]);
 
@@ -183,25 +212,6 @@ int Jaco2API::init(std::string serial, bool right, bool move_home)
             }
         }
 
-        SetGravityType(MANUAL_INPUT);
-
-    }
-    else if (api_type_ == kinova::KinovaAPIType::ETHERNET){
-        result = (*InitAPI)();
-
-        if(move_home){
-            std::cout << "Send the robot to HOME position " << ((right_arm_) ? "right" : "left") << std::endl;
-            if(right_arm_){
-                result = MoveHome();
-            }
-            else{
-                moveHomeLeft();
-            }
-            std::cout << "Initializing the fingers" << std::endl;
-            result = InitFingers();
-        }
-
-        std::cout << std::endl << "D R I V E R   R E A D Y" << std::endl << std::endl;
         SetGravityType(MANUAL_INPUT);
 
     }

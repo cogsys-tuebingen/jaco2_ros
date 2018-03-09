@@ -98,7 +98,8 @@ public:
     void startForceControl();
     void stopForceControl();
 
-    int setEthernetConfiguration(const EthernetConfig &conf);
+    int initEthernet(const EthernetConfig &conf);
+    int initUSB();
 
 private:
     void * api_command_lib_;
@@ -132,6 +133,7 @@ private:
     int (*GetCartesianPosition)(CartesianPosition &);
     int (*GetAPIVersion)(int Response[API_VERSION_COUNT]);
     int(*RunGravityZEstimationSequence)(ROBOT_TYPE type, double OptimalzParam[OPTIMAL_Z_PARAM_SIZE]);
+    int (*RefresDevicesList)(void);
     int(*SwitchTrajectoryTorque)(GENERALCONTROL_TYPE);
     int(*SetTorqueSafetyFactor)(float factor);
     int(*SendAngularTorqueCommand)(float Command[COMMAND_SIZE]);
@@ -157,6 +159,7 @@ private:
     mutable std::recursive_mutex mutex_;
     bool stopedAPI_;
     bool right_arm_;
+    bool initialized_;
 };
 
 #endif // JACO2API_H
