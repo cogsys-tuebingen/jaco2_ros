@@ -137,7 +137,7 @@ int Jaco2API::init(std::string serial, bool right, bool move_home)
         std::cout << "* * *  E R R O R   D U R I N G   I N I T I A L I Z A T I O N  * * *" << std::endl;
         result = ERROR_NOT_INITIALIZED;
     }
-    else
+    else if (api_type_ == kinova::KinovaAPIType::USB)
     {
         std::cout << "I N I T I A L I Z A T I O N   C O M P L E T E D" << std::endl << std::endl;
 
@@ -183,6 +183,25 @@ int Jaco2API::init(std::string serial, bool right, bool move_home)
             }
         }
 
+        SetGravityType(MANUAL_INPUT);
+
+    }
+    else if (api_type_ == kinova::KinovaAPIType::ETHERNET){
+        result = (*InitAPI)();
+
+        if(move_home){
+            std::cout << "Send the robot to HOME position " << ((right_arm_) ? "right" : "left") << std::endl;
+            if(right_arm_){
+                result = MoveHome();
+            }
+            else{
+                moveHomeLeft();
+            }
+            std::cout << "Initializing the fingers" << std::endl;
+            result = InitFingers();
+        }
+
+        std::cout << std::endl << "D R I V E R   R E A D Y" << std::endl << std::endl;
         SetGravityType(MANUAL_INPUT);
 
     }
