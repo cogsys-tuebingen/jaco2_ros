@@ -15,6 +15,7 @@ ethernet/local_cmd_port|int| 25000|Command Port|
 ethernet/local_broadcast_port|int| 25025| Broadcast Port|
 right_arm|bool| true| Use the jaco2 as a right or left arm.|
 move_home|bool| true| If true, on start up, move arm to home and initialize (open) fingers If false, stay in current configuration.|
+init_fingers|bool| true| Initalize fingers while initalizing. If true fingers are initalized and opened.|
 |jaco_use_accelerometer_calib|bool|false|Use a accelerometer calibration (yaml file has to be provided, see "jaco_accelerometer_calibration_file")|
 |jaco_use_torque_calib|bool| false| Use a torque sensor calibration (yaml file has to be provided, see "jaco_torque_calibration_file". UNDER DEVELOPMENT|
 |jaco_serial|string| ""| A Jaco2 if the given serial number will be search and control. If a empty string is provided any Jaco2 will be connected to.|

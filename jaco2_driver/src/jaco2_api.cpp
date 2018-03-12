@@ -158,10 +158,12 @@ int Jaco2API::initEthernet(const EthernetConfig &conf)
     return result;
 }
 
-int Jaco2API::init(std::string serial, bool right, bool move_home)
+int Jaco2API::init(std::string serial, bool right, bool move_home, bool init_fingers)
 {
     right_arm_ = right;
+    init_fingers_ = init_fingers;
     int result = -1;
+
     if((InitAPI == NULL) || (CloseAPI == NULL) || (SendBasicTrajectory == NULL) ||
             (SendBasicTrajectory == NULL) || (MoveHome == NULL) || (InitFingers == NULL))
     {
@@ -183,7 +185,7 @@ int Jaco2API::init(std::string serial, bool right, bool move_home)
             return result;
         }
 
-        std::size_t length = serial.length();
+        //        std::size_t length = serial.length();
 
         for(int i = 0; i < devicesCount; ++i)
         {
@@ -204,6 +206,8 @@ int Jaco2API::init(std::string serial, bool right, bool move_home)
                     else{
                         moveHomeLeft();
                     }
+                }
+                if(init_fingers_){
                     std::cout << "Initializing the fingers" << std::endl;
                     result = InitFingers();
                 }

@@ -46,7 +46,7 @@ public:
 
     void setupCommandInterface(const kinova::KinovaAPIType& api_type);
 
-    int init(std::string serial = "", bool right = true, bool move_home = true);
+    int init(std::string serial = "", bool right = true, bool move_home = true, bool init_fingers = true);
 
     bool  isStopped() const;
     QuickStatus getQuickStatus() const;
@@ -159,6 +159,7 @@ private:
     mutable std::recursive_mutex mutex_;
     bool stopedAPI_;
     bool right_arm_;
+    bool init_fingers_;
     bool initialized_;
 };
 

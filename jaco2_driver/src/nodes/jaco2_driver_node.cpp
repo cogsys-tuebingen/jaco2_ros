@@ -136,7 +136,9 @@ Jaco2DriverNode::Jaco2DriverNode()
     econf.local_cmd_port = private_nh_.param<int>("ethernet/local_cmd_port", 25015);
     econf.local_bcast_port = private_nh_.param<int>("ethernet/local_broadcast_port", 25025);
 
-    bool init = driver_.initialize(econf, serial_, rightArm_, move_home, use_usb);
+    bool init_fingers = private_nh_.param<bool>("init_fingers",true);
+
+    bool init = driver_.initialize(econf, serial_, rightArm_, move_home, init_fingers, use_usb);
     if(!init){
         ROS_ERROR_STREAM("Jaco 2 could not be initialized for device: " << serial_);
     }

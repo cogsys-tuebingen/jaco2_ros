@@ -20,7 +20,7 @@ Jaco2Driver::Jaco2Driver():
 
 }
 
-bool Jaco2Driver::initialize(EthernetConfig& conf, std::string serial, bool right, bool move_home, bool use_usb)
+bool Jaco2Driver::initialize(EthernetConfig& conf, std::string serial, bool right, bool move_home, bool init_fingers, bool use_usb)
 {
     if(use_usb){
         jaco_api_.setupCommandInterface(kinova::KinovaAPIType::USB);
@@ -34,7 +34,7 @@ bool Jaco2Driver::initialize(EthernetConfig& conf, std::string serial, bool righ
     serial_ = serial;
     right_arm_ = right;
     ROS_INFO_STREAM("initialize jaco 2 driver for device: " << serial_);
-    int result = jaco_api_.init(serial_, right_arm_, move_home);
+    int result = jaco_api_.init(serial_, right_arm_, move_home, init_fingers);
     ROS_INFO_STREAM("Jaco API result: "<< result);
     int api_major, api_minor, api_version;
     jaco_api_.getApiVersion(api_major, api_minor, api_version);

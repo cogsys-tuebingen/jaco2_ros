@@ -38,7 +38,7 @@ public:
 
     bool controllerFinished(Jaco2Controller::Result &result_type) const;
     bool serviceDone() const;
-    bool initialize(EthernetConfig &conf, std::string serial = std::string(""), bool right = true, bool move_home = true, bool use_usb = true);
+    bool initialize(EthernetConfig &conf, std::string serial = std::string(""), bool right = true, bool move_home = true, bool init_fingers = true, bool use_usb = true);
     // GET
     AngularPosition getAngularPosition() const;
     AngularPosition getAngularVelocity() const;
