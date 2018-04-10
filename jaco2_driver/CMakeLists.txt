@@ -66,7 +66,8 @@ include_directories(
     )
 file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/jaco2_driver/*.hpp include/jaco2_driver/*.h
                                                                                    include/jaco2_driver/controller/*.hpp include/jaco2_driver/controller/*.h
-                                                                                   include/jaco2_driver/data/*.hpp include/jaco2_driver/data/*.h)
+                                                                                   include/jaco2_driver/data/*.hpp include/jaco2_driver/data/*.h
+                                                                                   include/kinova/*.h)
 ## Declare a C++ library
 add_library(jaco2_driver
     ${ALL_HEADERS}
