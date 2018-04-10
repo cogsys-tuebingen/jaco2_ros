@@ -50,5 +50,11 @@ kinetic:
     - rosdep install -y -r -i --from-paths src
     - catkin_make
 
-
+lunar:
+  stage: build
+  image: ros:lunar
+  script:
+    - source /opt/ros/$(ls /opt/ros/ | sort -r | head -n 1)/setup.bash
+    - rosdep install -y -r -i --from-paths src
+    - catkin_make
 
