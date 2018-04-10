@@ -7,7 +7,7 @@
 ## Table of contents
 - [Description](#description)
 - [Dependencies](#dependencies)
-- [Install](#install)
+- [Installation](#installation)
 
 ## Description
 
@@ -21,30 +21,26 @@ It contains:
 
 
 ## Dependencies
--  [MoveIt!](http://moveit.ros.org/)
+### Build Dependencies
 - [tracIK](http://wiki.ros.org/trac_ik)
-- (optional) [imu_tk](https://gitlab.cs.uni-tuebingen.de/utils/imu_tk) for accelerometer calibration
-- (optional)  [Ceres](http://ceres-solver.org/)  for accelerometer calibration
 
-## Install
+### Run Dependencies
+-  [MoveIt!](http://moveit.ros.org/)
+If you want to use MoveIt to display your robot state and plan trajectories.
 
-i. Simply install MoveIt!, tracIK, and Ceres using apt-get: 
+## Installation
+
+i. Simply install tracIK, and MoveIt! (if required) using apt-get: 
 ```
 	sudo apt-get install ros-<distro>-moveit*
 	sudo apt-get install ros-<distro>-trac-ik
-	sudo apt-get install libceres-dev
 ```
-ii. cd to your workspace and clone imu_tk:
-```
-	cd <catkin_ws>/src
-	git clone gitlab@gitlab.cs.uni-tuebingen.de:utils/imu_tk.git
-```
-iii. Build your workspace:
+ii. Build your workspace:
 ```
 	cd ..
 	catkin_make
 ```
-iv. Finally, copy the udev rule from the jaco2_driver folder to your system:
+iii. Finally, copy the udev rule from the jaco2_driver folder to your system:
 ```
 	sudo cp src/jaco2_ros/jaco2_driver/udev/10-kinova-arm.rules /etc/udev/rules.d/
 
@@ -102,6 +98,16 @@ Brings the arm to its home position.== Only use this if you are sure that the Ja
 Sets a torque sensor to zero. Only use this command in torque zero position:
  [ 0, 180° 180°, 0, 0, 180°]
 
+- **/in/set_payload**
+Sets the gravity parameters for a payload in the end effector frame (see image).
+![End Effector Frame](jaco2_driver/SetGravityPayload1.png  "End Effector Frame")
+Default values in SI units:
+"mass: 0.0
+  com_x: 0.0
+  com_y: 0.0
+  com_z: 0.0" 
+The distance between the wrist frame and the end effector frame is in z_6 direction  l_6 = -0.16 m.
+
 - **/in/stop**:
 Stops the API any command will be ignored.
 
@@ -111,15 +117,29 @@ Releases the API if it was stopped previously.
 - **in/enable_gravity_compensation_mode**
 If true is send the Jaco 2 is in torque control mode an will only compensete torques due to gravity. Therefore, you can push the Jaco 2 into any configuration you like. This mode is deactivated if links are to close to each other. To activated the gravity compensation mode send false to the service, change the configuration to a more extended one e.g. via the controller, and finally enable the compensation mode by sending ture once again.
 
+- **in/shutdown**
+Shuts the driver down. Finishes the node.
 
 ## jaco2_kin_dyn_lib
 A wrapper library for the [orocos Kinematics and Dynamics Library (KDL)](http://wiki.ros.org/orocos_kdl). Besides, this library contains some additional methods, e.g. regression matrix for dynamic calibration or a modified recursive netwon algortihm used e.g. in external torque estimation.
 TODO ...
 
 ## jaco2_moveit_config
-Start MoveIt! and rviz by using:
+Start MoveIt! and rviz by using if (you used rosrun to start the arm):
 ```
 roslaunch jaco2_moveit_config moveit_full_rviz.launch
+```
+If you used one of the launch files 'jaco2-1(2).launch' to start the driver, you need to remap controller and joint states as followed:
+```
+	roslaunch jaco2_moveit_config moveit_full.launch joint_state_topic:=<joint_state topic> controller_in:=<jaco controller> 
+```
+```
+<joint_state_topic>:
+	/jaco_21_driver/out/joint_states
+	/jaco_22_driver/out/joint_states
+<jaco controller>:
+	jaco_21
+	jaco_22
 ```
 Now you can plan and execute trajectories. For a simulation run:
 ```
