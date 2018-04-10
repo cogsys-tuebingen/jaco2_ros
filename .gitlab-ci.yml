@@ -1,7 +1,10 @@
 before_script:
   # Install ssh-agent if not already installed, it is required by Docker.
   # (change apt-get to yum if you use a CentOS-based image)
-  - 'apt-get -qq update -y && apt-get -qq install build-essential openssh-client sudo -y'
+  - 'apt-get -qq update -y'
+  - 'apt-get -qq install build-essential openssh-client libeigen3-dev libyaml-cpp-dev libtbb-dev libopencv-dev sudo -y'
+#  - 'apt-get -qq install ros-kinetic-moveit-* -y'
+  - 'apt-get -qq install libgoogle-glog-dev libatlas-base-dev -y'
 
   # Run ssh-agent (inside the build environment)
   - eval $(ssh-agent -s)
@@ -15,23 +18,36 @@ before_script:
   # you will overwrite your user's SSH config.
   - mkdir -p ~/.ssh
   - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-  - git submodule init && git submodule update
-  - source /opt/ros/$(ls /opt/ros/ | sort -r | head -n 1)/setup.bash
-  - apt-get install -y $(rosdep install --from-paths -i -y -s src | grep 'apt-get install' | rev | cut -f1 -d' ' | rev | paste -s)
+
+  # Here we are at /build/$CI_PROJECT_NAME
+  # For pure catkin projects, we need a workspace:
+  - mkdir -p /build/ws/src/
+  - cd /build/ws
+  - ln -s $CI_PROJECT_DIR src/$CI_PROJECT_NAME
+  # clone dependencies here:
+  #- cd src
+  #- git clone gitlab@gitlab.cs.uni-tuebingen.de:utils/trac_ik.git
+  #- cd ..
+  #- git clone gitlab@gitlab.cs.uni-tuebingen.de:utils/imu_tk.git
+  #- cd /build/ws/
 
 stages:
   - build
 
 jade:
   stage: build
-  image: ros:jade-perception
+  image: ros:jade
   script:
+    - source /opt/ros/$(ls /opt/ros/ | sort -r | head -n 1)/setup.bash
+    - rosdep install -y -r -i --from-paths src
     - catkin_make
 
 kinetic:
   stage: build
-  image: ros:kinetic-perception
+  image: ros:kinetic
   script:
+    - source /opt/ros/$(ls /opt/ros/ | sort -r | head -n 1)/setup.bash
+    - rosdep install -y -r -i --from-paths src
     - catkin_make
 
 
