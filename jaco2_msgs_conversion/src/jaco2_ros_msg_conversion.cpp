@@ -375,3 +375,22 @@ jaco2_data::JointData JointDataConversion::velocity2Data(const jaco2_msgs::Joint
 
 }
 
+jaco2_msgs::PayloadParamMessage PayloadConversion::data2ros(const jaco2_data::PayloadGravityParams &data)
+{
+    jaco2_msgs::PayloadParamMessage msg;
+    msg.mass = data.mass;
+    msg.com_x = data.cmx;
+    msg.com_y = data.cmy;
+    msg.com_z = data.cmz;
+    return msg;
+}
+
+jaco2_data::PayloadGravityParams PayloadConversion::ros2data(const PayloadParamMessage &msg)
+{
+    jaco2_data::PayloadGravityParams data;
+    data.mass = msg.mass;
+    data.cmx = msg.com_x;
+    data.cmy = msg.com_y;
+    data.cmz = msg.com_z;
+    return data;
+}
