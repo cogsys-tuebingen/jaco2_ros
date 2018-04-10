@@ -35,9 +35,12 @@ i. Simply install tracIK, and MoveIt! (if required) using apt-get:
 	sudo apt-get install ros-<distro>-moveit*
 	sudo apt-get install ros-<distro>-trac-ik
 ```
-ii. Build your workspace:
+ii. Clone repository and build your workspace:
 ```
+	cd <workspace>/src
+	git clone gitlab@gitlab.cs.uni-tuebingen.de:robots/jaco2_ros.git
 	cd ..
+	rosdep install -y -r -i --from-paths src
 	catkin_make
 ```
 iii. Finally, copy the udev rule from the jaco2_driver folder to your system:
