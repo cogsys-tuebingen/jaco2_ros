@@ -1,10 +1,7 @@
 before_script:
   # Install ssh-agent if not already installed, it is required by Docker.
   # (change apt-get to yum if you use a CentOS-based image)
-  - 'apt-get -qq update -y'
-  - 'apt-get -qq install build-essential openssh-client libeigen3-dev libyaml-cpp-dev libtbb-dev libopencv-dev sudo -y'
-#  - 'apt-get -qq install ros-kinetic-moveit-* -y'
-  - 'apt-get -qq install libgoogle-glog-dev libatlas-base-dev -y'
+  - 'apt-get -qq update -y && apt-get -qq install build-essential openssh-client sudo -y'
 
   # Run ssh-agent (inside the build environment)
   - eval $(ssh-agent -s)
@@ -18,47 +15,23 @@ before_script:
   # you will overwrite your user's SSH config.
   - mkdir -p ~/.ssh
   - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-
-  # Here we are at /build/$CI_PROJECT_NAME
-  # For pure catkin projects, we need a workspace:
-  - mkdir -p /build/ws/src/
-  - cd /build/
-  - mkdir ceres
-  - cd ceres
-  - git clone https://ceres-solver.googlesource.com/ceres-solver
-  - cd ceres-solver
-  - mkdir build
-  - cd build
-  - cmake ..
-  - make -j4
-  - make install
-  - cd ../../..
-  - cd /build/ws
-  - ln -s $CI_PROJECT_DIR src/$CI_PROJECT_NAME
-  # clone dependencies here:
-  - cd src
-  - git clone gitlab@gitlab.cs.uni-tuebingen.de:utils/trac_ik.git
-  - cd ..
-  - git clone gitlab@gitlab.cs.uni-tuebingen.de:utils/imu_tk.git
-  - cd /build/ws/
+  - git submodule init && git submodule update
+  - source /opt/ros/$(ls /opt/ros/ | sort -r | head -n 1)/setup.bash
+  - apt-get install -y $(rosdep install --from-paths -i -y -s src | grep 'apt-get install' | rev | cut -f1 -d' ' | rev | paste -s)
 
 stages:
   - build
 
 jade:
   stage: build
-  image: ros:jade
+  image: ros:jade-perception
   script:
-    - source /opt/ros/$(ls /opt/ros/ | sort -r | head -n 1)/setup.bash
-    - rosdep install -y -r -i --from-paths src
     - catkin_make
 
 kinetic:
   stage: build
-  image: ros:kinetic
+  image: ros:kinetic-perception
   script:
-    - source /opt/ros/$(ls /opt/ros/ | sort -r | head -n 1)/setup.bash
-    - rosdep install -y -r -i --from-paths src
     - catkin_make
 
 
