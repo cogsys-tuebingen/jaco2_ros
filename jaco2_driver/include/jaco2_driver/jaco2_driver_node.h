@@ -26,6 +26,7 @@
 #include <jaco2_msgs/SetTorqueZero.h>
 #include <jaco2_msgs/Jaco2Sensor.h>
 #include <jaco2_msgs/Jaco2JointState.h>
+#include <jaco2_msgs/SetPayloadParams.h>
 
 
 class Jaco2DriverNode
@@ -56,6 +57,7 @@ private:
     bool startServiceCallback(jaco2_msgs::Start::Request &req, jaco2_msgs::Start::Response &res);
     bool homeArmServiceCallback(jaco2_msgs::HomeArm::Request &req, jaco2_msgs::HomeArm::Response &res);
     bool setTorqueZeroCallback(jaco2_msgs::SetTorqueZero::Request &req, jaco2_msgs::SetTorqueZero::Response & res);
+    bool setPayloadCallback(jaco2_msgs::SetPayloadParams::Request & req, jaco2_msgs::SetPayloadParams::Response& res);
     bool gravityCompCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
     bool admittanceControlCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
     bool shutdownServiceCb(std_srvs::Trigger::Request & req, std_srvs::Trigger::Response& res);
@@ -89,6 +91,7 @@ private:
     ros::ServiceServer gravityCompensationService_;
     ros::ServiceServer admittanceControlService_;
     ros::ServiceServer shutdownService_;
+    ros::ServiceServer setPayloadService_;
 
     actionlib::SimpleActionServer<jaco2_msgs::ArmJointAnglesAction> actionAngleServer_;
     actionlib::SimpleActionServer<control_msgs::FollowJointTrajectoryAction> trajServer_;

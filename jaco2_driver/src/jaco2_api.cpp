@@ -617,3 +617,17 @@ void Jaco2API::stopForceControl()
     std::cout << "stop force control " << res << std::endl;
 }
 
+void Jaco2API::setPayload(const jaco2_data::PayloadGravityParams &params)
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    float payload[4];
+    payload[0] = params.mass;
+    payload[1] = params.cmx;
+    payload[2] = params.cmy;
+    payload[3] = params.cmz;
+
+   /* int res = */SetGravityPayload(payload);
+
+    return;
+
+}

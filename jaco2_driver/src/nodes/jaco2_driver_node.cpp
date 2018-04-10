@@ -66,6 +66,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     startService_ = private_nh_.advertiseService("in/start", &Jaco2DriverNode::startServiceCallback, this);
     homingService_ = private_nh_.advertiseService("in/home_arm", &Jaco2DriverNode::homeArmServiceCallback, this);
     zeroTorqueService_ = private_nh_.advertiseService("in/set_torque_zero", &Jaco2DriverNode::setTorqueZeroCallback, this);
+    setPayloadService_ = private_nh_.advertiseService("in/set_payload", &Jaco2DriverNode::setPayloadCallback, this);
     gravityCompensationService_ = private_nh_.advertiseService("in/enable_gravity_compensation_mode", &Jaco2DriverNode::gravityCompCallback, this);
     admittanceControlService_ = private_nh_.advertiseService("in/enable_admittance_mode", &Jaco2DriverNode::admittanceControlCallback, this);
     shutdownService_ = private_nh_.advertiseService("in/shutdown", &Jaco2DriverNode::shutdownServiceCb, this);
@@ -753,6 +754,17 @@ bool Jaco2DriverNode::setTorqueZeroCallback(jaco2_msgs::SetTorqueZero::Request &
         ROS_INFO("Waiting");
     }
     res.result = driver_.getSetTorqueZeroResult();
+    return true;
+}
+
+bool Jaco2DriverNode::setPayloadCallback(jaco2_msgs::SetPayloadParams::Request &req, jaco2_msgs::SetPayloadParams::Response &res)
+{
+    jaco2_data::PayloadGravityParams p = jaco2_msgs::PayloadConversion::ros2data(req.payload);
+    driver_.setPayload(p);
+    while(!driver_.serviceDone()){
+        usleep(10000);
+        ROS_INFO("Waiting");
+    }
     return true;
 }
 

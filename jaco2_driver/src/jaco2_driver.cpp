@@ -253,6 +253,17 @@ void Jaco2Driver::setTorqueZero(int actuator)
     });
 }
 
+void Jaco2Driver::setPayload(const jaco2_data::PayloadGravityParams& p)
+{
+    executeLater([this, p](){
+        serviceDone_ = false;
+        jaco_api_.setPayload(p);
+        usleep(4*U_SlEEP_TIME);
+        serviceDone_ = true;
+    });
+
+}
+
 bool Jaco2Driver::serviceDone() const
 {
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);

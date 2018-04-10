@@ -100,6 +100,7 @@ public:
     void stopArm();
     void homeArm();
     void setTorqueZero(int actuator);
+    void setPayload(const jaco2_data::PayloadGravityParams& p);
 
     void finish();
 

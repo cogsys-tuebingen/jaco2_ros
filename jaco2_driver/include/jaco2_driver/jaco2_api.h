@@ -13,6 +13,7 @@
 #include <mutex>
 
 #include <jaco2_driver/data/ethernetconfig.h>
+#include <jaco2_data/payload_gravity_params.h>
 
 enum ActuatorID{
     Actuator1 = 1,
@@ -100,6 +101,8 @@ public:
 
     int initEthernet(const EthernetConfig &conf);
     int initUSB();
+
+    void setPayload(const jaco2_data::PayloadGravityParams& params);
 
 private:
     void * api_command_lib_;
