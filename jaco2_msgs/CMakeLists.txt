@@ -38,6 +38,7 @@ add_message_files(
    Jaco2Accelerometers.msg
    Jaco2GfreeTorques.msg
    JointData.msg
+   PayloadParamMessage.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -51,6 +52,7 @@ add_service_files(
    SetTorqueZero.srv
    CartesianTransformation.srv
    SetSampledConfigService.srv
+   SetPayloadParams.srv
 )
 
 ## Generate actions in the 'action' folder
