@@ -20,7 +20,7 @@ public:
     };
     const double joystick_threshold_ = 0.1;
     const std::vector<int> default_axes = {0,1,2,5};
-    const std::vector<int> default_buttons = {0,1,2,4,5,6,7};
+    const std::vector<int> default_buttons = {0,1,2,3,4,5,6,7};
 
 
     Jaco2Teleop(std::string state_topic = "/jaco_arm_driver/out/joint_states",
@@ -73,6 +73,10 @@ public:
 
     void joyCb(const sensor_msgs::JoyConstPtr& msg)
     {
+        if(!msg){
+            return;
+        }
+
         if(msg->buttons[buttons_[6]] && !toggle_states_[Function::STOP]){// R2: STOP
             jaco2_msgs::Stop stop;
             srv_stop_.call(stop.request, stop.response);
