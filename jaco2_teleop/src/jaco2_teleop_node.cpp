@@ -18,8 +18,8 @@ public:
         ADMIT = 3,
         CART = 4
     };
-    const double joystick_threshold_ = 0.05;
-    const std::vector<int> default_axes = {0,1,2,5};
+    const double joystick_threshold_ = 0.1;
+    const std::vector<int> default_axes = {0,1,3,4};
     const std::vector<int> default_buttons = {0,1,2,3,4,5,6,7};
 
 
@@ -37,6 +37,7 @@ public:
         admitance_(false),
         cartesian_(false),
         send_zero_(false),
+        has_joy_(false),
         nh_("~"),
         rate_(50),
         model_(robot_description, base_link, end_eff)
@@ -76,20 +77,33 @@ public:
         if(!msg || msg->buttons.size() < buttons_.size()){
             return;
         }
+        last_joy_ = *msg;
+        has_joy_ = true;
 
-        if(msg->buttons[buttons_[6]] && !toggle_states_[Function::STOP]){// R2: STOP
+    }
+
+    void tick()
+    {
+        rate_.sleep();
+        ros::spinOnce();
+
+        if(!has_joy_){
+            return;
+        }
+
+        if(last_joy_.buttons[buttons_[6]] && !toggle_states_[Function::STOP]){// R2: STOP
             jaco2_msgs::Stop stop;
             srv_stop_.call(stop.request, stop.response);
             ROS_INFO_STREAM(stop.response);
             toggle_states_[Function::STOP] = true;
         }
-        if(msg->buttons[buttons_[7]] && toggle_states_[Function::STOP]){// L2: START
+        if(last_joy_.buttons[buttons_[7]] && toggle_states_[Function::STOP]){// L2: START
             jaco2_msgs::Start start;
             srv_start_.call(start.request, start.response);
             ROS_INFO_STREAM(start.response);
             toggle_states_[Function::STOP] = false;
         }
-        if(msg->buttons[buttons_[0]] && !toggle_states_[Function::GCOMP]){ // SQUARE
+        if(last_joy_.buttons[buttons_[0]] && !toggle_states_[Function::GCOMP]){ // SQUARE
             gcomp_ = !gcomp_;
             std_srvs::SetBool srv;
             srv.request.data = gcomp_;
@@ -97,11 +111,10 @@ public:
             ROS_INFO_STREAM(srv.response.message);
             toggle_states_[Function::GCOMP] = true;
             ros::Duration(0.5).sleep();
-        }
-        else{
+        }else{
             toggle_states_[Function::GCOMP] = false;
         }
-        if(msg->buttons[buttons_[1]] && !toggle_states_[Function::ADMIT]){ // X
+        if(last_joy_.buttons[buttons_[1]] && !toggle_states_[Function::ADMIT]){ // X
             admitance_ = !admitance_;
             std_srvs::SetBool srv;
             srv.request.data = admitance_;
@@ -109,16 +122,14 @@ public:
             ROS_INFO_STREAM(srv.response.message);
             toggle_states_[Function::ADMIT] = true;
             ros::Duration(0.5).sleep();
-        }
-        else{
+        }else{
             toggle_states_[Function::ADMIT] = false;
         }
-        if(msg->buttons[buttons_[2]]){ // circle
+        if(last_joy_.buttons[buttons_[2]]){ // circle
             toggle_states_[Function::CART] = !toggle_states_[Function::CART];
             if(toggle_states_[Function::CART]){
                 ROS_INFO_STREAM("SWITCHED to CARTESIAN CONTROL.");
-            }
-            else{
+            }else{
                 ROS_INFO_STREAM("SWITCHED to JOINT CONTROL.");
             }
             ros::Duration(0.5).sleep();
@@ -126,49 +137,46 @@ public:
         }
         //        bool move = doMove(msg);
 
-        if(msg->buttons[buttons_[4]]){
+        if(last_joy_.buttons[buttons_[4]]){//dead man switch
 
             if(!toggle_states_[Function::CART]){
                 jaco2_msgs::JointVelocity vel;
                 vel.joint1 = 0;
                 vel.joint2 = 0;
-                vel.joint3 = getCmd(msg->axes[axes_[0]], joystick_threshold_);
-                vel.joint4 = getCmd(msg->axes[axes_[3]], joystick_threshold_);
+                vel.joint3 = 0.8*getCmd(last_joy_.axes[axes_[2]], joystick_threshold_);
+                vel.joint4 = 0.8*getCmd(last_joy_.axes[axes_[3]], joystick_threshold_);
                 vel.joint5 = 0;
                 vel.joint6 = 0;
-                if(!msg->buttons[buttons_[3]]){ // L1
-                    vel.joint1 = getCmd(msg->axes[axes_[0]], joystick_threshold_);
-                    vel.joint2 = getCmd(msg->axes[axes_[1]], joystick_threshold_);
-                }
-                else{
-                    vel.joint5 = getCmd(msg->axes[axes_[0]], joystick_threshold_);
-                    vel.joint6 = getCmd(msg->axes[axes_[1]], joystick_threshold_);
+                if(!last_joy_.buttons[buttons_[3]]){ // L1
+                    vel.joint1 = 0.8*getCmd(last_joy_.axes[axes_[0]], joystick_threshold_);
+                    vel.joint2 = 0.8*getCmd(last_joy_.axes[axes_[1]], joystick_threshold_);
+                }else{
+                    vel.joint5 = getCmd(last_joy_.axes[axes_[0]], joystick_threshold_);
+                    vel.joint6 = getCmd(last_joy_.axes[axes_[1]], joystick_threshold_);
                 }
                 pub_joint_vel.publish(vel);
-            }
-            else{
+            }else{
                 KDL::Twist v;
                 v.rot.Zero();
                 v.vel.Zero();
                 KDL::Frame trans;
                 model_.getFKPose(state_.position, trans, model_.getTipLink());
-                if(!msg->buttons[buttons_[3]]){ // L1
-                    KDL::Vector input(getCmd(msg->axes[axes_[0]], joystick_threshold_),
-                                      getCmd(msg->axes[axes_[1]], joystick_threshold_),
-                                      getCmd(msg->axes[axes_[2]], joystick_threshold_));
+                if(!last_joy_.buttons[buttons_[3]]){ // L1
+                    KDL::Vector input(getCmd(last_joy_.axes[axes_[0]], joystick_threshold_),
+                                      getCmd(last_joy_.axes[axes_[1]], joystick_threshold_),
+                                      getCmd(last_joy_.axes[axes_[2]], joystick_threshold_));
                     v.vel = input;
                     ROS_INFO_STREAM("lin vel: " << v.vel.x() << ", " << v.vel.y() << ", " << v.vel.z());
                     v = trans * v;
-                }
-                else{
+                }else{
                     KDL::Vector vec = trans * KDL::Vector(0,0,1);
                     double r = vec.Norm();
                     double phi = std::atan2(vec.y(), vec.x());
                     double theta = std::acos(vec.z() / r);
-                    double vx = getCmd(msg->axes[axes_[1]], joystick_threshold_) * cos(theta) * cos(phi) -
-                                getCmd(msg->axes[axes_[0]], joystick_threshold_) * sin(theta) * sin(phi);
-                    double vy = getCmd(msg->axes[axes_[1]], joystick_threshold_) * cos(theta) * sin(phi) +
-                                getCmd(msg->axes[axes_[0]], joystick_threshold_) * sin(theta) * cos(phi);
+                    double vx = getCmd(last_joy_.axes[axes_[1]], joystick_threshold_) * cos(theta) * cos(phi) -
+                                getCmd(last_joy_.axes[axes_[0]], joystick_threshold_) * sin(theta) * sin(phi);
+                    double vy = getCmd(last_joy_.axes[axes_[1]], joystick_threshold_) * cos(theta) * sin(phi) +
+                                getCmd(last_joy_.axes[axes_[0]], joystick_threshold_) * sin(theta) * cos(phi);
                     vx /= 10.0;
                     vy /= 10.0;
                     v.rot = KDL::Vector(vx, vy, 0);
@@ -178,8 +186,8 @@ public:
 
                 jaco2_data::JointData jd;
                 int ec = model_.getJointVelocities(state_.position, v, jd.data);
-                 if(!msg->buttons[buttons_[3]]){ // L1
-                     jd.data[5] += getCmd(msg->axes[axes_[0]], joystick_threshold_);
+                 if(!last_joy_.buttons[buttons_[3]]){ // L1
+                     jd.data[5] += getCmd(last_joy_.axes[axes_[0]], joystick_threshold_);
                  }
                 jaco2_msgs::JointVelocity vel = jaco2_msgs::JointDataConversion::data2Velocity(jd);
                 pub_joint_vel.publish(vel);
@@ -188,8 +196,7 @@ public:
 
             }
             send_zero_ =false;
-        }
-        else if(!send_zero_){
+        }else if(!send_zero_){
             jaco2_msgs::JointVelocity vel;
             vel.joint1 = 0;
             vel.joint2 = 0;
@@ -204,13 +211,6 @@ public:
             send_zero_ = true;
             ROS_INFO_STREAM("STOP");
         }
-
-    }
-
-    void tick()
-    {
-        rate_.sleep();
-        ros::spinOnce();
     }
 
 
@@ -233,6 +233,7 @@ private:
     bool admitance_;
     bool cartesian_;
     bool send_zero_;
+    bool has_joy_;
     std::map<Function,bool> toggle_states_;
     ros::NodeHandle nh_;
     ros::Rate rate_;
@@ -247,6 +248,7 @@ private:
     jaco2_data::JointStateData state_;
     std::vector<int> axes_;
     std::vector<int> buttons_;
+    sensor_msgs::Joy last_joy_;
 
 };
 
@@ -272,7 +274,7 @@ int main(int argc, char *argv[])
                          gcomp_srv,
                          ad_srv);
 
-    ros::Rate r(50);
+    ros::Rate r(80);
     while(ros::ok()){
         telenode.tick();
         r.sleep();
