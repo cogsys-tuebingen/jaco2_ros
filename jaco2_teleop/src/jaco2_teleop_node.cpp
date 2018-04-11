@@ -18,7 +18,7 @@ public:
         ADMIT = 3,
         CART = 4
     };
-    const double joystick_threshold_ = 0.1;
+    const double joystick_threshold_ = 0.05;
     const std::vector<int> default_axes = {0,1,2,5};
     const std::vector<int> default_buttons = {0,1,2,3,4,5,6,7};
 
@@ -73,7 +73,7 @@ public:
 
     void joyCb(const sensor_msgs::JoyConstPtr& msg)
     {
-        if(!msg){
+        if(!msg || msg->buttons.size() < buttons_.size()){
             return;
         }
 
@@ -133,7 +133,7 @@ public:
                 vel.joint1 = 0;
                 vel.joint2 = 0;
                 vel.joint3 = getCmd(msg->axes[axes_[0]], joystick_threshold_);
-                vel.joint4 = getCmd(msg->axes[axes_[4]], joystick_threshold_);
+                vel.joint4 = getCmd(msg->axes[axes_[3]], joystick_threshold_);
                 vel.joint5 = 0;
                 vel.joint6 = 0;
                 if(!msg->buttons[buttons_[3]]){ // L1
@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "jaco2_teleop_node");
     ros::NodeHandle nh("~");
     std::string state_topic = nh.param<std::string>("state_topic", "/jaco_arm_driver/out/joint_states");
-    std::string joy_topic   = nh.param<std::string>("joy_topic", "/joy");
+    std::string joy_topic   = nh.param<std::string>("joy_topic", "/ds4joy");
     std::string vel_topic   = nh.param<std::string>("vel_topic", "/jaco_arm_driver/in/joint_velocity");
     std::string start_srv   = nh.param<std::string>("start_service", "/jaco_arm_driver/in/start");
     std::string stop_srv    = nh.param<std::string>("stop_service", "/jaco_arm_driver/in/stop");
