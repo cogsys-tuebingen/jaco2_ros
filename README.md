@@ -83,7 +83,29 @@ Move the arm to a given joint postion.
 - **finger_joint_angles**: 
 Control the fingers to the given position.
 - **gripper_command**:
-Performs a power grip. Closes the gripper untill the finger do not move anymore.
+Performs a power grip. Closes the gripper until the finger do not move anymore. 
+Usage jaco2_msgs/GripperControlActionGoal:
+
+| type | name   | function |
+|-|-|-|
+| bool | useFinger1 | If true finger 1 is used for power grip. |
+| bool | useFinger2 | If true finger 2 is used for power grip. | 
+| bool | useFinger3 | If true finger 3 is used for power grip. | 
+| bool | usePos | If a finger is not used for the power grip set finger to provided position.|
+|int | posFinger1 | Encoder position of finger 1. 0 is open 7200 is closed.|
+|int|posFinger2| Encoder position of finger 1. 0 is open 7200 is closed.|
+|int|posFinger3| Encoder position of finger 1. 0 is open 7200 is closed.|
+
+Thus, you can deiced which finger to use for a power grip (at least two), in instance finger 1 & finger 2 or finger 1 & finger 3 . The unused finger can be set to an arbitrary position. In addition, you can use the action server to open the gripper just send:
+useFinger1: False
+useFinger2: False
+useFinger3: False
+usePos: True
+posFinger1: 0
+posFinger2: 0
+posFinger3: 0
+
+Or set the fingers to any arbitrary configuration.
 
 - **follow_joint_trajectory**:
 Trajectory tracking controller using PID velocity control.

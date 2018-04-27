@@ -11,40 +11,43 @@ import sys
 
 
 def pose_client():
-    client = actionlib.SimpleActionClient('/jaco_arm_driver/gripper_command', jaco2_msgs.msg.GripperControlAction)
+
+    server = sys.argv[1] + '/gripper_command'
+    rospy.loginfo("Use server: "+ server)
+    client = actionlib.SimpleActionClient(server, jaco2_msgs.msg.GripperControlAction)
 
     goal = jaco2_msgs.msg.GripperControlGoal()
 
-    if len(sys.argv) < 4:
+    if len(sys.argv) < 5:
         goal.useFinger1 = True
         goal.useFinger2 = True
         goal.useFinger3 = True
 
         rospy.logwarn("Using test goal: \n%s", goal)
     else:
-        if int(sys.argv[1]) == 1:
+        if int(sys.argv[2]) == 1:
             goal.useFinger1 = True
         else:
             goal.useFinger1 = False
 
-        if int(sys.argv[2]) == 1:
+        if int(sys.argv[3]) == 1:
             goal.useFinger2 = True
         else:
             goal.useFinger2 = False
 
-        if int(sys.argv[3]) == 1:
+        if int(sys.argv[4]) == 1:
             goal.useFinger3 = True
         else:
             goal.useFinger3 = False
 
-        if int(sys.argv[4]) == 1:
+        if int(sys.argv[5]) == 1:
             goal.usePos = True
         else:
             goal.usePos = False
 
-        goal.posFinger1 = int(sys.argv[5])
-        goal.posFinger2 = int(sys.argv[6])
-        goal.posFinger3 = int(sys.argv[7])
+        goal.posFinger1 = int(sys.argv[6])
+        goal.posFinger2 = int(sys.argv[7])
+        goal.posFinger3 = int(sys.argv[8])
         rospy.loginfo("Using goal: \n%s", goal)
 
     client.wait_for_server()

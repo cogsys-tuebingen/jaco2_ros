@@ -280,10 +280,12 @@ void Jaco2DriverNode::gripperGoalCb()
     gripperServerRunning_ = true;
     if(goal->useFinger1 && goal->useFinger2 && goal->useFinger3 || !goal->usePos)
     {
+//        ROS_INFO_STREAM("Power Grasp");
         driver_.grabObj(goal->useFinger1, goal->useFinger2, goal->useFinger3);
     }
     else
     {
+//        ROS_INFO_STREAM("Position Mode");
         driver_.grabObjSetUnusedFingerPos(goal->useFinger1, goal->useFinger2, goal->useFinger3,
                                           goal->posFinger1, goal->posFinger2, goal->posFinger3);
     }
