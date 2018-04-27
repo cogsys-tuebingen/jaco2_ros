@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+<node pkg="joy" type="joy_node" name="ds4joy" output="screen" respawn="true">
+      <remap from="/joy" to="/ds4joy"/>
+      <param name="/dev" value="/dev/input/js1"/>
+</node>
+<rosparam command="load" ns="jaco2_teleop" file="$(find jaco2_teleop)/config/ps4_mapping.yaml"/>
+
+<node name="jaco2_teleopi_node" pkg="jaco2_teleop" type="jaco2_teleop_node" output="screen" respawn="true">
+   <param name="state_topic" value="/jaco_22_driver/out/joint_states" />
+   <param name="joy_topic" value="/ds4joy"/>
+   <param name="vel_topic" value="/jaco_22_driver/in/joint_velocity"/>
+   <param name="start_service" value="/jaco_22_driver/in/start"/>
+   <param name="stop_service" value="/jaco_22_driver/in/stop"/>
+   <param name="gcomp_service" value="/jaco_22_driver/in/enable_gravity_compensation_mode"/>
+   <param name="admitance_service" value="/jaco_22_driver/in/enable_admittance_mode"/>
+
+</node>
+</launch>
