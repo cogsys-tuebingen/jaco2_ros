@@ -27,7 +27,7 @@
 #include <jaco2_msgs/Jaco2Sensor.h>
 #include <jaco2_msgs/Jaco2JointState.h>
 #include <jaco2_msgs/SetPayloadParams.h>
-
+#include <jaco2_msgs/SetTorqueExpertMode.h>
 
 class Jaco2DriverNode
 {
@@ -61,6 +61,7 @@ private:
     bool gravityCompCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
     bool admittanceControlCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
     bool shutdownServiceCb(std_srvs::Trigger::Request & req, std_srvs::Trigger::Response& res);
+    bool setTorqueExportMode(jaco2_msgs::SetTorqueExpertMode::Request& req, jaco2_msgs::SetTorqueExpertMode::Response& res);
 
 
     void dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureConfig &config, uint32_t level);
@@ -92,6 +93,7 @@ private:
     ros::ServiceServer admittance_control_service_;
     ros::ServiceServer shutdown_service_;
     ros::ServiceServer set_payload_service_;
+    ros::ServiceServer set_torque_expert_mode_;
 
     actionlib::SimpleActionServer<jaco2_msgs::ArmJointAnglesAction> action_angle_server_;
     actionlib::SimpleActionServer<control_msgs::FollowJointTrajectoryAction> traj_server_;

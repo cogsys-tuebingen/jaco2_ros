@@ -71,6 +71,8 @@ Jaco2DriverNode::Jaco2DriverNode()
     gravity_compensation_service_ = private_nh_.advertiseService("in/enable_gravity_compensation_mode", &Jaco2DriverNode::gravityCompCallback, this);
     admittance_control_service_ = private_nh_.advertiseService("in/enable_admittance_mode", &Jaco2DriverNode::admittanceControlCallback, this);
     shutdown_service_ = private_nh_.advertiseService("in/shutdown", &Jaco2DriverNode::shutdownServiceCb, this);
+    set_torque_expert_mode_ = private_nh_.advertiseService("in/set_torque_expert_mode", &Jaco2DriverNode::setTorqueExportMode, this);
+
     action_angle_server_.registerGoalCallback(boost::bind(&Jaco2DriverNode::actionAngleGoalCb, this));
     traj_server_.registerGoalCallback(boost::bind(&Jaco2DriverNode::trajGoalCb, this));
     grasp_server_.registerGoalCallback(boost::bind(&Jaco2DriverNode::gripperGoalCb, this));
@@ -778,6 +780,22 @@ bool Jaco2DriverNode::setPayloadCallback(jaco2_msgs::SetPayloadParams::Request &
         ROS_INFO("Waiting");
     }
     return true;
+}
+
+bool Jaco2DriverNode::setTorqueExportMode(jaco2_msgs::SetTorqueExpertMode::Request &req, jaco2_msgs::SetTorqueExpertMode::Response &res)
+{
+    if(req.password == "IamTorqueKing18"){
+        driver_.setTorqueExpert();
+        while(!driver_.serviceDone()){
+            usleep(10000);
+            ROS_INFO("Waiting");
+        }
+        res.message = "success";
+        return true;
+    } else{
+        res.message = "Wrong password";
+        return false;
+    }
 }
 
 namespace {

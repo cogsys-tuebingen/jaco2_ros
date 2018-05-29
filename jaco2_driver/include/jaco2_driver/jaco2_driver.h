@@ -88,11 +88,11 @@ public:
 
 
 
-// BEGIN EXPERIMENTAL
     void setVelocityController(const std::string& type);
     void setTrajectoryController(const std::string& type);
-
     void updateControllerConfig(jaco2_driver::jaco2_driver_configureConfig& cfg);
+// BEGIN EXPERIMENTAL
+    void setTorqueExpert();
 
 // END EXPERIMENTAL
 

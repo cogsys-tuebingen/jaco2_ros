@@ -53,6 +53,7 @@ add_service_files(
    CartesianTransformation.srv
    SetSampledConfigService.srv
    SetPayloadParams.srv
+   SetTorqueExpertMode.srv
 )
 
 ## Generate actions in the 'action' folder

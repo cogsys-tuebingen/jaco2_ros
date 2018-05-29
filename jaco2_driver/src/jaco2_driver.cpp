@@ -264,6 +264,21 @@ void Jaco2Driver::setPayload(const jaco2_data::PayloadGravityParams& p)
 
 }
 
+void Jaco2Driver::setTorqueExpert()
+{
+    executeLater([this](){
+        serviceDone_ = false;
+        enableGravityCompensation();
+        usleep(4*U_SlEEP_TIME);
+        Jaco2Calibration::ApiGravitationalParams params;
+        params.parameter.resize(OPTIMAL_Z_PARAM_SIZE,0);
+        setGravityParams(params);
+        usleep(4*U_SlEEP_TIME);
+        serviceDone_ = true;
+    });
+
+}
+
 bool Jaco2Driver::serviceDone() const
 {
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
