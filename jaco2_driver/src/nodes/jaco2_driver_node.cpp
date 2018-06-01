@@ -27,6 +27,7 @@ Jaco2DriverNode::Jaco2DriverNode()
       gripper_server_running_(false),
       finger_server_running_(false),
       right_arm_(true),
+      torque_control_active_(false),
       ok_(true),
       dyn_model_calib_file_path_(""),
       robot_description_("/robot_description"),
@@ -72,6 +73,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     admittance_control_service_ = private_nh_.advertiseService("in/enable_admittance_mode", &Jaco2DriverNode::admittanceControlCallback, this);
     shutdown_service_ = private_nh_.advertiseService("in/shutdown", &Jaco2DriverNode::shutdownServiceCb, this);
     set_torque_expert_mode_ = private_nh_.advertiseService("in/set_torque_expert_mode", &Jaco2DriverNode::setTorqueExportMode, this);
+    activate_torque_control_ = private_nh_.advertiseService("in/toggle_torque_control", &Jaco2DriverNode::activateTorqueControlCb, this);
 
     action_angle_server_.registerGoalCallback(boost::bind(&Jaco2DriverNode::actionAngleGoalCb, this));
     traj_server_.registerGoalCallback(boost::bind(&Jaco2DriverNode::trajGoalCb, this));
@@ -611,6 +613,10 @@ void Jaco2DriverNode::jointVelocityCb(const jaco2_msgs::JointVelocityConstPtr& m
 
 void Jaco2DriverNode::jointTorqueCb(const jaco2_msgs::JointAnglesConstPtr& msg)
 {
+    if(!torque_control_active_){
+        ROS_WARN_STREAM("Commands will have no effect enable torque control first! Commands: " << *msg);
+        return;
+    }
     AngularPosition torque;
     torque.InitStruct();
 
@@ -791,11 +797,20 @@ bool Jaco2DriverNode::setTorqueExportMode(jaco2_msgs::SetTorqueExpertMode::Reque
             ROS_INFO("Waiting");
         }
         res.message = "success";
+        torque_control_active_ = true;
         return true;
     } else{
         res.message = "Wrong password";
         return false;
     }
+}
+
+bool Jaco2DriverNode::activateTorqueControlCb(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+{
+    torque_control_active_ = !torque_control_active_;
+    res.message = activate_torque_control_ ? "torque control activated" : "torque control deactivated";
+    res.success = true;
+    return true;
 }
 
 namespace {

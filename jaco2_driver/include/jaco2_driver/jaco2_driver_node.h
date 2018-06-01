@@ -62,7 +62,7 @@ private:
     bool admittanceControlCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
     bool shutdownServiceCb(std_srvs::Trigger::Request & req, std_srvs::Trigger::Response& res);
     bool setTorqueExportMode(jaco2_msgs::SetTorqueExpertMode::Request& req, jaco2_msgs::SetTorqueExpertMode::Response& res);
-
+    bool activateTorqueControlCb(std_srvs::Trigger::Request & req, std_srvs::Trigger::Response& res);
 
     void dynamicReconfigureCb(jaco2_driver::jaco2_driver_configureConfig &config, uint32_t level);
 
@@ -92,6 +92,7 @@ private:
     ros::ServiceServer gravity_compensation_service_;
     ros::ServiceServer admittance_control_service_;
     ros::ServiceServer shutdown_service_;
+    ros::ServiceServer activate_torque_control_;
     ros::ServiceServer set_payload_service_;
     ros::ServiceServer set_torque_expert_mode_;
 
@@ -116,6 +117,7 @@ private:
     bool gripper_server_running_;
     bool finger_server_running_;
     bool right_arm_;
+    bool torque_control_active_;
     bool ok_;
     std::string serial_;
     dynamic_reconfigure::Server<jaco2_driver::jaco2_driver_configureConfig> param_server_;

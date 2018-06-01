@@ -92,24 +92,16 @@ void TorqueController::setTorque(const AngularPosition& tp)
     if(done_){
         start();
     }
-    api_.enableDirectTorqueMode(1.0);
-
-    done_ = false;
     result_ = Result::WORKING;
     //    std::cout << "new target." << std::endl;
 }
 
 void TorqueController::setTorque(const AngularInfo& tp)
 {
-    desired_.Actuators = tp;
-    //        last_command_ = std::time(nullptr);
-    last_command_ = std::chrono::high_resolution_clock::now();
-    if(done_){
-        start();
-    }
-    api_.enableDirectTorqueMode(1.0);
-    done_ = false;
-    //    std::cout << "new target." << std::endl;
+    AngularPosition pos;
+    pos.InitStruct();
+    pos.Actuators = tp;
+    setTorque(tp);
 }
 
 void TorqueController::setGains(double p, double i, double d)
@@ -134,9 +126,8 @@ void TorqueController::write()
 
     samplingPeriod_ = std::chrono::duration_cast<std::chrono::microseconds>(durationLast).count()*1e-6;
 
-    //    std ::cout << "torque control dt: "<< samplingPeriod_ << std::endl;
-    if(samplingPeriod_ > 0.05)
-    {
+        std ::cout << "torque control dt: "<< samplingPeriod_ << std::endl;
+    if(samplingPeriod_ > 0.05){
         cmd_.InitStruct();
         esum_.InitStruct();
         last_diff_.InitStruct();
@@ -144,37 +135,38 @@ void TorqueController::write()
         done_ = true;
         desired_.InitStruct();
         api_.disableTorque();
+        result_ = Result::SUCCESS;
+        std::cout << "torque control done " <<   std::endl;
         t_(result_);
-        //        std::cout << "torque control done: " <<  now.time_since_epoch().count() << std::endl;
-    }
-    else{
-        auto cmd = pidControl();
-        cmd_.Actuators.InitStruct();
+    }else{
+//        auto cmd = pidControl();
+//        cmd_.Actuators.InitStruct();
 
-        if(std::abs(desired_.Actuators.Actuator1) > 0.1) {
-            cmd_.Actuators.Actuator1 = cmd.Actuator1;
-        }
-        if(std::abs(desired_.Actuators.Actuator2) > 0.1){
-            cmd_.Actuators.Actuator2 = cmd.Actuator2;
-        }
-        if(std::abs(desired_.Actuators.Actuator3) > 0.1){
-            cmd_.Actuators.Actuator3 = cmd.Actuator3;
-        }
-        if(std::abs(desired_.Actuators.Actuator4) > 0.1){
-            cmd_.Actuators.Actuator4 = cmd.Actuator4;
-        }
-        if(std::abs(desired_.Actuators.Actuator5) > 0.1){
-            cmd_.Actuators.Actuator5 = cmd.Actuator5;
-        }
-        if(std::abs(desired_.Actuators.Actuator6) > 0.1){
-            cmd_.Actuators.Actuator6 = cmd.Actuator6;
-        }
-        if(++counter_ < 4){
-            std::cout << "t-control desired: counter: "<<  counter_ << "\t" << KinovaArithmetics::to_string(desired_.Actuators)<< std::endl;
-            std::cout << "t-control cmd.: counter: "<<  counter_ << "\t" << KinovaArithmetics::to_string(cmd)<< std::endl;
-            std::cout << kp_ << "\t" << ki_  << "\t" << kd_ << "\t" << kqp_ << "\t" << kqi_  << "\t" << kqd_   << std::endl;
-        }
-        api_.setAngularTorque(cmd_);
+//        if(std::abs(desired_.Actuators.Actuator1) > 0.1) {
+//            cmd_.Actuators.Actuator1 = cmd.Actuator1;
+//        }
+//        if(std::abs(desired_.Actuators.Actuator2) > 0.1){
+//            cmd_.Actuators.Actuator2 = cmd.Actuator2;
+//        }
+//        if(std::abs(desired_.Actuators.Actuator3) > 0.1){
+//            cmd_.Actuators.Actuator3 = cmd.Actuator3;
+//        }
+//        if(std::abs(desired_.Actuators.Actuator4) > 0.1){
+//            cmd_.Actuators.Actuator4 = cmd.Actuator4;
+//        }
+//        if(std::abs(desired_.Actuators.Actuator5) > 0.1){
+//            cmd_.Actuators.Actuator5 = cmd.Actuator5;
+//        }
+//        if(std::abs(desired_.Actuators.Actuator6) > 0.1){
+//            cmd_.Actuators.Actuator6 = cmd.Actuator6;
+//        }
+//        if(++counter_ < 4){
+//            std::cout << "t-control desired: counter: "<<  counter_ << "\t" << KinovaArithmetics::to_string(desired_.Actuators)<< std::endl;
+//            std::cout << "t-control cmd.: counter: "<<  counter_ << "\t" << KinovaArithmetics::to_string(cmd)<< std::endl;
+//            std::cout << kp_ << "\t" << ki_  << "\t" << kd_ << "\t" << kqp_ << "\t" << kqi_  << "\t" << kqd_   << std::endl;
+//        }
+        std::cout << "controller command vel: " << KinovaArithmetics::to_string(desired_.Actuators ) <<std::endl;
+        api_.setAngularTorque(desired_);
     }
 
 
@@ -243,20 +235,20 @@ AngularInfo TorqueController::pidControl()
     AngularInfo diffQ = desired_pos - pos.Actuators;
     AngularInfo diffV = desired_vel - vel.Actuators;
 
-//    std::cout << "diffQ:  " << std::endl
-//              << diffQ.Actuator1 << "\t"
-//              << diffQ.Actuator2 << "\t"
-//              << diffQ.Actuator3 << "\t"
-//              << diffQ.Actuator4 << "\t"
-//              << diffQ.Actuator5 << "\t"
-//              << diffQ.Actuator6 << std::endl;
-//    std::cout << "diffV:  " << std::endl
-//              << diffV.Actuator1 << "\t"
-//              << diffV.Actuator2 << "\t"
-//              << diffV.Actuator3 << "\t"
-//              << diffV.Actuator4 << "\t"
-//              << diffV.Actuator5 << "\t"
-//              << diffV.Actuator6 << std::endl;
+    //    std::cout << "diffQ:  " << std::endl
+    //              << diffQ.Actuator1 << "\t"
+    //              << diffQ.Actuator2 << "\t"
+    //              << diffQ.Actuator3 << "\t"
+    //              << diffQ.Actuator4 << "\t"
+    //              << diffQ.Actuator5 << "\t"
+    //              << diffQ.Actuator6 << std::endl;
+    //    std::cout << "diffV:  " << std::endl
+    //              << diffV.Actuator1 << "\t"
+    //              << diffV.Actuator2 << "\t"
+    //              << diffV.Actuator3 << "\t"
+    //              << diffV.Actuator4 << "\t"
+    //              << diffV.Actuator5 << "\t"
+    //              << diffV.Actuator6 << std::endl;
 
     esumQ_ += samplingPeriod_ * diffQ;
 

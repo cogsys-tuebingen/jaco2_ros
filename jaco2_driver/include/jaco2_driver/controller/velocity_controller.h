@@ -27,7 +27,7 @@ public:
 
     virtual void start() override
     {
-//        api_.disableTorque();
+        //        api_.disableTorque();
 
         last_diff_.InitStruct();
     }
@@ -85,8 +85,7 @@ public:
 
         double sum = absSum(desired_.Position.Actuators);
 
-        if(samplingPeriod_ > 0.05)
-        {
+        if(samplingPeriod_ > 0.05){
             stopMotion();
             esum_.InitStruct();
             last_diff_.InitStruct();
@@ -97,19 +96,26 @@ public:
             desired_.Position.Type = ANGULAR_VELOCITY;
             t_(result_);
             return;
-        }
-        else if(desired_.Position.HandMode == HAND_NOMOVEMENT && sum > 0.01){
+        } else if(desired_.Position.HandMode == HAND_NOMOVEMENT && sum > 0.01){
             auto vel = pidControl();
             cmd_.Position.Actuators = vel;
-//            cmd_.Position.Actuators = desired_.Position.Actuators;
+            //            cmd_.Position.Actuators = desired_.Position.Actuators;
 //            std::cout << "controller command vel: " << KinovaArithmetics::to_string(cmd_.Position.Actuators ) <<std::endl;
 
-        }
-        else if(desired_.Position.HandMode == VELOCITY_MODE){
+        } else if(desired_.Position.HandMode == HAND_NOMOVEMENT && sum <= 0.01){
+//            stopMotion();
+            cmd_.Position.Actuators.InitStruct();
+//            std::cout<< "zero velocity"<<std::endl;
+            return;
+        } else if(desired_.Position.HandMode == VELOCITY_MODE){
             cmd_ = desired_;
+        } else{
+            stopMotion();
+            t_(result_);
+            return;
         }
-//        std::cout << "desired vel: "<< desired_.Position.Actuators.Actuator6 <<std::endl;
-//        std::cout << "cmd vel: "<< cmd_.Position.Actuators.Actuator6 <<std::endl;
+        //        std::cout << "desired vel: "<< desired_.Position.Actuators.Actuator6 <<std::endl;
+        //        std::cout << "cmd vel: "<< cmd_.Position.Actuators.Actuator6 <<std::endl;
         api_.setAngularVelocity(cmd_);
 
     }
