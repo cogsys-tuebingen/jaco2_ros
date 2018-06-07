@@ -103,7 +103,11 @@ Jaco2DriverNode::Jaco2DriverNode()
 
     f_ = boost::bind(&Jaco2DriverNode::dynamicReconfigureCb, this, _1, _2);
     param_server_.setCallback(f_);
-
+    node_name_ = ros::this_node::getName();
+    if(node_name_.front() == '/'){
+        node_name_.erase(node_name_.begin());
+    }
+    ROS_INFO_STREAM("Node Name: " <<  node_name_);
 
     joint_state_msg_.position.resize(JACO_JOINTS_COUNT);
     joint_state_msg_.velocity.resize(JACO_JOINTS_COUNT);
@@ -671,9 +675,10 @@ void Jaco2DriverNode::publishJointState()
 
     if(jdata.stamp() != last_time_js_published_){
         joint_state_msg_ = jaco2_msgs::JointStateConversion::data2SensorMsgs(jdata);
+        joint_state_msg_.header.frame_id = node_name_;
         pub_joint_state_.publish(joint_state_msg_);
-
         jaco_joint_state_msg_ = jaco2_msgs::JointStateConversion::data2Jaco2Msgs(jdata);
+        jaco_joint_state_msg_.header.frame_id = node_name_;
         pub_jaco_joint_state_.publish(jaco_joint_state_msg_);
         last_time_js_published_ = jdata.stamp();
     }
@@ -717,7 +722,6 @@ void Jaco2DriverNode::publishSensorInfo()
 
         const jaco2_data::AccelerometerData& acc_data = driver_.getAccelerometerData();
         jaco2_msgs::Jaco2Accelerometers jaco2_acc = jaco2_msgs::AccelerometerConversion::data2ros(acc_data);
-
         pub_jaco_lin_acc_.publish(jaco2_acc);
         last_time_acc_published_ = stamp;
     }

@@ -131,6 +131,7 @@ private:
     std::string robot_description_;
     std::string base_link_;
     std::string tip_link_;
+    std::string node_name_;
 };
 #endif // JACO2_DRIVER_NODE_H
 
