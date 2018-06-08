@@ -2,10 +2,10 @@
 #include <jaco2_driver/controller/controller_factory.hpp>
 
 
-Jaco2Driver::Jaco2Driver():
+Jaco2Driver::Jaco2Driver(std::string frame_id):
     t_(Jaco2Controller::TerminationCallback(this, &Jaco2Driver::controllerTerminated)),
     initialized_(false),
-    state_(jaco_api_),
+    state_(jaco_api_, frame_id),
 
     active_controller_(nullptr),
 

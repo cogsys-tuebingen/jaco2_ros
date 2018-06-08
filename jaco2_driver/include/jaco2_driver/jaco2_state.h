@@ -30,11 +30,12 @@ public:
     ///
     /// \brief Jaco2State
     /// \param api jaco2 api
+    /// \param frame_id frame identifier of joint state
     ///
     /// Default read: reads position, velocity and torque alternately at high priority
     ///               read acceleration, quick_status, sensor_info, current and torque_gravity_free alternately at low prioriy
     ///
-    Jaco2State(Jaco2API &api);
+    Jaco2State(Jaco2API &api, std::string frame_id);
 
     AngularPosition getAngularPosition() const;
     AngularPosition getAngularVelocity() const;

@@ -1,7 +1,7 @@
 #include <jaco2_driver/jaco2_state.h>
 #include <jaco2_driver/jaco2_driver_constants.h>
 
-Jaco2State::Jaco2State(Jaco2API &api)
+Jaco2State::Jaco2State(Jaco2API &api, std::string frame_id)
     : api_(api),
       readCmd_(0),
       readCmdLowPri_(0),
@@ -9,7 +9,8 @@ Jaco2State::Jaco2State(Jaco2API &api)
       priortyThreshold_(2),
       priortyRate_(priortyThreshold_ + 1),
       calibrate_torque_(false),
-      calibrate_torque_fkt_(false)
+      calibrate_torque_fkt_(false),
+      joint_state_(frame_id)
 {
     lowPriority_.push_back(READ_QUICK_STATUS);
     lowPriority_.push_back(READ_CURRENT);

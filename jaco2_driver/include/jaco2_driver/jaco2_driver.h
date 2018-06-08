@@ -31,9 +31,12 @@
 
 class Jaco2Driver
 {
+public:
+    typedef std::shared_ptr<Jaco2Driver> Jaco2DriverPtr;
+    typedef std::shared_ptr<const Jaco2Driver> Jaco2DriverConstPtr;
 
 public:
-    Jaco2Driver();
+    Jaco2Driver(std::string frame_id);
     ~Jaco2Driver();
 
     bool controllerFinished(Jaco2Controller::Result &result_type) const;

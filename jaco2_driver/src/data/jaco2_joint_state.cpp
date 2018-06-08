@@ -3,12 +3,14 @@
 #include <jaco2_driver/data/jaco2_kinova_conversion.h>
 using namespace jaco2_data;
 
-Jaco2JointState::Jaco2JointState()
-    : use_outlier_fiter_(true),
+Jaco2JointState::Jaco2JointState(std::string frameid)
+    : frame_id(frameid),
+      use_outlier_fiter_(true),
       gravity_(40),
       current_state_(ExtendedJointStateData(Jaco2DriverConstants::n_Jaco2Joints, Jaco2DriverConstants::n_Jaco2Joints))
 {
     calibrate_acc_.resize(Jaco2DriverConstants::n_Jaco2Joints, false);
+    current_state_.header.frame_id = frame_id;
 }
 
 void Jaco2JointState::useOutlierFilter(bool arg)

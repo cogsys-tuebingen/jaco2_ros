@@ -37,7 +37,7 @@ struct KinovaJointState{
 class Jaco2JointState
 {
 public:
-    Jaco2JointState();
+    Jaco2JointState(std::string frame_id);
 
     void useOutlierFilter(bool arg);
     void setOutlierThreshold(double torque, double acc);
@@ -77,6 +77,8 @@ public:
      */
 
     void estimateG();
+public:
+    std::string frame_id;
 
 private:
     void applyCalibration();

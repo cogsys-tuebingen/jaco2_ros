@@ -3,6 +3,7 @@
 //System
 #include <signal.h>
 #include <atomic>
+#include <memory>
 //ROS
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
@@ -71,7 +72,7 @@ private:
 
     ros::NodeHandle private_nh_;
 
-    Jaco2Driver driver_;
+    std::shared_ptr<Jaco2Driver> driver_;
 
     ros::Subscriber sub_joint_velocity_;
     ros::Subscriber sub_finger_velocity_;
