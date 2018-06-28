@@ -9,7 +9,9 @@ int main(int argc, char *argv[])
     nh.param<std::string>("/jaco2_gravity_parameter_path", file, std::string("/tmp/jaco_g_params.yaml"));
 
     Jaco2API api;
-    int result = api.init();
+    api.setupCommandInterface(kinova::KinovaAPIType::USB);
+    int result = api.initUSB();
+    result = api.init();
     ros::Duration r(1);
     r.sleep();
 
@@ -26,8 +28,12 @@ int main(int argc, char *argv[])
     if(result == 1){
         TrajectoryPoint tp;
         tp.InitStruct();
+        tp.Position.Actuators.Actuator1 = 0;
         tp.Position.Actuators.Actuator2 = 180;
         tp.Position.Actuators.Actuator3 = 180;
+        tp.Position.Actuators.Actuator4 = 0;
+        tp.Position.Actuators.Actuator5 = 0;
+        tp.Position.Actuators.Actuator6 = 0;
         tp.Position.Type = ANGULAR_POSITION;
         api.setAngularPosition(tp);
         ros::Duration(40).sleep();

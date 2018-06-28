@@ -72,55 +72,55 @@ private:
 
     Jaco2Driver driver_;
 
-    ros::Subscriber subJointVelocity_;
-    ros::Subscriber subFingerVelocity_;
-    ros::Subscriber subJointTorque_;
+    ros::Subscriber sub_joint_velocity_;
+    ros::Subscriber sub_finger_velocity_;
+    ros::Subscriber sub_joint_torque_;
 
-    ros::Publisher pubJointState_;
-    ros::Publisher pubJointAngles_;
-    ros::Publisher pubFingerPositions_;
-    ros::Publisher pubSensorInfo_;
-    ros::Publisher pubJaco2JointState_;
-    ros::Publisher pubJaco2LinAcc_;
-    ros::Publisher pubGfreeToruqes_;
+    ros::Publisher pub_joint_state_;
+    ros::Publisher pub_joint_angles_;
+    ros::Publisher pub_finger_positions_;
+    ros::Publisher pub_sensor_info_;
+    ros::Publisher pub_jaco_joint_state_;
+    ros::Publisher pub_jaco_lin_acc_;
+    ros::Publisher pub_g_free_toruqes_;
 
-    ros::ServiceServer stopService_;
-    ros::ServiceServer startService_;
-    ros::ServiceServer homingService_;
-    ros::ServiceServer zeroTorqueService_;
-    ros::ServiceServer gravityCompensationService_;
-    ros::ServiceServer admittanceControlService_;
-    ros::ServiceServer shutdownService_;
-    ros::ServiceServer setPayloadService_;
+    ros::ServiceServer stop_service_;
+    ros::ServiceServer start_service_;
+    ros::ServiceServer homing_service_;
+    ros::ServiceServer zero_torque_service_;
+    ros::ServiceServer gravity_compensation_service_;
+    ros::ServiceServer admittance_control_service_;
+    ros::ServiceServer shutdown_service_;
+    ros::ServiceServer set_payload_service_;
 
-    actionlib::SimpleActionServer<jaco2_msgs::ArmJointAnglesAction> actionAngleServer_;
-    actionlib::SimpleActionServer<control_msgs::FollowJointTrajectoryAction> trajServer_;
-    actionlib::SimpleActionServer<jaco2_msgs::GripperControlAction> graspServer_;
-    actionlib::SimpleActionServer<jaco2_msgs::SetFingersPositionAction> fingerServer_;
-    actionlib::SimpleActionServer<jaco2_msgs::ArmJointAnglesAction> blockingAngleServer_;
+    actionlib::SimpleActionServer<jaco2_msgs::ArmJointAnglesAction> action_angle_server_;
+    actionlib::SimpleActionServer<control_msgs::FollowJointTrajectoryAction> traj_server_;
+    actionlib::SimpleActionServer<jaco2_msgs::GripperControlAction> grasp_server_;
+    actionlib::SimpleActionServer<jaco2_msgs::SetFingersPositionAction> finger_server_;
+    actionlib::SimpleActionServer<jaco2_msgs::ArmJointAnglesAction> blocking_angle_server_;
 
 
     ros::Time last_command_;
 
     std::string tf_prefix_;
     std::vector<std::string> joint_names_;
-    sensor_msgs::JointState jointStateMsg_;
-    jaco2_msgs::Jaco2JointState jaco2JointStateMsg_;
-    jaco2_msgs::JointAngles jointAngleMsg_;
-    jaco2_msgs::Jaco2Sensor sensorMsg_;
+    sensor_msgs::JointState joint_state_msg_;
+    jaco2_msgs::Jaco2JointState jaco_joint_state_msg_;
+    jaco2_msgs::JointAngles joint_angle_msg_;
+    jaco2_msgs::Jaco2Sensor sensor_msg_;
 
-    std::atomic_bool actionAngleServerRunning_;
-    bool trajServerRunning_;
-    bool gripperServerRunning_;
-    bool fingerServerRunning_;
-    bool rightArm_;
+    std::atomic_bool action_angle_server_running_;
+    bool traj_server_running_;
+    bool gripper_server_running_;
+    bool finger_server_running_;
+    bool right_arm_;
     bool ok_;
     std::string serial_;
-    dynamic_reconfigure::Server<jaco2_driver::jaco2_driver_configureConfig> paramServer_;
+    dynamic_reconfigure::Server<jaco2_driver::jaco2_driver_configureConfig> param_server_;
     dynamic_reconfigure::Server<jaco2_driver::jaco2_driver_configureConfig>::CallbackType f_;
 
-    jaco2_data::TimeStamp  lastTimeAccPublished_;
-    jaco2_data::TimeStamp  lastTimeJsPublished_;
+    jaco2_data::TimeStamp  last_time_acc_published_;
+    jaco2_data::TimeStamp  last_time_js_published_;
 
     double j6o_;
     std::string dyn_model_calib_file_path_;
