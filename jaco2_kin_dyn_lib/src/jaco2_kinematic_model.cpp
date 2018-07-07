@@ -11,7 +11,7 @@
 /// System
 #include <random>
 #include <boost/filesystem.hpp>
-
+#include <jaco2_kin_dyn_lib/kdl_conversion.h>
 
 
 using namespace Jaco2KinDynLib;

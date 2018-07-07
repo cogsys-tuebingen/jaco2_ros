@@ -7,7 +7,7 @@
 struct SimDriver{
 
     SimDriver(ros::NodeHandle& _nh,
-              std::string state_topic ="/jaco_arm_driver/out/joint_states",
+              std::string state_topic ="/joint_states",
               std::string vel_topic="/jaco_arm_driver/in/joint_velocity") :
         nh(_nh)
     {
@@ -66,7 +66,9 @@ int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "jaco2_arm_driver");
     ros::NodeHandle nh("~");
-    SimDriver driver(nh);
+    std::string state_topic = nh.param<std::string>("state_topic","/joint_states");
+    std::string vel_topic = nh.param<std::string>("vel_topic","/jaco_arm_driver/in/joint_velocity");
+    SimDriver driver(nh,state_topic,vel_topic);
 
     ros::Rate r(80);
     while(ros::ok()){

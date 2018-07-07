@@ -129,6 +129,7 @@ void JointVelPosEstimator::estimate(const IntegrationData &data)
 //    }
 
     model_.getJointAcceleration(data.pos, data.vel, data.torques, current_acc_);
+    //Add
     current_vel_ = data.vel + data.dt * current_acc_;
     current_pos_ = data.pos + data.dt * current_vel_;
 }

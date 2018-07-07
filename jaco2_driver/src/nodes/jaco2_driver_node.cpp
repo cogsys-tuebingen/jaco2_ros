@@ -812,6 +812,13 @@ bool Jaco2DriverNode::setTorqueExportMode(jaco2_msgs::SetTorqueExpertMode::Reque
         return true;
     } else{
         res.message = "Wrong password";
+        std::string gravity_calib_file = private_nh_.param<std::string>("jaco_gravity_calibration_file", "");
+        if(gravity_calib_file != ""){
+            ROS_INFO_STREAM("Using optimal gravity parameters.");
+            Jaco2Calibration::ApiGravitationalParams g_params;
+            Jaco2Calibration::load(gravity_calib_file, g_params);
+            bool success = driver_->setGravityParams(g_params);
+        }
         return false;
     }
 }
