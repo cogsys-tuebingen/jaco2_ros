@@ -65,7 +65,7 @@ public:
         }
         else {
 
-            gripper_ac_.reset(new actionlib::SimpleActionClient<jaco2_msgs::GripperControlAction>("gripper_server", false));
+            gripper_ac_.reset(new actionlib::SimpleActionClient<jaco2_msgs::GripperControlAction>("jaco_22_driver/gripper_command", false));
             ROS_INFO("Set up GripperControl Actionserver!");
 
         }
