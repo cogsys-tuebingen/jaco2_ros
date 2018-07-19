@@ -1,0 +1,7 @@
+<launch>
+
+    <node pkg="jaco2_moveit_controller" name="gripper_action_command_node" type="gripper_action_command" output="screen"/>
+<param name="use_sim" value="true" />
+<param name="finger_count" value="3" />
+
+</launch>
