@@ -1,8 +1,0 @@
-<launch>
-
-    <node pkg="jaco2_moveit_controller" name="gripper_action_command_node" type="gripper_action_command" />
-<param name="use_sim" value="false" />
-
-    <node pkg="jaco2_moveit_controller" name="move_command_node" type="move_command" />
-
-</launch>
