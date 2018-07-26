@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<launch>
+ <include file="$(find jaco2_moveit_config)/launch/moveit_full.launch">
+	<arg name="controller_in" value="jaco_22"/> 
+	<arg name="joint_state_topic" value="/jaco_22_driver/out/joint_states"/>
+  </include>
+</launch>

@@ -1,10 +1,14 @@
 <?xml version="1.0"?>
 <launch>
-  <node pkg="jaco2_driver" type="jaco2_driver_node" name="jaco_22_driver">
+  <node pkg="jaco2_driver" type="jaco2_driver_node" name="jaco_22_driver" output="screen">
     <param name="/jaco_serial" type="string" value="PJ00900006005925-1"/>
     <param name="/right_arm" type="bool" value="true"/>
     <param name="/jaco_use_accelerometer_calib" type="bool" value="true" />
     <param name="/jaco_accelerometer_calibration_file" type="string" value="$(find jaco2_driver)/config/acc_calib_jaco2-2.yaml"/>
+    <param name="/jaco_gravity_calibration_file" type="string" value="$(find jaco2_driver)/config/jaco2-2_g_params_service.yaml" />
+    <param name="jaco_velocity_calibration_file" type="string" value="$(find jaco2_driver)/config/velocity_calibration_jaco2-2.yaml"/> 
     <param name="/jaco_use_torque_calib" type="bool" value="false" />
+    <param name="/velocity_controller" type="string" value="VEL"/>
+    <param name="/trajectory_controller" type="string" value="TRAJ_P2P_VEL"/>
   </node>
 </launch>

@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <launch>
+<arg name="joy_dev" default="/dev/input/js1"/>
 <node pkg="joy" type="joy_node" name="ds4joy" output="screen" respawn="true">
       <remap from="/joy" to="/ds4joy"/>
-      <param name="/dev" value="/dev/input/js1"/>
+      <param name="/dev" value="$(arg joy_dev)"/>
 </node>
 <rosparam command="load" ns="jaco2_teleop" file="$(find jaco2_teleop)/config/ps4_mapping.yaml"/>
 
