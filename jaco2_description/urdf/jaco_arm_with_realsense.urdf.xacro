@@ -174,15 +174,15 @@
   <xacro:property name="link_5_Iyz" value=" 0.0000" />
   <xacro:property name="link_5_Izz" value=" 0.0003" />
 
-  <xacro:property name="link_hand_com_xyz" value="0.0058 0.0104 -0.0703" />
+  <xacro:property name="link_hand_com_xyz" value="0.0058 0.0091 -0.0688" />
   <xacro:property name="link_hand_com_rpy" value="0 0 0" />
   <xacro:property name="link_hand_mass" value="0.8579" />
-  <xacro:property name="link_hand_Ixx" value=" 0.0091" />
-  <xacro:property name="link_hand_Ixy" value=" 0.0001" />
-  <xacro:property name="link_hand_Ixz" value=" 0.0041" />
-  <xacro:property name="link_hand_Iyy" value=" 0.0185" />
+  <xacro:property name="link_hand_Ixx" value=" 0.0093" />
+  <xacro:property name="link_hand_Ixy" value=" 0.0000" />
+  <xacro:property name="link_hand_Ixz" value=" 0.0042" />
+  <xacro:property name="link_hand_Iyy" value=" 0.0182" />
   <xacro:property name="link_hand_Iyz" value=" 0.0001" />
-  <xacro:property name="link_hand_Izz" value=" 0.0126" />
+  <xacro:property name="link_hand_Izz" value=" 0.0130" />
 
 	<xacro:macro name="jaco_link" params="link_name link_mass Ixx Ixy Ixz Iyy Iyz Izz link_com_origin link_com_rpy">
 		<link name="${link_name}">
