@@ -79,7 +79,7 @@ manipulator:
     - PRMkConfigDefault
     - PRMstarkConfigDefault
   projection_evaluator: joints(jaco_joint_1,jaco_joint_2)
-  longest_valid_segment_fraction: 0.05
+  longest_valid_segment_fraction: 0.005
 gripper:
   planner_configs:
     - SBLkConfigDefault
