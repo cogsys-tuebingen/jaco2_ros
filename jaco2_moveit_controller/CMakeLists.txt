@@ -51,7 +51,7 @@ message("################################### ROS VERSION: ${roscpp_VERSION_MAJOR
     ## DEPENDS: system dependencies of this project that dependent projects also need
     catkin_package(
         #  INCLUDE_DIRS include
-        LIBRARIES jaco2_moveit_controller
+#        LIBRARIES jaco2_moveit_controller
         CATKIN_DEPENDS moveit_core moveit_msgs moveit_ros_planning moveit_ros_planning_interface roscpp jaco2_msgs jaco2_utils actionlib_msgs message_runtime
         DEPENDS system_lib
         )

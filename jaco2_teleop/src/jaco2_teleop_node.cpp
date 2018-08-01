@@ -20,7 +20,7 @@ public:
     };
     const double joystick_threshold_ = 0.1;
     const std::vector<int> default_axes = {0,1,3,4};
-    const std::vector<int> default_buttons = {0,1,2,3,4,5,6,7};
+    const std::vector<int> default_buttons = {0,1,2,3,4,5,6};
 
 
     Jaco2Teleop(std::string state_topic = "/jaco_arm_driver/out/joint_states",
@@ -43,12 +43,12 @@ public:
         model_(robot_description, base_link, end_eff)
     {
 
-        axes_ = nh_.param("pad_config/axes", default_axes);
+        axes_ = nh_.param("joy_mapping/axes", default_axes);
         if(axes_.size() < default_axes.size()){
             ROS_ERROR_STREAM("At least " << default_axes.size() << " axes expected! Given " << axes_.size());
             ros::shutdown();
         }
-        buttons_ = nh_.param("pad_config/buttons", default_buttons);
+        buttons_ = nh_.param("joy_mapping/buttons", default_buttons);
         if(buttons_.size() < default_buttons.size()){
             ROS_ERROR_STREAM("At least " << default_buttons.size() << " buttons expected! Given " << buttons_.size());
             ros::shutdown();
@@ -91,13 +91,13 @@ public:
             return;
         }
 
-        if(last_joy_.buttons[buttons_[6]] && !toggle_states_[Function::STOP]){// R2: STOP
+        if(last_joy_.buttons[buttons_[5]] && !toggle_states_[Function::STOP]){// R2: STOP
             jaco2_msgs::Stop stop;
             srv_stop_.call(stop.request, stop.response);
             ROS_INFO_STREAM(stop.response);
             toggle_states_[Function::STOP] = true;
         }
-        if(last_joy_.buttons[buttons_[7]] && toggle_states_[Function::STOP]){// L2: START
+        if(last_joy_.buttons[buttons_[6]] && toggle_states_[Function::STOP]){// L2: START
             jaco2_msgs::Start start;
             srv_start_.call(start.request, start.response);
             ROS_INFO_STREAM(start.response);
@@ -137,7 +137,7 @@ public:
         }
         //        bool move = doMove(msg);
 
-        if(last_joy_.buttons[buttons_[4]]){//dead man switch
+        if(last_joy_.buttons[buttons_[4]]){//dead man switch L1
 
             if(!toggle_states_[Function::CART]){
                 jaco2_msgs::JointVelocity vel;
@@ -159,34 +159,27 @@ public:
                 KDL::Twist v;
                 v.rot.Zero();
                 v.vel.Zero();
-                KDL::Frame trans;
-                model_.getFKPose(state_.position, trans, model_.getTipLink());
-                if(!last_joy_.buttons[buttons_[3]]){ // L1
+//                KDL::Frame trans;
+//                model_.getFKPose(state_.position, trans, model_.getTipLink());
+                if(!last_joy_.buttons[buttons_[3]]){ // R1
                     KDL::Vector input(getCmd(last_joy_.axes[axes_[0]], joystick_threshold_),
                                       getCmd(last_joy_.axes[axes_[1]], joystick_threshold_),
                                       getCmd(last_joy_.axes[axes_[2]], joystick_threshold_));
                     v.vel = input;
                     ROS_INFO_STREAM("lin vel: " << v.vel.x() << ", " << v.vel.y() << ", " << v.vel.z());
-                    v = trans * v;
+//                    v = v;
                 }else{
-                    KDL::Vector vec = trans * KDL::Vector(0,0,1);
-                    double r = vec.Norm();
-                    double phi = std::atan2(vec.y(), vec.x());
-                    double theta = std::acos(vec.z() / r);
-                    double vx = getCmd(last_joy_.axes[axes_[1]], joystick_threshold_) * cos(theta) * cos(phi) -
-                                getCmd(last_joy_.axes[axes_[0]], joystick_threshold_) * sin(theta) * sin(phi);
-                    double vy = getCmd(last_joy_.axes[axes_[1]], joystick_threshold_) * cos(theta) * sin(phi) +
-                                getCmd(last_joy_.axes[axes_[0]], joystick_threshold_) * sin(theta) * cos(phi);
-                    vx /= 10.0;
-                    vy /= 10.0;
-                    v.rot = KDL::Vector(vx, vy, 0);
+                    KDL::Vector input(getCmd(last_joy_.axes[axes_[0]], joystick_threshold_),
+                                      getCmd(last_joy_.axes[axes_[1]], joystick_threshold_),
+                                      getCmd(last_joy_.axes[axes_[2]], joystick_threshold_));
+                    v.rot = input;
                     ROS_INFO_STREAM("rot vel: " << v.rot.x() << ", " << v.rot.y() << ", " << v.rot.z());
                 }
 
 
                 jaco2_data::JointData jd;
                 int ec = model_.getJointVelocities(state_.position, v, jd.data);
-                 if(!last_joy_.buttons[buttons_[3]]){ // L1
+                 if(!last_joy_.buttons[buttons_[3]]){ // R1
                      jd.data[5] += getCmd(last_joy_.axes[axes_[0]], joystick_threshold_);
                  }
                 jaco2_msgs::JointVelocity vel = jaco2_msgs::JointDataConversion::data2Velocity(jd);
