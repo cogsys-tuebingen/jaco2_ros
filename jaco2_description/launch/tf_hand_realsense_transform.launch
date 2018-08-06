@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<launch>
+    <arg name="prefix" default=""/>
+    <arg name="jaco_name" default="jaco"/>
+    <node pkg="tf" type="static_transform_publisher" name="tf_$(arg jaco_name)_hand_realsense_bc" args="-0.02 0.078 -0.0116 0 1.57080 -1.5708  $(arg prefix)/$(arg jaco_name)_link_hand camera_link 10" />
+</launch>
