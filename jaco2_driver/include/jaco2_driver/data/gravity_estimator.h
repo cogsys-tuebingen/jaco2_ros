@@ -16,6 +16,6 @@ public:
     bool static_base;
 private:
     std::size_t buffer_size_;
-    std::deque<Eigen::Vector3d> g_buffer_;
+    std::deque<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>> g_buffer_;
 };
 #endif // GRAVITY_ESTIMATOR_H
