@@ -78,7 +78,11 @@ Jaco2DriverNode::Jaco2DriverNode()
     gravity_compensation_service_ = private_nh_.advertiseService("in/enable_gravity_compensation_mode", &Jaco2DriverNode::gravityCompCallback, this);
     admittance_control_service_ = private_nh_.advertiseService("in/enable_admittance_mode", &Jaco2DriverNode::admittanceControlCallback, this);
     shutdown_service_ = private_nh_.advertiseService("in/shutdown", &Jaco2DriverNode::shutdownServiceCb, this);
+
+#ifdef TORQUE_EXPERT
     set_torque_expert_mode_ = private_nh_.advertiseService("in/set_torque_expert_mode", &Jaco2DriverNode::setTorqueExportMode, this);
+#endif
+
     activate_torque_control_ = private_nh_.advertiseService("in/toggle_torque_control", &Jaco2DriverNode::activateTorqueControlCb, this);
 
     action_angle_server_.registerGoalCallback(boost::bind(&Jaco2DriverNode::actionAngleGoalCb, this));
@@ -801,8 +805,10 @@ bool Jaco2DriverNode::setPayloadCallback(jaco2_msgs::SetPayloadParams::Request &
 
 bool Jaco2DriverNode::setTorqueExportMode(jaco2_msgs::SetTorqueExpertMode::Request &req, jaco2_msgs::SetTorqueExpertMode::Response &res)
 {
-    if(req.password == "IamTorqueKing18"){
+    if(req.password == "ExpertMode"){
+#ifdef TORQUE_EXPERT
         driver_->setTorqueExpert();
+#endif
         while(!driver_->serviceDone()){
             usleep(10000);
             ROS_INFO("Waiting");

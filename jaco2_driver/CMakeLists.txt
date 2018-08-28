@@ -1,17 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jaco2_driver)
 
-## Enforce that we use C++11
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-if(COMPILER_SUPPORTS_CXX11)
-    add_definitions(-std=c++11)
-elseif(COMPILER_SUPPORTS_CXX0X)
-    add_definitions(-std=c++0x)
-else()
-    message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+if(${TORQUE_EXPERT_MODE})
+    message("Optionaly also gravity has to be compenstated.")
+    add_definitions(-DTORQUE_EXPERT)
 endif()
+
+## Compile as C++11, supported in ROS Kinetic and newer
+add_compile_options(-std=c++11)
 
 #add_definitions(-DCalib)
 ## Find catkin macros and libraries
@@ -55,7 +51,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES jaco2_driver
     CATKIN_DEPENDS actionlib actionlib_msgs control_msgs geometry_msgs roscpp sensor_msgs std_msgs tf trajectory_msgs jaco2_msgs dynamic_reconfigure jaco2_data
-    DEPENDS system_lib
+    DEPENDS system_lib Boost Eigen3
     )
 
 include_directories(

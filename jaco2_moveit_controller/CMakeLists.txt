@@ -1,21 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jaco2_moveit_controller)
 
-## Enforce that we use C++11
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-if(COMPILER_SUPPORTS_CXX11)
-    add_definitions(-std=c++11)
-elseif(COMPILER_SUPPORTS_CXX0X)
-    add_definitions(-std=c++0x)
-else()
-    message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
-endif()
+## Compile as C++11, supported in ROS Kinetic and newer
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+
+find_package(moveit_core QUIET)
+
+if(${moveit_core_FOUND})
+
 find_package(catkin REQUIRED COMPONENTS
     roscpp
     jaco2_msgs
@@ -25,30 +21,10 @@ find_package(catkin REQUIRED COMPONENTS
     moveit_msgs
     moveit_ros_planning
     moveit_ros_planning_interface
-
     actionlib_msgs
     )
 
 message("################################### ROS VERSION: ${roscpp_VERSION_MAJOR}.${roscpp_VERSION_MINOR}.${roscpp_VERSION_PATCH}")
-
-    ## System dependencies are found with CMake's conventions
-    # find_package(Boost REQUIRED COMPONENTS system)
-
-#    add_action_files(
-#        DIRECTORY action
-#        FILES)
-
-#    generate_messages(DEPENDENCIES actionlib_msgs std_msgs)
-
-    ###################################
-    ## catkin specific configuration ##
-    ###################################
-    ## The catkin_package macro generates cmake config files for your package
-    ## Declare things to be passed to dependent projects
-    ## INCLUDE_DIRS: uncomment this if you package contains header files
-    ## LIBRARIES: libraries you create in this project that dependent projects also need
-    ## CATKIN_DEPENDS: catkin_packages dependent projects also need
-    ## DEPENDS: system dependencies of this project that dependent projects also need
     catkin_package(
         #  INCLUDE_DIRS include
 #        LIBRARIES jaco2_moveit_controller
@@ -67,11 +43,6 @@ message("################################### ROS VERSION: ${roscpp_VERSION_MAJOR
         ${catkin_INCLUDE_DIRS}
         curses
         )
-
-#    # Declare a C++ library
-#     add_library(jaco2_moveit_controller
-
-#     )
 
     ## Declare a C++ executable
     add_executable(gripper_action_command src/gripper_action_command.cpp)
@@ -135,3 +106,5 @@ message("################################### ROS VERSION: ${roscpp_VERSION_MAJOR
 
     ## Add folders to be run by python nosetests
     # catkin_add_nosetests(test)
+
+endif()

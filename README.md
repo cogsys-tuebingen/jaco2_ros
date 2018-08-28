@@ -43,6 +43,11 @@ ii. Clone repository and build your workspace:
 	rosdep install -y -r -i --from-paths src
 	catkin_make
 ```
+Optionally, you can build the *TORQUE_EXPERT_MODE* ** but not recommended**. 
+This mode sets all gravity parameters of the dynamic model to zero, thus you have to compensate gravity yourself while using torque control. This mode is **not recommended**. Use only if you are really sure that your commands are correct. Compile with:
+```
+	catkin_make -DTORQUE_EXPERT_MODE=True
+```
 iii. Finally, copy the udev rule from the jaco2_driver folder to your system:
 ```
 	sudo cp src/jaco2_ros/jaco2_driver/udev/10-kinova-arm.rules /etc/udev/rules.d/
@@ -72,8 +77,11 @@ You can publish commands to the Jaco 2 on topics with:
 ```
 <node_name>/in/x
 ```
-- **joint_velocity topic:**
-To publish joint velocities to the controller publish our velocity with at least a rate of 20 Hz. Otherwise your comands will be ignored. Be carfull while publishing velocities, collisions are currently not avoided!
+- **joint_velocity** topic:
+To publish joint velocities to the controller publish our velocity with at least a rate of 20 Hz. Otherwise your commands will be ignored. Be careful while publishing velocities, collisions are currently not avoided!
+- **joint_torque** topic:
+Similar to the **joint_velocity** topic but torques have to be published.
+Commands while not have any effect until the **in/toggle_torque_control** service is called.
 ### Action Server
 Currently, we have 3 action servers to control the arm:
 
@@ -142,11 +150,19 @@ Releases the API if it was stopped previously.
 - **in/enable_gravity_compensation_mode**
 If true is send the Jaco 2 is in torque control mode an will only compensete torques due to gravity. Therefore, you can push the Jaco 2 into any configuration you like. This mode is deactivated if links are to close to each other. To activated the gravity compensation mode send false to the service, change the configuration to a more extended one e.g. via the controller, and finally enable the compensation mode by sending ture once again.
 
+- **in/toggle_torque_control**
+Enables/disables torque control. Before, a torque command is executed this services has to be called. Calling it again will immediately disable torque control.
+
 - **in/shutdown**
 Shuts the driver down. Finishes the node.
 
+- Optional **in/set_torque_expert_mode**
+If you built the *TORQUE_EXPERT_MODE* this service is available. **Before, calling this service: Make sure the Jaco 2 is in the following position  [ 0, 180° 180°, 0, 0, 0°]**. Also set all torque sensors to zero (In the jaco2_driver" package a script is provided doing booth. Make sure the environment of the Jaco 2 is collision free.)
+You need to provide a password to enable the *TORQUE_EXPERT_MODE*: password = ExpertMode.
+Sending the wrong password will restore the original gravity parameters.
+
 ## jaco2_kin_dyn_lib
-A wrapper library for the [orocos Kinematics and Dynamics Library (KDL)](http://wiki.ros.org/orocos_kdl). Besides, this library contains some additional methods, e.g. regression matrix for dynamic calibration or a modified recursive netwon algortihm used e.g. in external torque estimation.
+A wrapper library for the [orocos Kinematics and Dynamics Library (KDL)](http://wiki.ros.org/orocos_kdl). Besides, this library contains some additional methods, e.g. regression matrix for dynamic calibration or a modified recursive Newton algorithm used e.g. in external torque estimation.
 TODO ...
 
 ## jaco2_moveit_config
