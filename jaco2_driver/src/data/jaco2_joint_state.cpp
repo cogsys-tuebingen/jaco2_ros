@@ -29,7 +29,8 @@ void Jaco2JointState::setAngularData(const jaco2_data::JointStateData::DataType 
     switch (type) {
     case JointStateData::DataType::JOINT_POS:{
         current_state_.data.joint_state.position = ConvertAngularData::kinova2data(pos);
-        current_state_.data.joint_state.normalize();
+//        current_state_.data.joint_state.normalize();
+        current_state_.data.joint_state.normalize4Pi();
         break;
     }
     case JointStateData::DataType::JOINT_VEL:{
@@ -121,7 +122,8 @@ void Jaco2JointState::update(const KinovaJointState& data)
     current_state_.data.joint_state.velocity = ConvertAngularData::kinova2data(data.velocity);
     current_state_.data.joint_state.acceleration = ConvertAngularData::kinova2data(data.acceleration);
     current_state_.data.joint_state.torque = ConvertAngularData::kinova2data(data.torque, false);
-    current_state_.data.joint_state.normalize();
+//    current_state_.data.joint_state.normalize();
+    current_state_.data.joint_state.normalize4Pi();
 
     if(use_outlier_fiter_){
         jaco2_data::ExtendedJointStateDataStamped filtered;
@@ -148,7 +150,8 @@ void Jaco2JointState::update(const jaco2_data::TimeStamp& t,
     current_state_.data.joint_state.velocity = ConvertAngularData::kinova2data(vel);
     current_state_.data.joint_state.acceleration = ConvertAngularData::kinova2data(acc);
     current_state_.data.joint_state.torque = ConvertAngularData::kinova2data(tor, false);
-    current_state_.data.joint_state.normalize();
+//    current_state_.data.joint_state.normalize();
+    current_state_.data.joint_state.normalize4Pi();
 
     if(use_outlier_fiter_){
         jaco2_data::ExtendedJointStateDataStamped filtered;

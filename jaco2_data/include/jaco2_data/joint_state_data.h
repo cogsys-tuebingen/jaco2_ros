@@ -26,6 +26,7 @@ public:
 
     void resize(std::size_t n, double val = 0);
     void normalize(std::size_t offset = 0);
+    void normalize4Pi(std::size_t offset = 0);
 
     iterator begin(DataType type);
     const_iterator begin(DataType type) const;
