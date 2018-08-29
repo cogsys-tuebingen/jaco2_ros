@@ -24,17 +24,17 @@
         <joint name="jaco_joint_6" />
         <chain base_link="jaco_link_base" tip_link="jaco_link_hand" />
     </group>
-<!--    <group name="gripper">
+    <group name="gripper">
         <joint name="jaco_joint_finger_1" />
         <joint name="jaco_joint_finger_2" />
         <joint name="jaco_joint_finger_3" />
         <joint name="jaco_joint_finger_tip_1" />
         <joint name="jaco_joint_finger_tip_2" />
         <joint name="jaco_joint_finger_tip_3" />
-        <group name="finger1" />
+<!---        <group name="finger1" />
         <group name="finger2" />
-        <group name="finger3" />
-    </group> -->
+        <group name="finger3" />-->
+    </group> 
 <!--    <group name="finger1">
         <joint name="jaco_joint_finger_1" />
     </group>

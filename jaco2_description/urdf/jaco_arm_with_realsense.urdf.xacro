@@ -201,7 +201,7 @@
 			</visual>
 			<collision>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}.stl" />
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}_potato.stl" />
 				</geometry>
 			</collision>
 		</link>
@@ -224,7 +224,7 @@
 			</visual>
 			<collision>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${file}.stl" />
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${file}_convex_hull.stl" />
 				</geometry>
 			</collision>
 		</link>
@@ -270,7 +270,7 @@
 			</visual>
 			<collision>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}_4_5.stl" />
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}_4_5_potato.stl" />
 				</geometry>
 			</collision>
 		</link>
