@@ -4,8 +4,8 @@
 #include <assert.h>
 #include <memory>
 #include <mutex>
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Core>
+#include <Eigen/Eigen>
 #include <iostream>
 
 namespace jaco2_utils {

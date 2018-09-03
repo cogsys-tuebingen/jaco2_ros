@@ -8,7 +8,7 @@ add_definitions(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED)
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3 REQUIRED VERSION 3.3.5)
 
 catkin_package(
    INCLUDE_DIRS include
