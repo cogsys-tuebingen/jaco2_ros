@@ -18,7 +18,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES jaco2_msgs_conversion
     CATKIN_DEPENDS jaco2_data jaco2_msgs roscpp
-    DEPENDS system_lib
+#    DEPENDS system_lib
     )
 
 

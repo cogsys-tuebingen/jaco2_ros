@@ -20,8 +20,8 @@
   <!-- Params for the octomap monitor -->
   
   <param name="octomap_frame" type="string" value="root" />
-  <param name="octomap_resolution" type="double" value="0.025" />
-  <param name="max_range" type="double" value="5.0" />
+  <param name="octomap_resolution" type="double" value="0.01" />
+  <param name="max_range" type="double" value="1.0" />
   
   <!-- sensors used to update the map -->
   <rosparam command="load" file="$(arg moveit_octomap_sensor_params_file)" />
