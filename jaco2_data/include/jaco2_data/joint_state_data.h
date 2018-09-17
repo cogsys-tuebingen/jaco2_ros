@@ -8,7 +8,7 @@
 namespace jaco2_data {
 
 
-class JointStateData
+class EIGEN_ALIGN16 JointStateData
 {
 public:
     typedef std::vector<double>::iterator iterator;

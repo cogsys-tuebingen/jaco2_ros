@@ -27,6 +27,7 @@ trajectory_controller|string|TRAJ_P2P_VEL|Changes the trajactory traking control
 |robot_model_param_sever|string|/robot_description|  Name of robot_model in parameter server.|
 |robot_model_base_link|string|jaco_link_base| Base link of the controlled chain. Can differ e.g. jaco_left_link_base jaco_right_link_base
 |robot_model_tip_link|string|jaco_link_hand|Tip link of the controlled chain. Can differ e.g. jaco_left_link_hand jaco_right_link_hand
+|publish_fingers|bool|true| Decide if you want to publish the finger joint angles in the joint_state message.
 
 
 ##Warning
