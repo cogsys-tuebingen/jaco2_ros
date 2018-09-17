@@ -7,7 +7,7 @@
 #include <jaco2_msgs/GripperControlAction.h>
 
 /// Moveit planning scene
-#include <moveit_msgs/PlanningScene.h>
+#include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit_msgs/AttachedCollisionObject.h>
 #include <geometric_shapes/solid_primitive_dims.h>
 
@@ -42,8 +42,7 @@ private:
 
 
     // Objects
-    moveit_msgs::PlanningScene planning_scene;
-    ros::Publisher planning_scene_diff_publisher_;
+    moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
 
 public:
 
@@ -53,9 +52,6 @@ public:
         use_sim_ = nh_.param<bool>("use_sim", false);
         finger_count_ = nh_.param<int>("finger_count", 3);
         as_.start();
-
-        // Setup planning scene
-        planning_scene_diff_publisher_ = nh_.advertise<moveit_msgs::PlanningScene>("planning_scene", 1);
 
         if(use_sim_) {
 
@@ -187,7 +183,7 @@ public:
             }
             else {
                 as_.setSucceeded();
-                objectManagement(goal->command.position);
+                //objectManagement(goal->command.position);
             }
 
         }
@@ -212,9 +208,9 @@ public:
             shape_msgs::SolidPrimitive primitive;
             primitive.type = primitive.BOX;
             primitive.dimensions.resize(3);
-            primitive.dimensions[0] = object_size_*10e-3;
-            primitive.dimensions[1] = object_size_*10e-3;
-            primitive.dimensions[2] = object_size_*10e-3;
+            primitive.dimensions[0] = object_size_*10e-3 * 2;
+            primitive.dimensions[1] = object_size_*10e-3 * 2;
+            primitive.dimensions[2] = object_size_*10e-3 * 2;
 
             attached_object.object.primitives.push_back(primitive);
             attached_object.object.primitive_poses.push_back(pose);
@@ -223,9 +219,7 @@ public:
 
             ROS_INFO("Adding the object into the world at the location of the hand.");
 
-            planning_scene.robot_state.attached_collision_objects.push_back(attached_object);
-            planning_scene.is_diff = true;
-            planning_scene_diff_publisher_.publish(planning_scene);
+            planning_scene_interface_.applyAttachedCollisionObject(attached_object);
 
         }
         else {
@@ -239,13 +233,7 @@ public:
             /* Carry out the DETACH + ADD operation */
             ROS_INFO("Detaching the object from the robot and returning it to the world.");
 
-            planning_scene.robot_state.attached_collision_objects.clear();
-            planning_scene.robot_state.attached_collision_objects.push_back(detach_object);
-            planning_scene.robot_state.is_diff = true;
-            planning_scene.world.collision_objects.clear();
-            planning_scene.world.collision_objects.push_back(detach_object.object);
-            planning_scene.is_diff = true;
-            planning_scene_diff_publisher_.publish(planning_scene);
+            planning_scene_interface_.applyAttachedCollisionObject(detach_object);
 
         }
 
