@@ -14,7 +14,7 @@ catkin_package(
    INCLUDE_DIRS include
    LIBRARIES jaco2_data
 #  CATKIN_DEPENDS other_catkin_pkg
-   DEPENDS system_lib
+   DEPENDS Eigen3
 )
 
 ###########

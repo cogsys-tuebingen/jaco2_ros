@@ -120,6 +120,7 @@ private:
     bool right_arm_;
     bool torque_control_active_;
     bool ok_;
+    bool publish_fingers_;
     std::string serial_;
     dynamic_reconfigure::Server<jaco2_driver::jaco2_driver_configureConfig> param_server_;
     dynamic_reconfigure::Server<jaco2_driver::jaco2_driver_configureConfig>::CallbackType f_;

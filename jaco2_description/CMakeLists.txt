@@ -15,7 +15,7 @@ find_package(catkin REQUIRED xacro)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
     CATKIN_DEPENDS xacro
-    DEPENDS system_lib
+#    DEPENDS system_lib
 )
 
 #############

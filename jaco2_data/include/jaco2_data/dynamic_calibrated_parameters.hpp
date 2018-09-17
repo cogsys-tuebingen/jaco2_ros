@@ -6,7 +6,7 @@
 #include <Eigen/StdVector>
 namespace Jaco2Calibration {
 
-struct DynamicParameters
+struct EIGEN_ALIGN16 DynamicParameters
 {
     std::string linkName;
     double mass;

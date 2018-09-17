@@ -6,7 +6,7 @@
 
 namespace jaco2_data {
 
-class Vector3
+class EIGEN_ALIGN16 Vector3
 {
 public:
     Vector3();

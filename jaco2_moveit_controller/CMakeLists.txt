@@ -29,7 +29,7 @@ message("################################### ROS VERSION: ${roscpp_VERSION_MAJOR
         #  INCLUDE_DIRS include
 #        LIBRARIES jaco2_moveit_controller
         CATKIN_DEPENDS moveit_core moveit_msgs moveit_ros_planning moveit_ros_planning_interface roscpp jaco2_msgs jaco2_utils actionlib_msgs message_runtime
-        DEPENDS system_lib
+#        DEPENDS system_lib
         )
 
     ###########

@@ -51,7 +51,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES jaco2_driver
     CATKIN_DEPENDS actionlib actionlib_msgs control_msgs geometry_msgs roscpp sensor_msgs std_msgs tf trajectory_msgs jaco2_msgs dynamic_reconfigure jaco2_data
-    DEPENDS system_lib Boost Eigen3
+    DEPENDS Boost Eigen3
     )
 
 include_directories(

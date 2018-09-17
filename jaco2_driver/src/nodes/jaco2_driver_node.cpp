@@ -52,6 +52,8 @@ Jaco2DriverNode::Jaco2DriverNode()
     ROS_INFO_STREAM("test");
     right_arm_ = private_nh_.param<bool>("right_arm", true);
     bool move_home = private_nh_.param<bool>("move_home",true);
+    publish_fingers_ = private_nh_.param<bool>("publish_fingers",true);
+
     if(right_arm_){
         ROS_INFO_STREAM("Right arm");
     }
@@ -679,10 +681,13 @@ void Jaco2DriverNode::stop()
 
 void Jaco2DriverNode::publishJointState()
 {
-    const jaco2_data::JointStateDataStamped& jdata = driver_->getJointState();
+    jaco2_data::JointStateDataStamped jdata = driver_->getJointState();
 
 
     if(jdata.stamp() != last_time_js_published_){
+      if(!publish_fingers_){
+        jdata.popToSize(Jaco2DriverConstants::n_Jaco2Joints);
+      }
         joint_state_msg_ = jaco2_msgs::JointStateConversion::data2SensorMsgs(jdata);
 //        joint_state_msg_.header.frame_id = node_name_;
         pub_joint_state_.publish(joint_state_msg_);

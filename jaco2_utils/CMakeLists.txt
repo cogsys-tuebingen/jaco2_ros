@@ -45,7 +45,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES jaco2_utils
   CATKIN_DEPENDS roscpp tf
-  DEPENDS system_lib
+#  DEPENDS system_lib
 )
 
 ###########

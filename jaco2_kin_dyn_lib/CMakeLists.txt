@@ -34,7 +34,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES jaco2_kin_dyn_lib
   CATKIN_DEPENDS kdl_parser roscpp tf trac_ik_lib jaco2_data
-  DEPENDS system_lib orocos_kdl
+  DEPENDS orocos_kdl
 )
 
 include_directories(

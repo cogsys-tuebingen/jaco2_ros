@@ -6,7 +6,7 @@
 #include <fstream>
 
 namespace Jaco2Calibration {
-struct AccelerometerCalibrationParam {
+struct EIGEN_ALIGN16 AccelerometerCalibrationParam {
 
     AccelerometerCalibrationParam(){}
 
@@ -40,6 +40,7 @@ struct AccelerometerCalibrationParam {
     std::string acc_name;
     Eigen::Matrix<double, 3,1> bias;
     Eigen::Matrix<double, 3,3> misalignment;
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 };
 

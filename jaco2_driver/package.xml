@@ -48,6 +48,7 @@
   <build_depend>jaco2_data</build_depend>
   <build_depend>jaco2_msgs_conversion</build_depend>
   <build_depend>jaco2_kin_dyn_lib</build_depend>
+  <build_depend>Boost</build_depend>
 
   <run_depend>actionlib</run_depend>
   <run_depend>actionlib_msgs</run_depend>
@@ -64,6 +65,8 @@
   <run_depend>jaco2_msgs</run_depend>
   <run_depend>jaco2_msgs_conversion</run_depend>
   <run_depend>jaco2_kin_dyn_lib</run_depend>
+  <run_depend>Boost</run_depend>
+
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
