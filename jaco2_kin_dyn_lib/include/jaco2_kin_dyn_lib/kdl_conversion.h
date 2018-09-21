@@ -7,7 +7,6 @@
 #include <kdl/jntarray.hpp>
 #include <kdl/jntspaceinertiamatrix.hpp>
 #include <Eigen/Core>
-#include <Eigen/Geometry>
 #include <tf/tf.h>
 #include <jaco2_data/suppress_warnings_end.h>
 #include <jaco2_data/wrench.h>

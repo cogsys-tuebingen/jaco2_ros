@@ -156,9 +156,9 @@ bool JointStateOutlierFilter::checkAccs(std::vector<bool> &test)
         Vector3Stamped delta3 = (v3 - v1) / dt3;
 
         for(std::size_t j = 0; j < 3; ++ j){
-            test[0] = test[0] || (fabs(delta1.data.vector(j)) > threshold_acc);
-            test[1] = test[1] || (fabs(delta2.data.vector(j)) > threshold_acc);
-            test[2] = test[2] || (fabs(delta3.data.vector(j)) > threshold_acc);
+            test[0] = test[0] || (fabs(delta1.data(j)) > threshold_acc);
+            test[1] = test[1] || (fabs(delta2.data(j)) > threshold_acc);
+            test[2] = test[2] || (fabs(delta3.data(j)) > threshold_acc);
 
         }
 
@@ -197,7 +197,7 @@ void JointStateOutlierFilter::removeJsOutlier(std::size_t i, std::size_t j, std:
     eout.stamp().fromNSec(0.5 * (ei.stamp().toNSec() + ej.stamp().toNSec()));
     state.label = js_out.label;
 
-    state.gravity =0.5 * (js_i.gravity + js_j.gravity);
+    state.gravity = 0.5 * (js_i.gravity + js_j.gravity);
 
     for(std::size_t k = 0; k < nj; ++k){
         state.position[k] = 0.5 * (js_i.position[k] + js_j.position[k]);

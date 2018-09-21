@@ -4,11 +4,13 @@
 #include <Eigen/Core>
 #include <jaco2_data/types.h>
 #include <jaco2_data/header.h>
+#include <jaco2_data/vector3.h>
 
 namespace jaco2_data {
 
 
-class EIGEN_ALIGN16 JointStateData
+//class EIGEN_ALIGN16 JointStateData
+class JointStateData
 {
 public:
     typedef std::vector<double>::iterator iterator;
@@ -59,9 +61,9 @@ private:
 
 public:
     int label;
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    Eigen::Vector3d gravity;
-
+//    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+//    Eigen::Vector3d gravity;
+    jaco2_data::Vector3 gravity;
     std::vector<std::string> names;
     std::vector<double> position;
     std::vector<double> velocity;

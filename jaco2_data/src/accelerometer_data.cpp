@@ -55,12 +55,12 @@ const Vector3Stamped& AccelerometerData::operator [](std::size_t i) const
 
 double& AccelerometerData::operator()(std::size_t i, std::size_t comp)
 {
-    return lin_acc[i].data.vector(comp);
+    return lin_acc[i].data(comp);
 }
 
 const double& AccelerometerData::operator ()(std::size_t i, std::size_t comp) const
 {
-    return lin_acc[i].data.vector(comp);
+    return lin_acc[i].data(comp);
 }
 
 std::size_t AccelerometerData::size() const

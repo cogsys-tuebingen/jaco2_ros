@@ -40,9 +40,9 @@ jaco2_data::Header HeaderConversion::ros2data(const std_msgs::Header &data)
 geometry_msgs::Vector3 Vector3Conversion::data2ros(const jaco2_data::Vector3& data)
 {
     geometry_msgs::Vector3 res;
-    res.x = data.vector(0);
-    res.y = data.vector(1);
-    res.z = data.vector(2);
+    res.x = data(0);
+    res.y = data(1);
+    res.z = data(2);
     return res;
 }
 
@@ -54,15 +54,13 @@ geometry_msgs::Vector3 Vector3Conversion::data2ros(const jaco2_data::Vector3Stam
 
 jaco2_data::Vector3 Vector3Conversion::ros2data(const geometry_msgs::Vector3 &msg)
 {
-    jaco2_data::Vector3 res;
-    res.vector = Eigen::Vector3d(msg.x, msg.y, msg.z);
+    jaco2_data::Vector3 res(msg.x, msg.y, msg.z);
     return res;
 }
 
 jaco2_data::Vector3 Vector3Conversion::ros2data(const geometry_msgs::Vector3Stamped& msg)
 {
-    jaco2_data::Vector3 res;
-    res.vector = Eigen::Vector3d(msg.vector.x, msg.vector.y, msg.vector.z);
+    jaco2_data::Vector3 res(msg.vector.x, msg.vector.y, msg.vector.z);
     return res;
 }
 

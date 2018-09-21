@@ -8,6 +8,7 @@
 <rosparam command="load" ns="jaco2_teleop" file="$(find jaco2_teleop)/config/ps4_mapping.yaml"/>
 
 <node name="jaco2_teleop" pkg="jaco2_teleop" type="jaco2_teleop_node" output="screen" respawn="true">
+   <remap from="/joy" to="/ds4joy"/>
    <param name="state_topic" value="/jaco_22_driver/out/joint_states" />
    <param name="joy_topic" value="/ds4joy"/>
    <param name="vel_topic" value="/jaco_22_driver/in/joint_velocity"/>

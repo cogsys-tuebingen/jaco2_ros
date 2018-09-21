@@ -14,32 +14,32 @@ AccelerometerData ConvertAccelerometers::kinova2data(const AngularAcceleration& 
     Vector3Stamped a1;
     a1.header.frame_id = Jaco2DriverConstants::name_accel_1;
     a1.header.stamp = t;
-    a1.data.vector = Eigen::Vector3d(accs.Actuator1_X, accs.Actuator1_Y, accs.Actuator1_Z);
+    a1.data = Vector3(accs.Actuator1_X, accs.Actuator1_Y, accs.Actuator1_Z);
     res[0] = a1;
     Vector3Stamped a2;
     a2.header.frame_id = Jaco2DriverConstants::name_accel_2;
     a2.header.stamp = t;
-    a2.data.vector = Eigen::Vector3d(accs.Actuator2_X, accs.Actuator2_Y, accs.Actuator2_Z);
+    a2.data = Vector3(accs.Actuator2_X, accs.Actuator2_Y, accs.Actuator2_Z);
     res[1] = a2;
     Vector3Stamped a3;
     a3.header.frame_id = Jaco2DriverConstants::name_accel_3;
     a3.header.stamp = t;
-    a3.data.vector = Eigen::Vector3d(accs.Actuator3_X, accs.Actuator3_Y, accs.Actuator3_Z);
+    a3.data = Vector3(accs.Actuator3_X, accs.Actuator3_Y, accs.Actuator3_Z);
     res[2] = a3;
     Vector3Stamped a4;
     a4.header.frame_id = Jaco2DriverConstants::name_accel_4;
     a4.header.stamp = t;
-    a4.data.vector = Eigen::Vector3d(accs.Actuator4_X, accs.Actuator4_Y, accs.Actuator4_Z);
+    a4.data = Vector3(accs.Actuator4_X, accs.Actuator4_Y, accs.Actuator4_Z);
     res[3] = a4;
     Vector3Stamped a5;
     a5.header.frame_id = Jaco2DriverConstants::name_accel_5;
     a5.header.stamp = t;
-    a5.data.vector = Eigen::Vector3d(accs.Actuator5_X, accs.Actuator5_Y, accs.Actuator5_Z);
+    a5.data = Vector3(accs.Actuator5_X, accs.Actuator5_Y, accs.Actuator5_Z);
     res[4] = a5;
     Vector3Stamped a6;
     a6.header.frame_id = Jaco2DriverConstants::name_accel_6;
     a6.header.stamp = t;
-    a6.data.vector = Eigen::Vector3d(accs.Actuator6_X, accs.Actuator6_Y, accs.Actuator6_Z);
+    a6.data = Vector3(accs.Actuator6_X, accs.Actuator6_Y, accs.Actuator6_Z);
     res[5] = a6;
     return res;
 }
@@ -52,29 +52,29 @@ AngularAcceleration ConvertAccelerometers::data2kinova(const jaco2_data::Acceler
         throw std::logic_error(ex1);
     }
 
-    res.Actuator1_X = data[0].data.vector(0);
-    res.Actuator1_Y = data[0].data.vector(1);
-    res.Actuator1_Z = data[0].data.vector(2);
+    res.Actuator1_X = data[0].data(0);
+    res.Actuator1_Y = data[0].data(1);
+    res.Actuator1_Z = data[0].data(2);
 
-    res.Actuator2_X = data[1].data.vector(0);
-    res.Actuator2_Y = data[1].data.vector(1);
-    res.Actuator2_Z = data[1].data.vector(2);
+    res.Actuator2_X = data[1].data(0);
+    res.Actuator2_Y = data[1].data(1);
+    res.Actuator2_Z = data[1].data(2);
 
-    res.Actuator3_X = data[2].data.vector(0);
-    res.Actuator3_Y = data[2].data.vector(1);
-    res.Actuator3_Z = data[2].data.vector(2);
+    res.Actuator3_X = data[2].data(0);
+    res.Actuator3_Y = data[2].data(1);
+    res.Actuator3_Z = data[2].data(2);
 
-    res.Actuator4_X = data[3].data.vector(0);
-    res.Actuator4_Y = data[3].data.vector(1);
-    res.Actuator4_Z = data[3].data.vector(2);
+    res.Actuator4_X = data[3].data(0);
+    res.Actuator4_Y = data[3].data(1);
+    res.Actuator4_Z = data[3].data(2);
 
-    res.Actuator5_X = data[4].data.vector(0);
-    res.Actuator5_Y = data[4].data.vector(1);
-    res.Actuator5_Z = data[4].data.vector(2);
+    res.Actuator5_X = data[4].data(0);
+    res.Actuator5_Y = data[4].data(1);
+    res.Actuator5_Z = data[4].data(2);
 
-    res.Actuator6_X = data[5].data.vector(0);
-    res.Actuator6_Y = data[5].data.vector(1);
-    res.Actuator6_Z = data[5].data.vector(2);
+    res.Actuator6_X = data[5].data(0);
+    res.Actuator6_Y = data[5].data(1);
+    res.Actuator6_Z = data[5].data(2);
 
     return res;
 

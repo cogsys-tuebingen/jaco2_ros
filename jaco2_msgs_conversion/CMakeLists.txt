@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
     )
 
 find_package(catkin REQUIRED)
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3 REQUIRED VERSION 3.3.5)
 
 catkin_package(
     INCLUDE_DIRS include

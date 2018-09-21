@@ -107,7 +107,7 @@ void Jaco2KinematicModel::initialize()
 
     }
     else{
-        ROS_ERROR("Chain extraction is not possible. Solver is not probably initalized");
+        ROS_WARN("Chain extraction is not possible. Solver is not probably initalized");
     }
 }
 

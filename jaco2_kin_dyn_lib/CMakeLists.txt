@@ -28,7 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(orocos_kdl REQUIRED)
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3 REQUIRED VERSION 3.3.5)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -43,6 +43,7 @@ include_directories(
   ${orocos_kdl_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
 )
+
 file(GLOB_RECURSE ALL_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/*.hpp include/*.h)
 
 add_library(jaco2_kin_dyn_lib

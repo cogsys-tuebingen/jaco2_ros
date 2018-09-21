@@ -12,15 +12,15 @@ void GravityEstimator::setBufferSize(std::size_t buffer_size)
     buffer_size_ = buffer_size;
 }
 
-Eigen::Vector3d GravityEstimator::update(const jaco2_data::ExtendedJointStateData &data)
+Vector3 GravityEstimator::update(const jaco2_data::ExtendedJointStateData &data)
 {
     return update(data.lin_acc);
 }
 
-Eigen::Vector3d GravityEstimator::update(const jaco2_data::AccelerometerData& data)
+jaco2_data::Vector3 GravityEstimator::update(const jaco2_data::AccelerometerData& data)
 {
     const Vector3Stamped& a0 = data.front();
-    Eigen::Vector3d gnew(-a0.data.vector(1), -a0.data.vector(0), -a0.data.vector(2)); // jaco_base_link is not accelerometer frame !
+    jaco2_data::Vector3 gnew(-a0.data(1), -a0.data(0), -a0.data(2)); // jaco_base_link is not accelerometer frame !
     if(static_base){
         gnew.normalize();
     }
@@ -29,7 +29,7 @@ Eigen::Vector3d GravityEstimator::update(const jaco2_data::AccelerometerData& da
     while(g_buffer_.size() > buffer_size_){
         g_buffer_.pop_front();
     }
-    Eigen::Vector3d result = Eigen::Vector3d::Zero();
+    jaco2_data::Vector3 result;
     for(auto v : g_buffer_){
         result += v;
     }

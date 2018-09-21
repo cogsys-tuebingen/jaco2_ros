@@ -165,8 +165,7 @@ void Jaco2JointState::update(const jaco2_data::TimeStamp& t,
 
 void Jaco2JointState::estimateG()
 {
-    Eigen::Vector3d g = gravity_.update(current_state_.data);
-    current_state_.data.joint_state.gravity = g;
+    current_state_.data.joint_state.gravity = gravity_.update(current_state_.data);
 }
 
 
@@ -179,10 +178,10 @@ void Jaco2JointState::applyCalibration()
 
     for(std::size_t i = 0; i < Jaco2DriverConstants::n_Jaco2Joints; ++i){
         if(*it_calib){
-            Eigen::Vector3d acc_raw = it_data->data.vector;
+            Eigen::Vector3d acc_raw = it_data->data.toEigen();
             Eigen::Matrix3d mat = it_param->misalignment;
             Eigen::Vector3d acc_calib = mat*(acc_raw - it_param->bias);
-            it_data->data.vector = acc_calib;
+            it_data->data.fromEigen(acc_calib);
         }
         ++it_calib;
         ++it_data;
