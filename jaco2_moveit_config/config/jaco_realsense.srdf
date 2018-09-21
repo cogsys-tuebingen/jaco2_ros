@@ -164,8 +164,11 @@
     <disable_collisions link1="jaco_link_finger_tip_1" link2="jaco_small_ring_cover_1" reason="Never" />
     <disable_collisions link1="jaco_link_finger_tip_1" link2="jaco_small_ring_cover_2" reason="Never" />
     <disable_collisions link1="jaco_link_finger_tip_1" link2="jaco_small_ring_cover_3" reason="Never" />
+    <disable_collisions link1="jaco_link_finger_tip_1" link2="jaco_link_finger_tip_2" reason="Never" />
+    <disable_collisions link1="jaco_link_finger_tip_1" link2="jaco_link_finger_tip_3" reason="Never" />
     <disable_collisions link1="jaco_link_finger_tip_1" link2="root" reason="Never" />
     <disable_collisions link1="jaco_link_finger_tip_2" link2="jaco_link_finger_tip_3" reason="Never" />
+    <disable_collisions link1="jaco_link_finger_tip_2" link2="jaco_link_finger_tip_1" reason="Never" />
     <disable_collisions link1="jaco_link_finger_tip_2" link2="jaco_link_hand" reason="Never" />
     <disable_collisions link1="jaco_link_finger_tip_2" link2="jaco_small_ring_cover_1" reason="Never" />
     <disable_collisions link1="jaco_link_finger_tip_2" link2="jaco_small_ring_cover_2" reason="Never" />
@@ -175,6 +178,8 @@
     <disable_collisions link1="jaco_link_finger_tip_3" link2="jaco_small_ring_cover_1" reason="Never" />
     <disable_collisions link1="jaco_link_finger_tip_3" link2="jaco_small_ring_cover_2" reason="Never" />
     <disable_collisions link1="jaco_link_finger_tip_3" link2="jaco_small_ring_cover_3" reason="Never" />
+    <disable_collisions link1="jaco_link_finger_tip_3" link2="jaco_link_finger_tip_1" reason="Never" />
+    <disable_collisions link1="jaco_link_finger_tip_3" link2="jaco_link_finger_tip_2" reason="Never" />
     <disable_collisions link1="jaco_link_finger_tip_3" link2="root" reason="Never" />
     <disable_collisions link1="jaco_link_hand" link2="jaco_small_ring_cover_1" reason="Never" />
     <disable_collisions link1="jaco_link_hand" link2="jaco_small_ring_cover_2" reason="Never" />
