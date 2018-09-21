@@ -111,7 +111,6 @@ public:
             if(result) {
                 gripper_->execute(my_plan);
                 ROS_INFO("Executed!");
-                objectManagement(goal->command.position);
                 as_.setSucceeded();
             }
             else {
@@ -183,62 +182,11 @@ public:
             }
             else {
                 as_.setSucceeded();
-                //objectManagement(goal->command.position);
             }
 
         }
 
     }
-
-    void objectManagement(double object_size_){
-
-        if(object_size_ < 10.0) {
-
-            moveit_msgs::AttachedCollisionObject attached_object;
-            attached_object.link_name = "jaco_link_hand";
-            attached_object.object.header.frame_id = "jaco_link_hand";
-            attached_object.object.id = "box";
-
-            /* A default pose */
-            geometry_msgs::Pose pose;
-            pose.position.z = -0.2;
-            pose.orientation.w = 1.0;
-
-            /* Define a box to be attached */
-            shape_msgs::SolidPrimitive primitive;
-            primitive.type = primitive.BOX;
-            primitive.dimensions.resize(3);
-            primitive.dimensions[0] = object_size_*10e-3 * 2;
-            primitive.dimensions[1] = object_size_*10e-3 * 2;
-            primitive.dimensions[2] = object_size_*10e-3 * 2;
-
-            attached_object.object.primitives.push_back(primitive);
-            attached_object.object.primitive_poses.push_back(pose);
-
-            attached_object.object.operation = attached_object.object.ADD;
-
-            ROS_INFO("Adding the object into the world at the location of the hand.");
-
-            planning_scene_interface_.applyAttachedCollisionObject(attached_object);
-
-        }
-        else {
-
-            /* First, define the DETACH object message*/
-            moveit_msgs::AttachedCollisionObject detach_object;
-            detach_object.object.id = "box";
-            detach_object.link_name = "jaco_link_hand";
-            detach_object.object.operation = detach_object.object.REMOVE;
-
-            /* Carry out the DETACH + ADD operation */
-            ROS_INFO("Detaching the object from the robot and returning it to the world.");
-
-            planning_scene_interface_.applyAttachedCollisionObject(detach_object);
-
-        }
-
-    }
-
 
 
 
