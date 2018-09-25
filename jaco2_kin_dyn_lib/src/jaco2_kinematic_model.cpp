@@ -63,27 +63,27 @@ Jaco2KinematicModel::~Jaco2KinematicModel()
 
 }
 
-void Jaco2KinematicModel::setTreeParam(const std::string &robot_model)
+bool Jaco2KinematicModel::setTreeParam(const std::string &robot_model)
 {
     robot_model_.initString(robot_model);
     urdf_param_ = robot_model;
-    initialize();
+    return initialize();
 }
 
-void Jaco2KinematicModel::setTreeFile(const std::string &robot_model)
+bool Jaco2KinematicModel::setTreeFile(const std::string &robot_model)
 {
     robot_model_.initFile(robot_model);
     urdf_param_ = robot_model_.getName();
-    initialize();
+    return initialize();
 }
 
 
 
-void Jaco2KinematicModel::initialize()
+bool Jaco2KinematicModel::initialize()
 {
     if (!kdl_parser::treeFromUrdfModel(robot_model_, tree_)){
         ROS_ERROR("Failed to construct kdl tree");
-        return;
+        return false;
     }
     if(tree_.getChain(root_,tip_,chain_)){
         chainFile_ = chain_;
@@ -104,11 +104,13 @@ void Jaco2KinematicModel::initialize()
             jointDist_[i] = std::uniform_real_distribution<double>(lowerLimits_(i),upperLimits_(i));
         }
 
-
     }
     else{
-        ROS_WARN("Chain extraction is not possible. Solver is not probably initalized");
+        ROS_WARN_STREAM("Chain extraction is not possible. Solver is not probably initalized. robot_model: " << robot_model_.name_
+                                         << "; Root link: "<< root_ << "; tip: " << tip_);
+        return false;
     }
+    return true;
 }
 
 void::Jaco2KinematicModel::setRootAndTip(const std::string &chain_root, const std::string &chain_tip)

@@ -64,6 +64,7 @@ Jaco2DriverNode::Jaco2DriverNode()
     std::string tf_prefix_ = private_nh_.param<std::string>("tf_prefix", "jaco_");
     std::string vel_controller_type = private_nh_.param<std::string>("velocity_controller", Jaco2DriverConstants::velocity_collision_controller);
     std::string traj_controller_type = private_nh_.param<std::string>("trajectory_controller", Jaco2DriverConstants::trajectory_p2p_velocity_collision_controller);
+    std::string conntection_type = private_nh_.param<std::string>("connection_type", "USB");
 
     driver_->setVelocityController(vel_controller_type);
     driver_->setTrajectoryController(traj_controller_type);
@@ -143,7 +144,6 @@ Jaco2DriverNode::Jaco2DriverNode()
     sensor_msg_.name[5] = tf_prefix_ + "joint_6";
 
 
-    std::string conntection_type = private_nh_.param<std::string>("connection_type", "USB");
     bool use_usb = !(conntection_type == "ethernet");
 
     EthernetConfig econf;

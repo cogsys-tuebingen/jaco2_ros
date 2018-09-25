@@ -38,8 +38,8 @@ public:
     Jaco2DynamicModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
 
 
-    void setTreeParam(const std::string& robot_model) override;
-    void setTreeFile(const std::string &robot_model) override;
+    bool setTreeParam(const std::string& robot_model) override;
+    bool setTreeFile(const std::string &robot_model) override;
     /**
      * @brief setGravity set gravity
      * @param x x component (default 0)
@@ -201,7 +201,7 @@ protected:
     KDL::Vector gravity_;
     std::shared_ptr<KDL::ChainIdSolver_RNE> solverID_;
 
-    void initialize() override;
+    bool initialize() override;
 
     /**
      * @brief getLinkInertiaCoM gets the inertia moment matrix of a link with respect to the center of mass;
