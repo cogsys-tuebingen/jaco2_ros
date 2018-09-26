@@ -144,6 +144,11 @@ Jaco2DriverNode::Jaco2DriverNode()
 
 
     bool use_usb = !(conntection_type == "ethernet");
+    if(use_usb){
+      ROS_INFO("Using USB connection.");
+    } else{
+      ROS_INFO("Using Ethernet connection.");
+    }
 
     EthernetConfig econf;
     econf.local_ip_address = private_nh_.param<std::string>("ethernet/local_machine_IP", "192.168.100.100");
