@@ -229,6 +229,11 @@ Jaco2DriverNode::Jaco2DriverNode()
     blocking_angle_server_.start();
 
     last_time_acc_published_.now();
+    if(ok_){
+      ROS_INFO_STREAM("Initialization successfully completed. You can use the Jaco2 now.");
+    } else{
+      ROS_INFO_STREAM("Initialization failed. Check connection, parameters and retry.");
+    }
 }
 
 
