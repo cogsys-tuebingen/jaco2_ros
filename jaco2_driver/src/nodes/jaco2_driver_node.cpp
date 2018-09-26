@@ -49,7 +49,6 @@ Jaco2DriverNode::Jaco2DriverNode()
     pub_jaco_lin_acc_ = private_nh_.advertise<jaco2_msgs::Jaco2Accelerometers>("out/accelerometers",2);
     pub_g_free_toruqes_ = private_nh_.advertise<jaco2_msgs::Jaco2GfreeTorques>("out/torques_g_free",2);
 
-    ROS_INFO_STREAM("test");
     right_arm_ = private_nh_.param<bool>("right_arm", true);
     bool move_home = private_nh_.param<bool>("move_home",true);
     publish_fingers_ = private_nh_.param<bool>("publish_fingers",true);

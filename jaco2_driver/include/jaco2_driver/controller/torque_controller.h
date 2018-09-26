@@ -48,7 +48,7 @@ protected:
     std::string robot_model_;
     std::string base_link_;
     std::string tip_link_;
-    Jaco2KinDynLib::JointVelPosEstimator estimator_;
+    std::shared_ptr<Jaco2KinDynLib::JointVelPosEstimator> estimator_;
     AngularInfo last_diff_;
     AngularInfo esum_;
     AngularInfo esumQ_;

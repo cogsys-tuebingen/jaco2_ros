@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+<arg name="driver_name" default="/jaco_arm_driver"/>
+<node name="jaco_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen">
+    <param name="publish_frequency" type="double" value="100" />
+    <remap from="/joint_states" to="$(arg driver_name)/out/joint_states"/>
+   </node>
+</launch>

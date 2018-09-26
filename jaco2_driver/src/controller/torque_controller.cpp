@@ -19,8 +19,7 @@ TorqueController::TorqueController(Jaco2State &state, Jaco2API &api, Termination
       samplingPeriod_(1.0/65.0),
       robot_model_("/robot_description"),
       base_link_("jaco_link_base"),
-      tip_link_("jaco_link_hand"),
-      estimator_("/robot_description","jaco_link_base","jaco_link_hand")
+      tip_link_("jaco_link_hand")
 {
     cmd_.InitStruct();
     desired_.InitStruct();
@@ -39,6 +38,10 @@ TorqueController::TorqueController(Jaco2State &state, Jaco2API &api, Termination
 
 void TorqueController::start()
 {
+  if(!estimator_){
+    return;
+  }
+
     api_.enableDirectTorqueMode(1.0);
     last_diff_.InitStruct();
     done_ = false;
@@ -54,8 +57,8 @@ void TorqueController::start()
     data.dt = 0;
     DataConversion::convert(pos.Actuators, data.pos);
     DataConversion::convert(vel.Actuators, data.vel);
-    estimator_.setInitalValues(data);
-    data.torques = estimator_.getModelTorques();
+    estimator_->setInitalValues(data);
+    data.torques = estimator_->getModelTorques();
 
     //    estimator_.estimateGfree(data);
     esumQ_.InitStruct();
@@ -79,7 +82,7 @@ void TorqueController::setConfig(jaco2_driver::jaco2_driver_configureConfig& cfg
         robot_model_ = rmodel;
         base_link_ = base;
         tip_link_ = tip;
-        estimator_.setModel(robot_model_,base_link_, tip_link_);
+        estimator_.reset(new Jaco2KinDynLib::JointVelPosEstimator(robot_model_,base_link_, tip_link_));
     }
 }
 
@@ -205,10 +208,10 @@ AngularInfo TorqueController::pidControl()
     DataConversion::convert(desired_.Actuators, data.torques);
     data.dt = samplingPeriod_;
 
-    estimator_.estimateGfree(data);
+    estimator_->estimateGfree(data);
 
-    std::vector<double> desired_pos = estimator_.getCurrentPosition();
-    std::vector <double> desired_vel = estimator_.getCurrentVelocity();
+    std::vector<double> desired_pos = estimator_->getCurrentPosition();
+    std::vector <double> desired_vel = estimator_->getCurrentVelocity();
     //    std::cout << "Est. Desired Conf: " << std::endl;
     //    for(int i = 0; i < 6 ; ++ i) {
     //        std::cout <<  desired_pos[i] << "\t";
