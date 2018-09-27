@@ -7,7 +7,6 @@ class TimeStamp
 {
 public:
     TimeStamp();
-
     void now();
 
     unsigned long int toNSec() const;

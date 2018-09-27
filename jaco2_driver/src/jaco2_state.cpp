@@ -32,6 +32,7 @@ Jaco2State::Jaco2State(Jaco2API &api, std::string frame_id)
 //    calibrate_acc_ = {false, false, false, false, false, false};
     velocityFactors_ = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
     acc_counter_ =0;
+
 }
 
 AngularPosition Jaco2State::getAngularPosition() const

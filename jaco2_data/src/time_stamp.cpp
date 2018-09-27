@@ -3,7 +3,9 @@
 using namespace jaco2_data;
 
 
-TimeStamp::TimeStamp() {}
+TimeStamp::TimeStamp() :
+  stamp(std::chrono::high_resolution_clock::now())
+{}
 
 void TimeStamp::now()
 {
