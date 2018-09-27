@@ -7,6 +7,22 @@ class TimeStamp
 {
 public:
     TimeStamp();
+    TimeStamp(const TimeStamp& t);
+    TimeStamp(TimeStamp&& t);
+
+    TimeStamp& operator = (const TimeStamp &other)
+    {
+        stamp = other.stamp;
+        return *this;
+    }
+
+    TimeStamp& operator = (TimeStamp &&other)
+    {
+        stamp = other.stamp;
+        return *this;
+    }
+
+
     void now();
 
     unsigned long int toNSec() const;

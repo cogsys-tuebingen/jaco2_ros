@@ -5,7 +5,18 @@ using namespace jaco2_data;
 
 TimeStamp::TimeStamp() :
   stamp(std::chrono::high_resolution_clock::now())
-{}
+{
+}
+
+TimeStamp::TimeStamp(const TimeStamp &t):
+  stamp(t.stamp)
+{
+}
+
+TimeStamp::TimeStamp(TimeStamp &&t):
+  stamp(t.stamp)
+{
+}
 
 void TimeStamp::now()
 {

@@ -708,7 +708,7 @@ void Jaco2DriverNode::publishJointState()
 
     jaco2_msgs::Jaco2GfreeTorques g_msg;
     g_msg.header = joint_state_msg_.header;
-    auto stamp = driver_->getLastReadUpdate(READ_TORQUE_GRAVITY_FREE);
+    jaco2_data::TimeStamp stamp = driver_->getLastReadUpdate(READ_TORQUE_GRAVITY_FREE);
     g_msg.header.stamp = jaco2_msgs::TimeConversion::data2ros(stamp);
     DataConversion::convert(driver_->getAngularForceGravityFree(), g_msg.effort_g_free);
     pub_g_free_toruqes_.publish(g_msg);
