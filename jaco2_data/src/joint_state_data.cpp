@@ -43,10 +43,10 @@ void JointStateData::normalize4Pi(std::size_t offset )
 
     for(auto it = position.begin(); it < position.end() - offset; ++it){
         while(*it > 4*M_PI){
-            *it -= 4.0*M_PI;
+            *it -= 2.0*M_PI;
         }
-        while(*it < -4*M_PI){
-            *it += 4.0 *M_PI;
+        while(*it <= -4*M_PI){
+            *it += 2.0 *M_PI;
         }
 
     }
