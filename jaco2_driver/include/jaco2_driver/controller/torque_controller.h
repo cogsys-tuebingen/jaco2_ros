@@ -4,7 +4,10 @@
 #include <kinova/KinovaTypes.h>
 #include <kinova/KinovaArithmetics.hpp>
 #include <jaco2_kin_dyn_lib/joint_vel_pos_estimator.h>
-
+/**
+ * @brief The TorqueController class
+ *  Still in an experimental state...
+ */
 class TorqueController : public Jaco2Controller
 {
 public:

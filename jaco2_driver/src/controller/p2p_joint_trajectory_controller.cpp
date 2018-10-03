@@ -148,5 +148,6 @@ void P2PJointTrajactoryControllerHelper::evaluationOutput()
     ManipulatorInfo vmax;
     ManipulatorInfo::max(ManipulatorInfo::abs(paramsLinear_),vmax);
     std::cout << "'max abs(velocity)' "  << std::endl<< vmax.toString(delimiter) << std::endl;
+    std::cout << "'mean sampling period' " << mean_dt_/n_calls_ << std::endl;
     std::cout << std::endl;
 }

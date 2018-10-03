@@ -37,8 +37,11 @@ public:
     ManipulatorInfo eLast_;
     ManipulatorInfo eSum_;
     double samplingPeriod_;
+    double mean_dt_;
     std::vector<double> timeDiff_;
     std::vector<ManipulatorInfo> posDiff_;
+    std::size_t n_calls_;
+
 
 //    TrajectoryPoint tp_;
 
