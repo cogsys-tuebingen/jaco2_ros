@@ -34,7 +34,9 @@ trajectory_controller|string|TRAJ_P2P_VEL|Changes the trajactory traking control
 Using the collision repelling controllers in a debugger might be a problem, since due to very long sampling periods the collision estimation might get numerically instable.  Be extra careful and just turn the Jaco2 of if something unexpected happens.
 
 Besides, torque control is not recommended and still under development.
+
 ##Driver 
 The ROS node is just an interface communicating with the real driver. This driver acts as a small Finite State Machine reading and writing commands cyclically.
-Different controllers are used implementing the commands. In addition, reading information from the arm can be controlled by the controllers. The information is stored in the jaco2_state.![driver_scematic](/home/zwiener/workspace/development/src/jaco2/jaco2_ros/jaco2_driver/jaco2_driver.png  "driver")
+Different controllers are used implementing the commands. In addition, reading information from the arm can be controlled by the controllers. The information is stored in the jaco2_state.
+![driver_scematic](/home/zwiener/workspace/development/src/jaco2/jaco2_ros/jaco2_driver/jaco2_driver.png "driver")
 Currently, now cartesian controllers are implemented. You can use MoveIt or calculate the corresponding joint velocities externally.
