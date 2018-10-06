@@ -27,8 +27,8 @@ public:
     JointStateData(std::size_t n);
 
     void resize(std::size_t n, double val = 0);
+    // normalizes to Jaco2 model limits
     void normalize(std::size_t offset = 0);
-    void normalize4Pi(std::size_t offset = 0);
 
     iterator begin(DataType type);
     const_iterator begin(DataType type) const;
