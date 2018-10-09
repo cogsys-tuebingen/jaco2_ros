@@ -26,18 +26,24 @@ void JointStateData::resize(std::size_t n, double val)
 
 void JointStateData::normalize(std::size_t offset )
 {
-//    std::size_t i = 0;
+    std::size_t i = 0;
     for(auto it = position.begin(); it < position.end() - offset; ++it){
-        while(*it > M_PI){
-            *it -= 2.0*M_PI;
+        if(i == 1 || i == 2){
+            while(*it >= 2.0*M_PI){
+                *it -= 2.0*M_PI;
+            }
+            while(*it < 0){
+                *it += 2.0 *M_PI;
+            }
+        } else{
+            while(*it > M_PI){
+                *it -= 2.0*M_PI;
+            }
+            while(*it <= -M_PI){
+                *it += 2.0 *M_PI;
+            }
         }
-        while(*it <= -M_PI){
-            *it += 2.0 *M_PI;
-        }
-//        if(i == 0 || i == 3){
-//            *it += 1.5 * M_PI;
-//        }
-//        ++i;
+        ++i;
     }
 }
 
