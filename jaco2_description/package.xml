@@ -2,7 +2,7 @@
 <package>
   <name>jaco2_description</name>
   <version>0.0.25</version>
-  <description>3D Model and URDF of the Kinova JACO2 Arm. Changed WPI model. </description>
+  <description>3D Model and URDF of the Kinova JACO2 Arm. Modified WPI model. </description>
 
 
   <maintainer email="adrian.zwiener@uni-tuebingen.de">Adrian Zwiener</maintainer>  

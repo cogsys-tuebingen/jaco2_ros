@@ -6,6 +6,11 @@
 
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
+
+/**
+ * @brief The TorqueTrajectoryController class
+ *  Still in an experimental state...
+ */
 class TorqueTrajectoryController  : public TrajectoryTrackingController
 {
 public:

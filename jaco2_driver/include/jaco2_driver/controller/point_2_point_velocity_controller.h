@@ -27,7 +27,7 @@ protected:
     void simpleVelController(const double dt);
 
 protected:
-    P2PJointTrajactoryControllerHelper trajectoryWrapper_;
+    P2PJointTrajactoryControllerHelper trajectory_wrapper_;
     TrajectoryPoint tp_;
     ManipulatorInfo gainP_;
     ManipulatorInfo gainI_;

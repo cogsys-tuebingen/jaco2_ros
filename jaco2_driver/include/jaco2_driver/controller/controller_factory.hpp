@@ -9,7 +9,9 @@
 #include <jaco2_driver/controller/collision_repelling_velocity_controller.hpp>
 #include <jaco2_driver/controller/torque_trajectory_controller.h>
 #include <jaco2_driver/controller/collision_repelling_p2p_torque_controller.h>
-
+/**
+ * Spwan different controllers
+ */
 namespace ControllerFactory
 {
 std::shared_ptr<VelocityController> makeVelocityController(Jaco2State& state, Jaco2API& api, Jaco2Controller::TerminationCallback& t, const std::string& type)

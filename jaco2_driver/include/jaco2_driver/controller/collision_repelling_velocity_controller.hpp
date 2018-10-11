@@ -2,7 +2,12 @@
 #define COLLISION_REPELLING_VELOCITY_CONTROLLER_HPP
 #include "velocity_controller.h"
 #include "collision_reaction.h"
-
+/**
+ * @brief The CollisionRepellingVelocityController class
+ * Implementation of a collision aware tajectory tracking controller.
+ * Be aware that currently the Jaco2's torque sensors and the dynamic model are not that accurate
+ * leading to wrongly detected collisions.
+ */
 class CollisionRepellingVelocityController : public VelocityController
 {
 public:

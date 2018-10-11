@@ -5,7 +5,10 @@
 #include <jaco2_driver/controller/trajectory_tracking_controller.h>
 #include <jaco2_driver/controller/velocity_controller.h>
 #include <jaco2_driver/controller/collision_reaction.h>
-
+/**
+ * @brief The CollisionReplellingP2PController class
+ * Base class for collision aware trajectory tracking controller.
+ */
 class CollisionReplellingP2PController : public TrajectoryTrackingController
 {
 public:

@@ -6,7 +6,10 @@
 #include <jaco2_driver/controller/torque_trajectory_controller.h>
 #include <jaco2_driver/controller/collision_reaction.h>
 
-
+/**
+ * @brief The CollisionReplellingP2PTorqueController class
+ * Still in an experimental state...
+ */
 class CollisionReplellingP2PTorqueController : public TrajectoryTrackingController
 {
 public:
