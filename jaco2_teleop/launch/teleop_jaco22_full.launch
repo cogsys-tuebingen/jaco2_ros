@@ -16,6 +16,7 @@
    <param name="stop_service" value="/jaco_22_driver/in/stop"/>
    <param name="gcomp_service" value="/jaco_22_driver/in/enable_gravity_compensation_mode"/>
    <param name="admitance_service" value="/jaco_22_driver/in/enable_admittance_mode"/>
+   <param name="cart_topic" value="/jaco_22_driver/in/cartesian_vel_coll_avoidance/">
 
 </node>
 </launch>
