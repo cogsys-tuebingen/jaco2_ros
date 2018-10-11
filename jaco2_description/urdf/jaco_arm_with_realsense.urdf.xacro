@@ -224,7 +224,7 @@
 			</visual>
 			<collision>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${file}_convex_hull.stl" />
+					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${file}.stl" />
 				</geometry>
 			</collision>
 		</link>
@@ -362,7 +362,7 @@
 		<xacro:jaco_joint joint_name="${joint_5}" type="revolute" parent="${link}_4" child="${link}_5" joint_axis_xyz="${joint_5_axis_xyz}" joint_origin_xyz="${joint_5_origin_xyz}" joint_origin_rpy="${joint_5_origin_rpy}" lower_limit="${joint_5_lower_limit}" upper_limit="${joint_5_upper_limit}"/>
         <xacro:jaco_transmission joint_name="${joint_5}" />
         
-		<xacro:jaco_eeff_link link_name="${link_hand}" file="jaco_hand_with_realsense" link_mass="${link_hand_mass}" Ixx="${link_hand_Ixx}" Ixy="${link_hand_Ixy}" Ixz="${link_hand_Ixz}" Iyy="${link_hand_Iyy}" Iyz="${link_hand_Iyz}" Izz="${link_hand_Izz}" link_com_origin="${link_hand_com_xyz}" link_com_rpy="${link_hand_com_rpy}"/>
+		<xacro:jaco_eeff_link link_name="${link_hand}" file="sick_hand_notloesung_inch" link_mass="${link_hand_mass}" Ixx="${link_hand_Ixx}" Ixy="${link_hand_Ixy}" Ixz="${link_hand_Ixz}" Iyy="${link_hand_Iyy}" Iyz="${link_hand_Iyz}" Izz="${link_hand_Izz}" link_com_origin="${link_hand_com_xyz}" link_com_rpy="${link_hand_com_rpy}"/>
 		<xacro:jaco_joint joint_name="${joint_6}" type="revolute" parent="${link}_5" child="${link_hand}" joint_axis_xyz="${joint_6_axis_xyz}" joint_origin_xyz="${joint_6_origin_xyz}" joint_origin_rpy="${joint_6_origin_rpy}" lower_limit="${joint_6_lower_limit}" upper_limit="${joint_6_upper_limit}"/>
         <xacro:jaco_transmission joint_name="${joint_6}" />
 				
