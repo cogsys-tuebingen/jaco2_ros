@@ -32,7 +32,7 @@ public:
                 std::string ad_srv = "/jaco2_arm_driver/in/enable_admittance_mode",
                 std::string robot_description = "robot_description",
                 std::string base_link = "jaco_link_base",
-                std::string end_eff = "jaco_link_hand") :
+                std::string end_eff = "link_6") :
         gcomp_(false),
         admitance_(false),
         cartesian_(false),

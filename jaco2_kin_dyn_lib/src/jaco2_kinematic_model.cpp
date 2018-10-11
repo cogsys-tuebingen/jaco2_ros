@@ -159,19 +159,20 @@ int Jaco2KinematicModel::getFKPose(const std::vector<double> &q_in, tf::Pose &ou
 
 int Jaco2KinematicModel::getIKSolution(const tf::Pose& pose, std::vector<double>& result, const std::vector<double> &seed)
 {
-    KDL::JntArray q, solution;
+    KDL::JntArray q(chain_.getNrOfJoints());
+    KDL::JntArray solution(chain_.getNrOfJoints());
     KDL::Frame frame;
-    if(seed.size() == 0)
-    {
+    if(seed.size() == 0){
         KDL::JntArray ub, lb;
         solverIK_->getKDLLimits(lb, ub);
         q.resize(chain_.getNrOfJoints());
-        for(std::size_t i = 0; i < seed.size(); ++i){
+        for(std::size_t i = 0; i < chain_.getNrOfJoints(); ++i){
             q(i) = jointDist_[i](randEng_);
 
         }
+    } else{
+        Jaco2KinDynLib::convert(seed,q);
     }
-    Jaco2KinDynLib::convert(seed,q);
     //convert tf pose to kdl frame
     Jaco2KinDynLib::poseTFToKDL(pose,frame);
     int error_code = solverIK_->CartToJnt(q,frame,solution);
