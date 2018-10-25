@@ -14,7 +14,8 @@
 	xmlns:xacro="http://ros.org/wiki/xacro">
 
 	
-    <xacro:property name="M_SCALE" value="0.0254" />
+        <xacro:property name="M_SCALE" value="0.0254" />
+        <xacro:property name="M_SCALE_1" value="1.0" />
 	<xacro:property name="M_PI" value="3.1415926535897931" />
 	<xacro:property name="J_LIM" value="${2*M_PI}" />
 	<xacro:property name="link_base" value="jaco_link_base" />
@@ -74,22 +75,22 @@
 
   <xacro:property name="joint_finger_1" value="jaco_joint_finger_1" />
   <xacro:property name="joint_finger_1_axis_xyz" value="0 0 1" />
-  <xacro:property name="joint_finger_1_origin_xyz" value="-0.032578 0.0033 -0.12131" />  
-  <xacro:property name="joint_finger_1_origin_rpy" value="-1.7983 1.117 3.1416" />
+  <xacro:property name="joint_finger_1_origin_xyz" value="-0.03126 0.00279 -0.11467" />  
+  <xacro:property name="joint_finger_1_origin_rpy" value="-1.7983 1.05 3.1416" />
   <xacro:property name="joint_finger_1_lower_limit" value="0" />
   <xacro:property name="joint_finger_1_upper_limit" value="${M_PI/180*40}" />
 
   <xacro:property name="joint_finger_3" value="jaco_joint_finger_3" />
   <xacro:property name="joint_finger_3_axis_xyz" value="0 0 1" />
-  <xacro:property name="joint_finger_3_origin_xyz" value="0.027788 -0.0206 -0.12131" />
-  <xacro:property name="joint_finger_3_origin_rpy" value="-1.6222 1.117 -0.23615" />
+  <xacro:property name="joint_finger_3_origin_xyz" value="0.02707 -0.0226 -0.11482" />
+  <xacro:property name="joint_finger_3_origin_rpy" value="-1.6222 1.05 -0.23615" />
   <xacro:property name="joint_finger_3_lower_limit" value="0" />
   <xacro:property name="joint_finger_3_upper_limit" value="${M_PI/180*40}" />
 
   <xacro:property name="joint_finger_2" value="jaco_joint_finger_2" />
   <xacro:property name="joint_finger_2_axis_xyz" value="0 0 1" />
-  <xacro:property name="joint_finger_2_origin_xyz" value="0.027788 0.0206 -0.12131" />
-  <xacro:property name="joint_finger_2_origin_rpy" value="-1.5161 1.1459 0.23978" />
+  <xacro:property name="joint_finger_2_origin_xyz" value="0.02707 0.0226 -0.11482" />
+  <xacro:property name="joint_finger_2_origin_rpy" value="-1.5161 1.05 0.23978" />
   <xacro:property name="joint_finger_2_lower_limit" value="0" />
   <xacro:property name="joint_finger_2_upper_limit" value="${M_PI/180*40}" />
   
@@ -193,7 +194,7 @@
             </inertial>
 			<visual>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}.min.dae" />
+					<mesh scale="${M_SCALE_1} ${M_SCALE_1} ${M_SCALE_1}" filename="package://jaco2_description/meshes/${link_name}.min.dae" />
 				</geometry>
 				<material name="carbon_fiber">
 					<color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -216,7 +217,7 @@
             </inertial>
 			<visual>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}.min.dae" />
+					<mesh scale="${M_SCALE_1} ${M_SCALE_1} ${M_SCALE_1}" filename="package://jaco2_description/meshes/${link_name}.min.dae" />
 				</geometry>
 				<material name="carbon_fiber">
 					<color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -239,7 +240,7 @@
             </inertial>
 			<visual>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}_4_5.min.dae" />
+					<mesh scale="${M_SCALE_1} ${M_SCALE_1} ${M_SCALE_1}" filename="package://jaco2_description/meshes/${link_name}_4_5.min.dae" />
 				</geometry>
 				<material name="carbon_fiber">
 					<color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
