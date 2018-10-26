@@ -202,7 +202,7 @@
 			</visual>
 			<collision>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}_potato.stl" />
+					<mesh scale="${M_SCALE_1} ${M_SCALE_1} ${M_SCALE_1}" filename="package://jaco2_description/meshes/${link_name}_potato.stl" />
 				</geometry>
 			</collision>
 		</link>
@@ -211,8 +211,8 @@
 	<xacro:macro name="jaco_link_suffix" params="link_name suffix">
 		<link name="${link_name}_${suffix}">
             <inertial>
-                <mass value="0.25"/>
-                <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+                <mass value="0.0"/>
+                <inertia ixx="0.0" ixy="0" ixz="0" iyy="0.0" iyz="0" izz="0.0"/>
                 <origin/>
             </inertial>
 			<visual>
@@ -225,7 +225,7 @@
 			</visual>
 			<collision>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}.stl" />
+					<mesh scale="${M_SCALE_1} ${M_SCALE_1} ${M_SCALE_1}" filename="package://jaco2_description/meshes/${link_name}.stl" />
 				</geometry>
 			</collision>
 		</link>
@@ -248,7 +248,7 @@
 			</visual>
 			<collision>
 				<geometry>
-					<mesh scale="${M_SCALE} ${M_SCALE} ${M_SCALE}" filename="package://jaco2_description/meshes/${link_name}_4_5_potato.stl" />
+					<mesh scale="${M_SCALE_1} ${M_SCALE_1} ${M_SCALE_1}" filename="package://jaco2_description/meshes/${link_name}_4_5_potato.stl" />
 				</geometry>
 			</collision>
 		</link>
