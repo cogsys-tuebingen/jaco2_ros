@@ -13,6 +13,7 @@
   </node>
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
     <param name="use_gui" value="$(arg gui)" />
+    <param name="publish_frequency" type="double" value="50" />
     <rosparam param="source_list">[jaco_arm/joint_states]</rosparam>
   </node>
 </launch>

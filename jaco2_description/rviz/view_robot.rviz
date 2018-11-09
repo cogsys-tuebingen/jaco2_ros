@@ -6,11 +6,11 @@ Panels:
       Expanded:
         - /Global Options1
         - /RobotModel1
-        - /RobotModel1/Links1
         - /TF1
         - /TF1/Frames1
         - /TF1/Tree1
-        - /Marker1
+        - /MarkerArray1
+        - /MarkerArray1/Namespaces1
       Splitter Ratio: 0.761744976
     Tree Height: 895
   - Class: rviz/Selection
@@ -53,7 +53,7 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
-    - Alpha: 1
+    - Alpha: 0.800000012
       Class: rviz/RobotModel
       Collision Enabled: false
       Enabled: true
@@ -181,17 +181,17 @@ Visualization Manager:
         jaco_large_ring_cover_3:
           Value: false
         jaco_link_1:
-          Value: true
+          Value: false
         jaco_link_2:
           Value: true
         jaco_link_3:
           Value: true
         jaco_link_4:
-          Value: true
+          Value: false
         jaco_link_5:
-          Value: true
+          Value: false
         jaco_link_base:
-          Value: true
+          Value: false
         jaco_link_finger_1:
           Value: false
         jaco_link_finger_2:
@@ -205,7 +205,7 @@ Visualization Manager:
         jaco_link_finger_tip_3:
           Value: false
         jaco_link_hand:
-          Value: true
+          Value: false
         jaco_small_ring_cover_1:
           Value: false
         jaco_small_ring_cover_2:
@@ -214,7 +214,7 @@ Visualization Manager:
           Value: false
         root:
           Value: false
-      Marker Scale: 0.300000012
+      Marker Scale: 0.400000006
       Name: TF
       Show Arrows: true
       Show Axes: true
@@ -251,20 +251,15 @@ Visualization Manager:
                     {}
       Update Interval: 0
       Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /visualization_marker2
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /collision_model
+      Marker Topic: /jaco2_surface_test_node/point_on_surface
       Name: MarkerArray
       Namespaces:
-        {}
+        normal: true
+        origin: true
+        vertices_0: true
+        vertices_1: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -292,25 +287,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 0.930332899
+      Distance: 1.71877897
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.321735978
-        Y: -0.0917855352
-        Z: 1.11688352
+        X: 0.114319123
+        Y: -0.231172353
+        Z: 0.501761198
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: -0.00520213973
+      Pitch: 0.059797965
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.5881412
+      Yaw: 2.06131244
     Saved: ~
 Window Geometry:
   Displays:
