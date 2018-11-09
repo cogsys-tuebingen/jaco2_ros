@@ -108,8 +108,9 @@ public:
     KDL::Twist getJointAxisProjection(const std::string& link) const;
     std::vector<KDL::Twist> getJointAxisProjections() const;
 
-    KDL::Jacobian getJacobian(const std::vector<double>& q);
+    KDL::Jacobian getJacobian(const std::vector<double>& q,int seg_id = -1);
     int getJointVelocities(const std::vector<double> &q, const KDL::Twist &v_in, std::vector<double>& v_out);
+    inline const KDL::Tree& getTree() const {return tree_;}
 
 protected:
     virtual bool initialize();

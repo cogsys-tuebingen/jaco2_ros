@@ -384,7 +384,7 @@ void Jaco2KinematicModel::getRotationAxis(const std::string &link, Eigen::Vector
     rot_axis(2) = v(2);
 }
 
-KDL::Jacobian Jaco2KinematicModel::getJacobian(const std::vector<double> &q)
+KDL::Jacobian Jaco2KinematicModel::getJacobian(const std::vector<double> &q, int seg_id)
 {
     std::size_t nj = chain_.getNrOfJoints();
     if(q.size() > nj ){
@@ -395,7 +395,7 @@ KDL::Jacobian Jaco2KinematicModel::getJacobian(const std::vector<double> &q)
     KDL::JntArray qvals;
     Jaco2KinDynLib::convert(q, qvals, q.size() - nj);
 
-    solverJac_->JntToJac(qvals,jac);
+    solverJac_->JntToJac(qvals, jac, seg_id);
     return jac;
 }
 
