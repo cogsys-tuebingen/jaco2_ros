@@ -9,10 +9,10 @@
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>moveit_core</build_depend>
+<!--  <build_depend>moveit_core</build_depend>
   <build_depend>moveit_msgs</build_depend>
   <build_depend>moveit_ros_planning</build_depend>
-  <build_depend>moveit_ros_planning_interface</build_depend>
+  <build_depend>moveit_ros_planning_interface</build_depend>-->
   <build_depend>roscpp</build_depend>
   <build_depend>jaco2_msgs</build_depend>
   <build_depend>jaco2_utils</build_depend>
@@ -25,10 +25,10 @@
   <run_depend>message_runtime</run_depend>
   <run_depend>actionlib</run_depend>
   <run_depend>actionlib_msgs</run_depend>
-  <run_depend>moveit_core</run_depend>
+<!--  <run_depend>moveit_core</run_depend>
   <run_depend>moveit_msgs</run_depend>
   <run_depend>moveit_ros_planning</run_depend>
-  <run_depend>moveit_ros_planning_interface</run_depend>
+  <run_depend>moveit_ros_planning_interface</run_depend>-->
   <run_depend>roscpp</run_depend>
   <run_depend>jaco2_msgs</run_depend>
   <run_depend>jaco2_utils</run_depend>
