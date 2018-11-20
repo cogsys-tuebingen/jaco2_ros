@@ -108,7 +108,13 @@ public:
     KDL::Twist getJointAxisProjection(const std::string& link) const;
     std::vector<KDL::Twist> getJointAxisProjections() const;
 
-    KDL::Jacobian getJacobian(const std::vector<double>& q,int seg_id = -1);
+    /**
+     * @brief getJacobian computes the geometric Jacobian of input frame
+     * @param q joint angles
+     * @param seg_id identifier of segment default is end effector
+     * @return
+     */
+    KDL::Jacobian getJacobian(const std::vector<double>& q,int seg_id = -1) const;
     int getJointVelocities(const std::vector<double> &q, const KDL::Twist &v_in, std::vector<double>& v_out);
     inline const KDL::Tree& getTree() const {return tree_;}
 

@@ -34,6 +34,7 @@ namespace Jaco2KinDynLib {
 class Jaco2DynamicModel : public Jaco2KinematicModel
 {
 public:
+    typedef std::vector<Eigen::Matrix<double, 6, 1>, Eigen::aligned_allocator<Eigen::Matrix<double, 6, 1>>> SpatialAccVector;
     Jaco2DynamicModel();
     Jaco2DynamicModel(const std::string& robot_model, const std::string& chain_root, const std::string& chain_tip);
 
@@ -98,7 +99,7 @@ public:
                         const std::vector<double>& q_Dot,
                         const std::vector<double>& q_DotDot,
                         std::vector<std::string>& links,
-                        std::vector<Eigen::Matrix<double, 6, 1> > &spatial_acc );
+                        SpatialAccVector &spatial_acc );
     /**
      * @brief getAcceleration gets the accerlaration for all moving frames
      * @param q joint positions
