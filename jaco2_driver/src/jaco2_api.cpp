@@ -81,6 +81,7 @@ void Jaco2API::setupCommandInterface(const kinova::KinovaAPIType& api_type)
     SetActuatorPID                  = (int (*)(unsigned int, float, float, float )) initCommandLayerFunction("SetActuatorPID");
     StartForceControl               = (int (*)()) initCommandLayerFunction("StartForceControl");
     StopForceControl                = (int (*)()) initCommandLayerFunction("StopForceControl");
+    SetFrameType                    = (int (*)(int)) initCommandLayerFunction("SetFrameType");
 }
 
 void* Jaco2API::initCommLayerFunction(const char* name)
@@ -329,6 +330,13 @@ void Jaco2API::setAngularVelocity(const TrajectoryPoint &target_velocity)
     }
 }
 
+void Jaco2API::setCartesianVelocity(const TrajectoryPoint &velocity)
+{
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    if(!stopedAPI_){
+        SendBasicTrajectory(velocity);
+    }
+}
 
 void Jaco2API::setAngularPosition(const TrajectoryPoint &position)
 {
@@ -630,4 +638,24 @@ void Jaco2API::setPayload(const jaco2_data::PayloadGravityParams &params)
 
     return;
 
+}
+
+void Jaco2API::setReferenceFrameRotating()
+{
+    if(!initialized_ || SetFrameType == NULL){
+        return;
+    }
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    (*SetFrameType)(1);
+    std::cout << "using rotating frame" << std::endl;
+}
+
+void Jaco2API::setReferenceFrameFixed()
+{
+    if(!initialized_ || SetFrameType == NULL){
+        return;
+    }
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
+    (*SetFrameType)(0);
+    std::cout << "using fixed frame" << std::endl;
 }

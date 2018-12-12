@@ -2,7 +2,7 @@
 
 ## Maintainer 
 
-- [Adrian Zwiener](http://www.cogsys.cs.uni-tuebingen.de/mitarb/zwiener/welcome_e.html) <<adrian.zwiener@uni-tuebingen.de>>, [Cognitive Science](http://ai.uni-bremen.de/), University of Tübingen
+- [Adrian Zwiener](http://www.cogsys.cs.uni-tuebingen.de/mitarb/zwiener/welcome_e.html) <<adrian.zwiener@uni-tuebingen.de>>, [Cognitive Systems](http://www.cogsys.cs.uni-tuebingen.de/), University of Tübingen
 
 ## Table of contents
 - [Description](#description)

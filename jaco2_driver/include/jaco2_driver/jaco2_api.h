@@ -60,6 +60,7 @@ public:
     SensorsInfo getSensorInfo() const;
     void setAngularVelocity(const TrajectoryPoint &velocity);
     void setAngularPosition(const TrajectoryPoint &position);
+    void setCartesianVelocity(const TrajectoryPoint& velocity);
     void setAngularTorque(const AngularPosition &torque);
     void setAngularTorque(const AngularInfo &torque);
     void setLimitedAngularCmd(const TrajectoryPoint &point);
@@ -103,6 +104,8 @@ public:
     int initUSB();
 
     void setPayload(const jaco2_data::PayloadGravityParams& params);
+    void setReferenceFrameRotating();
+    void setReferenceFrameFixed();
 
 private:
     void * api_command_lib_;
@@ -152,6 +155,7 @@ private:
     int(*SetActuatorPID)(unsigned int address, float P, float I, float D);
     int (*StartForceControl)();
     int (*StopForceControl)();
+    int (*SetFrameType)(int);
 
 
     void moveHomeLeft();

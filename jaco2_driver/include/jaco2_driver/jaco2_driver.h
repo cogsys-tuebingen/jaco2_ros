@@ -26,6 +26,7 @@
 #include <jaco2_driver/controller/gravity_compensation_controller.hpp>
 #include <jaco2_driver/controller/torque_controller.h>
 #include <jaco2_driver/controller/controller_factory.hpp>
+#include <jaco2_driver/controller/cartesian_controller.hpp>
 
 // Kinova
 
@@ -65,6 +66,7 @@ public:
     void setAngularVelocity(const AngularPosition &velocity);
     void setFingerVelocity(const AngularPosition &finger_velocity);
     void setFingerPosition(const AngularPosition & position);
+    void setCartesianVelocity(const CartesianPosition& position);
     void setTrajectory(const JointTrajectory & trajectory);
     void stop();
     void stopMovement();
@@ -131,6 +133,7 @@ private:
     GripperController gripper_controller_;
     GravityCompensationController gravity_comp_controller_;
     TorqueController torque_controller_;
+    CartesianVelocityController cart_vel_controller_;
     // Variable Controller
     std::shared_ptr<VelocityController> velocity_controller_;
     std::shared_ptr<TrajectoryTrackingController> trajectory_controller_;

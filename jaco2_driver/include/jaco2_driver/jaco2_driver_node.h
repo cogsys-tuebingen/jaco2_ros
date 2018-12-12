@@ -7,6 +7,7 @@
 //ROS
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
+#include <geometry_msgs/Twist.h>
 #include <control_msgs/FollowJointTrajectoryAction.h>
 #include <control_msgs/GripperCommandAction.h>
 #include <dynamic_reconfigure/server.h>
@@ -43,6 +44,7 @@ public:
 private:
     void jointVelocityCb(const jaco2_msgs::JointVelocityConstPtr& msg);
     void fingerVelocityCb(const jaco2_msgs::FingerPositionConstPtr &msg);
+    void cartesianVelocityCb(const geometry_msgs::TwistConstPtr& msg);
     void jointTorqueCb(const jaco2_msgs::JointAnglesConstPtr& msg);
 
     void publishJointState();
@@ -76,6 +78,7 @@ private:
 
     ros::Subscriber sub_joint_velocity_;
     ros::Subscriber sub_finger_velocity_;
+    ros::Subscriber sub_cat_velocity_;
     ros::Subscriber sub_joint_torque_;
 
     ros::Publisher pub_joint_state_;

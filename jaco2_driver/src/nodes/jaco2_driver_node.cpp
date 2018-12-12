@@ -70,6 +70,7 @@ Jaco2DriverNode::Jaco2DriverNode()
 
     sub_joint_velocity_ = private_nh_.subscribe("in/joint_velocity", 10, &Jaco2DriverNode::jointVelocityCb, this);
     sub_finger_velocity_ = private_nh_.subscribe("in/finger_velocity", 10, &Jaco2DriverNode::fingerVelocityCb, this);
+    sub_cat_velocity_ = private_nh_.subscribe("in/cartesian_velocity", 10, &Jaco2DriverNode::cartesianVelocityCb, this);
     sub_joint_torque_ = private_nh_.subscribe("in/joint_torques", 1, &Jaco2DriverNode::jointTorqueCb, this);
 
     stop_service_ = private_nh_.advertiseService("in/stop", &Jaco2DriverNode::stopServiceCallback, this);
@@ -675,6 +676,23 @@ void Jaco2DriverNode::fingerVelocityCb(const jaco2_msgs::FingerPositionConstPtr 
     velocity.Fingers.Finger3 = msg->finger3;
 
     driver_->setFingerVelocity(velocity);
+
+    last_command_ = ros::Time::now();
+}
+
+void Jaco2DriverNode::cartesianVelocityCb(const geometry_msgs::TwistConstPtr &msg)
+{
+    CartesianPosition vel;
+    vel.Coordinates.X = msg->linear.x;
+    vel.Coordinates.Y = msg->linear.y;
+    vel.Coordinates.Z = msg->linear.z;
+    vel.Coordinates.ThetaX = msg->angular.x;
+    vel.Coordinates.ThetaY = msg->angular.y;
+    vel.Coordinates.ThetaZ = msg->angular.z;
+
+    vel.Fingers.InitStruct();
+
+    driver_->setCartesianVelocity(vel);
 
     last_command_ = ros::Time::now();
 }

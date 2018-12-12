@@ -240,7 +240,7 @@ void CollisionReaction::resetResiduals()
     last_residual_.setZero(n_joints_);
     collision_counter_ = 0;
     initial_ = true;
-    ROS_INFO("Rest Residuals");
+    ROS_INFO("Reset Residuals");
 }
 
 

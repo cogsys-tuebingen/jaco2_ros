@@ -14,6 +14,7 @@ Jaco2Driver::Jaco2Driver(std::string frame_id):
     gripper_controller_(state_,jaco_api_, t_),
     gravity_comp_controller_(state_, jaco_api_, t_),
     torque_controller_(state_, jaco_api_, t_),
+    cart_vel_controller_(state_, jaco_api_, t_),
     paused_(false),
     serviceDone_(true)
 {
@@ -145,6 +146,16 @@ void Jaco2Driver::setAngularPosition(const AngularPosition &position)
 
     position_controller_.setPosition(tp);
     setActiveController(&position_controller_);
+}
+
+void Jaco2Driver::setCartesianVelocity(const CartesianPosition& position)
+{
+    TrajectoryPoint tp;
+    tp.InitStruct();
+    tp.Position.CartesianPosition = position.Coordinates;
+    tp.Position.Type = CARTESIAN_VELOCITY;
+    cart_vel_controller_.setVelocity(tp);
+    setActiveController(&cart_vel_controller_);
 }
 
 void Jaco2Driver::setTrajectory(const JointTrajectory &trajectory)
@@ -362,6 +373,7 @@ void Jaco2Driver::updateControllerConfig(jaco2_driver::jaco2_driver_configureCon
 {
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
     velocity_controller_->setConfig(cfg);
+    cart_vel_controller_.setConfig(cfg);
     position_controller_.setConfig(cfg);
     trajectory_controller_->setConfig(cfg);
     empty_controller_.setConfig(cfg);
