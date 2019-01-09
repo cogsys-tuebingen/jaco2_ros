@@ -387,7 +387,7 @@ void Jaco2KinematicModel::getRotationAxis(const std::string &link, Eigen::Vector
 KDL::Jacobian Jaco2KinematicModel::getJacobian(const std::vector<double> &q, int seg_id) const
 {
     std::size_t nj = chain_.getNrOfJoints();
-    if(q.size() > nj ){
+    if(q.size() < nj ){
         throw std::logic_error("Dimension mismatch. More joint values expected");
     }
     KDL::Jacobian jac(nj);
