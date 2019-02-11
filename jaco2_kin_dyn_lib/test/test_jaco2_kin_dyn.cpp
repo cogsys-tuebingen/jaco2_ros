@@ -291,6 +291,16 @@ TEST(Jaco2KinematicsTests, IK)
     }
 }
 
+TEST(Jaco2KinematicsTests, Jacobian)
+{
+    std::vector<double> jointAngles;
+    jaco2KDL.getRandomConfig(jointAngles);
+    KDL::Jacobian jac = jaco2KDL.getJacobian(jointAngles);
+    EXPECT_TRUE(jac.rows() > 0);
+    EXPECT_TRUE(jac.columns() > 0);
+    std::cout << jac.data << std::endl;
+}
+
 TEST(Jaco2DynamicsToolsTests, kdlEigenConversion)
 {
     KDL::Vector vec1(1,2,3);
@@ -609,7 +619,7 @@ TEST(Jaco2DynamicsTests, modifiedRNE)
     }
 }
 
-TEST(Jaco2DynamicsTests, matrixC)
+TEST(Jaco2DynamicsTests, )
 {
     std::vector<double> q = {4.74, 2.96, 1.04, -2.08, 0.37, 1.37};
     std::vector<double> qDot = {1.1, 1.04, 1.05, 1.06, 1.03, 1.1};
@@ -625,7 +635,7 @@ TEST(Jaco2DynamicsTests, matrixC)
     Eigen::VectorXd g;
 
 
-    for(std::size_t i = 0; i < 50 ; ++ i){
+    for(std::size_t i = 0; i < 100 ; ++ i){
 
         jaco2KDL.getChainDynParam(q, qDot, H, c, g );
         jaco2KDL.getMatrixC(q, qDot, C);
@@ -682,6 +692,7 @@ TEST(Jaco2DynamicsTests, moreValuesInn)
     EXPECT_TRUE(ec>=0);
 
 }
+
 
 int main(int argc, char *argv[])
 {

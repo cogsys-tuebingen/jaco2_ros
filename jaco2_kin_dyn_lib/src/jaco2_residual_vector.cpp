@@ -145,7 +145,7 @@ void Jaco2ResidualVector::getResidualVector(const ResidualData &data,
 //    Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - G + last_residual;
     model_.getChainDynInertiaAndGravity(data.joint_positions, H, gravity_torque_);
     Eigen::VectorXd m = H * omega;
-    Eigen::VectorXd to_integrate = tau + Eigen::Transpose<Eigen::MatrixXd>(C) * omega - gravity_torque_ + last_residual; // changed sign at 15.17.2017
+    Eigen::VectorXd to_integrate = tau + C.transpose() * omega - gravity_torque_ + last_residual; // changed sign at 15.17.2017
 
     new_integral = integration_step(data.dt, last_integral, to_integrate);
 

@@ -63,102 +63,61 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        jaco_large_ring_cover_1:
+        panda_hand:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        jaco_large_ring_cover_2:
+        panda_leftfinger:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        jaco_large_ring_cover_3:
+        panda_link0:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        jaco_link_1:
+        panda_link1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        jaco_link_2:
+        panda_link2:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        jaco_link_3:
+        panda_link3:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        jaco_link_4:
+        panda_link4:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        jaco_link_5:
+        panda_link5:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        jaco_link_base:
+        panda_link6:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        jaco_link_finger_1:
+        panda_link7:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        jaco_link_finger_2:
+        panda_link8:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
-        jaco_link_finger_3:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        jaco_link_finger_tip_1:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        jaco_link_finger_tip_2:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        jaco_link_finger_tip_3:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        jaco_link_hand:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        jaco_small_ring_cover_1:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        jaco_small_ring_cover_2:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        jaco_small_ring_cover_3:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        root:
+        panda_rightfinger:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -174,81 +133,81 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        jaco_large_ring_cover_1:
-          Value: false
-        jaco_large_ring_cover_2:
-          Value: false
-        jaco_large_ring_cover_3:
-          Value: false
-        jaco_link_1:
-          Value: false
-        jaco_link_2:
+        link1:
           Value: true
-        jaco_link_3:
+        link2:
           Value: true
-        jaco_link_4:
+        link3:
+          Value: true
+        link4:
+          Value: true
+        link5:
+          Value: true
+        link6:
+          Value: true
+        link7:
+          Value: true
+        link77:
           Value: false
-        jaco_link_5:
+        link8:
+          Value: true
+        panda_hand:
           Value: false
-        jaco_link_base:
+        panda_leftfinger:
           Value: false
-        jaco_link_finger_1:
+        panda_link0:
+          Value: true
+        panda_link1:
           Value: false
-        jaco_link_finger_2:
+        panda_link2:
           Value: false
-        jaco_link_finger_3:
+        panda_link3:
           Value: false
-        jaco_link_finger_tip_1:
+        panda_link4:
           Value: false
-        jaco_link_finger_tip_2:
+        panda_link5:
           Value: false
-        jaco_link_finger_tip_3:
+        panda_link6:
           Value: false
-        jaco_link_hand:
+        panda_link7:
           Value: false
-        jaco_small_ring_cover_1:
+        panda_link8:
+          Value: true
+        panda_rightfinger:
           Value: false
-        jaco_small_ring_cover_2:
-          Value: false
-        jaco_small_ring_cover_3:
-          Value: false
-        root:
-          Value: false
-      Marker Scale: 0.400000006
+      Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        root:
-          jaco_link_base:
-            jaco_large_ring_cover_1:
-              {}
-            jaco_link_1:
-              jaco_large_ring_cover_2:
-                {}
-              jaco_link_2:
-                jaco_large_ring_cover_3:
-                  {}
-                jaco_link_3:
-                  jaco_link_4:
-                    jaco_link_5:
-                      jaco_link_hand:
-                        jaco_link_finger_1:
-                          jaco_link_finger_tip_1:
-                            {}
-                        jaco_link_finger_2:
-                          jaco_link_finger_tip_2:
-                            {}
-                        jaco_link_finger_3:
-                          jaco_link_finger_tip_3:
-                            {}
-                      jaco_small_ring_cover_3:
-                        {}
-                    jaco_small_ring_cover_2:
-                      {}
-                  jaco_small_ring_cover_1:
+        panda_link0:
+          link1:
+            link2:
+              link3:
+                link4:
+                  link5:
                     {}
+                  link6:
+                    link7:
+                      {}
+                    link77:
+                      {}
+                    link8:
+                      {}
+          panda_link1:
+            panda_link2:
+              panda_link3:
+                panda_link4:
+                  panda_link5:
+                    panda_link6:
+                      panda_link7:
+                        panda_link8:
+                          panda_hand:
+                            panda_leftfinger:
+                              {}
+                            panda_rightfinger:
+                              {}
       Update Interval: 0
       Value: true
     - Class: rviz/MarkerArray
@@ -256,17 +215,14 @@ Visualization Manager:
       Marker Topic: /jaco2_surface_test_node/point_on_surface
       Name: MarkerArray
       Namespaces:
-        normal: true
-        origin: true
-        vertices_0: true
-        vertices_1: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
   Global Options:
-    Background Color: 61; 61; 61
+    Background Color: 95; 95; 95
     Default Light: true
-    Fixed Frame: root
+    Fixed Frame: panda_link0
     Frame Rate: 30
   Name: root
   Tools:
@@ -287,25 +243,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.71877897
+      Distance: 0.960646629
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.114319123
-        Y: -0.231172353
-        Z: 0.501761198
+        X: -0.032124199
+        Y: 0.0792805478
+        Z: 0.592942297
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.059797965
+      Pitch: 0.104797095
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.06131244
+      Yaw: 1.61317039
     Saved: ~
 Window Geometry:
   Displays:
