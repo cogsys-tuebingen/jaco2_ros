@@ -60,8 +60,8 @@ public:
 
         }
         else {
-
-            gripper_ac_.reset(new actionlib::SimpleActionClient<jaco2_msgs::GripperControlAction>("jaco_22_driver/gripper_command", false));
+            std::string driver_name = nh_.param<std::string>("driver_name","/jaco_21_driver");
+            gripper_ac_.reset(new actionlib::SimpleActionClient<jaco2_msgs::GripperControlAction>(driver_name + "/gripper_command", false));
             ROS_INFO("Set up GripperControl Actionserver!");
 
         }
