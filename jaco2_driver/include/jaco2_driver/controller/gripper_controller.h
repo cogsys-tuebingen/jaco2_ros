@@ -51,7 +51,11 @@ private:
     int fingerVelocity_[3];
     int fingerGoal_[3];
     int counter_;
+    int update_samples_;
+    int not_moving_counter_;
+    int not_moving_threshold_;
     double threshold_;
+    double goal_dist_;
     double diff_[3];
 
 

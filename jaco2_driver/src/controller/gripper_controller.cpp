@@ -5,8 +5,12 @@
 GripperController::GripperController(Jaco2State &state, Jaco2API& api, TerminationCallback& t )
     : Jaco2Controller(state, api, t),
       usePos_(false),
+      counter_(1),
+      update_samples_(100),
+      not_moving_counter_(0),
+      not_moving_threshold_(5),
       threshold_(1),
-      counter_(1)
+      goal_dist_(20)
 {
     tp_.InitStruct();
     tp_.Position.Type = ANGULAR_VELOCITY;
@@ -37,6 +41,7 @@ void GripperController::grabObj(const bool& useFinger1, const bool& useFinger2, 
     done_ = false;
     result_ = Result::WORKING;
     last_command_ = std::chrono::high_resolution_clock::now();
+    not_moving_counter_ = 0;
 }
 
 void GripperController::grabObjSetUnusedFingerPos(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3, const int posFinger1, const int posFinger2, const int posFinger3)
@@ -46,6 +51,7 @@ void GripperController::grabObjSetUnusedFingerPos(const bool &useFinger1, const 
     fingerGoal_[2] = posFinger3;
     grabObj(useFinger1,useFinger2,useFinger3);
     usePos_ = true;
+    not_moving_counter_ = 0;
 }
 
 void GripperController::read()
@@ -134,14 +140,17 @@ bool GripperController::notMoving()
        result &= fabs(currentPosition_.Fingers.Finger3 - lastPosition_.Fingers.Finger3) < threshold_;
 //       std::cout << "finger 3 diff: " << fabs(currentPosition_.Fingers.Finger3 - lastPosition_.Fingers.Finger3) << std::endl;
    }
-   if(counter_ % 100 == 0)
+   if(counter_ % update_samples_ == 0)
    {
        lastPosition_ = currentPosition_;
 //       std::cout << "change" << std::endl;
    }
 //   counter_ = (counter_ + 1) % 10;
    ++counter_;
-
+   if(result){
+       ++not_moving_counter_;
+   }
+   result &=  not_moving_counter_ > not_moving_threshold_;
    return result;
 }
 
@@ -154,7 +163,7 @@ bool GripperController::reachedGoal()
         {
             if(!useFingers_[i])
             {
-                bool test = fabs(diff_[i]) < 20;
+                bool test = fabs(diff_[i]) < goal_dist_;
                 result &= test;
                 if(test)
                 {
@@ -186,6 +195,10 @@ void GripperController::setConfig(jaco2_driver::jaco2_driver_configureConfig &cf
     fingerVelocity_[0] = cfg.gipper_controller_finger_vel_1;
     fingerVelocity_[1] = cfg.gipper_controller_finger_vel_2;
     fingerVelocity_[2] = cfg.gipper_controller_finger_vel_3;
+
+    update_samples_ = cfg.gripper_update_samples;
+    goal_dist_ = cfg.gripper_goal_threshold;
+    not_moving_threshold_ = cfg.gripper_not_moving_threshold;
 }
 
 void GripperController::setGainP(const double finger1, const double finger2, const double finger3)
