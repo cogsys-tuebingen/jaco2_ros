@@ -6,10 +6,11 @@
 #include <jaco2_msgs/Stop.h>
 #include <std_srvs/Trigger.h>
 #include <std_srvs/SetBool.h>
-#include <jaco2_kin_dyn_lib/jaco2_kinematic_model.h>
 #include <jaco2_data/joint_state_data.h>
 #include <jaco2_msgs_conversion/jaco2_ros_msg_conversion.h>
 #include <geometry_msgs/Twist.h>
+#include <actionlib/client/simple_action_client.h>
+#include <jaco2_msgs/GripperControlAction.h>
 class Jaco2Teleop
 {
 public:
@@ -17,11 +18,12 @@ public:
         STOP = 1,
         GCOMP = 2,
         ADMIT = 3,
-        CART = 4
+        CART = 4,
+        CLOSE = 5,
     };
     const double joystick_threshold_ = 0.1;
     const std::vector<int> default_axes = {0,1,3,4};
-    const std::vector<int> default_buttons = {0,1,2,3,4,5,6};
+    const std::vector<int> default_buttons = {0,1,2,3,4,5,6,7};
 
 
     Jaco2Teleop():
@@ -41,7 +43,7 @@ public:
         std::string stop_srv    = nh_.param<std::string>("stop_service", "/jaco_arm_driver/in/stop");
         std::string gcomp_srv   = nh_.param<std::string>("gcomp_service", "/jaco_arm_driver/in/enable_gravity_compensation_mode");
         std::string ad_srv      = nh_.param<std::string>("admitance_service", "/jaco_arm_driver/in/enable_admittance_mode");
-
+        std::string gripper     = nh_.param<std::string>("gripper_server", "/jaco_arm_driver/gripper_command");
 
         ROS_INFO_STREAM( start_srv << " | " << stop_srv);
 
@@ -63,11 +65,17 @@ public:
         srv_stop_ = nh_.serviceClient<jaco2_msgs::Stop>(stop_srv);
         srv_gcomp_= nh_.serviceClient<std_srvs::SetBool>(gcomp_srv);
         srv_admitance_ = nh_.serviceClient<std_srvs::SetBool>(ad_srv);
-        toggle_states_[Function::STOP] = false;
+        toggle_states_[Function::STOP]  = false;
         toggle_states_[Function::GCOMP] = false;
         toggle_states_[Function::ADMIT] = false;
-        toggle_states_[Function::CART] = false;
-        ROS_WARN_STREAM("DOES YET NOT WORK PROBABLY !!!");
+        toggle_states_[Function::CART]  = false;
+        toggle_states_[Function::CLOSE] = false;
+
+        gripper_ac_.reset(new actionlib::SimpleActionClient<jaco2_msgs::GripperControlAction>(gripper, false));
+        gripper_ac_->waitForServer(ros::Duration(2));
+
+        open();
+        gripper_ac_->waitForResult(ros::Duration(1));
     }
 
     void stateCb(const sensor_msgs::JointStateConstPtr& msg)
@@ -124,7 +132,6 @@ public:
             srv_admitance_.call(srv.request, srv.response);
             ROS_INFO_STREAM(srv.response.message);
             toggle_states_[Function::ADMIT] = true;
-            ros::Duration(0.5).sleep();
         }else{
             toggle_states_[Function::ADMIT] = false;
         }
@@ -135,8 +142,17 @@ public:
             }else{
                 ROS_INFO_STREAM("SWITCHED to JOINT CONTROL.");
             }
-            ros::Duration(0.5).sleep();
 
+        }
+        if(last_joy_.buttons[buttons_[7]] && toggle_states_[Function::CLOSE]){
+            ROS_INFO_STREAM("Open gripper");
+            open();
+            toggle_states_[Function::CLOSE] = false;
+        }
+        else if(last_joy_.buttons[buttons_[7]]&& !toggle_states_[Function::CLOSE]){
+            ROS_INFO_STREAM("Close gripper");
+            close();
+            toggle_states_[Function::CLOSE] = true;
         }
         //        bool move = doMove(msg);
 
@@ -211,6 +227,36 @@ public:
 
 
 
+    void open()
+    {
+        jaco2_msgs::GripperControlGoal gripper_goal;
+
+        gripper_goal.useFinger1 = false;
+        gripper_goal.useFinger2 = false;
+        gripper_goal.useFinger3 = false;
+        gripper_goal.posFinger1 = 0;
+        gripper_goal.posFinger2 = 0;
+        gripper_goal.posFinger3 = 0;
+        gripper_ac_->sendGoal(gripper_goal);
+
+        /*bool success = */gripper_ac_->waitForResult(ros::Duration(2));
+
+    }
+
+    void close()
+    {
+        jaco2_msgs::GripperControlGoal gripper_goal;
+
+        gripper_goal.useFinger1 = true;
+        gripper_goal.useFinger2 = true;
+        gripper_goal.useFinger3 = true;
+        gripper_goal.posFinger1 = 7200;
+        gripper_goal.posFinger2 = 7200;
+        gripper_goal.posFinger3 = 7200;
+        gripper_ac_->sendGoal(gripper_goal);
+
+       /* bool success = */gripper_ac_->waitForResult(ros::Duration(2));
+    }
 
 
 private:
@@ -234,6 +280,7 @@ private:
     std::vector<int> axes_;
     std::vector<int> buttons_;
     sensor_msgs::Joy last_joy_;
+    std::shared_ptr<actionlib::SimpleActionClient<jaco2_msgs::GripperControlAction>> gripper_ac_;
 
 };
 

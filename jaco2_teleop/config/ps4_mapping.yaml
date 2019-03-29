@@ -2,8 +2,8 @@ joy_mapping:
     axes:
         - 0
         - 1
-        - 3
-        - 4
+        - 5
+        - 2
     buttons:
         - 0
         - 1
@@ -12,3 +12,4 @@ joy_mapping:
         - 4
         - 6
         - 7
+        - 3
