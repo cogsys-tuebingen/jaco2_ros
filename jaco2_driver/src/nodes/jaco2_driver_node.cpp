@@ -7,10 +7,8 @@
 #include <jaco2_msgs/Jaco2JointState.h>
 #include <jaco2_msgs/Jaco2Accelerometers.h>
 #include <jaco2_driver/jaco2_driver_constants.h>
-#include <jaco2_data/torque_offset_lut.hpp>
 #include <jaco2_data/gravity_params.hpp>
 #include <jaco2_data/velocity_calibration.hpp>
-#include <jaco2_data/torque_offset_calibration.hpp>
 #include <jaco2_msgs/Jaco2GfreeTorques.h>
 #include <jaco2_msgs_conversion/jaco2_ros_msg_conversion.h>
 #include <kinova/KinovaTypes.h>
@@ -176,27 +174,28 @@ Jaco2DriverNode::Jaco2DriverNode()
         Jaco2Calibration::loadAccCalib(acc_calib_file, acc_params);
         driver_->setAccelerometerCalibration(acc_params);
     }
-    bool use_torque_calib = private_nh_.param<bool>("jaco_use_torque_calib", false);
-    if(use_torque_calib){
 
-        std::string torque_calib_file = private_nh_.param<std::string>("jaco_torque_calibration_file", "");
-        try{
-            Jaco2Calibration::TorqueOffsetLut lut;
-            lut.load(torque_calib_file);
-            driver_->setTorqueCalibration(lut);
-            ROS_INFO_STREAM("Using torque LUT calibration.");
-        }
-        catch(const std::runtime_error& e){
-            Jaco2Calibration::TorqueOffsetCalibration sine_calib;
-            sine_calib.load(torque_calib_file);
-            driver_->setTorqueCalibration(sine_calib);
-            ROS_INFO_STREAM("Using torque SINE calibration.");
-        }
-        catch(...){
-            ROS_ERROR_STREAM("Unkown failure!!!");
-            throw;
-        }
-    }
+//    bool use_torque_calib = private_nh_.param<bool>("jaco_use_torque_calib", false);
+//    if(use_torque_calib){
+
+//        std::string torque_calib_file = private_nh_.param<std::string>("jaco_torque_calibration_file", "");
+//        try{
+//            Jaco2Calibration::TorqueOffsetLut lut;
+//            lut.load(torque_calib_file);
+//            driver_->setTorqueCalibration(lut);
+//            ROS_INFO_STREAM("Using torque LUT calibration.");
+//        }
+//        catch(const std::runtime_error& e){
+//            Jaco2Calibration::TorqueOffsetCalibration sine_calib;
+//            sine_calib.load(torque_calib_file);
+//            driver_->setTorqueCalibration(sine_calib);
+//            ROS_INFO_STREAM("Using torque SINE calibration.");
+//        }
+//        catch(...){
+//            ROS_ERROR_STREAM("Unkown failure!!!");
+//            throw;
+//        }
+//    }
 
     std::string velocity_calib_file = private_nh_.param<std::string>("jaco_velocity_calibration_file", "");
     if(velocity_calib_file != ""){

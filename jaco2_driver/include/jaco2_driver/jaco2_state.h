@@ -4,8 +4,6 @@
 #include <jaco2_driver/jaco2_api.h>
 #include <kinova/KinovaTypes.h>
 #include <jaco2_data/accelerometer_calibration.hpp>
-#include <jaco2_data/torque_offset_lut.hpp>
-#include <jaco2_data/torque_offset_calibration.hpp>
 #include <jaco2_driver/data/jaco2_joint_state.h>
 #include <jaco2_data/types.h>
 
@@ -54,14 +52,11 @@ public:
     std::vector<int> getLowPriQue() const;
 
 //    std::vector<Jaco2Calibration::AccelerometerCalibrationParam> getAccelerometerCalibration() const;
-    Jaco2Calibration::TorqueOffsetLut getTorqueCalibration() const;
 
     void setHighPriQue(std::vector<int> que);
     void setLowPriQue(std::vector<int> que);
     void setPriorityRate(int rate);
     void setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam>& params);
-    void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut& lut);
-    void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetCalibration& calib);
     void setVelocitySensorCalibration(const std::vector<double>& factors);
     void setJointNames(const std::vector<std::string> &names);
 
@@ -103,8 +98,6 @@ private:
 
     void calculateJointAcceleration();
     void applyAccelerationCalibration();
-    void applyTorqueOffsets();
-    void applyTorqueOffsets2TorqueGFree();
 
     void updateJointState();
 
@@ -136,10 +129,6 @@ private:
     jaco2_data::TimeStamp time_acceleration_;
     jaco2_data::TimeStamp time_quick_status_;
     jaco2_data::TimeStamp time_sensor_info_;
-    Jaco2Calibration::TorqueOffsetLut torque_offset_;
-    Jaco2Calibration::TorqueOffsetCalibration torque_offest_fkt_;
-    bool calibrate_torque_;
-    bool calibrate_torque_fkt_;
     std::deque<AngularPosition> lastVelocity_;
     std::deque<double> dt_;
     int acc_counter_;

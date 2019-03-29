@@ -365,10 +365,6 @@ AngularPosition Jaco2Driver::getCurrentTrajError() const
     return res;
 }
 
-Jaco2Calibration::TorqueOffsetLut Jaco2Driver::getTorqueCalibration() const
-{
-    return state_.getTorqueCalibration();
-}
 void Jaco2Driver::updateControllerConfig(jaco2_driver::jaco2_driver_configureConfig& cfg)
 {
     std::unique_lock<std::recursive_mutex> lock(commands_mutex_);
@@ -480,15 +476,15 @@ void Jaco2Driver::setAccelerometerCalibration(const std::vector<Jaco2Calibration
     state_.setAccelerometerCalibration(params);
 }
 
-void Jaco2Driver::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut &lut)
-{
-    state_.setTorqueCalibration(lut);
-}
+//void Jaco2Driver::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut &lut)
+//{
+//    state_.setTorqueCalibration(lut);
+//}
 
-void Jaco2Driver::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetCalibration &calib)
-{
-    state_.setTorqueCalibration(calib);
-}
+//void Jaco2Driver::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetCalibration &calib)
+//{
+//    state_.setTorqueCalibration(calib);
+//}
 
 void Jaco2Driver::setJointNames(const std::vector<std::string> &names)
 {

@@ -13,9 +13,7 @@
 #include <jaco2_driver/jaco2_api.h>
 #include <jaco2_driver/joint_trajectory.h>
 #include <jaco2_data/accelerometer_calibration.hpp>
-#include <jaco2_data/torque_offset_lut.hpp>
 #include <jaco2_data/gravity_params.hpp>
-#include <jaco2_data/torque_offset_calibration.hpp>
 #include <jaco2_driver/jaco2_driver_configureConfig.h>
 #include <jaco2_driver/utility/delegate.hpp>
 //Jaco2 Controller
@@ -57,7 +55,6 @@ public:
     jaco2_data::TimeStamp getLastReadUpdate(int read_data) const;
     jaco2_data::JointStateDataStamped getJointState() const;
     jaco2_data::AccelerometerData getAccelerometerData() const;
-    Jaco2Calibration::TorqueOffsetLut getTorqueCalibration() const;
 
     int getSetTorqueZeroResult() const;
 
@@ -81,8 +78,8 @@ public:
     void grabObj(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3);
     void grabObjSetUnusedFingerPos(const bool &useFinger1, const bool &useFinger2, const bool &useFinger3, const int posFinger1, const int posFinger2, const int posFinger3);
     void setAccelerometerCalibration(const std::vector<Jaco2Calibration::AccelerometerCalibrationParam>& params);
-    void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut& lut);
-    void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetCalibration& lut);
+//    void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut& lut);
+//    void setTorqueCalibration(const Jaco2Calibration::TorqueOffsetCalibration& lut);
     bool setGravityParams(const Jaco2Calibration::ApiGravitationalParams &params);
     void setVelocitySensorCalibration(const std::vector<double>& factors);
 

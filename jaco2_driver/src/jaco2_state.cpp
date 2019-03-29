@@ -8,8 +8,6 @@ Jaco2State::Jaco2State(Jaco2API &api, std::string frame_id)
       readCmdHighPri_(0),
       priortyThreshold_(2),
       priortyRate_(priortyThreshold_ + 1),
-      calibrate_torque_(false),
-      calibrate_torque_fkt_(false),
       joint_state_(frame_id)
 {
     lowPriority_.push_back(READ_QUICK_STATUS);
@@ -297,7 +295,6 @@ void Jaco2State::readTorque()
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     time_torque_.now();
     kinova_state_.stamp.now();
-    applyTorqueOffsets();
 }
 
 void Jaco2State::readTorqueGravityFree()
@@ -305,7 +302,6 @@ void Jaco2State::readTorqueGravityFree()
     current_torque_gravity_free_ = api_.getAngularForceGravityFree();
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     time_torque_gravity_free_.now();
-    applyTorqueOffsets2TorqueGFree();
 }
 
 void Jaco2State::readAcceleration()
@@ -342,23 +338,6 @@ void Jaco2State::setAccelerometerCalibration(const std::vector<Jaco2Calibration:
     std::unique_lock<std::recursive_mutex> lock(data_mutex_);
     joint_state_.setAccelerometerCalibration(params);
 }
-
-void Jaco2State::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetLut &lut)
-{
-    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-    torque_offset_ = lut;
-    calibrate_torque_ = true;
-    calibrate_torque_fkt_ = false;
-}
-
-void Jaco2State::setTorqueCalibration(const Jaco2Calibration::TorqueOffsetCalibration &fkt)
-{
-    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-    torque_offest_fkt_ = fkt;
-    calibrate_torque_ = false;
-    calibrate_torque_fkt_  = true;
-}
-
 
 void Jaco2State::setVelocitySensorCalibration(const std::vector<double> &factors)
 {
@@ -401,61 +380,6 @@ void Jaco2State::calculateJointAcceleration()
     kinova_state_.acceleration.Fingers.Finger2 = (current_vel.Fingers.Finger2 - lastVelocity_[i].Fingers.Finger2) / dtsum;
     kinova_state_.acceleration.Fingers.Finger3 = (current_vel.Fingers.Finger3 - lastVelocity_[i].Fingers.Finger3) / dtsum;
 }
-
-
-void Jaco2State::applyTorqueOffsets()
-{
-//    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-    AngularPosition& cp = kinova_state_.position;
-    AngularPosition& ct = kinova_state_.torque;
-    if(calibrate_torque_ && ! calibrate_torque_fkt_){
-        ct.Actuators.Actuator1 -= torque_offset_.at(1, cp.Actuators.Actuator1);
-        ct.Actuators.Actuator2 -= torque_offset_.at(2, cp.Actuators.Actuator2);
-        ct.Actuators.Actuator3 -= torque_offset_.at(3, cp.Actuators.Actuator3);
-        ct.Actuators.Actuator4 -= torque_offset_.at(4, cp.Actuators.Actuator4);
-        ct.Actuators.Actuator5 -= torque_offset_.at(5, cp.Actuators.Actuator5);
-        ct.Actuators.Actuator6 -= torque_offset_.at(6, cp.Actuators.Actuator6);
-    }
-    if(calibrate_torque_fkt_ && !calibrate_torque_){
-        ct.Actuators.Actuator1 -= torque_offest_fkt_(0, cp.Actuators.Actuator1);
-        ct.Actuators.Actuator2 -= torque_offest_fkt_(1, cp.Actuators.Actuator2);
-        ct.Actuators.Actuator3 -= torque_offest_fkt_(2, cp.Actuators.Actuator3);
-        ct.Actuators.Actuator4 -= torque_offest_fkt_(3, cp.Actuators.Actuator4);
-        ct.Actuators.Actuator5 -= torque_offest_fkt_(4, cp.Actuators.Actuator5);
-        ct.Actuators.Actuator6 -= torque_offest_fkt_(5, cp.Actuators.Actuator6);
-    }
-
-}
-
-void Jaco2State::applyTorqueOffsets2TorqueGFree()
-{
-//    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-    AngularPosition& cp = kinova_state_.position;
-    if(calibrate_torque_ && ! calibrate_torque_fkt_){
-        current_torque_gravity_free_.Actuators.Actuator1 -= torque_offset_.at(1, cp.Actuators.Actuator1);
-        current_torque_gravity_free_.Actuators.Actuator2 -= torque_offset_.at(2, cp.Actuators.Actuator2);
-        current_torque_gravity_free_.Actuators.Actuator3 -= torque_offset_.at(3, cp.Actuators.Actuator3);
-        current_torque_gravity_free_.Actuators.Actuator4 -= torque_offset_.at(4, cp.Actuators.Actuator4);
-        current_torque_gravity_free_.Actuators.Actuator5 -= torque_offset_.at(5, cp.Actuators.Actuator5);
-        current_torque_gravity_free_.Actuators.Actuator6 -= torque_offset_.at(6, cp.Actuators.Actuator6);
-    }
-    if(calibrate_torque_fkt_ && !calibrate_torque_){
-        current_torque_gravity_free_.Actuators.Actuator1 -= torque_offest_fkt_(0, cp.Actuators.Actuator1);
-        current_torque_gravity_free_.Actuators.Actuator2 -= torque_offest_fkt_(1, cp.Actuators.Actuator2);
-        current_torque_gravity_free_.Actuators.Actuator3 -= torque_offest_fkt_(2, cp.Actuators.Actuator3);
-        current_torque_gravity_free_.Actuators.Actuator4 -= torque_offest_fkt_(3, cp.Actuators.Actuator4);
-        current_torque_gravity_free_.Actuators.Actuator5 -= torque_offest_fkt_(4, cp.Actuators.Actuator5);
-        current_torque_gravity_free_.Actuators.Actuator6 -= torque_offest_fkt_(5, cp.Actuators.Actuator6);
-    }
-}
-
-
-Jaco2Calibration::TorqueOffsetLut Jaco2State::getTorqueCalibration() const
-{
-    std::unique_lock<std::recursive_mutex> lock(data_mutex_);
-    return torque_offset_;
-}
-
 
 void Jaco2State::updateJointState()
 {

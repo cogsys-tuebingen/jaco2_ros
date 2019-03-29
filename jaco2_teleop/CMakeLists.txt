@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8.3)
 project(jaco2_teleop)
 
 add_compile_options(-std=c++11)
-
 find_package(catkin REQUIRED COMPONENTS
   jaco2_data
   jaco2_msgs
@@ -11,6 +10,8 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
 )
+
+find_package(Eigen3 REQUIRED VERSION 3.3.5)
 
 catkin_package(
 #  INCLUDE_DIRS include
