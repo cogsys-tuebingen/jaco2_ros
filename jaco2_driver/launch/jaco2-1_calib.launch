@@ -7,8 +7,8 @@
     <param name="/jaco_accelerometer_calibration_file" type="string" value="$(find jaco2_driver)/config/acc_calib_jaco2-1.yaml"/>
     <param name="/jaco_velocity_calibration_file" type="string" value="$(find jaco2_driver)/config/velocity_calibration_jaco2-1.yaml"/>
     <param name="/jaco_torque_calibration_file" type="string" value="$(find jaco2_driver)/config/torque_offset_lut_jaco2-1.yaml"/>
-    <param name="/velocity_controller" type="string" value="VEL_COLL"/>
-    <param name="/trajectory_controller" type="string" value="TRAJ_P2P_VEL_COLL"/>
+    <param name="/velocity_controller" type="string" value="VEL"/>
+    <param name="/trajectory_controller" type="string" value="TRAJ_P2P_VEL"/>
     <param name ="/jaco_dynamic_model_calibration_file" value="$(find jaco2_driver)/config/jaco2-1regression_rb_param.yaml"/>
     <param name="/robot_model_base_link" type="string" value="jaco_link_base"/>
     <param name="/robot_model_tip_link" type="string" value="jaco_link_hand"/>

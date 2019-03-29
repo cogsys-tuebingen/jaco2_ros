@@ -100,6 +100,8 @@ public:
     void startForceControl();
     void stopForceControl();
 
+    void cartesianControl();
+
     int initEthernet(const EthernetConfig &conf);
     int initUSB();
 

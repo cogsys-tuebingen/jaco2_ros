@@ -397,6 +397,11 @@ AngularPosition Jaco2API::getAngularCurrent() const
     return current;
 }
 
+void Jaco2API::cartesianControl()
+{
+    SetCartesianControl();
+}
+
 bool Jaco2API::isStopped() const
 {
     std::unique_lock<std::recursive_mutex> lock(mutex_);

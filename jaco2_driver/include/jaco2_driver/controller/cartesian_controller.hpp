@@ -23,6 +23,9 @@ public:
 
     inline virtual void setVelocity(const TrajectoryPoint& tp)
     {
+        if(done_ || result_ != Result::WORKING){
+            api_.cartesianControl();
+        }
         cmd_ = tp;
         cmd_.Position.HandMode = HAND_NOMOVEMENT;
         cmd_.Position.Type = CARTESIAN_VELOCITY;
@@ -56,6 +59,7 @@ public:
 
     inline virtual void start() override
     {
+        api_.cartesianControl();
     }
 
     inline void stopMotion()
