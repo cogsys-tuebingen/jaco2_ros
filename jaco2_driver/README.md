@@ -17,7 +17,8 @@ right_arm|bool| true| Use the jaco2 as a right or left arm.|
 move_home|bool| true| If true, on start up, move arm to home and initialize (open) fingers If false, stay in current configuration.|
 init_fingers|bool| true| Initalize fingers while initalizing. If true fingers are initalized and opened.|
 |jaco_use_accelerometer_calib|bool|false|Use a accelerometer calibration (yaml file has to be provided, see "jaco_accelerometer_calibration_file")|
-|jaco_use_torque_calib|bool| false| Use a torque sensor calibration (yaml file has to be provided, see "jaco_torque_calibration_file". UNDER DEVELOPMENT|
+|jaco_use_torque_calib|bool| false| Use a torque sensor calibration (yaml file has to be provided, see "jaco_torque_calibration_file". UNDER DEVELOPMENT, DO NOT USE!|
+|jaco_gravity_calibration_file|string|"" | set the Kinova gravity calibration sequence|
 |jaco_serial|string| ""| A Jaco2 if the given serial number will be search and control. If a empty string is provided any Jaco2 will be connected to.|
 |tf_prefix|string|jaco_| frame_id prefix for tf|
 |vel_controller_type|string|VEL | Changes the velocity controller type. Provided are a standard velocity controller "VEL" and a collision repelling velocity controller "VEL_COLL"|
@@ -38,5 +39,23 @@ Besides, torque control is not recommended and still under development.
 ##Driver 
 The ROS node is just an interface communicating with the real driver. This driver acts as a small Finite State Machine reading and writing commands cyclically.
 Different controllers are used implementing the commands. In addition, reading information from the arm can be controlled by the controllers. The information is stored in the jaco2_state.
-![driver_scematic](/home/zwiener/workspace/development/src/jaco2/jaco2_ros/jaco2_driver/jaco2_driver.png "driver")
-Currently, now cartesian controllers are implemented. You can use MoveIt or calculate the corresponding joint velocities externally.
+![driver_scematic](jaco2_driver.png "driver")
+
+## Gravity Parameter Calibration
+
+The driver contains an additional node to calibtrate the gravity parameters of the dynamic model which improves torque control and impedance control. 
+Consequntly, a calibration sequence is run which requires the Jaco 2 to stand on a plane surface without any obstacles around it. The calibration sequence runs for approximatly 20 minutes.
+Afterwards, the calibrated parameters are saved to a yaml file which can be read by the regular driver, since this parameters have to be set after every reboot of the Jaco 2.
+You can set path and file name of the gravity parameters via the ROS parameter:
+
+	/jaco2_gravity_parameter_path 
+	
+The default is :
+
+	/tmp/jaco_g_params.yaml
+	
+To run the calibration use:
+
+	rosrun jaco2_driver gravity_parameter_estimation
+	
+The node connects to a Jaco 2 connected via USB (please connect only one Jaco 2) sets all torque sensors to zero and runs the calibration sequence, after the sequence you can test the parameters for 10 seconds in gravity compensation.

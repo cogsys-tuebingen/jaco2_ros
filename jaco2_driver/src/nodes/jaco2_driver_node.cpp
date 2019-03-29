@@ -198,7 +198,7 @@ Jaco2DriverNode::Jaco2DriverNode()
         }
     }
 
-    std::string velocity_calib_file = private_nh_.param<std::string>("jaco_velocity_calibration_file", "/home/zwiener/workspace/development/src/jaco2/jaco2_ros/jaco2_driver/config/velocity_calibration_jaco2-2.yaml");
+    std::string velocity_calib_file = private_nh_.param<std::string>("jaco_velocity_calibration_file", "");
     if(velocity_calib_file != ""){
         ROS_INFO_STREAM("Using velocity calibration");
         Jaco2Calibration::VelocityCalibrationParams v_params;

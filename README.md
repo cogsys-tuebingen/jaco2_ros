@@ -79,6 +79,12 @@ You can publish commands to the Jaco 2 on topics with:
 ```
 - **joint_velocity** topic:
 To publish joint velocities to the controller publish our velocity with at least a rate of 20 Hz. Otherwise your commands will be ignored. Be careful while publishing velocities, collisions are currently not avoided!
+
+- **in/cartesian_velocity** topic:
+Publish cartesian velocties geometry_msgs/Twist to control the Jaco 2. Publish velocites at least with 20 Hz, otherwise your commands will be ignored. Linear velocites are in base frame coordinates (X~0~, Y~0~, Z~0~). Angular velocites have to be given in the End Effector frame (X~6~, Y~6~, Z~6~), c,f, following images.
+
+![Base Frame](jaco2_driver/jaco_base.png  "Base Frame")![End Effector Frame](jaco2_driver/SetGravityPayload1.png  "End Effector Frame")
+
 - **joint_torque** topic:
 Similar to the **joint_velocity** topic but torques have to be published.
 Commands while not have any effect until the **in/toggle_torque_control** service is called.
@@ -108,13 +114,14 @@ Usage jaco2_msgs/GripperControlActionGoal:
 |int|posFinger3| Encoder position of finger 1. 0 is open 7200 is closed.|
 
 Thus, you can deiced which finger to use for a power grip (at least two), in instance finger 1 & finger 2 or finger 1 & finger 3 . The unused finger can be set to an arbitrary position. In addition, you can use the action server to open the gripper just send:
-useFinger1: False
-useFinger2: False
-useFinger3: False
-usePos: True
-posFinger1: 0
-posFinger2: 0
-posFinger3: 0
+
+	useFinger1: False
+	useFinger2: False
+	useFinger3: False
+	usePos: True
+	posFinger1: 0
+	posFinger2: 0
+	posFinger3: 0
 
 Or set the fingers to any arbitrary configuration.
 
@@ -135,10 +142,12 @@ Sets a torque sensor to zero. Only use this command in torque zero position:
 Sets the gravity parameters for a payload in the end effector frame (see image).
 ![End Effector Frame](jaco2_driver/SetGravityPayload1.png  "End Effector Frame")
 Default values in SI units:
-"mass: 0.0
-  com_x: 0.0
-  com_y: 0.0
-  com_z: 0.0" 
+
+	"mass: 0.0
+	  com_x: 0.0
+	  com_y: 0.0
+	  com_z: 0.0" 
+	  
 The distance between the wrist frame and the end effector frame is in z_6 direction  l_6 = -0.16 m.
 
 - **/in/stop**:
@@ -147,8 +156,14 @@ Stops the API any command will be ignored.
 - **/jaco_arm_driver/in/start**:
 Releases the API if it was stopped previously.
 
+- **in/enable_admittance_mode**:
+If **true** is send, the Jaco 2 is in an impedance control mode.  Therefore, you can push the Jaco 2 into any configuration you like.
+However, since this employs velocity control the joints are much stiffer than using **in/enable_gravity_compensation_mode**.
+The activate it sending **false**. If you want to toggle between **impedance/admittance** mode and **gravity_compeonsation**, it is best to deactivate on before activting the other.
+
+
 - **in/enable_gravity_compensation_mode**
-If true is send the Jaco 2 is in torque control mode an will only compensete torques due to gravity. Therefore, you can push the Jaco 2 into any configuration you like. This mode is deactivated if links are to close to each other. To activated the gravity compensation mode send false to the service, change the configuration to a more extended one e.g. via the controller, and finally enable the compensation mode by sending ture once again.
+If **true** is send, the Jaco 2 is in torque control mode an will only compensete torques due to gravity. Therefore, you can push the Jaco 2 into any configuration you like. This mode is deactivated if links are to close to each other. To activated the gravity compensation mode send false to the service, change the configuration to a more extended one e.g. via the controller, and finally enable the compensation mode by sending ture once again.
 
 - **in/toggle_torque_control**
 Enables/disables torque control. Before, a torque command is executed this services has to be called. Calling it again will immediately disable torque control.
