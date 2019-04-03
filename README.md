@@ -38,7 +38,7 @@ i. Simply install tracIK, and MoveIt! (if required) using apt-get:
 ii. Clone repository and build your workspace:
 ```
 	cd <workspace>/src
-	git clone gitlab@gitlab.cs.uni-tuebingen.de:robots/jaco2_ros.git
+	git clone https://github.com/cogsys-tuebingen/jaco2_ros.git
 	cd ..
 	rosdep install -y -r -i --from-paths src
 	catkin_make
